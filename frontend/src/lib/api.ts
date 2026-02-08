@@ -338,3 +338,46 @@ export async function getDashboardData(
 
     return res.json();
 }
+
+// ── Admin API ──
+
+export interface AdminStats {
+    companies_total: number;
+    companies_scanned: number;
+    emails_today: number;
+    emails_total: number;
+    orders_paid: number;
+    conversion_pct: number;
+    recent_logs: Array<{
+        id: string;
+        task_name: string;
+        status: string;
+        result: Record<string, unknown> | null;
+        error: string | null;
+        started_at: string;
+    }>;
+}
+
+export async function getAdminStats(): Promise<AdminStats> {
+    const res = await fetch(`${API_URL}/api/admin/stats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function runAdminTask(taskName: string): Promise<Record<string, unknown>> {
+    const res = await fetch(`${API_URL}/api/admin/run/${taskName}`, { method: "POST" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminEmailLog(limit = 50) {
+    const res = await fetch(`${API_URL}/api/admin/email-log?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminCompanies(status = "all", limit = 50) {
+    const res = await fetch(`${API_URL}/api/admin/companies?status=${status}&limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
