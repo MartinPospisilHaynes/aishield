@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     startScan,
@@ -11,7 +11,7 @@ import {
     type Finding,
 } from "@/lib/api";
 
-export default function ScanPage() {
+function ScanPageInner() {
     const searchParams = useSearchParams();
     const [url, setUrl] = useState("");
     const [loading, setLoading] = useState(false);
@@ -528,5 +528,13 @@ export default function ScanPage() {
                 )}
             </div>
         </section>
+    );
+}
+
+export default function ScanPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Načítám...</p></div>}>
+            <ScanPageInner />
+        </Suspense>
     );
 }

@@ -27,9 +27,53 @@ router = APIRouter()
 
 QUESTIONNAIRE_SECTIONS = [
     {
+        "id": "prohibited_systems",
+        "title": "Zakázané AI praktiky",
+        "description": "Systémy, které AI Act výslovně zakazuje (čl. 5). Pokuta až 35 mil. EUR.",
+        "questions": [
+            {
+                "key": "uses_social_scoring",
+                "text": "Bodujete nebo hodnotíte zaměstnance či zákazníky na základě jejich chování, sociálních interakcí nebo osobnostních rysů?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "scoring_tool_name", "label": "Název systému", "type": "text"},
+                        {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "select",
+                         "options": ["Zaměstnanci", "Zákazníci", "Obojí"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 5 odst. 1 písm. c) — zákaz sociálního scoringu",
+            },
+            {
+                "key": "uses_subliminal_manipulation",
+                "text": "Používáte AI k ovlivňování rozhodnutí osob technikami, kterých si nejsou vědomy (podprahové manipulace, dark patterns)?",
+                "type": "yes_no_unknown",
+                "risk_hint": "high",
+                "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
+            },
+            {
+                "key": "uses_realtime_biometric",
+                "text": "Používáte biometrickou identifikaci v reálném čase na veřejně přístupných místech (rozpoznávání obličejů zaměstnanců, zákazníků)?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "biometric_tool_name", "label": "Název systému", "type": "text"},
+                        {"key": "biometric_purpose", "label": "Účel", "type": "select",
+                         "options": ["Docházka zaměstnanců", "Kontrola přístupu", "Identifikace zákazníků", "Bezpečnost"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 5 odst. 1 písm. h) — zákaz biometrické identifikace v reálném čase",
+            },
+        ],
+    },
+    {
         "id": "internal_ai",
-        "title": "🤖 Interní AI nástroje",
-        "description": "Používáte AI nástroje pro interní práci?",
+        "title": "Interní AI nástroje",
+        "description": "Běžné AI nástroje, které zaměstnanci používají v práci.",
         "questions": [
             {
                 "key": "uses_chatgpt",
@@ -76,12 +120,27 @@ QUESTIONNAIRE_SECTIONS = [
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 50 odst. 4 — označení AI generovaného obsahu",
             },
+            {
+                "key": "uses_deepfake",
+                "text": "Vytváříte nebo používáte syntetický obsah (deepfake videa, klonování hlasu, AI avatary)?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "deepfake_tool_name", "label": "Název nástroje", "type": "text"},
+                        {"key": "deepfake_disclosed", "label": "Označujete tento obsah jako AI generovaný?", "type": "select",
+                         "options": ["Ano, vždy", "Někdy", "Ne"]},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 50 odst. 4 — povinnost označit deepfake obsah",
+            },
         ],
     },
     {
         "id": "hr",
-        "title": "👥 HR & Nábor",
-        "description": "Používáte AI v personalistice?",
+        "title": "HR a Nábor zaměstnanců",
+        "description": "AI v personalistice patří mezi vysoce rizikové systémy dle Přílohy III.",
         "questions": [
             {
                 "key": "uses_ai_recruitment",
@@ -96,7 +155,7 @@ QUESTIONNAIRE_SECTIONS = [
                     ]
                 },
                 "risk_hint": "high",
-                "ai_act_article": "čl. 6 + Příloha III bod 4 — vysoce rizikový AI systém",
+                "ai_act_article": "čl. 6 + Příloha III bod 4a — nábor zaměstnanců",
             },
             {
                 "key": "uses_ai_employee_monitoring",
@@ -111,14 +170,29 @@ QUESTIONNAIRE_SECTIONS = [
                     ]
                 },
                 "risk_hint": "high",
-                "ai_act_article": "čl. 6 + Příloha III bod 4 — monitorování zaměstnanců",
+                "ai_act_article": "čl. 6 + Příloha III bod 4b — monitorování zaměstnanců",
+            },
+            {
+                "key": "uses_emotion_recognition",
+                "text": "Používáte AI pro rozpoznávání emocí zaměstnanců nebo zákazníků?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "emotion_tool_name", "label": "Název systému", "type": "text"},
+                        {"key": "emotion_context", "label": "V jakém kontextu?", "type": "select",
+                         "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 5 odst. 1 písm. f) — omezení rozpoznávání emocí na pracovišti",
             },
         ],
     },
     {
         "id": "finance",
-        "title": "💰 Finance & Účetnictví",
-        "description": "Používáte AI ve finančních procesech?",
+        "title": "Finance a rozhodování",
+        "description": "AI ve financích a rozhodovacích procesech s dopadem na jednotlivce.",
         "questions": [
             {
                 "key": "uses_ai_accounting",
@@ -150,12 +224,27 @@ QUESTIONNAIRE_SECTIONS = [
                 "risk_hint": "high",
                 "ai_act_article": "čl. 6 + Příloha III bod 5b — kreditní scoring",
             },
+            {
+                "key": "uses_ai_insurance",
+                "text": "Používáte AI při stanovení pojistného, hodnocení pojistných událostí nebo risk managementu?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "insurance_tool", "label": "Název systému", "type": "text"},
+                        {"key": "insurance_impact", "label": "Ovlivňuje AI cenu nebo dostupnost pojištění?", "type": "select",
+                         "options": ["Ano, přímo", "Pouze doporučuje", "Ne"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 6 + Příloha III bod 5a — pojišťovnictví",
+            },
         ],
     },
     {
         "id": "customer_service",
-        "title": "🎯 Zákaznický servis",
-        "description": "Používáte AI pro komunikaci se zákazníky?",
+        "title": "Zákaznický servis a komunikace",
+        "description": "AI systémy v kontaktu se zákazníky vyžadují transparentnost.",
         "questions": [
             {
                 "key": "uses_ai_email_auto",
@@ -190,9 +279,46 @@ QUESTIONNAIRE_SECTIONS = [
         ],
     },
     {
+        "id": "infrastructure_safety",
+        "title": "Kritická infrastruktura a bezpečnost",
+        "description": "AI v kritické infrastruktuře spadá do kategorie vysokého rizika.",
+        "questions": [
+            {
+                "key": "uses_ai_critical_infra",
+                "text": "Používáte AI pro řízení nebo monitorování kritické infrastruktury (energetika, doprava, vodohospodářství)?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "infra_tool_name", "label": "Název systému", "type": "text"},
+                        {"key": "infra_sector", "label": "Sektor", "type": "select",
+                         "options": ["Energetika", "Doprava", "Vodohospodářství", "Telekomunikace", "Zdravotnictví", "Jiný"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 6 + Příloha III bod 2 — kritická infrastruktura",
+            },
+            {
+                "key": "uses_ai_safety_component",
+                "text": "Je AI součástí bezpečnostní komponenty produktu (např. autonomní řízení, medicínské přístroje, průmyslová automatizace)?",
+                "type": "yes_no_unknown",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "safety_product", "label": "O jaký produkt jde?", "type": "text"},
+                        {"key": "safety_ce_mark", "label": "Má produkt CE označení?", "type": "select",
+                         "options": ["Ano", "Ne", "V procesu"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 6 odst. 1 — AI jako bezpečnostní komponenta",
+            },
+        ],
+    },
+    {
         "id": "data_protection",
-        "title": "🔒 Ochrana dat & GDPR",
-        "description": "Jak zacházíte s daty v AI systémech?",
+        "title": "Ochrana dat a GDPR",
+        "description": "AI Act doplňuje GDPR — obě nařízení platí současně.",
         "questions": [
             {
                 "key": "ai_processes_personal_data",
@@ -215,6 +341,13 @@ QUESTIONNAIRE_SECTIONS = [
                 "type": "yes_no_unknown",
                 "risk_hint": "limited",
                 "ai_act_article": "Nařízení GDPR čl. 44+ — přenos dat do třetích zemí",
+            },
+            {
+                "key": "ai_transparency_docs",
+                "text": "Máte dokumentaci o tom, jaké AI systémy ve firmě používáte (registr AI)?",
+                "type": "yes_no_unknown",
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 49 — registrace vysoce rizikových AI systémů v EU databázi",
             },
         ],
     },
@@ -500,17 +633,33 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
 def _get_recommendation(question_key: str, risk: str, tool_name: str, details: Optional[dict]) -> str:
     """Vrátí specifické doporučení na základě odpovědi."""
     recs = {
+        # Zakázané praktiky
+        "uses_social_scoring": f"ZAKÁZANÝ SYSTÉM! Sociální scoring je dle čl. 5 AI Act zakázán. Okamžitě ukončete provoz {tool_name}. Pokuta až 35 mil. EUR nebo 7 % obratu.",
+        "uses_subliminal_manipulation": "ZAKÁZANÝ SYSTÉM! Podprahová manipulace je dle čl. 5 AI Act zakázána. Proveďte audit všech AI systémů ovlivňujících rozhodování uživatelů.",
+        "uses_realtime_biometric": f"ZAKÁZANÝ/VYSOCE RIZIKOVÝ systém! Biometrická identifikace v reálném čase je dle čl. 5 AI Act silně omezena. Proveďte okamžitý audit {tool_name}.",
+        # Interní AI
         "uses_chatgpt": f"Zavedete interní směrnici pro používání {tool_name}. Zakažte vkládání osobních údajů zákazníků. Proškolte zaměstnance o AI Act.",
         "uses_copilot": f"Zajistěte, aby AI generovaný kód prošel code review. Dokumentujte použití {tool_name} v development procesu.",
         "uses_ai_content": f"Označujte AI generovaný obsah dle čl. 50 odst. 4 AI Act. Přidejte metadata o AI původu.",
-        "uses_ai_recruitment": f"⚠️ VYSOCE RIZIKOVÝ systém! {tool_name} spadá pod čl. 6 AI Act. Proveďte posouzení shody (conformity assessment), zajistěte lidský dohled a transparentnost vůči kandidátům.",
-        "uses_ai_employee_monitoring": f"⚠️ VYSOCE RIZIKOVÝ systém! Monitorování zaměstnanců AI vyžaduje souhlas, DPIA a transparentnost. Zajistěte soulad s GDPR čl. 22 a AI Act čl. 6.",
+        "uses_deepfake": f"Povinnost označit syntetický obsah dle čl. 50 odst. 4. Přidejte viditelné označení ke všem AI generovaným médiím z {tool_name}.",
+        # HR
+        "uses_ai_recruitment": f"VYSOCE RIZIKOVÝ systém! {tool_name} spadá pod čl. 6 AI Act. Proveďte posouzení shody (conformity assessment), zajistěte lidský dohled a transparentnost vůči kandidátům.",
+        "uses_ai_employee_monitoring": f"VYSOCE RIZIKOVÝ systém! Monitorování zaměstnanců AI vyžaduje souhlas, DPIA a transparentnost. Zajistěte soulad s GDPR čl. 22 a AI Act čl. 6.",
+        "uses_emotion_recognition": f"ZAKÁZÁNO na pracovišti a ve vzdělávání! Rozpoznávání emocí je dle čl. 5 odst. 1 písm. f) omezeno. Proveďte audit {tool_name} a konzultujte s právníkem.",
+        # Finance
         "uses_ai_accounting": f"Dokumentujte použití {tool_name} a zajistěte audit trail pro finanční rozhodnutí AI.",
-        "uses_ai_creditscoring": f"⚠️ VYSOCE RIZIKOVÝ systém! Kreditní scoring je regulován přílohou III AI Act. Proveďte conformity assessment a zajistěte právo na vysvětlení rozhodnutí.",
+        "uses_ai_creditscoring": f"VYSOCE RIZIKOVÝ systém! Kreditní scoring je regulován přílohou III AI Act. Proveďte conformity assessment a zajistěte právo na vysvětlení rozhodnutí.",
+        "uses_ai_insurance": f"VYSOCE RIZIKOVÝ systém! AI v pojišťovnictví spadá pod Přílohu III bod 5a. Zajistěte posouzení shody a právo pojistníka na vysvětlení.",
+        # Zákaznický servis
         "uses_ai_email_auto": f"Informujte zákazníky, že komunikují s AI (čl. 50 odst. 1). Přidejte jasné označení do automatických odpovědí.",
-        "uses_ai_decision": f"⚠️ AI rozhodující o právech zákazníků vyžaduje lidský dohled (čl. 14 AI Act). Zajistěte právo na přezkum člověkem.",
+        "uses_ai_decision": f"AI rozhodující o právech zákazníků vyžaduje lidský dohled (čl. 14 AI Act). Zajistěte právo na přezkum člověkem.",
+        # Kritická infrastruktura
+        "uses_ai_critical_infra": f"VYSOCE RIZIKOVÝ systém! AI v kritické infrastruktuře spadá pod Přílohu III bod 2. Proveďte conformity assessment a zajistěte systém řízení rizik dle čl. 9.",
+        "uses_ai_safety_component": f"VYSOCE RIZIKOVÝ systém! AI jako bezpečnostní komponenta spadá pod čl. 6 odst. 1. Zajistěte CE označení a conformity assessment.",
+        # Ochrana dat
         "ai_processes_personal_data": f"Proveďte DPIA dle GDPR. Zajistěte právní základ pro zpracování a minimalizaci dat v AI systémech.",
         "ai_data_stored_eu": "Ověřte, kde jsou data AI systémů fyzicky uložena. Pro přenos mimo EU zajistěte adekvátní záruky (SCC, adequacy decision).",
+        "ai_transparency_docs": "Vytvořte registr všech AI systémů ve firmě. Pro vysoce rizikové systémy je registrace v EU databázi povinná (čl. 49).",
     }
     return recs.get(question_key, f"Zkontrolujte soulad {tool_name} s AI Act a dokumentujte jeho použití.")
 

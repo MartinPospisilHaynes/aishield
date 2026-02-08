@@ -23,6 +23,7 @@ export interface ScanStatus {
     started_at: string | null;
     finished_at: string | null;
     company_name: string | null;
+    company_id: string | null;
 }
 
 export interface HealthResponse {
@@ -44,7 +45,7 @@ export interface Finding {
     ai_classification_text: string | null;
     evidence_html: string | null;
     signature_matched: string | null;
-    confirmed_by_client: boolean | null;
+    confirmed_by_client: string | null;
     source: string;
     created_at: string;
 }
