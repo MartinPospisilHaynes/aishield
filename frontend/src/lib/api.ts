@@ -214,3 +214,55 @@ export async function getCombinedReport(
 
     return res.json();
 }
+
+// ── Platby (GoPay) ──
+
+export interface CheckoutResponse {
+    payment_id: number;
+    gateway_url: string;
+    order_number: string;
+}
+
+export interface PaymentStatusResponse {
+    payment_id: number;
+    state: string;
+    is_paid: boolean;
+    order_number: string;
+}
+
+/**
+ * Vytvoří platbu v GoPay a vrátí URL pro přesměrování na platební bránu.
+ */
+export async function createCheckout(
+    plan: string,
+    email: string,
+): Promise<CheckoutResponse> {
+    const res = await fetch(`${API_URL}/api/payments/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, email }),
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
+
+/**
+ * Zkontroluje stav platby.
+ */
+export async function getPaymentStatus(
+    paymentId: number,
+): Promise<PaymentStatusResponse> {
+    const res = await fetch(`${API_URL}/api/payments/status/${paymentId}`);
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}

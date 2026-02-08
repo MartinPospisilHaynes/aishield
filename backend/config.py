@@ -25,9 +25,15 @@ class Settings(BaseSettings):
     # ── Claude API ──
     anthropic_api_key: str = ""
 
-    # ── Stripe ──
-    stripe_secret_key: str = ""
-    stripe_webhook_secret: str = ""
+    # ── GoPay ──
+    gopay_go_id: str = ""
+    gopay_client_id: str = ""
+    gopay_client_secret: str = ""
+    gopay_is_production: bool = False
+
+    # ── Ceny balíčků (CZK) ──
+    price_basic: int = 4999
+    price_pro: int = 14999
 
     # ── Resend ──
     resend_api_key: str = ""

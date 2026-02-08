@@ -15,6 +15,7 @@ from backend.api.health import router as health_router
 from backend.api.scan import router as scan_router
 from backend.api.questionnaire import router as questionnaire_router
 from backend.api.documents import router as documents_router
+from backend.api.payments import router as payments_router
 
 # ── Vytvoření aplikace ──
 app = FastAPI(
@@ -44,6 +45,7 @@ app.include_router(health_router, prefix="/api", tags=["Health"])
 app.include_router(scan_router, prefix="/api", tags=["Scanner"])
 app.include_router(questionnaire_router, prefix="/api", tags=["Questionnaire"])
 app.include_router(documents_router, prefix="/api", tags=["Documents"])
+app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 
 
 @app.get("/")
