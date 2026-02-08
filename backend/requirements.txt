@@ -1,0 +1,45 @@
+# ============================================
+# AIshield.cz — Python dependencies
+# ============================================
+
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Database
+supabase==2.10.0
+
+# AI
+anthropic==0.39.0
+
+# Web scraping
+playwright==1.49.0
+
+# PDF generation
+weasyprint==62.3
+
+# Image processing
+pillow==11.0.0
+
+# Email
+resend==2.5.0
+
+# HTTP client
+httpx==0.28.0
+
+# Scheduling
+apscheduler==3.10.4
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Data validation
+pydantic==2.10.0
+pydantic-settings==2.6.0
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# CORS
+python-multipart==0.0.12
