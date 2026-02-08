@@ -4,9 +4,10 @@ Přijme URL, uloží do DB, vrátí scan_id.
 Skutečný scanner přijde v Fázi B (úkoly 6-10).
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, field_validator
 from backend.database import get_supabase
+from backend.scanner.pipeline import run_scan_pipeline
 from datetime import datetime, timezone
 import re
 
@@ -54,12 +55,13 @@ class ScanStatusResponse(BaseModel):
 # ── Endpointy ──
 
 @router.post("/scan", response_model=ScanResponse)
-async def create_scan(request: ScanRequest):
+async def create_scan(request: ScanRequest, background_tasks: BackgroundTasks):
     """
     Spustí nový sken webu.
     1. Najde nebo vytvoří firmu v DB podle URL
     2. Vytvoří záznam skenu se statusem 'queued'
-    3. Vrátí scan_id (frontend pak polluje stav)
+    3. Spustí scan pipeline na pozadí
+    4. Vrátí scan_id (frontend pak polluje stav)
     """
     supabase = get_supabase()
     url = request.url
@@ -96,6 +98,9 @@ async def create_scan(request: ScanRequest):
         supabase.table("companies").update({
             "last_scanned_at": now,
         }).eq("id", company_id).execute()
+
+        # 4. Spustíme scan pipeline na pozadí
+        background_tasks.add_task(run_scan_pipeline, scan_id, url, company_id)
 
         return ScanResponse(
             scan_id=scan_id,
@@ -168,4 +173,25 @@ async def get_recent_scans(limit: int = 10):
         raise HTTPException(
             status_code=500,
             detail=f"Chyba při čtení skenů: {str(e)}",
+        )
+
+
+@router.get("/scan/{scan_id}/findings")
+async def get_scan_findings(scan_id: str):
+    """Vrátí všechny nálezy pro daný sken."""
+    supabase = get_supabase()
+
+    try:
+        result = supabase.table("findings").select(
+            "id, name, category, risk_level, ai_act_article, "
+            "action_required, ai_classification_text, evidence_html, "
+            "signature_matched, confirmed_by_client, source, created_at"
+        ).eq("scan_id", scan_id).execute()
+
+        return {"findings": result.data, "count": len(result.data)}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při čtení nálezů: {str(e)}",
         )

@@ -34,6 +34,26 @@ export interface HealthResponse {
     version: string;
 }
 
+export interface Finding {
+    id: string;
+    name: string;
+    category: string;
+    risk_level: string;
+    ai_act_article: string;
+    action_required: string;
+    ai_classification_text: string | null;
+    evidence_html: string | null;
+    signature_matched: string | null;
+    confirmed_by_client: boolean | null;
+    source: string;
+    created_at: string;
+}
+
+export interface FindingsResponse {
+    findings: Finding[];
+    count: number;
+}
+
 // ── API funkce ──
 
 /**
@@ -76,6 +96,20 @@ export async function checkHealth(): Promise<HealthResponse> {
 
     if (!res.ok) {
         throw new Error(`API nedostupné (HTTP ${res.status})`);
+    }
+
+    return res.json();
+}
+
+/**
+ * Načte nálezy (findings) pro daný sken — GET /api/scan/{scan_id}/findings
+ */
+export async function getScanFindings(scanId: string): Promise<FindingsResponse> {
+    const res = await fetch(`${API_URL}/api/scan/${scanId}/findings`);
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
     }
 
     return res.json();

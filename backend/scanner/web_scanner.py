@@ -8,6 +8,8 @@ extrahuje HTML, skripty a metadata.
 
 import asyncio
 import hashlib
+import os
+import base64
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from playwright.async_api import async_playwright, Page, Browser
@@ -29,6 +31,8 @@ class ScannedPage:
     cookies: list[dict] = field(default_factory=list)
     console_messages: list[str] = field(default_factory=list)
     network_requests: list[str] = field(default_factory=list)  # URL požadavků
+    screenshot_full: bytes = field(default=b"", repr=False)    # Celostránkový PNG
+    screenshot_viewport: bytes = field(default=b"", repr=False) # Viewport PNG
     duration_ms: int = 0
     error: str | None = None
     scanned_at: str = ""
@@ -43,8 +47,8 @@ class WebScanner:
 
     def __init__(
         self,
-        timeout_ms: int = 30_000,
-        wait_after_load_ms: int = 3_000,
+        timeout_ms: int = 45_000,
+        wait_after_load_ms: int = 5_000,
         user_agent: str | None = None,
     ):
         self.timeout_ms = timeout_ms
@@ -95,16 +99,23 @@ class WebScanner:
             ))
 
             try:
-                # Navigace na URL
+                # Navigace na URL — používáme domcontentloaded + manuální čekání
+                # (networkidle nefunguje na webech s WebSocket/long-polling)
                 response = await page.goto(
                     url,
-                    wait_until="networkidle",
+                    wait_until="domcontentloaded",
                     timeout=self.timeout_ms,
                 )
 
                 if response:
                     result.status_code = response.status
                     result.final_url = page.url
+
+                # Počkáme na networkidle manuálně (max 10s, ne-fatální)
+                try:
+                    await page.wait_for_load_state("networkidle", timeout=10_000)
+                except Exception:
+                    pass  # Nevadí, některé weby nikdy nedosáhnou networkidle
 
                 # Počkáme na dynamický obsah (chatboty, popupy...)
                 await page.wait_for_timeout(self.wait_after_load_ms)
@@ -157,6 +168,25 @@ class WebScanner:
                     {"name": c["name"], "domain": c["domain"], "value": c["value"][:50]}
                     for c in cookies_raw
                 ]
+
+                # ── Screenshoty ──
+
+                # Viewport screenshot (co vidí uživatel)
+                result.screenshot_viewport = await page.screenshot(
+                    type="png",
+                    full_page=False,
+                )
+
+                # Full-page screenshot (celá stránka)
+                try:
+                    result.screenshot_full = await page.screenshot(
+                        type="png",
+                        full_page=True,
+                        timeout=10_000,
+                    )
+                except Exception:
+                    # Některé stránky jsou příliš dlouhé
+                    result.screenshot_full = result.screenshot_viewport
 
             except Exception as e:
                 result.error = str(e)
