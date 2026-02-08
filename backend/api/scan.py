@@ -287,3 +287,81 @@ async def get_scan_report(scan_id: str):
             status_code=500,
             detail=f"Chyba při generování reportu: {str(e)}",
         )
+
+
+# ── Potvrzení nálezů ──
+
+class ConfirmFindingRequest(BaseModel):
+    """Požadavek na potvrzení/zamítnutí nálezu."""
+    confirmed: bool  # True = potvrzeno klientem, False = zamítnuto
+    note: str = ""   # Volitelná poznámka
+
+
+@router.patch("/finding/{finding_id}/confirm")
+async def confirm_finding(finding_id: str, request: ConfirmFindingRequest):
+    """
+    Klient potvrdí nebo zamítne nález.
+    - confirmed=true → 'confirmed'
+    - confirmed=false → 'rejected'
+    """
+    supabase = get_supabase()
+
+    try:
+        # Ověříme, že finding existuje
+        existing = supabase.table("findings").select("id, name").eq(
+            "id", finding_id
+        ).limit(1).execute()
+
+        if not existing.data:
+            raise HTTPException(status_code=404, detail="Nález nenalezen")
+
+        status = "confirmed" if request.confirmed else "rejected"
+
+        supabase.table("findings").update({
+            "confirmed_by_client": status,
+        }).eq("id", finding_id).execute()
+
+        return {
+            "finding_id": finding_id,
+            "name": existing.data[0]["name"],
+            "confirmed_by_client": status,
+            "message": f"Nález {'potvrzen' if request.confirmed else 'zamítnut'} klientem.",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při potvrzování nálezu: {str(e)}",
+        )
+
+
+@router.patch("/scan/{scan_id}/confirm-all")
+async def confirm_all_findings(scan_id: str, request: ConfirmFindingRequest):
+    """Hromadně potvrdí/zamítne všechny nálezy pro daný sken."""
+    supabase = get_supabase()
+
+    try:
+        status = "confirmed" if request.confirmed else "rejected"
+
+        result = supabase.table("findings").update({
+            "confirmed_by_client": status,
+        }).eq("scan_id", scan_id).neq(
+            "source", "ai_classified_fp"  # Nechceme měnit false-positives
+        ).execute()
+
+        count = len(result.data) if result.data else 0
+
+        return {
+            "scan_id": scan_id,
+            "confirmed_by_client": status,
+            "updated_count": count,
+            "message": f"{count} nálezů {'potvrzeno' if request.confirmed else 'zamítnuto'}.",
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při hromadném potvrzování: {str(e)}",
+        )

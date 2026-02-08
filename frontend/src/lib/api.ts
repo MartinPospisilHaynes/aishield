@@ -117,3 +117,25 @@ export async function getScanFindings(scanId: string): Promise<FindingsResponse>
 
     return res.json();
 }
+
+/**
+ * Potvrdí nebo zamítne nález — PATCH /api/finding/{finding_id}/confirm
+ */
+export async function confirmFinding(
+    findingId: string,
+    confirmed: boolean,
+    note: string = ""
+): Promise<{ finding_id: string; confirmed_by_client: string; message: string }> {
+    const res = await fetch(`${API_URL}/api/finding/${findingId}/confirm`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmed, note }),
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}

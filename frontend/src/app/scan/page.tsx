@@ -6,6 +6,7 @@ import {
     startScan,
     getScanStatus,
     getScanFindings,
+    confirmFinding,
     type ScanStatus,
     type Finding,
 } from "@/lib/api";
@@ -156,6 +157,30 @@ export default function ScanPage() {
             case "recommender": return "Doporučovací systém";
             case "content_gen": return "Generování obsahu";
             default: return cat;
+        }
+    };
+
+    const handleConfirm = async (findingId: string, confirmed: boolean) => {
+        try {
+            await confirmFinding(findingId, confirmed);
+            // Aktualizujeme lokální stav
+            setFindings((prev) =>
+                prev.map((f) =>
+                    f.id === findingId
+                        ? { ...f, confirmed_by_client: confirmed ? "confirmed" : "rejected" }
+                        : f
+                )
+            );
+        } catch {
+            // Tiché selhání
+        }
+    };
+
+    const confirmBadge = (status: string | boolean | null) => {
+        switch (status) {
+            case "confirmed": return { label: "✅ Potvrzeno", cls: "bg-green-50 text-green-700 border-green-200" };
+            case "rejected": return { label: "❌ Zamítnuto", cls: "bg-red-50 text-red-700 border-red-200" };
+            default: return null;
         }
     };
 
@@ -352,6 +377,33 @@ export default function ScanPage() {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Potvrzení klientem */}
+                                            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                                {confirmBadge(f.confirmed_by_client) ? (
+                                                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${confirmBadge(f.confirmed_by_client)!.cls}`}>
+                                                        {confirmBadge(f.confirmed_by_client)!.label}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">Čeká na potvrzení</span>
+                                                )}
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleConfirm(f.id, true)}
+                                                        className="text-xs px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
+                                                        disabled={f.confirmed_by_client === "confirmed"}
+                                                    >
+                                                        ✅ Potvrdit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleConfirm(f.id, false)}
+                                                        className="text-xs px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                                                        disabled={f.confirmed_by_client === "rejected"}
+                                                    >
+                                                        ❌ Zamítnout
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -433,7 +485,7 @@ export default function ScanPage() {
                             nebo blokuje automatické přístupy.
                         </p>
                         <button
-                            onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
+                            onClick={() => handleSubmit({ preventDefault: () => { } } as React.FormEvent)}
                             className="mt-4 btn-primary"
                         >
                             🔄 Zkusit znovu

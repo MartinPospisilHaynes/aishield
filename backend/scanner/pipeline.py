@@ -102,7 +102,7 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                 "ai_classification_text": cf.description_cs,
                 "evidence_html": "\n".join(cf.evidence[:5]),
                 "source": "ai_classified" if classifier.enabled else "scanner",
-                "confirmed_by_client": "ai_verified" if classifier.enabled else "unknown",
+                "confirmed_by_client": "confirmed" if classifier.enabled else "unknown",
             }).execute()
 
         # 5b. False positives — uložíme pro audit, ale s flageem
@@ -119,7 +119,7 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                 "ai_classification_text": f"FALSE POSITIVE: {cf.description_cs}",
                 "evidence_html": "\n".join(cf.evidence[:5]),
                 "source": "ai_classified_fp",
-                "confirmed_by_client": "ai_rejected",
+                "confirmed_by_client": "rejected",
             }).execute()
 
         # 6. Aktualizovat scan jako done
