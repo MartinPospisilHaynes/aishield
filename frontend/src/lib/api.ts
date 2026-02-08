@@ -51,7 +51,10 @@ export interface Finding {
 
 export interface FindingsResponse {
     findings: Finding[];
+    false_positives: Finding[];
     count: number;
+    fp_count: number;
+    ai_classified: boolean;
 }
 
 // ── API funkce ──

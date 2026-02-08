@@ -178,7 +178,7 @@ async def get_recent_scans(limit: int = 10):
 
 @router.get("/scan/{scan_id}/findings")
 async def get_scan_findings(scan_id: str):
-    """Vrátí všechny nálezy pro daný sken."""
+    """Vrátí všechny nálezy pro daný sken (deployed + false positives zvlášť)."""
     supabase = get_supabase()
 
     try:
@@ -188,7 +188,25 @@ async def get_scan_findings(scan_id: str):
             "signature_matched, confirmed_by_client, source, created_at"
         ).eq("scan_id", scan_id).execute()
 
-        return {"findings": result.data, "count": len(result.data)}
+        # Rozdělíme na deployed a false-positives
+        deployed = []
+        false_positives = []
+        for f in result.data:
+            if f.get("source") == "ai_classified_fp":
+                false_positives.append(f)
+            else:
+                deployed.append(f)
+
+        return {
+            "findings": deployed,
+            "false_positives": false_positives,
+            "count": len(deployed),
+            "fp_count": len(false_positives),
+            "ai_classified": any(
+                f.get("source") in ("ai_classified", "ai_classified_fp")
+                for f in result.data
+            ),
+        }
 
     except Exception as e:
         raise HTTPException(
