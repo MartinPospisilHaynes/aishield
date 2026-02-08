@@ -1,10 +1,15 @@
 """
 AIshield.cz — Admin API
-Přehledový dashboard a manuální ovládání orchestrátoru.
+Přehledový dashboard, manuální ovládání orchestrátoru,
+email health monitoring.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from backend.outbound.orchestrator import get_stats, run_task, SCHEDULE
+from backend.outbound.deliverability import (
+    get_email_health,
+    process_resend_webhook,
+)
 
 router = APIRouter()
 
@@ -58,3 +63,27 @@ async def admin_companies(status: str = "all", limit: int = 50):
     res = query.order("created_at", desc=True).limit(limit).execute()
 
     return {"companies": res.data or [], "total": len(res.data or [])}
+
+
+@router.get("/email-health")
+async def admin_email_health():
+    """Vrátí zdravotní metriky emailové kampaně."""
+    try:
+        health = await get_email_health()
+        return health
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/resend-webhook")
+async def resend_webhook(request: Request):
+    """
+    Webhook od Resend — bounce, complaint, delivered, opened, clicked.
+    Nastavit v Resend dashboard: POST https://api.aishield.cz/api/admin/resend-webhook
+    """
+    try:
+        body = await request.json()
+        result = await process_resend_webhook(body)
+        return result
+    except Exception as e:
+        return {"error": str(e)}

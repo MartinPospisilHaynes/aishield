@@ -1,7 +1,7 @@
 """
 AIshield.cz — Outbound Email Engine
 Posílání personalizovaných compliance emailů přes Resend API.
-Limity: max 200/den, max 3 na firmu, unsubscribe tracking.
+S ochranou domény: warm-up, bounce/complaint tracking, spam rate monitoring.
 """
 
 import httpx
@@ -13,11 +13,15 @@ from backend.outbound.email_templates import (
     get_outbound_email,
     get_followup_email,
 )
+from backend.outbound.deliverability import (
+    get_email_health,
+    check_domain_limit,
+    is_email_blacklisted,
+)
 
-# Denní limit emailů
-DAILY_LIMIT = 200
+# Max emailů na jednu firmu (1. email + 2 follow-upy)
 MAX_EMAILS_PER_COMPANY = 3
-FOLLOWUP_DAYS = 7  # Kolik dní čekat na follow-up
+FOLLOWUP_DAYS = 7
 
 
 async def send_email(
@@ -86,37 +90,44 @@ async def run_email_campaign(
     limit: int = 50,
 ) -> dict:
     """
-    Hlavní email kampaň:
-    1. Najdi firmy ke kontaktování
-    2. Pro každou sestav personalizovaný email
-    3. Odešli (nebo dry_run)
-    4. Ulož do DB
+    Hlavní email kampaň s ochranou domény:
+    1. Zkontroluj zdraví domény (spam rate, bounce rate)
+    2. Zjisti warm-up limit (kolik můžeme dnes poslat)
+    3. Najdi firmy ke kontaktování
+    4. Pro každou zkontroluj blacklist + domain limit
+    5. Sestav personalizovaný email
+    6. Odešli + zaloguj
     """
     supabase = get_supabase()
     stats = {
         "total_candidates": 0,
         "emails_sent": 0,
         "followups_sent": 0,
+        "skipped_blacklisted": 0,
+        "skipped_domain_limit": 0,
         "errors": 0,
         "daily_limit_reached": False,
+        "campaign_stopped": False,
     }
 
-    # Kontrola denního limitu
-    today = datetime.utcnow().date().isoformat()
-    sent_today_res = supabase.table("email_log").select(
-        "id", count="exact"
-    ).gte("sent_at", today).execute()
-    sent_today = sent_today_res.count or 0
+    # 1. Kontrola zdraví domény
+    health = await get_email_health()
 
-    if sent_today >= DAILY_LIMIT:
-        stats["daily_limit_reached"] = True
-        print(f"[Email] Denní limit dosažen ({sent_today}/{DAILY_LIMIT})")
+    if not health["is_healthy"]:
+        stats["campaign_stopped"] = True
+        stats["warnings"] = health["warnings"]
+        print(f"[Email] 🚨 Kampaň ZASTAVENA — doména nezdravá: {health['warnings']}")
         return stats
 
-    remaining = DAILY_LIMIT - sent_today
+    if not health["can_send"]:
+        stats["daily_limit_reached"] = True
+        print(f"[Email] Denní warm-up limit dosažen ({health['sent_today']}/{health['warmup_limit']})")
+        return stats
+
+    remaining = health["remaining_today"]
     actual_limit = min(limit, remaining)
 
-    # Načíst firmy
+    # 2. Načíst firmy
     companies = await get_companies_to_email(actual_limit)
     stats["total_candidates"] = len(companies)
 
@@ -128,6 +139,16 @@ async def run_email_campaign(
         emails_sent = company.get("emails_sent", 0)
 
         if not email or not url:
+            continue
+
+        # Blacklist check
+        if await is_email_blacklisted(email):
+            stats["skipped_blacklisted"] += 1
+            continue
+
+        # Per-domain rate limit
+        if not await check_domain_limit(email):
+            stats["skipped_domain_limit"] += 1
             continue
 
         # Najdi top finding

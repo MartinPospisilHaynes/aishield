@@ -381,3 +381,26 @@ export async function getAdminCompanies(status = "all", limit = 50) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
+
+export interface EmailHealth {
+    domain: string;
+    warmup_day: number;
+    daily_limit: number;
+    sent_today: number;
+    remaining_today: number;
+    total_sent: number;
+    total_bounced: number;
+    total_complained: number;
+    bounce_rate: number;
+    complaint_rate: number;
+    spam_rate: number;
+    blacklisted_count: number;
+    unsubscribed_count: number;
+    warnings: string[];
+}
+
+export async function getEmailHealth(): Promise<EmailHealth> {
+    const res = await fetch(`${API_URL}/api/admin/email-health`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}

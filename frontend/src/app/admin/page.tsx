@@ -6,7 +6,9 @@ import {
     runAdminTask,
     getAdminEmailLog,
     getAdminCompanies,
+    getEmailHealth,
     AdminStats,
+    EmailHealth,
 } from "@/lib/api";
 
 // ── Typy ──
@@ -45,6 +47,7 @@ export default function AdminPage() {
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [emails, setEmails] = useState<EmailLogEntry[]>([]);
     const [companies, setCompanies] = useState<CompanyEntry[]>([]);
+    const [health, setHealth] = useState<EmailHealth | null>(null);
     const [tab, setTab] = useState<Tab>("prehled");
     const [loading, setLoading] = useState(true);
     const [runningTask, setRunningTask] = useState<string | null>(null);
@@ -52,8 +55,9 @@ export default function AdminPage() {
 
     const loadStats = useCallback(async () => {
         try {
-            const data = await getAdminStats();
+            const [data, h] = await Promise.all([getAdminStats(), getEmailHealth()]);
             setStats(data);
+            setHealth(h);
         } catch {
             console.error("Chyba při načítání stats");
         }
@@ -175,6 +179,53 @@ export default function AdminPage() {
                                 </pre>
                             )}
                         </div>
+
+                        {/* Email Health */}
+                        {health && (
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                                <h2 className="text-lg font-semibold mb-4 text-cyan-400">🛡️ Doručitelnost emailů</h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                    <div className="bg-black/30 rounded-xl p-3">
+                                        <div className="text-xs text-gray-400">Warm-up den</div>
+                                        <div className="text-xl font-bold text-fuchsia-400">{health.warmup_day}/28</div>
+                                        <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
+                                            <div className="bg-fuchsia-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, (health.warmup_day / 28) * 100)}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className="bg-black/30 rounded-xl p-3">
+                                        <div className="text-xs text-gray-400">Denní limit</div>
+                                        <div className="text-xl font-bold text-cyan-400">{health.sent_today} / {health.daily_limit}</div>
+                                        <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
+                                            <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${health.daily_limit > 0 ? Math.min(100, (health.sent_today / health.daily_limit) * 100) : 0}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className="bg-black/30 rounded-xl p-3">
+                                        <div className="text-xs text-gray-400">Bounce rate</div>
+                                        <div className={`text-xl font-bold ${health.bounce_rate > 5 ? "text-red-400" : health.bounce_rate > 2 ? "text-yellow-400" : "text-green-400"}`}>{health.bounce_rate.toFixed(1)}%</div>
+                                        <div className="text-xs text-gray-500">{health.total_bounced} bounců z {health.total_sent}</div>
+                                    </div>
+                                    <div className="bg-black/30 rounded-xl p-3">
+                                        <div className="text-xs text-gray-400">Spam rate</div>
+                                        <div className={`text-xl font-bold ${health.spam_rate > 0.1 ? "text-red-400" : health.spam_rate > 0.05 ? "text-yellow-400" : "text-green-400"}`}>{health.spam_rate.toFixed(2)}%</div>
+                                        <div className="text-xs text-gray-500">{health.total_complained} stížností</div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 text-xs text-gray-400 mb-3">
+                                    <span>🚫 Blacklist: {health.blacklisted_count}</span>
+                                    <span>📭 Odhlášeno: {health.unsubscribed_count}</span>
+                                    <span>📧 Celkem odesláno: {health.total_sent}</span>
+                                </div>
+                                {health.warnings.length > 0 && (
+                                    <div className="space-y-1">
+                                        {health.warnings.map((w, i) => (
+                                            <div key={i} className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                                                ⚠️ {w}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Cron schedule */}
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">

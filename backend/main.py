@@ -18,6 +18,7 @@ from backend.api.documents import router as documents_router
 from backend.api.payments import router as payments_router
 from backend.api.dashboard import router as dashboard_router
 from backend.api.admin import router as admin_router
+from backend.api.unsubscribe import router as unsubscribe_router
 
 # ── Vytvoření aplikace ──
 app = FastAPI(
@@ -50,6 +51,7 @@ app.include_router(documents_router, prefix="/api", tags=["Documents"])
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(unsubscribe_router, prefix="/api", tags=["Unsubscribe"])
 
 
 @app.get("/")
