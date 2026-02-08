@@ -266,3 +266,75 @@ export async function getPaymentStatus(
 
     return res.json();
 }
+
+// ── Dashboard ──
+
+export interface DashboardCompany {
+    id: string;
+    name: string;
+    url: string;
+    created_at: string;
+}
+
+export interface DashboardScan {
+    id: string;
+    url: string;
+    status: string;
+    total_findings: number;
+    created_at: string;
+    finished_at: string | null;
+}
+
+export interface DashboardFinding {
+    id: string;
+    name: string;
+    category: string;
+    risk_level: string;
+    ai_act_article: string;
+    action_required: string;
+    confirmed_by_client: string | null;
+    status: string;
+}
+
+export interface DashboardDocument {
+    id: string;
+    template_key: string;
+    name: string;
+    file_url: string;
+    created_at: string;
+}
+
+export interface DashboardOrder {
+    order_number: string;
+    plan: string;
+    amount: number;
+    status: string;
+    created_at: string;
+    paid_at: string | null;
+}
+
+export interface DashboardData {
+    company: DashboardCompany | null;
+    scans: DashboardScan[];
+    findings: DashboardFinding[];
+    documents: DashboardDocument[];
+    orders: DashboardOrder[];
+    questionnaire_status: string;
+    compliance_score: number | null;
+}
+
+/**
+ * Načte dashboard data pro přihlášeného uživatele.
+ */
+export async function getDashboardData(
+    email: string,
+): Promise<DashboardData> {
+    const res = await fetch(`${API_URL}/api/dashboard/${encodeURIComponent(email)}`);
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}

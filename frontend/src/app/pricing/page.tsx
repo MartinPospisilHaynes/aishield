@@ -157,11 +157,10 @@ export default function PricingPage() {
                     {plans.map((plan) => (
                         <div
                             key={plan.key}
-                            className={`relative rounded-2xl border p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${
-                                plan.highlighted
+                            className={`relative rounded-2xl border p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
                                     ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
                                     : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
-                            }`}
+                                }`}
                         >
                             {/* Badge */}
                             {"badge" in plan && plan.badge && (
@@ -177,11 +176,10 @@ export default function PricingPage() {
 
                             {/* Icon + Name */}
                             <div className="flex items-center gap-3 mb-4">
-                                <div className={`p-2.5 rounded-xl ${
-                                    plan.highlighted
+                                <div className={`p-2.5 rounded-xl ${plan.highlighted
                                         ? "bg-fuchsia-500/10 text-fuchsia-400"
                                         : "bg-white/5 text-slate-400"
-                                }`}>
+                                    }`}>
                                     {plan.icon}
                                 </div>
                                 <h3 className="text-lg font-bold tracking-wide">{plan.name}</h3>
@@ -189,9 +187,8 @@ export default function PricingPage() {
 
                             {/* Price */}
                             <div className="mb-1">
-                                <span className={`text-4xl font-extrabold ${
-                                    plan.highlighted ? "neon-text" : "text-white"
-                                }`}>
+                                <span className={`text-4xl font-extrabold ${plan.highlighted ? "neon-text" : "text-white"
+                                    }`}>
                                     {plan.price}
                                 </span>
                                 <span className="text-slate-500 ml-1">Kč</span>
@@ -206,9 +203,8 @@ export default function PricingPage() {
                             <ul className="flex-1 space-y-3 mb-8">
                                 {plan.features.map((feature) => (
                                     <li key={feature} className="flex items-start gap-2.5 text-sm">
-                                        <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                                            plan.highlighted ? "text-fuchsia-400" : "text-cyan-400"
-                                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.highlighted ? "text-fuchsia-400" : "text-cyan-400"
+                                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                         <span className="text-slate-300">{feature}</span>
@@ -228,13 +224,12 @@ export default function PricingPage() {
                             <button
                                 onClick={() => handleCheckout(plan.key)}
                                 disabled={loading === plan.key}
-                                className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                    plan.highlighted
+                                className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${plan.highlighted
                                         ? "btn-primary"
                                         : plan.key === "enterprise"
-                                        ? "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
-                                        : "btn-secondary"
-                                }`}
+                                            ? "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
+                                            : "btn-secondary"
+                                    }`}
                             >
                                 {loading === plan.key ? "Přesměrování na platbu..." : plan.cta}
                             </button>
@@ -248,25 +243,25 @@ export default function PricingPage() {
                     <div className="flex items-center justify-center gap-6 text-slate-500">
                         <div className="flex items-center gap-2 text-xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M2 6.5A2.5 2.5 0 014.5 4h15A2.5 2.5 0 0122 6.5v11a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 17.5v-11zM4 9h16v2H4V9z"/>
+                                <path d="M2 6.5A2.5 2.5 0 014.5 4h15A2.5 2.5 0 0122 6.5v11a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 17.5v-11zM4 9h16v2H4V9z" />
                             </svg>
                             Platební karty
                         </div>
                         <div className="flex items-center gap-2 text-xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm3-1a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1H6zm2 4h8v2H8V9zm0 4h5v2H8v-2z"/>
+                                <path d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm3-1a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1H6zm2 4h8v2H8V9zm0 4h5v2H8v-2z" />
                             </svg>
                             Bankovní převod
                         </div>
                         <div className="flex items-center gap-2 text-xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.0425 12.8656C17.0258 10.7904 18.7566 9.78103 18.8345 9.73195C17.8576 8.30979 16.3438 8.11469 15.8186 8.09808C14.5163 7.9637 13.2524 8.89476 12.5894 8.89476C11.9126 8.89476 10.8888 8.11195 9.79262 8.13407C8.36772 8.15619 7.04268 8.98889 6.30983 10.2884C4.80725 12.9293 5.93041 16.8154 7.36637 19.0447C8.08541 20.1367 8.92431 21.3524 10.0199 21.3138C11.0929 21.2724 11.4892 20.6264 12.7777 20.6264C14.0538 20.6264 14.4266 21.3138 15.5427 21.2889C16.6934 21.2724 17.4166 20.1781 18.1112 19.0778C18.9432 17.8207 19.2691 16.5885 19.2829 16.5305C19.2588 16.5222 17.0618 15.6475 17.0425 12.8656z"/>
+                                <path d="M17.0425 12.8656C17.0258 10.7904 18.7566 9.78103 18.8345 9.73195C17.8576 8.30979 16.3438 8.11469 15.8186 8.09808C14.5163 7.9637 13.2524 8.89476 12.5894 8.89476C11.9126 8.89476 10.8888 8.11195 9.79262 8.13407C8.36772 8.15619 7.04268 8.98889 6.30983 10.2884C4.80725 12.9293 5.93041 16.8154 7.36637 19.0447C8.08541 20.1367 8.92431 21.3524 10.0199 21.3138C11.0929 21.2724 11.4892 20.6264 12.7777 20.6264C14.0538 20.6264 14.4266 21.3138 15.5427 21.2889C16.6934 21.2724 17.4166 20.1781 18.1112 19.0778C18.9432 17.8207 19.2691 16.5885 19.2829 16.5305C19.2588 16.5222 17.0618 15.6475 17.0425 12.8656z" />
                             </svg>
                             Apple Pay
                         </div>
                         <div className="flex items-center gap-2 text-xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.2 10.5c-.18-.64-.74-1.18-1.5-1.18h-2.44l-1.64-2.76C14.24 6.02 13.64 5.7 13 5.68H11c-.64.02-1.24.34-1.62.88L7.74 9.32H5.3c-.76 0-1.32.54-1.5 1.18L3 14.86c-.14.5.04 1.06.44 1.42.32.28.72.42 1.12.42H19.44c.4 0 .8-.14 1.12-.42.4-.36.58-.92.44-1.42l-.8-4.36z"/>
+                                <path d="M20.2 10.5c-.18-.64-.74-1.18-1.5-1.18h-2.44l-1.64-2.76C14.24 6.02 13.64 5.7 13 5.68H11c-.64.02-1.24.34-1.62.88L7.74 9.32H5.3c-.76 0-1.32.54-1.5 1.18L3 14.86c-.14.5.04 1.06.44 1.42.32.28.72.42 1.12.42H19.44c.4 0 .8-.14 1.12-.42.4-.36.58-.92.44-1.42l-.8-4.36z" />
                             </svg>
                             Google Pay
                         </div>
