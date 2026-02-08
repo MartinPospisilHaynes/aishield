@@ -470,7 +470,7 @@ function ScanPageInner() {
                             </p>
                             {scanId && scanResult && (
                                 <a
-                                    href={`/questionnaire?company_id=${scanResult.company_id}&scan_id=${scanId}`}
+                                    href={`/dotaznik?company_id=${scanResult.company_id}&scan_id=${scanId}`}
                                     className="inline-block mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition"
                                 >
                                     📝 Vyplnit dotazník →
