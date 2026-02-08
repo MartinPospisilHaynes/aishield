@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "@/components/providers";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
     title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
@@ -43,49 +45,12 @@ export default function RootLayout({
                 />
             </head>
             <body className="bg-dark-900 text-slate-100">
-                {/* ── Header ── */}
-                <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
-                    <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                        <a href="/" className="flex items-center gap-2 group">
-                            <span className="text-2xl font-extrabold tracking-tighter">
-                                <span className="text-white">AI</span>
-                                <span className="neon-text">shield</span>
-                                <span className="text-slate-500 text-sm font-normal ml-0.5">.cz</span>
-                            </span>
-                        </a>
+                <Providers>
+                    {/* ── Header ── */}
+                    <Header />
 
-                        <div className="hidden md:flex items-center gap-8">
-                            <a href="/scan" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
-                                Skenovat web
-                            </a>
-                            <a href="/dotaznik" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
-                                Dotazník
-                            </a>
-                            <a href="/pricing" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
-                                Ceník
-                            </a>
-                            <a href="/about" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
-                                Jak to funguje
-                            </a>
-                            <a href="/login" className="btn-secondary text-sm px-4 py-2">
-                                Přihlásit se
-                            </a>
-                            <a href="/scan" className="btn-primary text-sm px-4 py-2">
-                                Skenovat ZDARMA
-                            </a>
-                        </div>
-
-                        {/* Mobile menu button */}
-                        <button className="md:hidden text-slate-400 hover:text-white" aria-label="Menu">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                    </nav>
-                </header>
-
-                {/* ── Main Content ── */}
-                <main className="min-h-screen">{children}</main>
+                    {/* ── Main Content ── */}
+                    <main className="min-h-screen">{children}</main>
 
                 {/* ── Footer ── */}
                 <footer className="border-t border-white/[0.06] bg-dark-950">
@@ -145,6 +110,7 @@ export default function RootLayout({
                         </div>
                     </div>
                 </footer>
+                </Providers>
             </body>
         </html>
     );
