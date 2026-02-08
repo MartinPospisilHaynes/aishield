@@ -394,10 +394,27 @@ export default function ScanPage() {
 
                         {/* CTA */}
                         <div className="card bg-shield-50 border border-shield-200 text-center">
-                            <h3 className="font-semibold text-shield-900">💡 Chcete podrobnou analýzu?</h3>
+                            <h3 className="font-semibold text-shield-900">� Stáhnout compliance report</h3>
                             <p className="text-sm text-shield-700 mt-2">
-                                Tento sken je základní (FREE). Pro detailní AI Act compliance report
-                                s doporučeními objednejte placenou verzi.
+                                Kompletní HTML report s doporučeními dle EU AI Act — pro tisk nebo sdílení.
+                            </p>
+                            {scanId && (
+                                <a
+                                    href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/scan/${scanId}/report`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block mt-4 btn-primary"
+                                >
+                                    📄 Zobrazit report →
+                                </a>
+                            )}
+                        </div>
+
+                        <div className="card bg-gray-50 border border-gray-200 text-center">
+                            <h3 className="font-semibold text-gray-900">💡 Chcete podrobnou analýzu?</h3>
+                            <p className="text-sm text-gray-600 mt-2">
+                                Tento sken je základní (FREE). Pro detailní AI Act compliance audit
+                                s právními doporučeními objednejte placenou verzi.
                             </p>
                             <a href="/pricing" className="inline-block mt-4 btn-primary">
                                 Zobrazit ceník →

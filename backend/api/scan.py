@@ -5,9 +5,11 @@ Skutečný scanner přijde v Fázi B (úkoly 6-10).
 """
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, field_validator
 from backend.database import get_supabase
 from backend.scanner.pipeline import run_scan_pipeline
+from backend.scanner.report import generate_html_report, ReportData
 from datetime import datetime, timezone
 import re
 
@@ -212,4 +214,76 @@ async def get_scan_findings(scan_id: str):
         raise HTTPException(
             status_code=500,
             detail=f"Chyba při čtení nálezů: {str(e)}",
+        )
+
+
+@router.get("/scan/{scan_id}/report", response_class=HTMLResponse)
+async def get_scan_report(scan_id: str):
+    """Vygeneruje HTML compliance report pro daný sken."""
+    supabase = get_supabase()
+
+    try:
+        # 1. Načteme scan data
+        scan_result = supabase.table("scans").select(
+            "id, url_scanned, status, total_findings, started_at, finished_at, "
+            "duration_seconds, company_id, screenshot_full_url"
+        ).eq("id", scan_id).limit(1).execute()
+
+        if not scan_result.data:
+            raise HTTPException(status_code=404, detail="Sken nenalezen")
+
+        scan = scan_result.data[0]
+
+        if scan["status"] != "done":
+            raise HTTPException(status_code=400, detail="Sken ještě není dokončen")
+
+        # 2. Načteme firmu
+        company = supabase.table("companies").select("name").eq(
+            "id", scan["company_id"]
+        ).limit(1).execute()
+        company_name = company.data[0]["name"] if company.data else "Neznámá firma"
+
+        # 3. Načteme findings
+        findings_result = supabase.table("findings").select(
+            "name, category, risk_level, ai_act_article, action_required, "
+            "ai_classification_text, signature_matched, source, confirmed_by_client"
+        ).eq("scan_id", scan_id).execute()
+
+        deployed = []
+        false_positives = []
+        for f in findings_result.data:
+            if f.get("source") == "ai_classified_fp":
+                false_positives.append(f)
+            else:
+                deployed.append(f)
+
+        ai_classified = any(
+            f.get("source") in ("ai_classified", "ai_classified_fp")
+            for f in findings_result.data
+        )
+
+        # 4. Generujeme report
+        report_data = ReportData(
+            scan_id=scan_id,
+            url=scan["url_scanned"],
+            company_name=company_name,
+            started_at=scan.get("started_at", ""),
+            finished_at=scan.get("finished_at", ""),
+            duration_seconds=scan.get("duration_seconds", 0) or 0,
+            total_findings=len(deployed),
+            ai_classified=ai_classified,
+            findings=deployed,
+            false_positives=false_positives,
+            screenshot_url=scan.get("screenshot_full_url"),
+        )
+
+        html = generate_html_report(report_data)
+        return HTMLResponse(content=html)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při generování reportu: {str(e)}",
         )
