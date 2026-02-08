@@ -1,0 +1,85 @@
+"""
+AIshield.cz — Documents API
+Endpointy pro generování a stahování compliance dokumentů.
+"""
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from backend.documents.templates import TEMPLATE_NAMES
+from backend.documents.pipeline import (
+    generate_compliance_kit,
+    generate_single_document,
+)
+
+router = APIRouter(prefix="/documents")
+
+
+# ── Modely ──
+
+class GenerateKitResponse(BaseModel):
+    client_id: str
+    company_name: str
+    documents: list[dict]
+    errors: list[str]
+    generated_at: str
+    summary: dict
+
+
+class GenerateDocResponse(BaseModel):
+    template_key: str
+    template_name: str
+    filename: str
+    download_url: str
+    size_bytes: int
+    format: str
+    generated_at: str
+
+
+# ── Endpointy ──
+
+@router.get("/templates")
+async def list_templates():
+    """Seznam dostupných šablon dokumentů."""
+    return {
+        "templates": [
+            {"key": key, "name": name}
+            for key, name in TEMPLATE_NAMES.items()
+        ],
+        "total": len(TEMPLATE_NAMES),
+    }
+
+
+@router.post("/generate/{client_id}", response_model=GenerateKitResponse)
+async def generate_kit(client_id: str):
+    """
+    Vygeneruje kompletní AI Act Compliance Kit (7 dokumentů).
+    Načte data z posledního skenu + dotazníku → HTML → PDF → Supabase Storage.
+    """
+    try:
+        result = await generate_compliance_kit(client_id)
+        return result.to_dict()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při generování Compliance Kitu: {str(e)}",
+        )
+
+
+@router.post("/generate/{client_id}/{template_key}", response_model=GenerateDocResponse)
+async def generate_doc(client_id: str, template_key: str):
+    """Vygeneruje jeden konkrétní dokument."""
+    if template_key not in TEMPLATE_NAMES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Neznámá šablona: {template_key}. Dostupné: {list(TEMPLATE_NAMES.keys())}",
+        )
+
+    try:
+        doc = await generate_single_document(client_id, template_key)
+        return doc
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při generování dokumentu: {str(e)}",
+        )
