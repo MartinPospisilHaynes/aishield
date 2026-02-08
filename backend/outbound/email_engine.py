@@ -53,23 +53,29 @@ async def send_email(
 async def get_companies_to_email(limit: int = 50) -> list[dict]:
     """
     Vrátí firmy, kterým je potřeba poslat email:
-    - Jsou naskenované (mají findings)
+    - Jsou kvalifikované (mají AI findings)
     - Mají email
+    - Lead tier je HOT nebo WARM (COOL a COLD přeskakujeme)
     - Ještě nedostaly max počet emailů
     - Nejsou unsubscribed
+    Řazeno dle lead_score DESC (nejlepší leady první).
     """
     supabase = get_supabase()
 
     res = supabase.table("companies").select(
         "*, scans(id, total_findings), findings(name, risk_level, ai_act_article)"
+    ).in_(
+        "prospecting_status", ["qualified"]
+    ).in_(
+        "lead_tier", ["HOT", "WARM"]
     ).eq(
         "scan_status", "scanned"
     ).neq(
         "email", ""
-    ).neq(
-        "prospecting_status", "unsubscribed"
     ).lt(
         "emails_sent", MAX_EMAILS_PER_COMPANY
+    ).order(
+        "lead_score", desc=True
     ).limit(limit).execute()
 
     return res.data or []

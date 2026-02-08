@@ -13,6 +13,12 @@ from datetime import datetime, timedelta
 
 from backend.database import get_supabase
 from backend.prospecting.pipeline import run_prospecting, get_companies_to_scan
+from backend.prospecting.smart_pipeline import (
+    phase_gather_companies,
+    phase_scan_websites,
+    phase_qualify_leads,
+    phase_find_emails,
+)
 from backend.outbound.email_engine import run_email_campaign
 
 
@@ -116,39 +122,40 @@ async def task_monitoring():
 
 
 async def task_prospecting():
-    """04:00 — Načti nové firmy z ARES."""
-    result = await run_prospecting(max_companies=100)
+    """04:00 — Načti nové firmy ze VŠECH zdrojů (Shoptet + Heureka + ARES)."""
+    result = await phase_gather_companies(
+        sources=["shoptet", "heureka", "ares"],
+        max_per_source=100,
+    )
     return result
 
 
 async def task_scanning():
-    """05:00 — Skenuj nové firmy z prospecting fronty."""
-    from backend.scanner import run_scan
-    companies = await get_companies_to_scan(limit=50)
-    scanned = 0
-    errors = 0
+    """05:00 — Skenuj nové firmy + kvalifikuj leady + lead scoring."""
+    scan_result = await phase_scan_websites(limit=50)
+    qualify_result = await phase_qualify_leads()
+    # Lead scoring
+    from backend.prospecting.lead_scoring import score_all_leads
+    scoring_result = await score_all_leads()
+    return {
+        "scan": scan_result,
+        "qualify": qualify_result,
+        "scoring": scoring_result,
+    }
 
-    for company in companies:
-        url = company.get("url", "")
-        if not url:
-            continue
-        try:
-            await run_scan(url)
-            # Označ jako naskenovanou
-            supabase = get_supabase()
-            supabase.table("companies").update({
-                "scan_status": "scanned",
-            }).eq("ico", company["ico"]).execute()
-            scanned += 1
-        except Exception as e:
-            errors += 1
-            print(f"[Scanning] Chyba při skenu {url}: {e}")
 
-    return {"scanned": scanned, "errors": errors}
+async def task_find_emails():
+    """06:00 — Najdi emaily pro kvalifikované firmy (mají AI findings)."""
+    result = await phase_find_emails(
+        use_playwright=True,
+        use_vision=False,  # Vision jen manuálně (náklady)
+        limit=50,
+    )
+    return result
 
 
 async def task_emailing():
-    """08:00 — Pošli emaily naskenovaným firmám."""
+    """08:00 — Pošli emaily POUZE kvalifikovaným firmám s emailem."""
     result = await run_email_campaign(dry_run=False, limit=100)
     return result
 
@@ -170,6 +177,7 @@ SCHEDULE = {
     "monitoring": task_monitoring,
     "prospecting": task_prospecting,
     "scanning": task_scanning,
+    "find_emails": task_find_emails,
     "emailing": task_emailing,
     "reporting": task_reporting,
 }
@@ -199,7 +207,7 @@ async def run_task(task_name: str) -> dict:
 async def run_all_tasks():
     """Spustí všechny úlohy v pořadí (pro manuální spuštění)."""
     results = []
-    for name in ["monitoring", "prospecting", "scanning", "emailing", "reporting"]:
+    for name in ["monitoring", "prospecting", "scanning", "find_emails", "emailing", "reporting"]:
         result = await run_task(name)
         results.append(result)
     return results
@@ -216,6 +224,7 @@ def main():
     0 3 * * * cd /opt/aishield && python -m backend.outbound.orchestrator monitoring
     0 4 * * * cd /opt/aishield && python -m backend.outbound.orchestrator prospecting
     0 5 * * * cd /opt/aishield && python -m backend.outbound.orchestrator scanning
+    0 6 * * * cd /opt/aishield && python -m backend.outbound.orchestrator find_emails
     0 8 * * * cd /opt/aishield && python -m backend.outbound.orchestrator emailing
     0 20 * * * cd /opt/aishield && python -m backend.outbound.orchestrator reporting
     """
