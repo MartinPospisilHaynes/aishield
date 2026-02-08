@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── AIshield Global Styles ── */
+
+@layer base {
+    :root {
+        --shield-primary: #6366f1;
+        --shield-dark: #1e1b4b;
+        --shield-accent: #e94560;
+    }
+
+    body {
+        @apply bg-white text-gray-900 antialiased;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply font-bold tracking-tight;
+    }
+}
+
+@layer components {
+
+    /* Primární tlačítko */
+    .btn-primary {
+        @apply inline-flex items-center justify-center rounded-lg bg-shield-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-shield-700 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-shield-600;
+    }
+
+    /* Sekundární tlačítko */
+    .btn-secondary {
+        @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors;
+    }
+
+    /* Danger tlačítko */
+    .btn-danger {
+        @apply inline-flex items-center justify-center rounded-lg bg-danger-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-danger-600 transition-colors;
+    }
+
+    /* Karta */
+    .card {
+        @apply rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow;
+    }
+
+    /* Badge rizika */
+    .badge-minimal {
+        @apply inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700;
+    }
+
+    .badge-limited {
+        @apply inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700;
+    }
+
+    .badge-high {
+        @apply inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700;
+    }
+
+    .badge-unacceptable {
+        @apply inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700;
+    }
+}
