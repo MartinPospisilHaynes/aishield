@@ -13,6 +13,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 from backend.api.health import router as health_router
 from backend.api.scan import router as scan_router
+from backend.api.questionnaire import router as questionnaire_router
 
 # ── Vytvoření aplikace ──
 app = FastAPI(
@@ -40,6 +41,7 @@ app.add_middleware(
 # ── Registrace routerů ──
 app.include_router(health_router, prefix="/api", tags=["Health"])
 app.include_router(scan_router, prefix="/api", tags=["Scanner"])
+app.include_router(questionnaire_router, prefix="/api", tags=["Questionnaire"])
 
 
 @app.get("/")

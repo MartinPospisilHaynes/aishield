@@ -463,7 +463,23 @@ export default function ScanPage() {
                         </div>
 
                         <div className="card bg-gray-50 border border-gray-200 text-center">
-                            <h3 className="font-semibold text-gray-900">💡 Chcete podrobnou analýzu?</h3>
+                            <h3 className="font-semibold text-gray-900">� Interní AI dotazník</h3>
+                            <p className="text-sm text-gray-600 mt-2">
+                                Skener vidí jen web — vyplňte 5minutový dotazník o interních AI systémech
+                                (ChatGPT, Copilot, HR AI...) pro kompletní compliance přehled.
+                            </p>
+                            {scanId && scanResult && (
+                                <a
+                                    href={`/questionnaire?company_id=${scanResult.company_id}&scan_id=${scanId}`}
+                                    className="inline-block mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition"
+                                >
+                                    📝 Vyplnit dotazník →
+                                </a>
+                            )}
+                        </div>
+
+                        <div className="card bg-gray-50 border border-gray-200 text-center">
+                            <h3 className="font-semibold text-gray-900">�💡 Chcete podrobnou analýzu?</h3>
                             <p className="text-sm text-gray-600 mt-2">
                                 Tento sken je základní (FREE). Pro detailní AI Act compliance audit
                                 s právními doporučeními objednejte placenou verzi.

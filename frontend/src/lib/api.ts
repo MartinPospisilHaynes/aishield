@@ -139,3 +139,77 @@ export async function confirmFinding(
 
     return res.json();
 }
+
+// ── Questionnaire API ──
+
+export interface QuestionnaireAnswer {
+    question_key: string;
+    section: string;
+    answer: string;
+    details: Record<string, string> | null;
+    tool_name: string | null;
+}
+
+export interface QuestionnaireSubmission {
+    company_id: string;
+    scan_id?: string;
+    answers: QuestionnaireAnswer[];
+}
+
+export interface QuestionnaireResult {
+    status: string;
+    saved_count: number;
+    analysis: {
+        total_answers: number;
+        ai_systems_declared: number;
+        risk_breakdown: Record<string, number>;
+        recommendations: Array<{
+            question_key: string;
+            tool_name: string;
+            risk_level: string;
+            ai_act_article: string;
+            recommendation: string;
+            priority: string;
+        }>;
+    };
+}
+
+/**
+ * Odešle vyplněný dotazník — POST /api/questionnaire/submit
+ */
+export async function submitQuestionnaire(
+    submission: QuestionnaireSubmission
+): Promise<QuestionnaireResult> {
+    const res = await fetch(`${API_URL}/api/questionnaire/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submission),
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
+
+/**
+ * Načte kombinovaný report — GET /api/questionnaire/{company_id}/combined-report
+ */
+export async function getCombinedReport(
+    companyId: string,
+    scanId?: string
+): Promise<any> {
+    const params = scanId ? `?scan_id=${scanId}` : "";
+    const res = await fetch(
+        `${API_URL}/api/questionnaire/${companyId}/combined-report${params}`
+    );
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
