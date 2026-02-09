@@ -1,4 +1,4 @@
-"""E2E test: scan + company info + Gemini email + send."""
+"""E2E test: scan + company info + template v5 email + send."""
 import asyncio
 import json
 import os
@@ -32,7 +32,7 @@ async def main():
         for d in detections
     ]
 
-    print("[3] Gemini 2.5 Flash pise email (8000 tokens)...")
+    print("[3] Gemini skloňuje jméno + šablona sestavuje email...")
     result = await write_email(
         company_name=ci.company_name or "Desperados Design",
         company_url="https://www.desperados-design.cz",
@@ -46,7 +46,12 @@ async def main():
     print(f"    html: {len(result.body_html)} znaku")
     print(f"    model: {result.model}, tokens: {result.tokens_used}")
 
-    print("[4] Odesilam email...")
+    # Ulož HTML do souboru pro kontrolu
+    with open("/tmp/email_v5_preview.html", "w") as f:
+        f.write(result.body_html)
+    print("    HTML uložen do /tmp/email_v5_preview.html")
+
+    print("[4] Odesilam email na info@desperados-design.cz...")
     send_result = await send_email(
         to="info@desperados-design.cz",
         subject=result.subject,
