@@ -139,8 +139,8 @@ export default function AdminPage() {
                             key={t.id}
                             onClick={() => setTab(t.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id
-                                    ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
+                                : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }`}
                         >
                             {t.label}
@@ -161,8 +161,8 @@ export default function AdminPage() {
                                         onClick={() => handleRunTask(task.name)}
                                         disabled={runningTask !== null}
                                         className={`p-4 rounded-xl border text-left transition-all ${runningTask === task.name
-                                                ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
-                                                : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
+                                            ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
+                                            : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
                                             }`}
                                     >
                                         <div className="font-medium">{task.label}</div>
@@ -180,46 +180,67 @@ export default function AdminPage() {
                             )}
                         </div>
 
-                        {/* Email Health */}
+                        {/* Email Health — Adaptivní */}
                         {health && (
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <h2 className="text-lg font-semibold mb-4 text-cyan-400">🛡️ Doručitelnost emailů</h2>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold text-cyan-400">🛡️ Doručitelnost emailů</h2>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                        health.mode === "stopped" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                        health.mode === "braking" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                                        health.mode === "accelerating" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                                        health.mode === "startup" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
+                                        "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                    }`}>
+                                        {health.mode === "stopped" ? "🚨 ZASTAVENO" :
+                                         health.mode === "braking" ? "⚠️ BRZDA" :
+                                         health.mode === "accelerating" ? "🚀 ZRYCHLUJE" :
+                                         health.mode === "startup" ? "🏁 START" : "✈️ CRUISE"}
+                                    </span>
+                                </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                     <div className="bg-black/30 rounded-xl p-3">
-                                        <div className="text-xs text-gray-400">Warm-up den</div>
-                                        <div className="text-xl font-bold text-fuchsia-400">{health.warmup_day}/28</div>
-                                        <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
-                                            <div className="bg-fuchsia-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, (health.warmup_day / 28) * 100)}%` }} />
-                                        </div>
-                                    </div>
-                                    <div className="bg-black/30 rounded-xl p-3">
-                                        <div className="text-xs text-gray-400">Denní limit</div>
+                                        <div className="text-xs text-gray-400">Adaptivní limit</div>
                                         <div className="text-xl font-bold text-cyan-400">{health.sent_today} / {health.daily_limit}</div>
                                         <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
                                             <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${health.daily_limit > 0 ? Math.min(100, (health.sent_today / health.daily_limit) * 100) : 0}%` }} />
                                         </div>
                                     </div>
                                     <div className="bg-black/30 rounded-xl p-3">
-                                        <div className="text-xs text-gray-400">Bounce rate</div>
-                                        <div className={`text-xl font-bold ${health.bounce_rate > 5 ? "text-red-400" : health.bounce_rate > 2 ? "text-yellow-400" : "text-green-400"}`}>{health.bounce_rate.toFixed(1)}%</div>
-                                        <div className="text-xs text-gray-500">{health.total_bounced} bounců z {health.total_sent}</div>
+                                        <div className="text-xs text-gray-400">Bounce rate (7d)</div>
+                                        <div className={`text-xl font-bold ${(health.bounce_rate * 100) > 5 ? "text-red-400" : (health.bounce_rate * 100) > 2 ? "text-yellow-400" : "text-green-400"}`}>{(health.bounce_rate * 100).toFixed(1)}%</div>
+                                        <div className="text-xs text-gray-500">{health.bounced_7d} z {health.sent_7d}</div>
                                     </div>
                                     <div className="bg-black/30 rounded-xl p-3">
-                                        <div className="text-xs text-gray-400">Spam rate</div>
-                                        <div className={`text-xl font-bold ${health.spam_rate > 0.1 ? "text-red-400" : health.spam_rate > 0.05 ? "text-yellow-400" : "text-green-400"}`}>{health.spam_rate.toFixed(2)}%</div>
-                                        <div className="text-xs text-gray-500">{health.total_complained} stížností</div>
+                                        <div className="text-xs text-gray-400">Spam rate (7d)</div>
+                                        <div className={`text-xl font-bold ${(health.complaint_rate * 100) > 0.1 ? "text-red-400" : (health.complaint_rate * 100) > 0.05 ? "text-yellow-400" : "text-green-400"}`}>{(health.complaint_rate * 100).toFixed(2)}%</div>
+                                        <div className="text-xs text-gray-500">{health.complained_7d} stížností</div>
+                                    </div>
+                                    <div className="bg-black/30 rounded-xl p-3">
+                                        <div className="text-xs text-gray-400">Open rate (7d)</div>
+                                        <div className={`text-xl font-bold ${(health.open_rate * 100) > 20 ? "text-green-400" : (health.open_rate * 100) > 10 ? "text-cyan-400" : "text-gray-400"}`}>{(health.open_rate * 100).toFixed(0)}%</div>
+                                        <div className="text-xs text-gray-500">{health.opened_7d} otevřeno</div>
                                     </div>
                                 </div>
+                                <div className="bg-black/20 rounded-lg px-4 py-2 mb-3 text-sm text-gray-300">
+                                    {health.adjustment_reason}
+                                </div>
                                 <div className="flex gap-4 text-xs text-gray-400 mb-3">
+                                    <span>📅 Den {health.days_active}</span>
                                     <span>🚫 Blacklist: {health.blacklisted_count}</span>
                                     <span>📭 Odhlášeno: {health.unsubscribed_count}</span>
-                                    <span>📧 Celkem odesláno: {health.total_sent}</span>
+                                    <span>📧 Za 7 dní: {health.sent_7d}</span>
                                 </div>
                                 {health.warnings.length > 0 && (
                                     <div className="space-y-1">
                                         {health.warnings.map((w, i) => (
-                                            <div key={i} className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                                                ⚠️ {w}
+                                            <div key={i} className={`text-xs rounded-lg px-3 py-2 ${
+                                                w.includes("STOP") || w.includes("KRITICKÉ") ? "text-red-400 bg-red-500/10 border border-red-500/20" :
+                                                w.includes("⚠️") ? "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20" :
+                                                w.includes("🚀") ? "text-green-400 bg-green-500/10 border border-green-500/20" :
+                                                "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20"
+                                            }`}>
+                                                {w}
                                             </div>
                                         ))}
                                     </div>
@@ -266,8 +287,8 @@ export default function AdminPage() {
                                             <td className="p-3"><span className="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-400 text-xs">{e.variant}</span></td>
                                             <td className="p-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs ${e.status === "sent" ? "bg-green-500/20 text-green-400"
-                                                        : e.status === "dry_run" ? "bg-yellow-500/20 text-yellow-400"
-                                                            : "bg-gray-500/20 text-gray-400"
+                                                    : e.status === "dry_run" ? "bg-yellow-500/20 text-yellow-400"
+                                                        : "bg-gray-500/20 text-gray-400"
                                                     }`}>{e.status}</span>
                                             </td>
                                         </tr>
@@ -303,8 +324,8 @@ export default function AdminPage() {
                                             <td className="p-3 text-gray-300">{c.email || "—"}</td>
                                             <td className="p-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs ${c.scan_status === "scanned" ? "bg-green-500/20 text-green-400"
-                                                        : c.scan_status === "pending" ? "bg-yellow-500/20 text-yellow-400"
-                                                            : "bg-gray-500/20 text-gray-400"
+                                                    : c.scan_status === "pending" ? "bg-yellow-500/20 text-yellow-400"
+                                                        : "bg-gray-500/20 text-gray-400"
                                                     }`}>{c.scan_status}</span>
                                             </td>
                                             <td className="p-3 text-gray-400">{c.emails_sent || 0}</td>
@@ -337,8 +358,8 @@ export default function AdminPage() {
                                             <td className="p-3 text-white font-medium">{log.task_name}</td>
                                             <td className="p-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs ${log.status === "completed" ? "bg-green-500/20 text-green-400"
-                                                        : log.status === "running" ? "bg-cyan-500/20 text-cyan-400"
-                                                            : "bg-red-500/20 text-red-400"
+                                                    : log.status === "running" ? "bg-cyan-500/20 text-cyan-400"
+                                                        : "bg-red-500/20 text-red-400"
                                                     }`}>{log.status}</span>
                                             </td>
                                             <td className="p-3 text-gray-300 text-xs font-mono truncate max-w-md">

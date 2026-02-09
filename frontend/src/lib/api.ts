@@ -383,19 +383,23 @@ export async function getAdminCompanies(status = "all", limit = 50) {
 }
 
 export interface EmailHealth {
-    domain: string;
-    warmup_day: number;
+    mode: string;
+    adjustment_reason: string;
+    days_active: number;
     daily_limit: number;
     sent_today: number;
     remaining_today: number;
-    total_sent: number;
-    total_bounced: number;
-    total_complained: number;
+    sent_7d: number;
+    bounced_7d: number;
+    complained_7d: number;
+    opened_7d: number;
     bounce_rate: number;
     complaint_rate: number;
-    spam_rate: number;
+    open_rate: number;
     blacklisted_count: number;
     unsubscribed_count: number;
+    is_healthy: boolean;
+    can_send: boolean;
     warnings: string[];
 }
 

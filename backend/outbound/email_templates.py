@@ -20,12 +20,14 @@ def get_outbound_email(
     findings_count: int,
     top_finding: str,
     variant: str = "A",
+    to_email: str = "",
 ) -> EmailVariant:
     """
     Vygeneruje personalizovaný outbound email.
     Obsahuje konkrétní data z analýzy webu dané firmy.
     """
-    unsubscribe = f"https://aishield.cz/unsubscribe?company={company_url}"
+    from urllib.parse import quote
+    unsubscribe = f"https://aishield.cz/api/unsubscribe?email={quote(to_email)}&company={quote(company_url)}"
     scan_link = f"https://aishield.cz/scan?url={company_url}"
 
     if variant == "A":
@@ -133,10 +135,12 @@ def get_followup_email(
     company_name: str,
     company_url: str,
     days_since: int,
+    to_email: str = "",
 ) -> EmailVariant:
     """Follow-up email pro firmy, které nereagovaly."""
+    from urllib.parse import quote
     scan_link = f"https://aishield.cz/scan?url={company_url}"
-    unsubscribe = f"https://aishield.cz/unsubscribe?company={company_url}"
+    unsubscribe = f"https://aishield.cz/api/unsubscribe?email={quote(to_email)}&company={quote(company_url)}"
 
     return EmailVariant(
         subject=f"Připomínka: AI Act compliance pro {company_name}",

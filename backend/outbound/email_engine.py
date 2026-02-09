@@ -36,6 +36,9 @@ async def send_email(
         print(f"[Email] RESEND_API_KEY není nastaven — email neodesílán: {to}")
         return {"id": "dry_run", "status": "skipped"}
 
+    # Reply-To na existující email (Resend odesílá, odpovědi jdou jinam)
+    reply_to = "info@desperados-design.cz"
+
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.post(
             "https://api.resend.com/emails",
@@ -46,8 +49,13 @@ async def send_email(
             json={
                 "from": f"AIshield.cz <{settings.email_from}>",
                 "to": [to],
+                "reply_to": reply_to,
                 "subject": subject,
                 "html": html,
+                "headers": {
+                    "List-Unsubscribe": f"<https://aishield.cz/api/unsubscribe?email={to}>",
+                    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+                },
             },
         )
         response.raise_for_status()
@@ -90,9 +98,9 @@ async def run_email_campaign(
     limit: int = 50,
 ) -> dict:
     """
-    Hlavní email kampaň s ochranou domény:
+    Hlavní email kampaň s adaptivním throttlingem:
     1. Zkontroluj zdraví domény (spam rate, bounce rate)
-    2. Zjisti warm-up limit (kolik můžeme dnes poslat)
+    2. Zjisti adaptivní limit (dle reálných metrik)
     3. Najdi firmy ke kontaktování
     4. Pro každou zkontroluj blacklist + domain limit
     5. Sestav personalizovaný email
@@ -121,7 +129,7 @@ async def run_email_campaign(
 
     if not health["can_send"]:
         stats["daily_limit_reached"] = True
-        print(f"[Email] Denní warm-up limit dosažen ({health['sent_today']}/{health['warmup_limit']})")
+        print(f"[Email] Denní limit dosažen ({health['sent_today']}/{health['daily_limit']})")
         return stats
 
     remaining = health["remaining_today"]
@@ -169,12 +177,14 @@ async def run_email_campaign(
                 findings_count=findings_count,
                 top_finding=top_finding,
                 variant=variant,
+                to_email=email,
             )
         else:
             email_data = get_followup_email(
                 company_name=name,
                 company_url=url,
                 days_since=FOLLOWUP_DAYS * emails_sent,
+                to_email=email,
             )
 
         # Odeslat
