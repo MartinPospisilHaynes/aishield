@@ -253,10 +253,14 @@ def _intro_section(
             a&nbsp;zaujal mě Váš web {display_url}.
         </p>
         <p style="margin: 0 0 14px 0;">
-            Nemusíte se obávat, nic strašného se zatím neděje.
+            Nemusíte se obávat, nic hrozného se zatím neděje.
             Jen jsme Vás chtěli upozornit, že při naší pravidelné kontrole
-            webů a&nbsp;e-shopů v&nbsp;českém online prostředí jsme narazili
-            na váš web {company_url}.
+            webů a&nbsp;e-shopů jsme narazili na Váš web, který bude
+            od 2.&nbsp;srpna 2026 nevyhovující po stránce legislativní
+            kvůli zákonu Evropské unie a&nbsp;blížícímu se
+            <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: none;">AI&nbsp;Act</a>.
+            (Tak jak se před pár lety muselo rychle implementovat GDPR,
+            dnes jsme v&nbsp;podobné situaci, jen kvůli umělé inteligenci.)
         </p>
         <p style="margin: 0 0 14px 0;">
             Jistě je Vám dobře známo, že k&nbsp;2.&nbsp;srpnu 2026
@@ -264,7 +268,7 @@ def _intro_section(
             <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: none;">nařízení Evropské unie (AI Act)</a>,
             dle kterého musejí všechny webové stránky, e-shopy
             a&nbsp;aplikace informovat své uživatele o&nbsp;tom,
-            zda&#8209;li a&nbsp;jak využívají na svých stránkách umělou inteligenci.
+            zda&#8209;li a&nbsp;jak využívají umělou inteligenci na svých stránkách.
         </p>
         <p style="margin: 0 0 4px 0;">
             Bohužel&nbsp;— na vašem webu tyto informace zatím uvedeny nejsou.
