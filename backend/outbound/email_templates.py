@@ -375,11 +375,11 @@ def _deliverables_panel() -> str:
         <tr>
             <td style="padding: 22px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 8px;">
                 <p style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #0c4a6e;">
-                    &#127881; Od toho jsme tady teď kdo? Od toho jsme tady teď my.
+                    Máme pro Vás komplexní řešení
                 </p>
                 <p style="margin: 0 0 16px 0; font-size: 15px; color: {BRAND['text']};">
                     Nemusíte se o&nbsp;nic starat.
-                    Vše vyřešíme za Vás — kompletně, na klíč:
+                    Vše vyřešíme za Vás:
                 </p>
                 <table cellpadding="0" cellspacing="0" width="100%">
                     {rows}
@@ -399,24 +399,16 @@ _SHIELD_SVG = (
 
 
 def _empathy_banner() -> str:
-    """Empatie banner — soustřeďte se na byznys. SVG ikona místo emoji."""
+    """Empatie banner — delegujte na nás."""
     return f"""
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
-        <tr>
-            <td style="padding: 18px 22px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border: 1px solid #c4b5fd; border-radius: 8px; text-align: center;">
-                <p style="margin: 0 0 8px 0;">
-                    <img src="{_SHIELD_SVG}" width="36" height="36" alt="&#128737;"
-                         style="display: inline-block; vertical-align: middle;">
-                </p>
-                <p style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: {BRAND['accent']};">
-                    Chápeme, že se potřebujete soustředit na svůj byznys, ne na byrokracii EU.
-                </p>
-                <p style="margin: 0; font-size: 14px; color: {BRAND['text_light']};">
-                    My rádi pomůžeme — zatímco se Vy budete věnovat tomu, co umíte nejlépe.
-                </p>
-            </td>
-        </tr>
-    </table>"""
+    <div style="margin: 20px 0; font-size: 15px; line-height: 1.7; color: {BRAND['text']};">
+        <p style="margin: 0 0 14px 0;">
+            Nechejte byrokratickou zátěž na nás, vše Vám zařídíme,
+            nebo si můžete zvolit jen některé z&nbsp;našich služeb
+            a&nbsp;dál se můžete věnovat Vašemu obchodu a&nbsp;neplýtvat časem.
+            Delegujte Vaše problémy na nás.
+        </p>
+    </div>"""
 
 
 def _deadline_box() -> str:
