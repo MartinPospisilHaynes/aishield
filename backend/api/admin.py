@@ -126,3 +126,51 @@ async def resend_webhook(request: Request):
         raise
     except Exception as e:
         return {"error": str(e)}
+
+
+# ── Alert / Monitoring Admin ──
+
+
+@router.get("/alerts")
+async def admin_alerts(limit: int = 50):
+    """Vrátí posledních N alertů."""
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    res = supabase.table("alerts").select(
+        "*"
+    ).order("created_at", desc=True).limit(limit).execute()
+
+    return {"alerts": res.data or [], "total": len(res.data or [])}
+
+
+@router.post("/legislative-alert")
+async def admin_legislative_alert(request: Request):
+    """
+    Manuální trigger: Pošli legislativní alert VŠEM platícím klientům.
+    Body: {"title": "...", "body_text": "..."}
+    """
+    from backend.monitoring.alert_system import trigger_legislative_alert
+
+    body = await request.json()
+    title = body.get("title", "Legislativní změna — AI Act")
+    body_text = body.get("body_text", "")
+
+    if not body_text:
+        raise HTTPException(status_code=400, detail="body_text je povinný")
+
+    result = await trigger_legislative_alert(title, body_text)
+    return result
+
+
+@router.get("/diffs")
+async def admin_diffs(limit: int = 20):
+    """Vrátí posledních N diffů (porovnání skenů)."""
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    res = supabase.table("scan_diffs").select(
+        "*"
+    ).order("created_at", desc=True).limit(limit).execute()
+
+    return {"diffs": res.data or [], "total": len(res.data or [])}

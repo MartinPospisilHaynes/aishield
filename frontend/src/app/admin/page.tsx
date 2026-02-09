@@ -7,6 +7,9 @@ import {
     getAdminEmailLog,
     getAdminCompanies,
     getEmailHealth,
+    getAdminAlerts,
+    getAdminDiffs,
+    sendLegislativeAlert,
     AdminStats,
     EmailHealth,
 } from "@/lib/api";
@@ -32,7 +35,30 @@ interface CompanyEntry {
     created_at: string;
 }
 
-type Tab = "prehled" | "emaily" | "firmy" | "logy";
+interface AlertEntry {
+    id: string;
+    company_id: string;
+    alert_type: string;
+    title: string;
+    severity: string;
+    to_email: string;
+    email_sent: boolean;
+    created_at: string;
+}
+
+interface DiffEntry {
+    id: string;
+    company_id: string;
+    has_changes: boolean;
+    added_count: number;
+    removed_count: number;
+    changed_count: number;
+    unchanged_count: number;
+    summary: string;
+    created_at: string;
+}
+
+type Tab = "prehled" | "emaily" | "firmy" | "logy" | "monitoring";
 
 const TASKS = [
     { name: "monitoring", label: "🔍 Monitoring klientů", desc: "Skenuj nasmlouvané klienty" },
@@ -52,6 +78,12 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [runningTask, setRunningTask] = useState<string | null>(null);
     const [taskResult, setTaskResult] = useState<string | null>(null);
+    const [alerts, setAlerts] = useState<AlertEntry[]>([]);
+    const [diffs, setDiffs] = useState<DiffEntry[]>([]);
+    const [legTitle, setLegTitle] = useState("");
+    const [legBody, setLegBody] = useState("");
+    const [legSending, setLegSending] = useState(false);
+    const [legResult, setLegResult] = useState<string | null>(null);
 
     const loadStats = useCallback(async () => {
         try {
@@ -74,6 +106,12 @@ export default function AdminPage() {
         }
         if (tab === "firmy") {
             getAdminCompanies("all", 100).then((d) => setCompanies(d.companies || [])).catch(console.error);
+        }
+        if (tab === "monitoring") {
+            Promise.all([
+                getAdminAlerts(50).then((d) => setAlerts(d.alerts || [])),
+                getAdminDiffs(50).then((d) => setDiffs(d.diffs || [])),
+            ]).catch(console.error);
         }
     }, [tab]);
 
@@ -134,6 +172,7 @@ export default function AdminPage() {
                         { id: "emaily" as Tab, label: "📧 Emaily" },
                         { id: "firmy" as Tab, label: "🏭 Firmy" },
                         { id: "logy" as Tab, label: "📋 Logy" },
+                        { id: "monitoring" as Tab, label: "🔔 Monitoring" },
                     ]).map((t) => (
                         <button
                             key={t.id}
@@ -368,6 +407,161 @@ export default function AdminPage() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                )}
+
+                {tab === "monitoring" && (
+                    <div className="space-y-6">
+                        {/* Legislativní alert */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                            <h2 className="text-lg font-semibold mb-4 text-cyan-400">📢 Legislativní upozornění</h2>
+                            <p className="text-sm text-gray-400 mb-4">Odeslat upozornění VŠEM placeným klientům (např. změna AI Act)</p>
+                            <div className="space-y-3">
+                                <input
+                                    type="text"
+                                    placeholder="Titulek upozornění..."
+                                    value={legTitle}
+                                    onChange={(e) => setLegTitle(e.target.value)}
+                                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-fuchsia-500/50 focus:outline-none"
+                                />
+                                <textarea
+                                    placeholder="Text upozornění..."
+                                    value={legBody}
+                                    onChange={(e) => setLegBody(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-fuchsia-500/50 focus:outline-none resize-none"
+                                />
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={async () => {
+                                            if (!legTitle || !legBody) return;
+                                            setLegSending(true);
+                                            setLegResult(null);
+                                            try {
+                                                const r = await sendLegislativeAlert(legTitle, legBody);
+                                                setLegResult(`✅ Odesláno ${r.sent_count} klientům`);
+                                                setLegTitle("");
+                                                setLegBody("");
+                                            } catch (e) {
+                                                setLegResult(`❌ Chyba: ${e}`);
+                                            } finally {
+                                                setLegSending(false);
+                                            }
+                                        }}
+                                        disabled={legSending || !legTitle || !legBody}
+                                        className="px-6 py-2 bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 rounded-lg hover:bg-fuchsia-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {legSending ? "⏳ Odesílám..." : "🚀 Odeslat všem klientům"}
+                                    </button>
+                                    {legResult && <span className="text-sm">{legResult}</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Alerty */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                            <div className="p-4 border-b border-white/10">
+                                <h2 className="text-lg font-semibold text-cyan-400">🔔 Poslední alerty</h2>
+                            </div>
+                            <table className="w-full text-sm">
+                                <thead className="bg-white/5">
+                                    <tr>
+                                        <th className="text-left p-3 text-gray-400">Čas</th>
+                                        <th className="text-left p-3 text-gray-400">Typ</th>
+                                        <th className="text-left p-3 text-gray-400">Závažnost</th>
+                                        <th className="text-left p-3 text-gray-400">Titulek</th>
+                                        <th className="text-left p-3 text-gray-400">Email</th>
+                                        <th className="text-left p-3 text-gray-400">Odesláno</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {alerts.length === 0 ? (
+                                        <tr><td colSpan={6} className="p-8 text-center text-gray-500">Zatím žádné alerty</td></tr>
+                                    ) : (
+                                        alerts.map((a) => (
+                                            <tr key={a.id} className="border-t border-white/5 hover:bg-white/5">
+                                                <td className="p-3 text-gray-400 whitespace-nowrap">{new Date(a.created_at).toLocaleString("cs")}</td>
+                                                <td className="p-3">
+                                                    <span className="px-2 py-0.5 rounded text-xs bg-fuchsia-500/20 text-fuchsia-400">
+                                                        {a.alert_type}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3">
+                                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                                        a.severity === "critical" ? "bg-red-500/20 text-red-400" :
+                                                        a.severity === "high" ? "bg-orange-500/20 text-orange-400" :
+                                                        a.severity === "medium" ? "bg-yellow-500/20 text-yellow-400" :
+                                                        "bg-cyan-500/20 text-cyan-400"
+                                                    }`}>
+                                                        {a.severity}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 text-gray-300 truncate max-w-xs">{a.title}</td>
+                                                <td className="p-3 text-cyan-400 text-xs">{a.to_email}</td>
+                                                <td className="p-3">
+                                                    {a.email_sent
+                                                        ? <span className="text-green-400">✅</span>
+                                                        : <span className="text-gray-500">—</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Diffy */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                            <div className="p-4 border-b border-white/10">
+                                <h2 className="text-lg font-semibold text-cyan-400">🔄 Změny ve skenech (Diffy)</h2>
+                            </div>
+                            <table className="w-full text-sm">
+                                <thead className="bg-white/5">
+                                    <tr>
+                                        <th className="text-left p-3 text-gray-400">Čas</th>
+                                        <th className="text-left p-3 text-gray-400">Firma</th>
+                                        <th className="text-left p-3 text-gray-400">Přidáno</th>
+                                        <th className="text-left p-3 text-gray-400">Odebráno</th>
+                                        <th className="text-left p-3 text-gray-400">Změněno</th>
+                                        <th className="text-left p-3 text-gray-400">Beze změn</th>
+                                        <th className="text-left p-3 text-gray-400">Souhrn</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {diffs.length === 0 ? (
+                                        <tr><td colSpan={7} className="p-8 text-center text-gray-500">Zatím žádné diffy</td></tr>
+                                    ) : (
+                                        diffs.map((d) => (
+                                            <tr key={d.id} className="border-t border-white/5 hover:bg-white/5">
+                                                <td className="p-3 text-gray-400 whitespace-nowrap">{new Date(d.created_at).toLocaleString("cs")}</td>
+                                                <td className="p-3 text-white font-mono text-xs">{d.company_id}</td>
+                                                <td className="p-3">
+                                                    {d.added_count > 0
+                                                        ? <span className="text-green-400 font-medium">+{d.added_count}</span>
+                                                        : <span className="text-gray-500">0</span>
+                                                    }
+                                                </td>
+                                                <td className="p-3">
+                                                    {d.removed_count > 0
+                                                        ? <span className="text-red-400 font-medium">-{d.removed_count}</span>
+                                                        : <span className="text-gray-500">0</span>
+                                                    }
+                                                </td>
+                                                <td className="p-3">
+                                                    {d.changed_count > 0
+                                                        ? <span className="text-yellow-400 font-medium">~{d.changed_count}</span>
+                                                        : <span className="text-gray-500">0</span>
+                                                    }
+                                                </td>
+                                                <td className="p-3 text-gray-500">{d.unchanged_count}</td>
+                                                <td className="p-3 text-gray-300 truncate max-w-xs text-xs">{d.summary || "—"}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>

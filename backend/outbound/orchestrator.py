@@ -94,31 +94,9 @@ async def log_task(
 
 
 async def task_monitoring():
-    """03:00 — Skenuj nasmlouvané klienty (rescan)."""
-    from backend.scanner import run_scan
-    supabase = get_supabase()
-
-    # Najdi firmy s aktivním předplatným (paid orders)
-    res = supabase.table("orders").select(
-        "user_email"
-    ).eq("status", "paid").execute()
-
-    emails = list(set(row["user_email"] for row in (res.data or [])))
-    scanned = 0
-
-    for email in emails:
-        comp_res = supabase.table("companies").select("url").eq(
-            "email", email
-        ).limit(1).execute()
-        if comp_res.data and comp_res.data[0].get("url"):
-            url = comp_res.data[0]["url"]
-            try:
-                await run_scan(url)
-                scanned += 1
-            except Exception as e:
-                print(f"[Monitoring] Chyba při skenu {url}: {e}")
-
-    return {"scanned_clients": scanned}
+    """03:00 — Skenuj nasmluvné klienty + diff + alerty."""
+    from backend.monitoring.alert_system import run_monitoring_with_alerts
+    return await run_monitoring_with_alerts()
 
 
 async def task_prospecting():
@@ -166,9 +144,26 @@ async def task_reporting():
     if today.day != 1:
         return {"skipped": True, "reason": "Not 1st day of month"}
 
-    stats = await get_stats()
-    # TODO: odeslat měsíční report emailem adminovi
-    return {"report_generated": True, "stats_snapshot": stats}
+    from backend.monitoring.alert_system import send_monthly_report
+    supabase = get_supabase()
+
+    # Všichni platící klienti
+    orders = supabase.table("orders").select(
+        "user_email"
+    ).eq("status", "paid").execute()
+
+    unique_emails = list(set(row["user_email"] for row in (orders.data or [])))
+    sent = 0
+
+    for email in unique_emails:
+        comp = supabase.table("companies").select("id").eq(
+            "email", email
+        ).limit(1).execute()
+        if comp.data:
+            await send_monthly_report(comp.data[0]["id"], email)
+            sent += 1
+
+    return {"monthly_reports_sent": sent}
 
 
 # ── Hlavní orchestrátor ──

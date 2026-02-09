@@ -408,3 +408,27 @@ export async function getEmailHealth(): Promise<EmailHealth> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
+
+// ── Monitoring / Alerts API ──
+
+export async function getAdminAlerts(limit = 50) {
+    const res = await fetch(`${API_URL}/api/admin/alerts?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminDiffs(limit = 20) {
+    const res = await fetch(`${API_URL}/api/admin/diffs?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function sendLegislativeAlert(title: string, bodyText: string) {
+    const res = await fetch(`${API_URL}/api/admin/legislative-alert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body_text: bodyText }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
