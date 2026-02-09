@@ -432,3 +432,52 @@ export async function sendLegislativeAlert(title: string, bodyText: string) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
+
+// ── Agency (Desperados) ──
+
+export interface AgencyClient {
+    name: string;
+    url: string;
+    email?: string;
+    contact_name?: string;
+    notes?: string;
+}
+
+export async function startAgencyBatchScan(clients: AgencyClient[]) {
+    const res = await fetch(`${API_URL}/api/admin/agency/scan-batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clients }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAgencyBatchStatus(batchId: string) {
+    const res = await fetch(`${API_URL}/api/admin/agency/scan-batch/${batchId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAgencyClients() {
+    const res = await fetch(`${API_URL}/api/admin/agency/clients`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function generateAgencyEmail(data: {
+    client_name: string;
+    contact_name: string;
+    url: string;
+    email: string;
+    findings_count?: number;
+    scan_id?: string;
+}) {
+    const res = await fetch(`${API_URL}/api/admin/agency/generate-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}

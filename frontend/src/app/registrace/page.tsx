@@ -1,18 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
+import { Suspense } from "react";
 
-export default function RegistracePage() {
+function RegistraceInner() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [companyName, setCompanyName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [partner, setPartner] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const supabase = createClient();
+
+    useEffect(() => {
+        const p = searchParams.get("partner");
+        if (p) setPartner(p);
+    }, [searchParams]);
 
     async function handleRegister(e: React.FormEvent) {
         e.preventDefault();
@@ -26,6 +34,10 @@ export default function RegistracePage() {
             options: {
                 data: {
                     company_name: companyName,
+                    partner: partner || undefined,
+                    utm_source: searchParams.get("utm_source") || undefined,
+                    utm_medium: searchParams.get("utm_medium") || undefined,
+                    utm_campaign: searchParams.get("utm_campaign") || undefined,
                 },
                 emailRedirectTo: `${window.location.origin}/auth/callback`,
             },
@@ -88,6 +100,11 @@ export default function RegistracePage() {
 
             <div className="mx-auto max-w-md px-6">
                 <div className="text-center mb-8">
+                    {partner === "desperados" && (
+                        <div className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-medium">
+                            🤝 Klient Desperados Design — sleva 20 %
+                        </div>
+                    )}
                     <h1 className="text-3xl font-extrabold">
                         Registrace
                     </h1>
@@ -183,5 +200,17 @@ export default function RegistracePage() {
                 </p>
             </div>
         </section>
+    );
+}
+
+export default function RegistracePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-cyan-400 animate-pulse">Načítám...</div>
+            </div>
+        }>
+            <RegistraceInner />
+        </Suspense>
     );
 }

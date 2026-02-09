@@ -10,8 +10,12 @@ import {
     getAdminAlerts,
     getAdminDiffs,
     sendLegislativeAlert,
+    getAgencyClients,
+    startAgencyBatchScan,
+    generateAgencyEmail,
     AdminStats,
     EmailHealth,
+    AgencyClient,
 } from "@/lib/api";
 
 // ── Typy ──
@@ -58,7 +62,18 @@ interface DiffEntry {
     created_at: string;
 }
 
-type Tab = "prehled" | "emaily" | "firmy" | "logy" | "monitoring";
+interface AgencyClientEntry {
+    id: string;
+    name: string;
+    url: string;
+    email: string;
+    contact_name: string;
+    partner: string;
+    scan_status: string;
+    created_at: string;
+}
+
+type Tab = "prehled" | "emaily" | "firmy" | "logy" | "monitoring" | "agentura";
 
 const TASKS = [
     { name: "monitoring", label: "🔍 Monitoring klientů", desc: "Skenuj nasmlouvané klienty" },
@@ -84,6 +99,11 @@ export default function AdminPage() {
     const [legBody, setLegBody] = useState("");
     const [legSending, setLegSending] = useState(false);
     const [legResult, setLegResult] = useState<string | null>(null);
+    const [agencyClients, setAgencyClients] = useState<AgencyClientEntry[]>([]);
+    const [batchInput, setBatchInput] = useState("");
+    const [batchRunning, setBatchRunning] = useState(false);
+    const [batchResult, setBatchResult] = useState<string | null>(null);
+    const [emailPreview, setEmailPreview] = useState<{subject: string; body: string} | null>(null);
 
     const loadStats = useCallback(async () => {
         try {
@@ -112,6 +132,9 @@ export default function AdminPage() {
                 getAdminAlerts(50).then((d) => setAlerts(d.alerts || [])),
                 getAdminDiffs(50).then((d) => setDiffs(d.diffs || [])),
             ]).catch(console.error);
+        }
+        if (tab === "agentura") {
+            getAgencyClients().then((d) => setAgencyClients(d.clients || [])).catch(console.error);
         }
     }, [tab]);
 
@@ -173,6 +196,7 @@ export default function AdminPage() {
                         { id: "firmy" as Tab, label: "🏭 Firmy" },
                         { id: "logy" as Tab, label: "📋 Logy" },
                         { id: "monitoring" as Tab, label: "🔔 Monitoring" },
+                        { id: "agentura" as Tab, label: "🤝 Agentura" },
                     ]).map((t) => (
                         <button
                             key={t.id}
@@ -556,6 +580,135 @@ export default function AdminPage() {
                                                 </td>
                                                 <td className="p-3 text-gray-500">{d.unchanged_count}</td>
                                                 <td className="p-3 text-gray-300 truncate max-w-xs text-xs">{d.summary || "—"}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {tab === "agentura" && (
+                    <div className="space-y-6">
+                        {/* Hromadný sken */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                            <h2 className="text-lg font-semibold mb-2 text-cyan-400">🏭 Hromadný sken klientů agentury</h2>
+                            <p className="text-sm text-gray-400 mb-4">Zadejte klienty (1 řádek = 1 klient, formát: <code className="text-fuchsia-400">název | url | email | kontakt | poznámka</code>)</p>
+                            <textarea
+                                placeholder={`Pekárna U Míly | pekarnaumíly.cz | info@pekarna.cz | Milan Novák | dělali jsme web + chatbot\nRestaurace Mlýn | restaurace-mlyn.cz | info@mlyn.cz | Jana Králová | web + GA4`}
+                                value={batchInput}
+                                onChange={(e) => setBatchInput(e.target.value)}
+                                rows={6}
+                                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:border-fuchsia-500/50 focus:outline-none resize-none font-mono text-sm"
+                            />
+                            <div className="flex items-center gap-4 mt-4">
+                                <button
+                                    onClick={async () => {
+                                        const lines = batchInput.trim().split("\n").filter(Boolean);
+                                        if (lines.length === 0) return;
+                                        const clients: AgencyClient[] = lines.map(line => {
+                                            const [name, url, email, contact_name, notes] = line.split("|").map(s => s.trim());
+                                            return { name: name || "", url: url || "", email, contact_name, notes };
+                                        });
+                                        setBatchRunning(true);
+                                        setBatchResult(null);
+                                        try {
+                                            const r = await startAgencyBatchScan(clients);
+                                            setBatchResult(`✅ Spuštěn batch scan ${r.total_clients} klientů (batch_id: ${r.batch_id})`);
+                                            setBatchInput("");
+                                            // Reload clients
+                                            getAgencyClients().then((d) => setAgencyClients(d.clients || []));
+                                        } catch (e) {
+                                            setBatchResult(`❌ Chyba: ${e}`);
+                                        } finally {
+                                            setBatchRunning(false);
+                                        }
+                                    }}
+                                    disabled={batchRunning || !batchInput.trim()}
+                                    className="px-6 py-2 bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 rounded-lg hover:bg-fuchsia-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {batchRunning ? "⏳ Skenuju..." : "🚀 Spustit hromadný sken"}
+                                </button>
+                                {batchResult && <span className="text-sm">{batchResult}</span>}
+                            </div>
+                        </div>
+
+                        {/* Generátor emailu */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                            <h2 className="text-lg font-semibold mb-2 text-cyan-400">✉️ Generátor personálního emailu</h2>
+                            <p className="text-sm text-gray-400 mb-4">Vyberte klienta pro vygenerování osobního emailu (k ručnímu odeslání)</p>
+                            <div className="flex flex-wrap gap-2">
+                                {agencyClients.map((c) => (
+                                    <button
+                                        key={c.id}
+                                        onClick={async () => {
+                                            try {
+                                                const r = await generateAgencyEmail({
+                                                    client_name: c.name,
+                                                    contact_name: c.contact_name || c.name,
+                                                    url: c.url,
+                                                    email: c.email,
+                                                });
+                                                setEmailPreview({ subject: r.subject, body: r.body });
+                                            } catch (e) {
+                                                setEmailPreview({ subject: "Chyba", body: String(e) });
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg text-xs hover:bg-cyan-500/20 transition-all"
+                                    >
+                                        ✉️ {c.name}
+                                    </button>
+                                ))}
+                            </div>
+                            {emailPreview && (
+                                <div className="mt-4 bg-black/30 rounded-xl p-4 space-y-2">
+                                    <div className="text-sm text-fuchsia-400 font-medium">Předmět: {emailPreview.subject}</div>
+                                    <pre className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{emailPreview.body}</pre>
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(emailPreview.body)}
+                                        className="px-3 py-1 bg-white/5 border border-white/10 rounded text-xs text-gray-400 hover:text-white transition-all"
+                                    >
+                                        📋 Zkopírovat do schránky
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Seznam klientů agentury */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                            <div className="p-4 border-b border-white/10">
+                                <h2 className="text-lg font-semibold text-cyan-400">🤝 Klienti agentury ({agencyClients.length})</h2>
+                            </div>
+                            <table className="w-full text-sm">
+                                <thead className="bg-white/5">
+                                    <tr>
+                                        <th className="text-left p-3 text-gray-400">Název</th>
+                                        <th className="text-left p-3 text-gray-400">URL</th>
+                                        <th className="text-left p-3 text-gray-400">Kontakt</th>
+                                        <th className="text-left p-3 text-gray-400">Email</th>
+                                        <th className="text-left p-3 text-gray-400">Sken</th>
+                                        <th className="text-left p-3 text-gray-400">Přidáno</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {agencyClients.length === 0 ? (
+                                        <tr><td colSpan={6} className="p-8 text-center text-gray-500">Zatím žádní klienti agentury — použijte hromadný sken výše</td></tr>
+                                    ) : (
+                                        agencyClients.map((c) => (
+                                            <tr key={c.id} className="border-t border-white/5 hover:bg-white/5">
+                                                <td className="p-3 text-white font-medium">{c.name}</td>
+                                                <td className="p-3 text-cyan-400 text-xs truncate max-w-[200px]">{c.url}</td>
+                                                <td className="p-3 text-gray-300">{c.contact_name || "—"}</td>
+                                                <td className="p-3 text-gray-400 text-xs">{c.email || "—"}</td>
+                                                <td className="p-3">
+                                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                                        c.scan_status === "scanned" ? "bg-green-500/20 text-green-400" :
+                                                        c.scan_status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                                                        "bg-gray-500/20 text-gray-400"
+                                                    }`}>{c.scan_status}</span>
+                                                </td>
+                                                <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{new Date(c.created_at).toLocaleDateString("cs")}</td>
                                             </tr>
                                         ))
                                     )}
