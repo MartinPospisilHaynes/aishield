@@ -1,7 +1,10 @@
-"""E2E test: scan + company info + template v5 email + send."""
+"""E2E test: scan + company info + template v6 email + send."""
 import asyncio
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from backend.scanner.web_scanner import scan_url
 from backend.scanner.detector import detect_ai_systems

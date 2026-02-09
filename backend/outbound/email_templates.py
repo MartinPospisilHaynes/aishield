@@ -1,18 +1,18 @@
 """
-AIshield.cz — Email Templates v5 (TEMPLATE-DRIVEN)
-Čistě šablonový email — Gemini POUZE skloňuje jméno (5. pád).
+AIshield.cz — Email Templates v6 (TEMPLATE-DRIVEN)
+Čistě šablonový email — bez AI generování textu.
 
-Struktura emailu (dle zadání):
-1. Header s logem
-2. Úvod (ŠABLONA — ne AI) — představení, uklidnění, nařízení EU
-3. Panel s pokutami (soft red)
-4. Intro k nálezům + tabulka rizik
-5. Compliance checklist (zelené fajfky, vyčerpávající)
-6. Pozitivní pivot — "Od toho jsme tady my" + co dodáme
-7. Empatie banner — "soustřeďte se na byznys"
-8. Deadline box (ČERVENÝ)
-9. CTA tlačítko → ceník na webu
-10. Profesionální footer s Desperados Design
+Změny oproti v5:
+- Nový předmět a popis v headeru
+- Přepracovaný úvod ("já jsem", končí "pochybení:")
+- Bez tučného písma (<strong>) — vypadalo AI-generovaně
+- Odkazy ve firemní barvě bez podtržení
+- Přeuspořádané sekce: nálezy hned po úvodu, pak pokuty
+- Bez levých barevných linek u panelů
+- Nový nadpis deliverables, odstraněn Widget
+- SVG ikona místo emoji v empathy banneru
+- Tmavě modrý footer (jako header), centrovaný, bílé písmo
+- Disclaimer o spamu vrácen, adresa odstraněna
 """
 
 from dataclasses import dataclass
@@ -25,7 +25,7 @@ class EmailVariant:
     """Email varianta pro odeslání."""
     subject: str
     body_html: str
-    variant_id: str = "template_v5"
+    variant_id: str = "template_v6"
 
 
 @dataclass
@@ -123,12 +123,10 @@ def _days_to_deadline() -> int:
 
 def _article_link(article: str) -> str:
     """Převede článek AI Act na klikatelný HTML odkaz."""
-    # Zkusíme najít přesný match
     url = AI_ACT_ARTICLE_URLS.get(article)
     if url:
-        return f'<a href="{url}" style="color: {BRAND["accent"]}; text-decoration: underline;">{article} AI Act</a>'
+        return f'<a href="{url}" style="color: {BRAND["accent"]}; text-decoration: none;">{article} AI Act</a>'
 
-    # Zkusíme vytáhnout číslo článku
     import re
     m = re.search(r'(\d+)', article)
     if m:
@@ -136,10 +134,9 @@ def _article_link(article: str) -> str:
         key = f"čl. {num}"
         url = AI_ACT_ARTICLE_URLS.get(key)
         if url:
-            return f'<a href="{url}" style="color: {BRAND["accent"]}; text-decoration: underline;">{article}</a>'
+            return f'<a href="{url}" style="color: {BRAND["accent"]}; text-decoration: none;">{article}</a>'
 
-    # Fallback — odkaz na celé nařízení
-    return f'<a href="{AI_ACT_FULL_URL}" style="color: {BRAND["accent"]}; text-decoration: underline;">{article}</a>'
+    return f'<a href="{AI_ACT_FULL_URL}" style="color: {BRAND["accent"]}; text-decoration: none;">{article}</a>'
 
 
 # ── Laické popisy kategorií AI nálezů ──
@@ -162,7 +159,6 @@ LAYMAN_DESCRIPTIONS = {
 def _get_layman_desc(finding: FindingRow) -> str:
     """Vrátí jednoduchý, srozumitelný popis nálezu pro laika."""
     if finding.description:
-        # Pokud má vlastní popis, použijeme ho, ale zkontroluj délku
         if len(finding.description) < 120:
             return finding.description
     return LAYMAN_DESCRIPTIONS.get(finding.category, "AI systém detekovaný na vašem webu")
@@ -181,7 +177,7 @@ def _risk_table_html(findings: list[FindingRow]) -> str:
         rows += f"""
             <tr>
                 <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: {BRAND['text']};">
-                    <strong>{f.name}</strong>
+                    {f.name}
                     <br><span style="font-size: 12px; color: {BRAND['text_light']};">{desc}</span>
                 </td>
                 <td style="padding: 12px 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">
@@ -235,8 +231,8 @@ def _intro_section(
     findings_count: int,
 ) -> str:
     """
-    Úvodní sekce emailu — ŠABLONA, ne AI.
-    Gemini pouze dodá vocative_name (skloněné jméno v 5. pádu).
+    Úvodní sekce emailu — ŠABLONA.
+    Končí textem "pochybení:" — tabulka nálezů následuje hned za ní.
     """
     # Oslovení
     if vocative_name:
@@ -244,16 +240,6 @@ def _intro_section(
     else:
         greeting = "Dobrý den,"
 
-    # Počet nálezů
-    if findings_count == 1:
-        pocet = "1 AI systém"
-    elif 2 <= findings_count <= 4:
-        pocet = f"{findings_count} AI systémy"
-    else:
-        pocet = f"{findings_count} AI systémů"
-
-    # Pro "zaujal mě Váš web" použij URL,
-    # pro ostatní účely company_name
     display_url = company_url.replace("https://www.", "").replace("http://www.", "").replace("https://", "").replace("http://", "").rstrip("/")
 
     return f"""
@@ -262,43 +248,46 @@ def _intro_section(
             {greeting}
         </p>
         <p style="margin: 0 0 14px 0;">
-            jsem Martin Haynes, zakladatel
-            <a href="https://aishield.cz" style="color: {BRAND['accent']}; text-decoration: underline; font-weight: 600;">AIshield.cz</a>,
-            a&nbsp;zaujal mě Váš web <strong>{display_url}</strong>.
+            já jsem Martin Haynes, zakladatel
+            <a href="https://aishield.cz" style="color: {BRAND['accent']}; text-decoration: none;">AIshield.cz</a>,
+            a&nbsp;zaujal mě Váš web {display_url}.
         </p>
         <p style="margin: 0 0 14px 0;">
-            <strong>Nemusíte se obávat, nic strašného se zatím neděje.</strong>
+            Nemusíte se obávat, nic strašného se zatím neděje.
             Jen jsme Vás chtěli upozornit, že při naší pravidelné kontrole
             webů a&nbsp;e-shopů v&nbsp;českém online prostředí jsme narazili
-            na váš web <strong>{company_url}</strong>.
+            na váš web {company_url}.
         </p>
         <p style="margin: 0 0 14px 0;">
-            Jistě je Vám dobře známo, že k&nbsp;<strong>2.&nbsp;srpnu 2026</strong>
+            Jistě je Vám dobře známo, že k&nbsp;2.&nbsp;srpnu 2026
             vstupuje v&nbsp;plnou účinnost nové
-            <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: underline;">nařízení Evropské unie (AI Act)</a>,
-            dle kterého musejí <strong>všechny webové stránky, e-shopy
-            a&nbsp;aplikace</strong> informovat své uživatele o&nbsp;tom,
+            <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: none;">nařízení Evropské unie (AI Act)</a>,
+            dle kterého musejí všechny webové stránky, e-shopy
+            a&nbsp;aplikace informovat své uživatele o&nbsp;tom,
             zda&#8209;li a&nbsp;jak využívají na svých stránkách umělou inteligenci.
         </p>
-        <p style="margin: 0 0 14px 0;">
-            Bohužel&nbsp;— na vašem webu <strong>tyto informace zatím uvedeny nemáte</strong>.
+        <p style="margin: 0 0 4px 0;">
+            Bohužel&nbsp;— na vašem webu tyto informace zatím uvedeny nejsou.
+            Byť náš software, podobný tomu, kterému budou webové stránky
+            podrobovat i&nbsp;kontrolní úřady od 2.&nbsp;srpna 2026,
+            zjistil tato pochybení:
         </p>
     </div>"""
 
 
 def _penalty_panel() -> str:
-    """Panel s pokutami — soft red."""
+    """Panel s pokutami — červený obdélník, BEZ levé linky."""
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
         <tr>
-            <td style="padding: 18px 22px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; border-left: 4px solid {BRAND['danger']};">
+            <td style="padding: 18px 22px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
                 <p style="margin: 0 0 6px 0; font-size: 15px; font-weight: 700; color: #991b1b;">
                     &#9888;&#65039; Hrozící sankce za nesoulad s AI Act
                 </p>
                 <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #7f1d1d;">
                     V&nbsp;případě nesplnění povinností hrozí pokuty až do výše
-                    <strong>35&nbsp;milionů&nbsp;EUR</strong> nebo
-                    <strong>7&nbsp;% celosvětového ročního obratu</strong> společnosti
+                    35&nbsp;milionů&nbsp;EUR nebo
+                    7&nbsp;% celosvětového ročního obratu společnosti
                     (podle toho, která částka je vyšší).
                     Dozorový úřad může zahájit kontrolu kdykoliv po 2.&nbsp;srpnu 2026.
                 </p>
@@ -307,48 +296,25 @@ def _penalty_panel() -> str:
     </table>"""
 
 
-def _findings_intro(findings_count: int) -> str:
-    """Úvod k tabulce nálezů."""
-    if findings_count == 1:
-        pocet = "1 AI systém"
-    elif 2 <= findings_count <= 4:
-        pocet = f"{findings_count} AI systémy"
-    else:
-        pocet = f"{findings_count} AI systémů"
-
-    return f"""
-    <div style="font-size: 15px; line-height: 1.7; color: {BRAND['text']}; margin: 20px 0 8px 0;">
-        <p style="margin: 0 0 14px 0;">
-            Na Vašich stránkách jsme detekovali <strong>{pocet}</strong>,
-            což samo o&nbsp;sobě <strong>není žádný problém</strong>&nbsp;—
-            ba naopak, využívání AI je dnes konkurenční výhoda.
-        </p>
-        <p style="margin: 0;">
-            Jen je potřeba mít připravenou <strong>kompletní dokumentaci</strong>
-            podle pravidel EU a&nbsp;informovat návštěvníky vašeho webu:
-        </p>
-    </div>"""
-
-
 def _compliance_checklist() -> str:
-    """Vyčerpávající seznam compliance povinností — zelené fajfky."""
+    """Vyčerpávající seznam compliance povinností — zelené fajfky, BEZ tučného písma, BEZ levé linky."""
     items = [
-        "Transparentní <strong>AI banner / oznámení</strong> na webu viditelné pro každého návštěvníka",
-        "Samostatnou <strong>stránku s&nbsp;informacemi</strong> o&nbsp;všech využívaných AI systémech (AI disclosure page)",
-        "Kompletní <strong>dokumentaci všech AI systémů</strong> včetně popisu účelu, vstupních a&nbsp;výstupních dat",
-        "<strong>Posouzení rizik</strong> (risk assessment) pro každý jednotlivý AI systém",
-        "Evidenci <strong>zpracování dat</strong> v&nbsp;souvislosti s&nbsp;AI systémy",
-        "Zavedení mechanismu <strong>lidského dohledu</strong> (human oversight) nad AI systémy",
-        "Možnost <strong>eskalace komunikace</strong> s&nbsp;AI na lidského operátora",
-        "<strong>Technickou dokumentaci</strong> AI systémů dle přílohy&nbsp;IV AI Act",
-        "Záznam o&nbsp;<strong>školení zaměstnanců</strong> v&nbsp;oblasti AI gramotnosti (<a href='https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_4' style='color: {BRAND['accent']}; text-decoration: underline;'>čl.&nbsp;4 AI Act</a>)",
-        "Listinnou / archivní podobu <strong>compliance dokumentace</strong>",
-        "Postup pro <strong>hlášení incidentů</strong> souvisejících s&nbsp;AI",
-        "<strong>Audit trail</strong> / logování rozhodnutí AI systémů",
-        "Aktualizaci <strong>cookie banneru a&nbsp;privacy policy</strong> o&nbsp;AI systémy",
-        "Registraci <strong>vysokorizikových AI systémů</strong> v&nbsp;EU databázi (pokud je to relevantní)",
-        "<strong>Akční plán</strong> s&nbsp;konkrétními kroky a&nbsp;termíny pro dosažení souladu",
-        "Průběžný <strong>monitoring a&nbsp;evidenci</strong> nově přidaných AI nástrojů",
+        "Transparentní AI banner / oznámení na webu viditelné pro každého návštěvníka",
+        "Samostatnou stránku s&nbsp;informacemi o&nbsp;všech využívaných AI systémech (AI disclosure page)",
+        "Kompletní dokumentaci všech AI systémů včetně popisu účelu, vstupních a&nbsp;výstupních dat",
+        "Posouzení rizik (risk assessment) pro každý jednotlivý AI systém",
+        "Evidenci zpracování dat v&nbsp;souvislosti s&nbsp;AI systémy",
+        "Zavedení mechanismu lidského dohledu (human oversight) nad AI systémy",
+        "Možnost eskalace komunikace s&nbsp;AI na lidského operátora",
+        "Technickou dokumentaci AI systémů dle přílohy&nbsp;IV AI Act",
+        f"Záznam o&nbsp;školení zaměstnanců v&nbsp;oblasti AI gramotnosti (<a href='https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_4' style='color: {BRAND['accent']}; text-decoration: none;'>čl.&nbsp;4 AI Act</a>)",
+        "Listinnou / archivní podobu compliance dokumentace",
+        "Postup pro hlášení incidentů souvisejících s&nbsp;AI",
+        "Audit trail / logování rozhodnutí AI systémů",
+        "Aktualizaci cookie banneru a&nbsp;privacy policy o&nbsp;AI systémy",
+        "Registraci vysokorizikových AI systémů v&nbsp;EU databázi (pokud je to relevantní)",
+        "Akční plán s&nbsp;konkrétními kroky a&nbsp;termíny pro dosažení souladu",
+        "Průběžný monitoring a&nbsp;evidenci nově přidaných AI nástrojů",
     ]
 
     rows = ""
@@ -366,18 +332,18 @@ def _compliance_checklist() -> str:
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
         <tr>
-            <td style="padding: 20px 22px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; border-left: 4px solid {BRAND['success']};">
+            <td style="padding: 20px 22px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
                 <p style="margin: 0 0 14px 0; font-size: 15px; font-weight: 700; color: #166534;">
                     &#9989; Co vše musíte dle AI Act zajistit
                 </p>
                 <p style="margin: 0 0 12px 0; font-size: 14px; color: {BRAND['text']};">
-                    Dle <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: underline;">Nařízení (EU) 2024/1689</a> musíte mimo jiné zajistit:
+                    Dle <a href="{AI_ACT_FULL_URL}" style="color: {BRAND['accent']}; text-decoration: none;">Nařízení (EU) 2024/1689</a> musíte mimo jiné zajistit:
                 </p>
                 <table cellpadding="0" cellspacing="0" width="100%">
                     {rows}
                 </table>
                 <p style="margin: 14px 0 0 0; font-size: 14px; color: {BRAND['text']}; font-style: italic;">
-                    Vím, že to vypadá jako hodně práce&nbsp;— a&nbsp;upřímně, <strong>je</strong>.
+                    Vím, že to vypadá jako hodně práce&nbsp;— a&nbsp;upřímně, je.
                 </p>
             </td>
         </tr>
@@ -385,18 +351,17 @@ def _compliance_checklist() -> str:
 
 
 def _deliverables_panel() -> str:
-    """Pozitivní pivot — co vše AIshield dodá."""
+    """Pozitivní pivot — co vše AIshield dodá. BEZ levé linky, BEZ tučného písma."""
     items = [
-        ("<strong>Kompletní diagnostiku</strong> webu", "Automatický sken všech AI systémů na vašich stránkách"),
-        ("<strong>Inventář AI nástrojů</strong>", "Přehledný výpis s&nbsp;klasifikací rizik dle AI Act"),
-        ("<strong>Hotovou compliance dokumentaci</strong> v&nbsp;PDF", "AI Policy, Transparency Notices, AI Registr"),
-        ("<strong>AI banner / oznámení</strong>", "Připravené k&nbsp;okamžitému nasazení na váš web"),
-        ("<strong>Samostatnou transparenční stránku</strong>", "HTML stránka s&nbsp;informacemi o&nbsp;AI pro vaše návštěvníky"),
-        ("<strong>Záznamy o&nbsp;školení</strong>", "Dokumentace AI gramotnosti pro zaměstnance (čl.&nbsp;4)"),
-        ("<strong>Kompletní akční plán</strong>", "Konkrétní kroky s&nbsp;termíny — přesně co, kdy a&nbsp;jak"),
-        ("<strong>Dotazník interních AI systémů</strong>", "Pomůžeme zmapovat i&nbsp;AI, které scanner nevidí (HR, ERP…)"),
-        ("<strong>Průběžný monitoring</strong> a&nbsp;alerting", "Automatické sledování nových AI nástrojů na webu"),
-        ("<strong>Widget pro váš web</strong>", "Vizuální prvek informující návštěvníky o&nbsp;AI compliance"),
+        ("Kompletní diagnostiku webu", "Automatický sken všech AI systémů na vašich stránkách"),
+        ("Inventář AI nástrojů", "Přehledný výpis s&nbsp;klasifikací rizik dle AI Act"),
+        ("Hotovou compliance dokumentaci v&nbsp;PDF", "AI Policy, Transparency Notices, AI Registr"),
+        ("AI banner / oznámení", "Připravené k&nbsp;okamžitému nasazení na váš web"),
+        ("Samostatnou transparenční stránku", "HTML stránka s&nbsp;informacemi o&nbsp;AI pro vaše návštěvníky"),
+        ("Záznamy o&nbsp;školení", "Dokumentace AI gramotnosti pro zaměstnance (čl.&nbsp;4)"),
+        ("Kompletní akční plán", "Konkrétní kroky s&nbsp;termíny — přesně co, kdy a&nbsp;jak"),
+        ("Dotazník interních AI systémů", "Pomůžeme zmapovat i&nbsp;AI, které scanner nevidí (HR, ERP…)"),
+        ("Průběžný monitoring a&nbsp;alerting", "Automatické sledování nových AI nástrojů na webu"),
     ]
 
     rows = ""
@@ -415,12 +380,12 @@ def _deliverables_panel() -> str:
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
         <tr>
-            <td style="padding: 22px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 8px; border-left: 4px solid #0284c7;">
+            <td style="padding: 22px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #7dd3fc; border-radius: 8px;">
                 <p style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #0c4a6e;">
-                    &#127881; Od toho jsme tady ale teď my!
+                    &#127881; Od toho jsme tady teď kdo? Od toho jsme tady teď my.
                 </p>
                 <p style="margin: 0 0 16px 0; font-size: 15px; color: {BRAND['text']};">
-                    <strong>Nemusíte se o&nbsp;nic starat.</strong>
+                    Nemusíte se o&nbsp;nic starat.
                     Vše vyřešíme za Vás — kompletně, na klíč:
                 </p>
                 <table cellpadding="0" cellspacing="0" width="100%">
@@ -431,13 +396,25 @@ def _deliverables_panel() -> str:
     </table>"""
 
 
+# SVG ikona štítu — data URI pro kompatibilitu s emailovými klienty
+_SHIELD_SVG = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' "
+    "viewBox='0 0 24 24'%3E%3Cpath d='M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 "
+    "9-6.45 9-12V7l-9-5z' fill='%237c3aed'/%3E%3Cpath d='M10 15.5l-3.5-3.5 1.41-1.41L10 "
+    "12.67l5.59-5.59L17 8.5l-7 7z' fill='%23ffffff'/%3E%3C/svg%3E"
+)
+
+
 def _empathy_banner() -> str:
-    """Empatie banner — soustřeďte se na byznys."""
+    """Empatie banner — soustřeďte se na byznys. SVG ikona místo emoji."""
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
         <tr>
             <td style="padding: 18px 22px; background: linear-gradient(135deg, #f5f3ff, #ede9fe); border: 1px solid #c4b5fd; border-radius: 8px; text-align: center;">
-                <p style="margin: 0 0 6px 0; font-size: 24px;">&#128170;</p>
+                <p style="margin: 0 0 8px 0;">
+                    <img src="{_SHIELD_SVG}" width="36" height="36" alt="&#128737;"
+                         style="display: inline-block; vertical-align: middle;">
+                </p>
                 <p style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: {BRAND['accent']};">
                     Chápeme, že se potřebujete soustředit na svůj byznys, ne na byrokracii EU.
                 </p>
@@ -450,13 +427,13 @@ def _empathy_banner() -> str:
 
 
 def _deadline_box() -> str:
-    """Deadline box s odpočítáváním — ČERVENÝ."""
+    """Deadline box s odpočítáváním — ČERVENÝ, BEZ levé linky."""
     days = _days_to_deadline()
 
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
         <tr>
-            <td style="padding: 16px 20px; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: 8px; border-left: 4px solid {BRAND['danger']};">
+            <td style="padding: 16px 20px; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: 8px;">
                 <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                         <td style="font-size: 28px; width: 40px; vertical-align: top; padding-right: 12px;">&#9200;</td>
@@ -465,9 +442,10 @@ def _deadline_box() -> str:
                                 Deadline: 2. srpna 2026
                             </p>
                             <p style="margin: 0; font-size: 13px; color: #b91c1c;">
-                                Do plné účinnosti AI Act zbývá <strong style="font-size: 15px; color: #991b1b;">{days} dní</strong>.
+                                Do plné účinnosti AI Act zbývá
+                                <span style="font-size: 15px; color: #991b1b; font-weight: 600;">{days} dní</span>.
                                 Příprava compliance dokumentace zabere cca 2–4 týdny.
-                                <strong>Nenechávejte to na poslední chvíli.</strong>
+                                Nenechávejte to na poslední chvíli.
                             </p>
                         </td>
                     </tr>
@@ -508,7 +486,7 @@ def _cta_button() -> str:
 
 
 def _header_html(company_url: str) -> str:
-    """Hlavička s logem a brand barvami."""
+    """Hlavička s logem a novým popisem služby."""
     return f"""
     <table width="100%" cellpadding="0" cellspacing="0"
            style="background: linear-gradient(135deg, {BRAND['gradient_start']}, {BRAND['gradient_mid']}, {BRAND['gradient_end']});
@@ -524,8 +502,9 @@ def _header_html(company_url: str) -> str:
                                 </span>
                             </a>
                             <br>
-                            <span style="font-size: 12px; color: #a5b4fc; letter-spacing: 0.5px;">
-                                AI Act compliance pro české firmy
+                            <span style="font-size: 12px; color: #a5b4fc; letter-spacing: 0.3px; line-height: 1.5;">
+                                Zajistíme, aby váš web splňoval blížící se normu evropské unie AI&nbsp;ACT,
+                                která přichází v&nbsp;platnost 2.&nbsp;srpna 2026
                             </span>
                         </td>
                         <td style="text-align: right; vertical-align: middle;">
@@ -541,7 +520,7 @@ def _header_html(company_url: str) -> str:
 
 
 def _footer_html(company_url: str, to_email: str = "") -> str:
-    """Profesionální footer s Desperados Design."""
+    """Profesionální footer — tmavě modrý (jako header), centrovaný, bílé písmo."""
     unsubscribe = ""
     if to_email:
         unsubscribe = f'https://api.aishield.cz/api/unsubscribe?email={quote(to_email)}&company={quote(company_url)}'
@@ -549,55 +528,51 @@ def _footer_html(company_url: str, to_email: str = "") -> str:
     unsub_link = ""
     if unsubscribe:
         unsub_link = f"""
-            <p style="margin: 10px 0 0 0; font-size: 11px;">
-                <a href="{unsubscribe}" style="color: #94a3b8; text-decoration: underline;">Odhlásit se z upozornění</a>
-            </p>"""
+                <p style="margin: 10px 0 0 0; font-size: 11px;">
+                    <a href="{unsubscribe}" style="color: #c7d2fe; text-decoration: none;">Odhlásit se z upozornění</a>
+                </p>"""
 
     return f"""
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 32px; border-top: 2px solid {BRAND['border']};">
+    <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-            <td style="padding: 24px 0 0 0;">
-                <!-- Kontakt -->
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
-                    <tr>
-                        <td>
-                            <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: {BRAND['text']};">
-                                Bc. Martin Haynes
-                            </p>
-                            <p style="margin: 0 0 4px 0; font-size: 13px; color: {BRAND['text_light']};">
-                                Zakladatel &amp; CEO,
-                                <a href="https://aishield.cz" style="color: {BRAND['accent']}; text-decoration: underline;">AIshield.cz</a>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
+            <td style="padding: 28px 24px; text-align: center;
+                        background: linear-gradient(135deg, {BRAND['gradient_start']}, {BRAND['gradient_mid']}, {BRAND['gradient_end']});">
 
-                <!-- Kontaktní údaje -->
-                <table cellpadding="0" cellspacing="0" style="font-size: 13px; color: {BRAND['text_light']}; line-height: 1.8;">
-                    <tr>
-                        <td style="padding-right: 6px;">&#128222;</td>
-                        <td><a href="tel:+420732716141" style="color: {BRAND['text_light']}; text-decoration: none;">+420 732 716 141</a></td>
-                    </tr>
-                    <tr>
-                        <td style="padding-right: 6px;">&#9993;</td>
-                        <td><a href="mailto:info@aishield.cz" style="color: {BRAND['accent']}; text-decoration: underline;">info@aishield.cz</a></td>
-                    </tr>
-                    <tr>
-                        <td style="padding-right: 6px;">&#127760;</td>
-                        <td><a href="https://aishield.cz" style="color: {BRAND['accent']}; text-decoration: underline;">aishield.cz</a></td>
-                    </tr>
-                </table>
+                <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #ffffff;">
+                    Bc. Martin Haynes
+                </p>
+                <p style="margin: 0 0 10px 0; font-size: 13px; color: #e0e7ff;">
+                    Zakladatel &amp; CEO,
+                    <a href="https://aishield.cz" style="color: #c7d2fe; text-decoration: none;">AIshield.cz</a>
+                </p>
 
-                <!-- Desperados Design -->
-                <p style="margin: 16px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.5; border-top: 1px solid {BRAND['border']}; padding-top: 12px;">
-                    <a href="https://aishield.cz" style="color: #94a3b8; text-decoration: underline;">AIshield.cz</a>
+                <p style="margin: 0 0 4px 0; font-size: 13px; color: #e0e7ff;">
+                    &#128222;
+                    <a href="tel:+420732716141" style="color: #e0e7ff; text-decoration: none;">+420 732 716 141</a>
+                </p>
+                <p style="margin: 0 0 4px 0; font-size: 13px; color: #e0e7ff;">
+                    &#9993;
+                    <a href="mailto:info@aishield.cz" style="color: #c7d2fe; text-decoration: none;">info@aishield.cz</a>
+                </p>
+                <p style="margin: 0 0 12px 0; font-size: 13px; color: #e0e7ff;">
+                    &#127760;
+                    <a href="https://aishield.cz" style="color: #c7d2fe; text-decoration: none;">aishield.cz</a>
+                </p>
+
+                <p style="margin: 0 0 6px 0; font-size: 11px; color: #a5b4fc;">
+                    <a href="https://aishield.cz" style="color: #a5b4fc; text-decoration: none;">AIshield.cz</a>
                     je projekt společnosti
-                    <a href="https://www.desperados-design.cz" style="color: #94a3b8; text-decoration: underline;">Desperados Design</a>
-                    &middot; IČO: 17889251 &middot; Mlýnská 53, 783 53 Velká Bystřice
+                    <a href="https://www.desperados-design.cz" style="color: #a5b4fc; text-decoration: none;">Desperados Design</a>
+                    &middot; IČO: 17889251
                 </p>
-                <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">
-                    Jednorázové upozornění na základě veřejně dostupné analýzy webu {company_url}.
+
+                <p style="margin: 8px 0 0 0; font-size: 11px; color: #a5b4fc; line-height: 1.5;">
+                    Tato zpráva není nevyžádaným obchodním sdělením (spam),
+                    ale informativním upozorněním na základě automatické analýzy
+                    veřejně přístupného obsahu vašeho webu v&nbsp;rámci veřejného zájmu
+                    na dodržování evropské legislativy.
                 </p>
+
                 {unsub_link}
             </td>
         </tr>
@@ -614,16 +589,15 @@ def build_hybrid_email(
     to_email: str = "",
 ) -> str:
     """
-    Sestaví TEMPLATE-DRIVEN email v5.
-    Gemini dodává POUZE vocative_name (skloněné jméno).
-    Vše ostatní je šablona.
+    Sestaví TEMPLATE-DRIVEN email v6.
+    Pořadí: úvod → nálezy → screenshot → pokuty → checklist →
+            deliverables → empatie → deadline → CTA → footer.
     """
     header = _header_html(company_url)
     intro = _intro_section(vocative_name, company_url, company_name, len(findings))
-    penalty = _penalty_panel()
-    findings_intro = _findings_intro(len(findings))
     risk_table = _risk_table_html(findings)
     screenshot = _screenshot_section(screenshot_url, company_url)
+    penalty = _penalty_panel()
     checklist = _compliance_checklist()
     deliverables = _deliverables_panel()
     empathy = _empathy_banner()
@@ -663,42 +637,41 @@ def build_hybrid_email(
 
                 <!-- BODY -->
                 <tr>
-                    <td style="padding: 28px 28px 0 28px;">
+                    <td style="padding: 28px;">
 
-                        <!-- 1. Úvod (ŠABLONA) -->
+                        <!-- 1. Úvod (končí "pochybení:") -->
                         {intro}
 
-                        <!-- 2. Panel s pokutami -->
-                        {penalty}
-
-                        <!-- 3. Intro k nálezům -->
-                        {findings_intro}
-
-                        <!-- 4. Screenshot -->
-                        {screenshot}
-
-                        <!-- 5. Tabulka rizik -->
+                        <!-- 2. Tabulka rizik (hned po úvodu) -->
                         {risk_table}
 
-                        <!-- 6. Compliance checklist -->
+                        <!-- 3. Screenshot (volitelný) -->
+                        {screenshot}
+
+                        <!-- 4. Panel s pokutami -->
+                        {penalty}
+
+                        <!-- 5. Compliance checklist -->
                         {checklist}
 
-                        <!-- 7. Co dodáme — pozitivní pivot -->
+                        <!-- 6. Co dodáme — pozitivní pivot -->
                         {deliverables}
 
-                        <!-- 8. Empatie banner -->
+                        <!-- 7. Empatie banner -->
                         {empathy}
 
-                        <!-- 9. Deadline (ČERVENÝ) -->
+                        <!-- 8. Deadline (ČERVENÝ) -->
                         {deadline}
 
-                        <!-- 10. CTA → ceník -->
+                        <!-- 9. CTA → ceník -->
                         {cta}
 
-                        <!-- 11. Footer -->
-                        {footer}
-
                     </td>
+                </tr>
+
+                <!-- FOOTER (tmavě modrý, full-width) -->
+                <tr>
+                    <td>{footer}</td>
                 </tr>
 
             </table>
@@ -742,9 +715,9 @@ def get_followup_email(
                         <div style="font-size: 15px; line-height: 1.65; color: {BRAND['text']};">
                             <p>Dobrý den,</p>
                             <p>před {days_since} dny jsem vám poslal upozornění k&nbsp;AI systémům
-                                na webu <strong>{company_url}</strong>.</p>
+                                na webu {company_url}.</p>
                             <p>Chápu, že to nemusí být priorita — jen pro kontext:
-                                do plné účinnosti AI Act zbývá <strong>{days} dní</strong>
+                                do plné účinnosti AI Act zbývá {days} dní
                                 a&nbsp;příprava compliance dokumentace nějaký čas zabere.</p>
                             <p>Nabídka řešení je stále k&nbsp;dispozici:</p>
                         </div>
@@ -753,9 +726,9 @@ def get_followup_email(
                             <p>Pokud to řešíte s&nbsp;někým jiným nebo to nepotřebujete,
                                 klidně mě ignorujte — nebudu dál obtěžovat.</p>
                         </div>
-                        {footer}
                     </td>
                 </tr>
+                <tr><td>{footer}</td></tr>
             </table>
         </td>
     </tr>
@@ -781,7 +754,7 @@ def get_outbound_email(
     findings: list | None = None,
     scan_id: str = "",
 ) -> EmailVariant:
-    """Fallback bez Gemini — používá šablonový úvod."""
+    """Fallback bez vocative — používá šablonový úvod."""
     finding_rows = []
     if findings:
         for f in findings:
@@ -805,7 +778,7 @@ def get_outbound_email(
     )
 
     return EmailVariant(
-        subject="Oznámení o hrozícím porušení pravidel na vašem webu dle nařízení EU",
+        subject="Upozornění na riziko porušení pravidel evropské legislativy na vašem webu",
         body_html=html,
         variant_id=variant,
     )

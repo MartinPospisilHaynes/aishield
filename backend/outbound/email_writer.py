@@ -19,7 +19,7 @@ GEMINI_API_URL = (
 )
 
 # PEVNÝ předmět emailu
-FIXED_SUBJECT = "Oznámení o hrozícím porušení pravidel na vašem webu dle nařízení EU"
+FIXED_SUBJECT = "Upozornění na riziko porušení pravidel evropské legislativy na vašem webu"
 
 
 @dataclass
