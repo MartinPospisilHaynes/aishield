@@ -1,11 +1,18 @@
 """
-AIshield.cz — Outbound Email Engine
-Posílání personalizovaných compliance emailů přes Resend API.
-S ochranou domény: warm-up, bounce/complaint tracking, spam rate monitoring.
+AIshield.cz — Outbound Email Engine v2
+Agresivní outreach s multi-sender rotací a průběžným odesíláním.
+
+Klíčové vlastnosti:
+- 3 nezávislí odesílatelé (info@, ahoj@, podpora@aishield.cz)
+- Automatický failover při blokaci
+- Náhodné zpoždění mezi emaily (30-120s) — vypadá přirozeně
+- Rozesílka průběžně 8:00-17:00, NE jednorázový batch
+- Odesílání pouze v pracovní dny (Po-Pá)
 """
 
 import httpx
 import random
+import asyncio
 from datetime import datetime, timedelta
 from backend.config import get_settings
 from backend.database import get_supabase
@@ -18,23 +25,66 @@ from backend.outbound.deliverability import (
     check_domain_limit,
     is_email_blacklisted,
 )
+from backend.outbound.sender_rotation import (
+    pick_sender,
+    get_total_remaining,
+    get_senders_dashboard,
+)
 
 # Max emailů na jednu firmu (1. email + 2 follow-upy)
 MAX_EMAILS_PER_COMPANY = 3
 FOLLOWUP_DAYS = 7
+
+# Zpoždění mezi emaily (sekundy) — náhodné, vypadá přirozeně
+MIN_DELAY_SECONDS = 30
+MAX_DELAY_SECONDS = 120
+
+# Pracovní hodiny (UTC) — v CET je to 8:00-17:00
+SEND_HOUR_START = 7   # 8:00 CET
+SEND_HOUR_END = 16    # 17:00 CET
+
+# Nepracovní dny (0=Po, 6=Ne)
+WEEKEND_DAYS = {5, 6}  # Sobota, Neděle
+
+
+def is_sending_allowed() -> tuple[bool, str]:
+    """Zkontroluje jestli je teď pracovní hodina a pracovní den."""
+    now = datetime.utcnow()
+    weekday = now.weekday()
+    hour = now.hour
+
+    if weekday in WEEKEND_DAYS:
+        return False, f"Víkend (den {weekday}) — emaily se neposílají"
+
+    if hour < SEND_HOUR_START:
+        return False, f"Příliš brzy ({hour}:00 UTC) — start v {SEND_HOUR_START}:00"
+
+    if hour >= SEND_HOUR_END:
+        return False, f"Příliš pozdě ({hour}:00 UTC) — konec v {SEND_HOUR_END}:00"
+
+    return True, "OK"
 
 
 async def send_email(
     to: str,
     subject: str,
     html: str,
+    from_email: str | None = None,
+    from_name: str | None = None,
 ) -> dict:
-    """Odešle email přes Resend API."""
+    """
+    Odešle email přes Resend API.
+    Pokud from_email není zadán, použije přiřazeného sendera z rotace.
+    """
     settings = get_settings()
 
     if not settings.resend_api_key:
         print(f"[Email] RESEND_API_KEY není nastaven — email neodesílán: {to}")
         return {"id": "dry_run", "status": "skipped"}
+
+    # Sender — buď specifikovaný, nebo z rotace
+    sender_email = from_email or settings.email_from
+    sender_name = from_name or "AIshield.cz"
 
     # Reply-To na existující email (Resend odesílá, odpovědi jdou jinam)
     reply_to = "info@desperados-design.cz"
@@ -47,7 +97,7 @@ async def send_email(
                 "Content-Type": "application/json",
             },
             json={
-                "from": f"AIshield.cz <{settings.email_from}>",
+                "from": f"{sender_name} <{sender_email}>",
                 "to": [to],
                 "reply_to": reply_to,
                 "subject": subject,
@@ -98,13 +148,15 @@ async def run_email_campaign(
     limit: int = 50,
 ) -> dict:
     """
-    Hlavní email kampaň s adaptivním throttlingem:
-    1. Zkontroluj zdraví domény (spam rate, bounce rate)
-    2. Zjisti adaptivní limit (dle reálných metrik)
-    3. Najdi firmy ke kontaktování
-    4. Pro každou zkontroluj blacklist + domain limit
-    5. Sestav personalizovaný email
-    6. Odešli + zaloguj
+    Hlavní email kampaň v2 — multi-sender s průběžným odesíláním:
+    1. Zkontroluj pracovní dobu (Po-Pá, 8-17)
+    2. Zkontroluj zdraví domény (globální emergency checks)
+    3. Vyber sendera (round-robin, nejzdravější first)
+    4. Najdi firmy ke kontaktování
+    5. Pro každou: blacklist + domain limit check
+    6. Sestav personalizovaný email
+    7. Odešli přes vybraného sendera
+    8. Počkej náhodné zpoždění (30-120s) — vypadá přirozeně
     """
     supabase = get_supabase()
     stats = {
@@ -113,12 +165,22 @@ async def run_email_campaign(
         "followups_sent": 0,
         "skipped_blacklisted": 0,
         "skipped_domain_limit": 0,
+        "skipped_no_sender": 0,
         "errors": 0,
         "daily_limit_reached": False,
         "campaign_stopped": False,
+        "senders_used": {},
     }
 
-    # 1. Kontrola zdraví domény
+    # 1. Kontrola pracovní doby
+    can_send_now, reason = is_sending_allowed()
+    if not can_send_now:
+        stats["campaign_stopped"] = True
+        stats["stop_reason"] = reason
+        print(f"[Email] ⏸️  {reason}")
+        return stats
+
+    # 2. Kontrola globálního zdraví domény
     health = await get_email_health()
 
     if not health["is_healthy"]:
@@ -127,15 +189,16 @@ async def run_email_campaign(
         print(f"[Email] 🚨 Kampaň ZASTAVENA — doména nezdravá: {health['warnings']}")
         return stats
 
-    if not health["can_send"]:
+    # 3. Kolik můžeme celkem poslat (všichni senderé dohromady)?
+    total_remaining = await get_total_remaining()
+    if total_remaining <= 0:
         stats["daily_limit_reached"] = True
-        print(f"[Email] Denní limit dosažen ({health['sent_today']}/{health['daily_limit']})")
+        print("[Email] Denní limit VŠECH senderů dosažen")
         return stats
 
-    remaining = health["remaining_today"]
-    actual_limit = min(limit, remaining)
+    actual_limit = min(limit, total_remaining)
 
-    # 2. Načíst firmy
+    # 4. Načíst firmy
     companies = await get_companies_to_email(actual_limit)
     stats["total_candidates"] = len(companies)
 
@@ -158,6 +221,16 @@ async def run_email_campaign(
         if not await check_domain_limit(email):
             stats["skipped_domain_limit"] += 1
             continue
+
+        # Vyber sendera (round-robin s auto-failover)
+        sender = await pick_sender()
+        if not sender:
+            stats["skipped_no_sender"] += 1
+            print("[Email] ⚠️  Žádný sender dostupný — přeskakuji")
+            break  # Nemá cenu pokračovat
+
+        sender_email = sender["email"]
+        sender_name = sender["name"]
 
         # Najdi top finding
         findings = company.get("findings", [])
@@ -187,22 +260,25 @@ async def run_email_campaign(
                 to_email=email,
             )
 
-        # Odeslat
+        # Odeslat přes vybraného sendera
         try:
             if dry_run:
                 result = {"id": "dry_run", "status": "skipped"}
-                print(f"[Email DRY RUN] {email} — {email_data.subject}")
+                print(f"[Email DRY RUN] {sender_email} → {email} — {email_data.subject}")
             else:
                 result = await send_email(
                     to=email,
                     subject=email_data.subject,
                     html=email_data.body_html,
+                    from_email=sender_email,
+                    from_name=sender_name,
                 )
 
-            # Zalogovat
+            # Zalogovat (s from_email pro sender tracking)
             supabase.table("email_log").insert({
                 "company_ico": ico,
                 "to_email": email,
+                "from_email": sender_email,
                 "subject": email_data.subject,
                 "variant": email_data.variant_id,
                 "resend_id": result.get("id", ""),
@@ -221,8 +297,18 @@ async def run_email_campaign(
             else:
                 stats["followups_sent"] += 1
 
+            # Track sender usage
+            stats["senders_used"][sender_email] = \
+                stats["senders_used"].get(sender_email, 0) + 1
+
+            # 🕐 Náhodné zpoždění — vypadá jako člověk, ne robot
+            if not dry_run:
+                delay = random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)
+                print(f"[Email] ✅ {sender_email} → {email} | čekám {delay:.0f}s...")
+                await asyncio.sleep(delay)
+
         except Exception as e:
-            print(f"[Email] Chyba pro {email}: {e}")
+            print(f"[Email] ❌ Chyba {sender_email} → {email}: {e}")
             stats["errors"] += 1
 
     print(f"[Email] Kampaň hotova: {stats}")
