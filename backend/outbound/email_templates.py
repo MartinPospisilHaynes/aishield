@@ -57,29 +57,18 @@ BRAND = {
     "critical": "#991b1b",
 }
 
-RISK_BADGE = {
-    "minimal": {
-        "color": "#15803d",
-        "bg": "#dcfce7",
-        "label": "Minimální",
-        "icon": "🟢",
-    },
-    "limited": {
-        "color": "#a16207",
-        "bg": "#fef9c3",
-        "label": "Omezené",
-        "icon": "🟡",
-    },
-    "high": {
-        "color": "#dc2626",
-        "bg": "#fee2e2",
-        "label": "Vysoké",
-        "icon": "🔴",
+# Stav = buď je to neoznačeno (porušení), nebo zakázáno (vážné porušení)
+STATUS_BADGE = {
+    "default": {
+        "color": "#92400e",
+        "bg": "#fef3c7",
+        "label": "Neoznačeno",
+        "icon": "⚠️",
     },
     "prohibited": {
         "color": "#7f1d1d",
         "bg": "#fecaca",
-        "label": "Zakázané",
+        "label": "Zakázaný systém",
         "icon": "⛔",
     },
 }
@@ -171,7 +160,7 @@ def _risk_table_html(findings: list[FindingRow]) -> str:
 
     rows = ""
     for f in findings:
-        badge = RISK_BADGE.get(f.risk_level, RISK_BADGE["limited"])
+        badge = STATUS_BADGE["prohibited"] if f.risk_level == "prohibited" else STATUS_BADGE["default"]
         desc = _get_layman_desc(f)
         article_html = _article_link(f.ai_act_article)
         rows += f"""
@@ -195,7 +184,7 @@ def _risk_table_html(findings: list[FindingRow]) -> str:
         <thead>
             <tr style="background: {BRAND['bg_light']};">
                 <th style="padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 600; color: {BRAND['text']}; border-bottom: 2px solid #e2e8f0;">AI systém</th>
-                <th style="padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: {BRAND['text']}; border-bottom: 2px solid #e2e8f0;">Riziko</th>
+                <th style="padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: {BRAND['text']}; border-bottom: 2px solid #e2e8f0;">Stav</th>
                 <th style="padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 600; color: {BRAND['text']}; border-bottom: 2px solid #e2e8f0;">Článek AI Act</th>
             </tr>
         </thead>
