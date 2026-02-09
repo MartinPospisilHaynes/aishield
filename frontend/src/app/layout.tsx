@@ -21,6 +21,16 @@ export const metadata: Metadata = {
         "české firmy",
     ],
     authors: [{ name: "AIshield.cz" }],
+    icons: {
+        icon: [
+            { url: "/favicon.ico", sizes: "48x48" },
+            { url: "/favicon.svg", type: "image/svg+xml" },
+            { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+            { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+        ],
+        apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    },
+    manifest: "/site.webmanifest",
     openGraph: {
         title: "AIshield.cz — Váš štít proti pokutám EU",
         description: "AI Act compliance scanner. Zjistěte stav vašeho webu za 60 sekund.",
@@ -39,6 +49,7 @@ export default function RootLayout({
     return (
         <html lang="cs">
             <head>
+                <meta name="theme-color" content="#7c3aed" />
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
                     rel="stylesheet"
