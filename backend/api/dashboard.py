@@ -68,7 +68,7 @@ async def get_dashboard_data(user_email: str):
     ).order("created_at", desc=True).execute()
 
     # 6. Dotazník
-    quest_res = supabase.table("questionnaire_answers").select("id").eq(
+    quest_res = supabase.table("questionnaire_responses").select("id").eq(
         "company_id", company_id
     ).limit(1).execute()
     questionnaire_status = "dokončen" if quest_res.data else "nevyplněn"

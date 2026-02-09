@@ -84,7 +84,7 @@ async def scan_agency_client(client: AgencyClient) -> dict:
     # Vytvořit sken
     scan = supabase.table("scans").insert({
         "company_id": company_id,
-        "url": url,
+        "url_scanned": url,
         "status": "pending",
         "started_at": datetime.now(timezone.utc).isoformat(),
     }).execute()

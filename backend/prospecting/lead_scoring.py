@@ -177,7 +177,7 @@ async def score_all_leads() -> dict:
     stats = {"scored": 0, "hot": 0, "warm": 0, "cool": 0, "cold": 0}
 
     res = supabase.table("companies").select(
-        "ico, url, total_findings, source, nace_codes, email, "
+        "id, ico, url, total_findings, source, nace_codes, email, "
         "email_source, email_confidence, heureka_reviews, heureka_rating"
     ).eq("prospecting_status", "qualified").execute()
 
@@ -189,10 +189,11 @@ async def score_all_leads() -> dict:
         ico = company.get("ico", "")
         url = company.get("url", "")
 
-        if ico:
+        company_id = company.get("id", "")
+        if company_id:
             findings_res = supabase.table("findings").select(
                 "risk_level"
-            ).eq("company_ico", ico).execute()
+            ).eq("company_id", company_id).execute()
         else:
             findings_res = None
 

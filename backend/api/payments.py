@@ -88,6 +88,7 @@ async def create_checkout(req: CheckoutRequest):
         "plan": req.plan,
         "amount": amount,
         "email": req.email,
+        "user_email": req.email,
         "status": payment.state,
         "created_at": datetime.utcnow().isoformat(),
     }).execute()
