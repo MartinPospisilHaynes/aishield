@@ -8,6 +8,7 @@ import { Suspense } from "react";
 function RegistraceInner() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [companyName, setCompanyName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -22,10 +23,18 @@ function RegistraceInner() {
         if (p) setPartner(p);
     }, [searchParams]);
 
+    const redirectTo = searchParams.get("redirect") || "/dashboard";
+
     async function handleRegister(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
         setError("");
+
+        if (password !== confirmPassword) {
+            setError("Hesla se neshodují");
+            setLoading(false);
+            return;
+        }
 
         // 1. Registrace v Supabase Auth
         const { data, error: authError } = await supabase.auth.signUp({
@@ -55,7 +64,7 @@ function RegistraceInner() {
 
         // 2. Pokud Supabase potvrdil email automaticky (dev mode), jít na dashboard
         if (data.session) {
-            router.push("/dashboard");
+            router.push(redirectTo);
             return;
         }
 
@@ -164,6 +173,24 @@ function RegistraceInner() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Minimálně 6 znaků"
+                                required
+                                minLength={6}
+                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                    text-white placeholder:text-slate-500
+                                    focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                    transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                Potvrdit heslo
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Zadejte heslo znovu"
                                 required
                                 minLength={6}
                                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 
-export default function LoginPage() {
+function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get('redirect') || '/dashboard';
     const supabase = createClient();
 
     async function handleLogin(e: React.FormEvent) {
@@ -32,7 +34,7 @@ export default function LoginPage() {
             return;
         }
 
-        router.push("/dashboard");
+        router.push(redirect);
     }
 
     return (
@@ -104,16 +106,29 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 text-center space-y-3">
                         <p className="text-sm text-slate-500">
                             Nemáte účet?{" "}
                             <a href="/registrace" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors font-medium">
                                 Zaregistrujte se
                             </a>
                         </p>
+                        <p className="text-sm">
+                            <a href="mailto:info@aishield.cz?subject=Reset hesla" className="text-slate-500 hover:text-slate-300 transition-colors">
+                                Zapomenuté heslo?
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </section>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="py-20 text-center text-slate-400">Načítání...</div>}>
+            <LoginForm />
+        </Suspense>
     );
 }

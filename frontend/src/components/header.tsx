@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
     const { user, loading, signOut } = useAuth();
     const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const pathname = usePathname();
+
+    function isActive(href: string) {
+        if (href === "/") return pathname === "/";
+        return pathname === href || pathname.startsWith(href + "/");
+    }
 
     async function handleSignOut() {
         await signOut();
@@ -27,16 +33,16 @@ export default function Header() {
 
                 {/* Desktop nav */}
                 <div className="hidden md:flex items-center gap-8">
-                    <a href="/scan" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
+                    <a href="/scan" className={`text-sm transition-colors ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Skenovat web
                     </a>
-                    <a href="/dotaznik" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
+                    <a href="/dotaznik" className={`text-sm transition-colors ${isActive("/dotaznik") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Dotazník
                     </a>
-                    <a href="/pricing" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
+                    <a href="/pricing" className={`text-sm transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
-                    <a href="/about" className="text-sm text-slate-400 hover:text-neon-fuchsia transition-colors">
+                    <a href="/about" className={`text-sm transition-colors ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Jak to funguje
                     </a>
 
@@ -104,16 +110,16 @@ export default function Header() {
             {/* Mobile menu */}
             {mobileOpen && (
                 <div className="md:hidden border-t border-white/[0.06] bg-dark-900/95 backdrop-blur-xl px-6 py-4 space-y-3">
-                    <a href="/scan" className="block text-sm text-slate-400 hover:text-neon-fuchsia transition-colors py-2">
+                    <a href="/scan" className={`block text-sm transition-colors py-2 ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Skenovat web
                     </a>
-                    <a href="/dotaznik" className="block text-sm text-slate-400 hover:text-neon-fuchsia transition-colors py-2">
+                    <a href="/dotaznik" className={`block text-sm transition-colors py-2 ${isActive("/dotaznik") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Dotazník
                     </a>
-                    <a href="/pricing" className="block text-sm text-slate-400 hover:text-neon-fuchsia transition-colors py-2">
+                    <a href="/pricing" className={`block text-sm transition-colors py-2 ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
-                    <a href="/about" className="block text-sm text-slate-400 hover:text-neon-fuchsia transition-colors py-2">
+                    <a href="/about" className={`block text-sm transition-colors py-2 ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Jak to funguje
                     </a>
 

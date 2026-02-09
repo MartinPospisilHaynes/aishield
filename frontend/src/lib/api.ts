@@ -329,6 +329,7 @@ export interface DashboardData {
 export async function getDashboardData(
     email: string,
 ): Promise<DashboardData> {
+    // TODO: Add Authorization: Bearer ${session?.access_token} header
     const res = await fetch(`${API_URL}/api/dashboard/${encodeURIComponent(email)}`);
 
     if (!res.ok) {

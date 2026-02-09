@@ -65,9 +65,9 @@ const TEMPLATE_NAMES: Record<string, string> = {
 };
 
 const RISK_COLORS: Record<string, string> = {
-    high: "text-red-400 bg-red-500/10 border-red-500/20",
-    medium: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-    low: "text-green-400 bg-green-500/10 border-green-500/20",
+    high: "bg-red-500/20 text-red-400 border border-red-500/30",
+    medium: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+    low: "bg-green-500/20 text-green-400 border border-green-500/30",
 };
 
 export default function DashboardPage() {
@@ -155,40 +155,47 @@ export default function DashboardPage() {
                         value={score != null ? `${score}%` : "—"}
                         sub={score != null ? (score >= 80 ? "Dobrý stav" : score >= 50 ? "Vyžaduje pozornost" : "Kritický stav") : "Sken zatím nebyl proveden"}
                         color={score != null ? (score >= 80 ? "text-green-400" : score >= 50 ? "text-amber-400" : "text-red-400") : "text-slate-500"}
+                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
                     />
                     <StatCard
                         label="AI systémy nalezeny"
                         value={String(findingsCount)}
                         sub={highRisk > 0 ? `${highRisk} vysoké riziko` : "Žádné kritické"}
                         color={highRisk > 0 ? "text-red-400" : "text-green-400"}
+                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
                     />
                     <StatCard
                         label="Dokumenty"
                         value={`${docsCount}/7`}
                         sub={docsCount === 7 ? "Kompletní kit" : "Ke stažení"}
                         color={docsCount === 7 ? "text-green-400" : "text-cyan-400"}
+                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>}
                     />
                     <StatCard
                         label="Dotazník"
                         value={data?.questionnaire_status === "dokončen" ? "Hotovo" : "Čeká"}
                         sub={data?.questionnaire_status === "dokončen" ? "Vyplněn" : "Vyplňte pro přesnější analýzu"}
                         color={data?.questionnaire_status === "dokončen" ? "text-green-400" : "text-amber-400"}
+                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
                     />
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 pb-px">
+                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6">
                     {TABS.map((tab) => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
-                            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${activeTab === tab.key
-                                    ? "text-fuchsia-400 border-b-2 border-fuchsia-400 bg-white/[0.03]"
+                            className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
+                                    ? "text-fuchsia-400"
                                     : "text-slate-500 hover:text-slate-300"
                                 }`}
                         >
                             {tab.icon}
                             {tab.label}
+                            {activeTab === tab.key && (
+                                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 rounded-full" />
+                            )}
                         </button>
                     ))}
                 </div>
@@ -207,12 +214,15 @@ export default function DashboardPage() {
 }
 
 /* ── Stat Card ── */
-function StatCard({ label, value, sub, color }: {
-    label: string; value: string; sub: string; color: string;
+function StatCard({ label, value, sub, color, icon }: {
+    label: string; value: string; sub: string; color: string; icon?: React.ReactNode;
 }) {
     return (
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-            <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+            <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
+                {icon && <span className="text-slate-600">{icon}</span>}
+            </div>
             <p className={`text-3xl font-extrabold mt-1 ${color}`}>{value}</p>
             <p className="text-xs text-slate-500 mt-1">{sub}</p>
         </div>
@@ -229,74 +239,168 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
     const steps = [
         {
             done: hasScans,
-            label: "Skenovat web",
+            label: "Sken webu",
             desc: "Automatická detekce AI systémů na vašem webu",
             href: "/scan",
             cta: "Spustit sken",
         },
         {
             done: hasQuest,
-            label: "Vyplnit dotazník",
+            label: "Dotazník",
             desc: "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
             href: "/dotaznik",
-            cta: "Vyplnit",
+            cta: "Vyplnit dotazník",
         },
         {
             done: hasPaidOrder,
-            label: "Objednat balíček",
+            label: "Objednávka",
             desc: "Odemkněte compliance dokumenty a akční plán",
             href: "/pricing",
             cta: "Vybrat balíček",
         },
         {
             done: hasDocs,
-            label: "Stáhnout dokumenty",
+            label: "Dokumenty",
             desc: "7 PDF dokumentů pro splnění AI Act",
             href: "#",
             cta: "Viz tab Dokumenty",
         },
     ];
 
+    const currentStepIndex = steps.findIndex((s) => !s.done);
+    const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
+    const completedCount = steps.filter((s) => s.done).length;
+    const lineWidthPercent = completedCount <= 1 ? 0 : ((completedCount - 1) / (steps.length - 1)) * 75;
+
+    // Processing timer: order paid but documents not yet generated
+    const isProcessing = hasPaidOrder && !hasDocs;
+    const currentHour = new Date().getHours();
+    const isBusinessHours = currentHour >= 8 && currentHour < 16;
+
     return (
         <div className="space-y-6">
+            {/* Progress Timeline */}
             <div className="glass">
-                <h3 className="font-semibold mb-4">Postup k compliance</h3>
-                <div className="space-y-3">
-                    {steps.map((step, i) => (
+                <h3 className="font-semibold mb-8">Postup k compliance</h3>
+
+                {/* Horizontal step progress bar */}
+                <div className="grid grid-cols-4 relative mb-8">
+                    {/* Background connecting line */}
+                    <div className="absolute top-5 left-[12.5%] right-[12.5%] h-0.5 bg-white/[0.06]" />
+                    {/* Completed portion of line */}
+                    {lineWidthPercent > 0 && (
                         <div
-                            key={i}
-                            className={`flex items-center gap-4 rounded-xl border px-4 py-3 ${step.done
-                                    ? "border-green-500/20 bg-green-500/5"
-                                    : "border-white/[0.06] bg-white/[0.02]"
-                                }`}
-                        >
-                            <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold ${step.done
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "bg-white/5 text-slate-500"
-                                }`}>
-                                {step.done ? (
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                ) : (
-                                    i + 1
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-medium ${step.done ? "text-green-400" : "text-slate-200"}`}>
+                            className="absolute top-5 left-[12.5%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full"
+                            style={{ width: `${lineWidthPercent}%` }}
+                        />
+                    )}
+
+                    {steps.map((step, i) => {
+                        const isCurrent = i === currentStepIndex;
+                        return (
+                            <div key={i} className="flex flex-col items-center relative z-10">
+                                <div
+                                    className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${
+                                        step.done
+                                            ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+                                            : isCurrent
+                                                ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
+                                                : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
+                                    }`}
+                                >
+                                    {step.done ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        i + 1
+                                    )}
+                                </div>
+                                <span
+                                    className={`text-xs mt-2.5 font-medium text-center ${
+                                        step.done
+                                            ? "text-green-400/80"
+                                            : isCurrent
+                                                ? "text-fuchsia-400"
+                                                : "text-slate-600"
+                                    }`}
+                                >
                                     {step.label}
-                                </p>
-                                <p className="text-xs text-slate-500">{step.desc}</p>
+                                </span>
                             </div>
-                            {!step.done && step.href !== "#" && (
-                                <a href={step.href} className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
-                                    {step.cta}
-                                </a>
-                            )}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
+
+                {/* Current step detail card */}
+                {currentStep && (
+                    <div className="rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/[0.04] p-5">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-fuchsia-500/20 text-fuchsia-400 text-xs font-bold">
+                                {currentStepIndex + 1}
+                            </span>
+                            <h4 className="font-semibold text-fuchsia-300">{currentStep.label}</h4>
+                        </div>
+                        <p className="text-sm text-slate-400 mb-4 ml-9">{currentStep.desc}</p>
+                        {currentStep.href !== "#" && (
+                            <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-9 inline-block">
+                                {currentStep.cta}
+                            </a>
+                        )}
+                    </div>
+                )}
+
+                {/* All steps done */}
+                {!currentStep && (
+                    <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5 text-center">
+                        <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h4 className="font-semibold text-green-400">Všechny kroky dokončeny!</h4>
+                        <p className="text-sm text-slate-400 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení.</p>
+                    </div>
+                )}
             </div>
+
+            {/* Processing timer — shown when paid but docs not ready */}
+            {isProcessing && (
+                <div className="glass border-fuchsia-500/20">
+                    <div className="flex items-center gap-5">
+                        {/* Animated circular progress */}
+                        <div className="relative flex-shrink-0 h-16 w-16">
+                            <svg className="w-16 h-16 animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="3" className="text-white/[0.06]" />
+                                <circle
+                                    cx="32" cy="32" r="28"
+                                    stroke="url(#proc-grad)"
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                    strokeDasharray="80 96"
+                                />
+                                <defs>
+                                    <linearGradient id="proc-grad" x1="0" y1="0" x2="64" y2="64">
+                                        <stop offset="0%" stopColor="#d946ef" />
+                                        <stop offset="100%" stopColor="#06b6d4" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-slate-200">Zpracováváme vaši objednávku</h3>
+                            <p className="text-sm text-slate-400 mt-1">
+                                {isBusinessHours
+                                    ? "Obvykle do 4 hodin (doručujeme 8:00\u201316:00)"
+                                    : "Výsledky budou doručeny zítra ráno v 8:00"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Poslední objednávky */}
             {data?.orders && data.orders.length > 0 && (
@@ -304,7 +408,7 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                     <h3 className="font-semibold mb-4">Objednávky</h3>
                     <div className="space-y-2">
                         {data.orders.map((order) => (
-                            <div key={order.order_number} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm">
+                            <div key={order.order_number} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm hover:border-white/[0.12] transition-all">
                                 <div>
                                     <span className="text-slate-300 font-medium">{order.order_number}</span>
                                     <span className="text-slate-500 ml-2">({order.plan.toUpperCase()})</span>
@@ -336,10 +440,15 @@ function TabFindings({ findings }: { findings: DashboardData["findings"] }) {
     if (findings.length === 0) {
         return (
             <EmptyState
-                title="Žádné AI systémy nalezeny"
-                description="Spusťte sken webu pro automatickou detekci AI systémů."
+                title="Zatím žádné AI systémy"
+                description="Spusťte sken webu pro automatickou detekci AI systémů na vašem webu."
                 href="/scan"
                 cta="Spustit sken"
+                illustration={
+                    <svg className="w-10 h-10 text-fuchsia-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                }
             />
         );
     }
@@ -347,12 +456,12 @@ function TabFindings({ findings }: { findings: DashboardData["findings"] }) {
     return (
         <div className="space-y-3">
             {findings.map((f) => (
-                <div key={f.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div key={f.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-2">
                                 <h4 className="font-semibold text-slate-200">{f.name}</h4>
-                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium border ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
+                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
                                     }`}>
                                     {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
                                 </span>
@@ -384,10 +493,15 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
     if (documents.length === 0) {
         return (
             <EmptyState
-                title="Žádné dokumenty"
-                description="Dokumenty se vygenerují po skenování, vyplnění dotazníku a objednání balíčku."
+                title="Zatím žádné dokumenty"
+                description="Dokumenty se generují po zaplacení balíčku."
                 href="/pricing"
-                cta="Objednat balíček"
+                cta="Vybrat balíček"
+                illustration={
+                    <svg className="w-10 h-10 text-cyan-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                }
             />
         );
     }
@@ -395,7 +509,7 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {documents.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-center gap-4">
+                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-center gap-4 hover:border-white/[0.12] transition-all">
                     <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
                         <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -434,6 +548,11 @@ function TabPlan({ findings }: { findings: DashboardData["findings"] }) {
                 description="Nejdříve proveďte sken webu — akční plán se vygeneruje z nálezů."
                 href="/scan"
                 cta="Spustit sken"
+                illustration={
+                    <svg className="w-10 h-10 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                }
             />
         );
     }
@@ -498,7 +617,7 @@ function TabPlan({ findings }: { findings: DashboardData["findings"] }) {
                                 {f.action_required || f.name}
                             </p>
                             <div className="flex items-center gap-3 mt-1">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
+                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
                                     }`}>
                                     {f.risk_level === "high" ? "Vysoká priorita" : f.risk_level === "medium" ? "Střední" : "Nízká"}
                                 </span>
@@ -517,10 +636,15 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
     if (scans.length === 0) {
         return (
             <EmptyState
-                title="Žádné skeny"
+                title="Zatím žádné skeny"
                 description="Spusťte první sken pro detekci AI systémů na vašem webu."
                 href="/scan"
                 cta="Spustit sken"
+                illustration={
+                    <svg className="w-10 h-10 text-emerald-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                }
             />
         );
     }
@@ -528,7 +652,7 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
     return (
         <div className="space-y-3">
             {scans.map((scan, i) => (
-                <div key={scan.id} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+                <div key={scan.id} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 hover:border-white/[0.12] transition-all">
                     {/* Timeline dot */}
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
@@ -566,15 +690,17 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
 }
 
 /* ── Empty State ── */
-function EmptyState({ title, description, href, cta }: {
-    title: string; description: string; href: string; cta: string;
+function EmptyState({ title, description, href, cta, illustration }: {
+    title: string; description: string; href: string; cta: string; illustration?: React.ReactNode;
 }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="h-16 w-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
+            <div className="h-20 w-20 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-5">
+                {illustration || (
+                    <svg className="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                )}
             </div>
             <h3 className="font-semibold text-slate-300 mb-1">{title}</h3>
             <p className="text-sm text-slate-500 max-w-sm mb-6">{description}</p>

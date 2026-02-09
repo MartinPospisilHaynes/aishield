@@ -111,7 +111,7 @@ export default function RootLayout({
                                         <li>IČO: 17889251</li>
                                         <li>Mlýnská 53, 783 53 Velká Bystřice</li>
                                         <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors">+420 732 716 141</a></li>
-                                        <li><a href="mailto:info@desperados-design.cz" className="hover:text-neon-cyan transition-colors">info@desperados-design.cz</a></li>
+                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors">info@aishield.cz</a></li>
                                     </ul>
                                 </div>
                             </div>
