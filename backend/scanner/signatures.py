@@ -558,6 +558,404 @@ AI_SIGNATURES: list[AISignature] = [
     ),
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # DALŠÍ CHATBOTY (rozšířeno)
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="JivoChat",
+        category="chatbot",
+        signatures=["jivosite", "jivo-", "jivochat", "JivoSite"],
+        script_patterns=["code.jivosite.com", "jivo.chat"],
+        cookie_patterns=["jv_"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="JivoChat s AI odpověďmi musí být označen.",
+        description_cs="JivoChat (JivoSite) — chatbot s AI asistencí.",
+    ),
+
+    AISignature(
+        name="Chatra",
+        category="chatbot",
+        signatures=["chatra", "ChatraID", "ChatraSetup"],
+        script_patterns=["call.chatra.io"],
+        cookie_patterns=["chatra"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Chatra chatbot s AI musí být označen.",
+        description_cs="Chatra — live chat a chatbot s AI funkcemi.",
+    ),
+
+    AISignature(
+        name="Olark",
+        category="chatbot",
+        signatures=["olark", "olarkIdentify", "olark.configure"],
+        script_patterns=["static.olark.com"],
+        cookie_patterns=["olark"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Olark chatbot s AI musí být označen.",
+        description_cs="Olark — live chat s AI CoPilot funkcemi.",
+    ),
+
+    AISignature(
+        name="LivePerson",
+        category="chatbot",
+        signatures=["liveperson", "lpTag", "LivePerson"],
+        script_patterns=["lptag.liveperson.net", "lpcdn.lpsnmedia.net"],
+        cookie_patterns=["LivePerson"],
+        network_patterns=["lptag.liveperson.net"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="LivePerson AI chatbot musí být transparentně označen.",
+        description_cs="LivePerson — enterprise AI konverzační platforma.",
+    ),
+
+    AISignature(
+        name="Gorgias",
+        category="chatbot",
+        signatures=["gorgias", "gorgias-chat"],
+        script_patterns=["config.gorgias.chat", "gorgias.chat"],
+        network_patterns=["gorgias.chat"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Gorgias AI chatbot musí být označen.",
+        description_cs="Gorgias — AI helpdesk pro e-commerce.",
+    ),
+
+    AISignature(
+        name="Re:amaze",
+        category="chatbot",
+        signatures=["reamaze", "re:amaze", "reAmaze"],
+        script_patterns=["d2sh4fq2xsdeg9.cloudfront.net"],
+        network_patterns=["reamaze.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Re:amaze AI chatbot musí být označen.",
+        description_cs="Re:amaze — helpdesk s AI chatbotem pro e-commerce.",
+    ),
+
+    AISignature(
+        name="Typebot",
+        category="chatbot",
+        signatures=["typebot", "typebot.io"],
+        script_patterns=["cdn.jsdelivr.net/npm/@typebot.io", "typebot.io"],
+        network_patterns=["typebot.io"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Typebot s AI odpověďmi musí být označen.",
+        description_cs="Typebot — open-source chatbot builder s AI integrací.",
+    ),
+
+    AISignature(
+        name="Kommunicate",
+        category="chatbot",
+        signatures=["kommunicate", "applozic"],
+        script_patterns=["widget.kommunicate.io"],
+        network_patterns=["api.kommunicate.io"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Kommunicate AI chatbot musí být označen.",
+        description_cs="Kommunicate — AI chatbot platforma s GPT integrací.",
+    ),
+
+    AISignature(
+        name="CustomGPT",
+        category="chatbot",
+        signatures=["customgpt", "custom-gpt"],
+        script_patterns=["cdn.customgpt.ai"],
+        network_patterns=["app.customgpt.ai"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="CustomGPT chatbot musí být transparentně označen jako AI.",
+        description_cs="CustomGPT — vlastní AI chatbot trénovaný na firemních datech.",
+    ),
+
+    AISignature(
+        name="YourGPT",
+        category="chatbot",
+        signatures=["yourgpt", "your-gpt"],
+        script_patterns=["widget.yourgpt.ai"],
+        network_patterns=["yourgpt.ai"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="YourGPT chatbot musí být označen jako AI systém.",
+        description_cs="YourGPT — no-code AI chatbot builder.",
+    ),
+
+    AISignature(
+        name="Zapier Chatbot",
+        category="chatbot",
+        signatures=["zapier-interfaces", "zap-chat", "interfaces.zapier.com"],
+        script_patterns=["interfaces.zapier.com"],
+        network_patterns=["interfaces.zapier.com", "nla.zapier.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Zapier AI chatbot musí být označen.",
+        description_cs="Zapier AI Chatbot — automatizovaný AI agent na webu.",
+    ),
+
+    AISignature(
+        name="Userlike",
+        category="chatbot",
+        signatures=["userlike", "userlikeReady"],
+        script_patterns=["userlike-cdn-widgets.s3-eu-west-1.amazonaws.com"],
+        cookie_patterns=["uslk_"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Userlike AI chatbot musí být označen.",
+        description_cs="Userlike — live chat s AI automatizací.",
+    ),
+
+    AISignature(
+        name="Help Scout Beacon",
+        category="chatbot",
+        signatures=["Beacon(", "helpscout", "beacon-v2"],
+        script_patterns=["beacon-v2.helpscout.net"],
+        network_patterns=["beaconapi.helpscout.net"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Help Scout AI Answers musí být označen.",
+        description_cs="Help Scout Beacon — helpdesk s AI Answers.",
+    ),
+
+    AISignature(
+        name="Chatwoot",
+        category="chatbot",
+        signatures=["chatwoot", "chatwootSettings", "chatwootSDK"],
+        script_patterns=["app.chatwoot.com"],
+        network_patterns=["chatwoot.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Chatwoot AI odpovědi musí být označeny.",
+        description_cs="Chatwoot — open-source zákaznická podpora s AI.",
+    ),
+
+    AISignature(
+        name="Vercel AI Chatbot",
+        category="chatbot",
+        signatures=["ai-chatbot", "useChat", "ai/react"],
+        script_patterns=["sdk.vercel.ai"],
+        network_patterns=["api/chat", "api/completion"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="AI chatbot postavený na Vercel AI SDK musí být označen.",
+        description_cs="AI chatbot na bázi Vercel AI SDK.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # AI A/B TESTOVÁNÍ & PERSONALIZACE
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="VWO (Visual Website Optimizer)",
+        category="recommender",
+        signatures=["vwo_", "VWO", "visualwebsiteoptimizer"],
+        script_patterns=["dev.visualwebsiteoptimizer.com", "vwo.com"],
+        cookie_patterns=["_vwo", "_vis_opt"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="VWO AI personalizace a prediktivní targeting vyžaduje transparenci.",
+        description_cs="VWO — A/B testování s AI personalizací a prediktivním targetingem.",
+    ),
+
+    AISignature(
+        name="Optimizely",
+        category="recommender",
+        signatures=["optimizely", "optimizelyEndUserId"],
+        script_patterns=["cdn.optimizely.com", "logx.optimizely.com"],
+        cookie_patterns=["optimizely"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Optimizely AI experimentace vyžaduje transparenci.",
+        description_cs="Optimizely — AI experimentace a personalizace.",
+    ),
+
+    AISignature(
+        name="AB Tasty",
+        category="recommender",
+        signatures=["abtasty", "ABTasty"],
+        script_patterns=["try.abtasty.com", "abtasty.com"],
+        cookie_patterns=["ABTasty"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="AB Tasty AI personalizace vyžaduje transparenci.",
+        description_cs="AB Tasty — A/B testování s AI personalizací.",
+    ),
+
+    AISignature(
+        name="Clerk.io",
+        category="recommender",
+        signatures=["clerk.io", "clerkjs", "Clerk("],
+        script_patterns=["cdn.clerk.io"],
+        network_patterns=["api.clerk.io"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Clerk.io AI doporučování vyžaduje transparenci.",
+        description_cs="Clerk.io — AI doporučovací engine pro e-commerce.",
+    ),
+
+    AISignature(
+        name="Luigi's Box",
+        category="recommender",
+        signatures=["luigisbox", "luigi"],
+        script_patterns=["scripts.luigisbox.com"],
+        network_patterns=["live.luigisbox.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Luigi's Box AI vyhledávání vyžaduje transparenci.",
+        description_cs="Luigi's Box — slovenský AI vyhledávač a doporučovač pro e-shopy.",
+    ),
+
+    AISignature(
+        name="Bloomreach",
+        category="recommender",
+        signatures=["bloomreach", "exponea"],
+        script_patterns=["cdn.exponea.com", "api.exponea.com"],
+        cookie_patterns=["__exponea"],
+        network_patterns=["api.exponea.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1, čl. 26",
+        action_required="Bloomreach AI personalizace a predikce vyžaduje transparenci.",
+        description_cs="Bloomreach (Exponea) — AI personalizace a prediktivní marketing.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # AI CONTENT & SEO NÁSTROJE
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="Writesonic",
+        category="content_gen",
+        signatures=["writesonic", "writesonic.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generovaný obsah musí být označen.",
+        description_cs="Writesonic — AI generování obsahu a chatbot Botsonic.",
+    ),
+
+    AISignature(
+        name="Surfer SEO",
+        category="content_gen",
+        signatures=["surferseo", "surfer-seo", "surfer.ai"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generovaný obsah musí být označen.",
+        description_cs="Surfer SEO — AI optimalizace a generování SEO obsahu.",
+    ),
+
+    AISignature(
+        name="Frase.io",
+        category="content_gen",
+        signatures=["frase.io", "frase"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generovaný obsah musí být označen.",
+        description_cs="Frase — AI výzkum a generování obsahu.",
+    ),
+
+    AISignature(
+        name="MarketMuse",
+        category="content_gen",
+        signatures=["marketmuse", "market-muse"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generovaný obsah musí být označen.",
+        description_cs="MarketMuse — AI plánování a optimalizace obsahu.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # AI PŘEKLAD & LOKALIZACE
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="DeepL Translator",
+        category="content_gen",
+        signatures=["deepl", "deepl.com"],
+        script_patterns=["static.deepl.com"],
+        network_patterns=["api-free.deepl.com", "api.deepl.com"],
+        risk_level="minimal",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI překlad by měl být označen.",
+        description_cs="DeepL — AI překladač, pokud se obsah automaticky překládá.",
+    ),
+
+    AISignature(
+        name="Weglot",
+        category="content_gen",
+        signatures=["weglot", "Weglot.initialize"],
+        script_patterns=["cdn.weglot.com"],
+        network_patterns=["api.weglot.com"],
+        risk_level="minimal",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI překlad webu by měl být označen.",
+        description_cs="Weglot — AI překlad a lokalizace webových stránek.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # AI OBRÁZKY & GENERATIVNÍ MEDIA
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="DALL-E / OpenAI Images",
+        category="content_gen",
+        signatures=["dall-e", "dalle", "oaidalleapiprodscus"],
+        network_patterns=["api.openai.com/v1/images"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generované obrázky musí být označeny jako vytvořené AI.",
+        description_cs="DALL-E — AI generování obrázků od OpenAI.",
+    ),
+
+    AISignature(
+        name="Midjourney",
+        category="content_gen",
+        signatures=["midjourney", "mj-"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generované obrázky musí být označeny.",
+        description_cs="Midjourney — AI generování obrázků.",
+    ),
+
+    AISignature(
+        name="Stable Diffusion",
+        category="content_gen",
+        signatures=["stable-diffusion", "stablediffusion", "stability.ai"],
+        network_patterns=["api.stability.ai"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 2",
+        action_required="AI generované obrázky musí být označeny.",
+        description_cs="Stable Diffusion — open-source AI generování obrázků.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # AI ZÁKAZNICKÝ SERVIS & TICKETING
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    AISignature(
+        name="Salesforce Einstein",
+        category="chatbot",
+        signatures=["einstein", "salesforce-chat", "embeddedservice"],
+        script_patterns=["service.force.com", "salesforce.com"],
+        network_patterns=["salesforce.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Salesforce Einstein AI musí být transparentně označen.",
+        description_cs="Salesforce Einstein — AI asistent v CRM a zákaznické podpoře.",
+    ),
+
+    AISignature(
+        name="Kayako",
+        category="chatbot",
+        signatures=["kayako", "kayako.com"],
+        script_patterns=["kayako.com"],
+        network_patterns=["kayako.com"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="Kayako AI odpovědi musí být označeny.",
+        description_cs="Kayako — helpdesk s AI chatbotem.",
+    ),
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     # GENERICKÉ DETEKCE (fallback)
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -570,6 +968,21 @@ AI_SIGNATURES: list[AISignature] = [
         ai_act_article="čl. 50 odst. 1",
         action_required="Jakýkoli AI chatbot musí být označen jako AI systém.",
         description_cs="Generický AI chatbot detekovaný na stránce.",
+    ),
+
+    AISignature(
+        name="Generický AI API",
+        category="chatbot",
+        signatures=[],
+        network_patterns=["huggingface.co/api", "api.replicate.com",
+                         "api-inference.huggingface.co",
+                         "api.cohere.ai", "api.mistral.ai",
+                         "api.together.xyz", "api.perplexity.ai",
+                         "api.groq.com", "api.fireworks.ai"],
+        risk_level="limited",
+        ai_act_article="čl. 50 odst. 1",
+        action_required="AI API volání musí být transparentně identifikováno.",
+        description_cs="Přímé volání AI API (Hugging Face, Replicate, Cohere, Mistral aj.).",
     ),
 ]
 

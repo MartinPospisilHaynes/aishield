@@ -42,6 +42,16 @@ AI_API_PATTERNS = [
     (r"api\.perplexity\.ai", "Perplexity AI API"),
     (r"aiplatform\.googleapis\.com", "Google Vertex AI"),
     (r"dialogflow\.googleapis\.com", "Google Dialogflow"),
+    (r"api\.groq\.com", "Groq API"),
+    (r"api\.fireworks\.ai", "Fireworks AI API"),
+    (r"api\.deepinfra\.com", "DeepInfra API"),
+    (r"api\.anyscale\.com", "Anyscale API"),
+    (r"inference\.cerebras\.ai", "Cerebras API"),
+    (r"api\.sambanova\.ai", "SambaNova API"),
+    (r"api-free\.deepl\.com|api\.deepl\.com", "DeepL Translation API"),
+    (r"api\.stability\.ai", "Stability AI API"),
+    (r"api\.runwayml\.com", "Runway ML API"),
+    (r"api\.elevenlabs\.io", "ElevenLabs Voice AI"),
 ]
 
 # Proxy patterns — vlastní PHP/Node proxy k AI API
@@ -54,6 +64,9 @@ AI_PROXY_PATTERNS = [
     r"claude[_-]?proxy",
     r"llm[_-]?proxy",
     r"api[_-]?proxy.*(?:chat|ai|gpt|gemini)",
+    r"/api/(?:chat|ai|completion|generate|stream)",
+    r"/v1/(?:chat|completions|embeddings|images)",
+    r"(?:chat|ai|bot)(?:api|endpoint|backend|service)",
 ]
 
 # Klíčová slova v HTML/skriptech indikující AI chatbot
@@ -388,6 +401,295 @@ class AIDetector:
                     evidence=[f"Keyword frequency: 'chatbot' = {chatbot_freq}×"],
                     confidence=min(0.90, 0.5 + chatbot_freq * 0.02),
                 ))
+
+        # ── 2g. CSP Header Analysis ──
+        # Hledáme Content-Security-Policy v meta tagu nebo inline HTML
+        csp_match = re.search(
+            r'<meta\s+http-equiv=["\']content-security-policy["\']\s+content=["\']([^"\']+)',
+            html_lower, re.IGNORECASE,
+        )
+        if csp_match:
+            csp_value = csp_match.group(1)
+            csp_ai_domains = [
+                ("openai.com", "OpenAI"),
+                ("anthropic.com", "Anthropic"),
+                ("googleapis.com/ai", "Google AI"),
+                ("generativelanguage.googleapis.com", "Google Gemini"),
+                ("huggingface.co", "Hugging Face"),
+                ("replicate.com", "Replicate"),
+                ("cohere.ai", "Cohere"),
+                ("mistral.ai", "Mistral"),
+                ("stability.ai", "Stability AI"),
+                ("deepl.com", "DeepL"),
+            ]
+            for domain, name in csp_ai_domains:
+                if domain in csp_value:
+                    csp_name = f"CSP povolení: {name}"
+                    if csp_name.lower() not in " ".join(already_found):
+                        results.append(DetectedAI(
+                            name=csp_name,
+                            category="chatbot",
+                            risk_level="limited",
+                            ai_act_article="čl. 50 odst. 1",
+                            action_required=f"V CSP hlavičce webu je povolena doména {domain}, "
+                                           "což indikuje komunikaci s AI službou.",
+                            description_cs=f"V Content-Security-Policy je povolena AI doména "
+                                          f"{domain} ({name}). Web komunikuje s AI službou.",
+                            matched_signatures=[f"csp:{domain}"],
+                            evidence=[f"CSP: {csp_value[:200]}"],
+                            confidence=0.90,
+                        ))
+                        already_found.add(csp_name.lower())
+
+        # ── 2h. WebSocket / SSE detekce AI streamingu ──
+        ws_ai_patterns = [
+            (r"wss?://[^\"'\s]*(?:chat|ai|bot|gpt|gemini|claude|openai)", "WebSocket AI"),
+            (r"text/event-stream", "SSE AI Streaming"),
+            (r"EventSource\s*\(\s*[\"'][^\"']*(?:chat|ai|completion|stream)", "SSE AI Endpoint"),
+        ]
+        for pattern, ws_name in ws_ai_patterns:
+            ws_match = re.search(pattern, all_text, re.IGNORECASE)
+            if ws_match and ws_name.lower() not in " ".join(already_found):
+                snippet = all_text[max(0, ws_match.start()-30):ws_match.end()+60].replace("\n", " ").strip()
+                results.append(DetectedAI(
+                    name=ws_name,
+                    category="chatbot",
+                    risk_level="limited",
+                    ai_act_article="čl. 50 odst. 1",
+                    action_required="Detekováno real-time AI streaming spojení. "
+                                   "AI systém musí být transparentně označen.",
+                    description_cs=f"Detekován {ws_name} — web používá real-time "
+                                  "streamování odpovědí z AI modelu.",
+                    matched_signatures=[f"streaming:{pattern}"],
+                    evidence=[f"Kód: ...{snippet}..."],
+                    confidence=0.80,
+                ))
+                already_found.add(ws_name.lower())
+
+        # ── 2i. localStorage/sessionStorage AI klíče ──
+        storage_ai_patterns = [
+            r"(?:local|session)Storage\.(?:set|get)Item\s*\(\s*[\"'](?:[^\"']*(?:ai[_-]|chatbot|chat[_-]session|gpt|gemini|claude|bot[_-]config|assistant))[^\"']*[\"']",
+        ]
+        for pattern in storage_ai_patterns:
+            st_match = re.search(pattern, all_inline, re.IGNORECASE)
+            if st_match:
+                snippet = all_inline[max(0, st_match.start()-20):st_match.end()+40].replace("\n", " ").strip()
+                storage_name = "AI Session Storage"
+                if storage_name.lower() not in " ".join(already_found):
+                    results.append(DetectedAI(
+                        name=storage_name,
+                        category="chatbot",
+                        risk_level="limited",
+                        ai_act_article="čl. 50 odst. 1",
+                        action_required="Web ukládá AI session data do prohlížeče. "
+                                       "AI systém musí být transparentně označen.",
+                        description_cs="V kódu webu detekováno ukládání AI session dat "
+                                      "do localStorage/sessionStorage prohlížeče.",
+                        matched_signatures=[f"storage:{pattern}"],
+                        evidence=[f"Kód: ...{snippet}..."],
+                        confidence=0.70,
+                    ))
+                    already_found.add(storage_name.lower())
+
+        # ── 2j. Meta tag AI indikátory ──
+        ai_meta_patterns = [
+            (r'<meta\s+name=["\']generator["\']\s+content=["\'][^"\']*(?:ai|gpt|gemini|openai|anthropic|chatgpt)[^"\']*["\']', "AI Generator Meta"),
+            (r'data-ai-(?:model|provider|version|type)\s*=\s*["\']', "AI Data Attribute"),
+            (r'<meta\s+name=["\']ai[_-]?(?:disclosure|policy|system|provider)["\']', "AI Meta Disclosure"),
+        ]
+        for pattern, meta_name in ai_meta_patterns:
+            meta_match = re.search(pattern, html_lower, re.IGNORECASE)
+            if meta_match and meta_name.lower() not in " ".join(already_found):
+                snippet = page.html[max(0, meta_match.start()-10):meta_match.end()+60].replace("\n", " ").strip()
+                results.append(DetectedAI(
+                    name=meta_name,
+                    category="content_gen",
+                    risk_level="limited",
+                    ai_act_article="čl. 50 odst. 2",
+                    action_required="Web v meta datech deklaruje využití AI. "
+                                   "AI systém musí být kompletně dokumentován.",
+                    description_cs=f"V HTML meta datech nalezen indikátor AI systému.",
+                    matched_signatures=[f"meta:{pattern}"],
+                    evidence=[f"HTML: ...{snippet}..."],
+                    confidence=0.85,
+                ))
+                already_found.add(meta_name.lower())
+
+        # ── 2k. AI disclosure page links ──
+        disclosure_patterns = [
+            r'href=["\'][^"\']*(?:/ai[_-]?disclosure|/ai[_-]?policy|/artificial[_-]?intelligence|/ai[_-]?transparency|/ai[_-]?ethics|/pouziti[_-]?ai|/ai[_-]?informace)',
+        ]
+        for pattern in disclosure_patterns:
+            disc_match = re.search(pattern, html_lower, re.IGNORECASE)
+            if disc_match:
+                snippet = page.html[max(0, disc_match.start()):disc_match.end()+50].replace("\n", " ").strip()
+                disc_name = "AI Disclosure Page"
+                if disc_name.lower() not in " ".join(already_found):
+                    results.append(DetectedAI(
+                        name=disc_name,
+                        category="content_gen",
+                        risk_level="limited",
+                        ai_act_article="čl. 50",
+                        action_required="Web má stránku o AI disclosure — ověřte, "
+                                       "že splňuje požadavky čl. 50 AI Act.",
+                        description_cs="Na webu nalezen odkaz na stránku o transparenci AI. "
+                                      "Web pravděpodobně používá AI systémy a částečně "
+                                      "plní transparenční povinnosti.",
+                        matched_signatures=[f"disclosure:{pattern}"],
+                        evidence=[f"HTML: ...{snippet}..."],
+                        confidence=0.90,
+                    ))
+                    already_found.add(disc_name.lower())
+
+        # ── 2l. Global AI variable fingerprinting ──
+        global_var_patterns = [
+            (r"window\.VF_", "Voiceflow"),
+            (r"window\.__twk", "Tawk.to"),
+            (r"window\.Intercom\b", "Intercom"),
+            (r"window\.drift\b", "Drift"),
+            (r"window\.HubSpotConversations", "HubSpot Chat"),
+            (r"window\.fcWidget", "Freshchat"),
+            (r"window\.Beacon\b", "Help Scout"),
+            (r"window\.zE\b", "Zendesk"),
+            (r"window\.LiveChatWidget", "LiveChat"),
+            (r"window\.$crisp", "Crisp"),
+            (r"window\.chatwootSettings", "Chatwoot"),
+            (r"window\.kommunicate", "Kommunicate"),
+            (r"window\.adaSettings", "Ada"),
+            (r"window\.botpressWebChat", "Botpress"),
+        ]
+        for pattern, var_name in global_var_patterns:
+            if re.search(pattern, all_inline):
+                # Jen přidáme extra evidenci pokud chatbot ještě nebyl nalezen
+                found_key = var_name.lower()
+                if found_key not in " ".join(already_found):
+                    results.append(DetectedAI(
+                        name=var_name,
+                        category="chatbot",
+                        risk_level="limited",
+                        ai_act_article="čl. 50 odst. 1",
+                        action_required=f"{var_name} AI chatbot musí být transparentně označen.",
+                        description_cs=f"Detekována globální JS proměnná {var_name}.",
+                        matched_signatures=[f"global_var:{pattern}"],
+                        evidence=[f"Global variable: {pattern}"],
+                        confidence=0.85,
+                    ))
+                    already_found.add(found_key)
+
+        # ── 2m. Service Worker / Web Worker AI detekce ──
+        sw_patterns = [
+            r"navigator\.serviceWorker\.register\s*\(\s*[\"'][^\"']*(?:chat|ai|bot|assistant)[^\"']*[\"']",
+            r"new\s+Worker\s*\(\s*[\"'][^\"']*(?:ai|ml|inference|model|wasm|onnx|tf)[^\"']*[\"']",
+        ]
+        for pattern in sw_patterns:
+            sw_match = re.search(pattern, all_inline, re.IGNORECASE)
+            if sw_match:
+                snippet = all_inline[max(0, sw_match.start()-20):sw_match.end()+40].replace("\n", " ").strip()
+                sw_name = "AI Web Worker"
+                if sw_name.lower() not in " ".join(already_found):
+                    results.append(DetectedAI(
+                        name=sw_name,
+                        category="chatbot",
+                        risk_level="limited",
+                        ai_act_article="čl. 50 odst. 1",
+                        action_required="Detekován AI Web Worker — web pravděpodobně "
+                                       "spouští AI inference přímo v prohlížeči.",
+                        description_cs="Detekován Service Worker nebo Web Worker s AI funkcemi. "
+                                      "Web může spouštět AI model přímo v prohlížeči klienta.",
+                        matched_signatures=[f"worker:{pattern}"],
+                        evidence=[f"Kód: ...{snippet}..."],
+                        confidence=0.75,
+                    ))
+                    already_found.add(sw_name.lower())
+
+        # ── 2n. WASM / WebGPU AI inference ──
+        wasm_patterns = [
+            r"WebAssembly\.instantiate",
+            r"\.wasm\b",
+            r"onnxruntime",
+            r"tensorflow.*wasm",
+            r"@xenova/transformers",
+            r"navigator\.gpu\b",
+            r"webnn\b",
+            r"ml5\.js",
+        ]
+        wasm_evidence = []
+        for pattern in wasm_patterns:
+            wasm_match = re.search(pattern, all_inline, re.IGNORECASE)
+            if wasm_match:
+                snippet = all_inline[max(0, wasm_match.start()-20):wasm_match.end()+30].replace("\n", " ").strip()
+                wasm_evidence.append(f"Kód: ...{snippet}...")
+        if len(wasm_evidence) >= 2:
+            wasm_name = "Client-side AI Inference"
+            if wasm_name.lower() not in " ".join(already_found):
+                results.append(DetectedAI(
+                    name=wasm_name,
+                    category="chatbot",
+                    risk_level="limited",
+                    ai_act_article="čl. 50 odst. 1",
+                    action_required="Detekována AI inference v prohlížeči (WASM/WebGPU). "
+                                   "I lokálně spouštěné AI modely musí být transparentně označeny.",
+                    description_cs="Na webu detekováno spouštění AI modelu přímo v prohlížeči "
+                                  "pomocí WebAssembly, ONNX Runtime nebo WebGPU.",
+                    matched_signatures=["wasm_ai_inference"],
+                    evidence=wasm_evidence[:5],
+                    confidence=0.80,
+                ))
+                already_found.add(wasm_name.lower())
+
+        # ── 2o. AI cookie patterns (generické) ──
+        ai_cookie_keywords = ["_ai_", "_chatbot", "_bot_id", "_assistant", "gpt_session",
+                              "_ml_", "ai_consent", "chatgpt", "gemini_"]
+        for cookie in page.cookies:
+            cname = cookie["name"].lower()
+            for kw in ai_cookie_keywords:
+                if kw in cname:
+                    cookie_name = f"AI Cookie ({cookie['name']})"
+                    if cookie_name.lower() not in " ".join(already_found):
+                        results.append(DetectedAI(
+                            name="AI Session Cookie",
+                            category="chatbot",
+                            risk_level="limited",
+                            ai_act_article="čl. 50 odst. 1",
+                            action_required="Detekován AI-related cookie. "
+                                           "AI systém musí být uveden v cookie banneru.",
+                            description_cs=f"Cookie '{cookie['name']}' naznačuje přítomnost "
+                                          "AI systému na webu.",
+                            matched_signatures=[f"cookie_heuristic:{kw}"],
+                            evidence=[f"Cookie: {cookie['name']} (domain: {cookie['domain']})"],
+                            confidence=0.65,
+                        ))
+                        already_found.add(cookie_name.lower())
+                    break
+
+        # ── 2p. Schema.org AI markup ──
+        schema_ai_patterns = [
+            r'"@type"\s*:\s*"(?:AIApplication|SoftwareApplication)"[^}]*"(?:name|applicationCategory)"\s*:\s*"[^"]*(?:ai|chatbot|assistant|machine learning)',
+            r'"@type"\s*:\s*"WebSite"[^}]*"potentialAction"[^}]*"(?:ai|chatbot|search)"',
+            r'"usesAI"\s*:\s*(?:true|"true")',
+            r'"ai(?:System|Provider|Model)"\s*:',
+        ]
+        for pattern in schema_ai_patterns:
+            schema_match = re.search(pattern, html_lower, re.IGNORECASE)
+            if schema_match:
+                snippet = page.html[max(0, schema_match.start()-20):schema_match.end()+60].replace("\n", " ").strip()
+                schema_name = "Schema.org AI Markup"
+                if schema_name.lower() not in " ".join(already_found):
+                    results.append(DetectedAI(
+                        name=schema_name,
+                        category="content_gen",
+                        risk_level="limited",
+                        ai_act_article="čl. 50",
+                        action_required="Web ve structured data deklaruje AI funkce. "
+                                       "Ověřte kompletnost AI Act compliance.",
+                        description_cs="V Schema.org structured data nalezeny indikátory "
+                                      "AI systému na webu.",
+                        matched_signatures=[f"schema:{pattern}"],
+                        evidence=[f"Structured data: ...{snippet}..."],
+                        confidence=0.85,
+                    ))
+                    already_found.add(schema_name.lower())
+                break
 
         return results
 
