@@ -57,13 +57,23 @@ BRAND = {
     "critical": "#991b1b",
 }
 
-# Stav = buď je to neoznačeno (porušení), nebo zakázáno (vážné porušení)
+# Stav = neoznačeno (porušení čl. 50), vyžaduje evidenci (čl. 4), nebo zakázáno
+# analytics = jen ML na pozadí, neinteraguje s uživatelem → evidence
+# chatbot, content_gen, recommender = přímá interakce / generování → neoznačeno
+EVIDENCE_CATEGORIES = {"analytics"}
+
 STATUS_BADGE = {
     "default": {
         "color": "#92400e",
         "bg": "#fef3c7",
         "label": "Neoznačeno",
         "icon": "⚠️",
+    },
+    "evidence": {
+        "color": "#1e40af",
+        "bg": "#dbeafe",
+        "label": "Vyžaduje evidenci",
+        "icon": "ℹ️",
     },
     "prohibited": {
         "color": "#7f1d1d",
@@ -131,7 +141,7 @@ def _article_link(article: str) -> str:
 # ── Laické popisy kategorií AI nálezů ──
 LAYMAN_DESCRIPTIONS = {
     "chatbot": "Chatovací okénko na webu, které odpovídá návštěvníkům pomocí umělé inteligence",
-    "analytics": "Nástroj pro sledování a analýzu návštěvníků webu s využitím AI predikce",
+    "analytics": "Analytický nástroj s ML na pozadí — nevyžaduje banner, ale musí být v registru AI systémů",
     "recommender": "Systém, který návštěvníkům doporučuje produkty nebo obsah pomocí AI",
     "content_gen": "Nástroj pro automatické generování textů nebo obrázků pomocí AI",
     "ai_tool": "AI nástroj integrovaný do webu",
@@ -160,9 +170,18 @@ def _risk_table_html(findings: list[FindingRow]) -> str:
 
     rows = ""
     for f in findings:
-        badge = STATUS_BADGE["prohibited"] if f.risk_level == "prohibited" else STATUS_BADGE["default"]
+        # Určíme stav podle kategorie a risk_level
+        if f.risk_level == "prohibited":
+            badge = STATUS_BADGE["prohibited"]
+        elif f.category in EVIDENCE_CATEGORIES:
+            badge = STATUS_BADGE["evidence"]
+        else:
+            badge = STATUS_BADGE["default"]
+
+        # Analytics → čl. 4 (registr AI systémů), ne čl. 50
+        article = "\u010dl. 4" if f.category in EVIDENCE_CATEGORIES else f.ai_act_article
         desc = _get_layman_desc(f)
-        article_html = _article_link(f.ai_act_article)
+        article_html = _article_link(article)
         rows += f"""
             <tr>
                 <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: {BRAND['text']};">
