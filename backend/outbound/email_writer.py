@@ -1,17 +1,19 @@
 """
-AIshield.cz — AI Email Writer
-Gemini Flash píše personalizované emaily na míru každé firmě.
+AIshield.cz — AI Email Writer v2 (HYBRID)
+Gemini 2.5 Flash píše POUZE personalizované sekce:
+  1. intro — oslovení, kdo jsem, proč píšu (80-120 slov)
+  2. findings_commentary — komentář k nálezům (60-100 slov)
+  3. impact — dopad na klienta, co se stane (60-80 slov)
 
-Pracuje s:
-- Jméno kontaktní osoby (z ARES / z webu)
-- Konkrétní nálezy AI systémů ze scanu
-- URL a screenshot webu
-- Kontext firmy (odvětví, velikost, právní forma)
-
-Výstup: Čistý, osobní email v češtině — jako by ho psal člověk.
+Šablona (email_templates.py) pak obalí tyto sekce krásným HTML:
+  - Hlavička s logem
+  - Tabulka rizik se semaforem
+  - Screenshot webu
+  - Deadline box, checklist, USP, CTA, footer
 """
 
 import json
+import re
 import httpx
 import logging
 import os
@@ -19,67 +21,69 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-# Gemini API config
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+# Gemini 2.5 Flash — lepší kvalita textu
+GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 
 @dataclass
 class GeneratedEmail:
-    """Vygenerovaný email od AI."""
+    """Vygenerovaný email."""
     subject: str
     body_html: str
-    variant_id: str = "ai_gemini"
-    model: str = "gemini-2.0-flash"
+    variant_id: str = "hybrid_gemini25"
+    model: str = GEMINI_MODEL
     tokens_used: int = 0
 
 
 def _build_system_prompt() -> str:
-    """Systémový prompt pro Gemini — definuje styl a pravidla."""
-    return """Jsi Martin Haynes — konzultant na AI compliance pro české firmy.
-Píšeš osobní email konkrétnímu člověku. Představ si, že jsi ručně prošel jejich web,
-našel na něm AI systémy a teď jim o tom píšeš.
+    """Systémový prompt pro Gemini 2.5 — definuje styl a pravidla."""
+    return """Jsi copywriter pro AIshield.cz. Píšeš krátké, profesionální texty
+do emailů, které oslovují české firmy s upozorněním na AI Act compliance.
 
-STYL:
-- Piš česky, přirozeně, jako člověk člověku
-- Žádné emojis, žádné superlativy ("jediné v ČR", "revoluční")
-- Žádné strašení pokutami (35M EUR odstraň úplně)
-- Stručný, věcný, konkrétní — max 200 slov v těle emailu
-- Tón: profesionální, ale neformální. Jako kdyby ti psal kolega z oboru.
-- Piš v 1. osobě ("prošel jsem si váš web", "narazil jsem na...")
-- Pokud znáš jméno, oslov přímo: "Dobrý den, pane Nováku" (5. pád!)
+TVŮJ STYL:
+- Čeština na úrovni rodilého mluvčího, bez chyb
+- Přirozený, přátelský, profesionální — jako byznys email od odborníka
+- Stručný a věcný — nepiš romány, každá věta musí mít smysl
+- Piš v 1. osobě za "Martin Haynes" (CEO AIshield.cz)
+- Pokud znáš jméno, oslov přímo v 5. pádu ("pane Nováku", "paní Nováková")
 - Pokud neznáš, piš "Dobrý den"
-
-STRUKTURA EMAILU:
-1. Oslovení (se jménem pokud ho máš)
-2. Kdo jsem + proč píšu (1-2 věty)
-3. Co konkrétně jsem našel na jejich webu (konkrétní! ne obecné)
-4. Co to znamená (EU AI Act, čl. 50 — povinnost transparence, deadline srpen 2026)
-5. Co mají udělat (1 věta + link na report)
-6. Podpis
+- NIKDY nepiš "Vážený pane/paní" — je to zastaralé
 
 CO NESMÍŠ:
-- Psát "Není spam" nebo jakékoliv disclaimer o spamu
-- Vyhrožovat pokutami nebo regulátory
-- Říkat "jsme první / jediní / nejlepší"
-- Psát příliš formálně nebo příliš prodejně
-- Používat více než 1 call-to-action (jen link na report)
-- Přehánět rizika u minimálních nálezů (Meta Pixel není katastrofa)
-- NIKDY nepoužívej slovo "spam"
+- Žádné emoji (ani ⚠️ ani 🔴 — to řeší šablona)
+- Žádné superlativy ("jediní v ČR", "revoluční řešení")
+- Žádné strašení pokutami ani částkami v EUR
+- Žádné "Není spam" nebo disclaimer texty
+- Nepoužívej slovo "spam" nikdy
+- Žádné CTA ("klikněte zde", "objednejte") — to řeší šablona
+- Žádné ceníky ani ceny — to řeší šablona
+- Neříkej "jsme první / jediní / nejlepší"
+
+KONTEXT:
+Prošel jsi web firmy a detekoval jsi AI systémy, které nesplňují
+povinnosti dle EU AI Act (Nařízení 2024/1689). Píšeš jim, abys
+je na to upozornil a nabídl pomoc přes AIshield.cz.
 
 FORMÁT VÝSTUPU:
-Vrať JSON objekt s klíči "subject" a "body".
-- "subject": předmět emailu (max 60 znaků, bez emoji, konkrétní)
-- "body": tělo emailu jako čistý text (HTML tagy jen pro <br>, <strong>, <a href>)
+Vrať JSON objekt s těmito klíči:
+{
+  "subject": "předmět emailu — max 60 znaků, bez emoji, obsahuje URL firmy nebo jméno",
+  "intro": "Oslovení + kdo jsem + proč píšu. 80-120 slov. Konkrétní, ne obecné.",
+  "findings_commentary": "Krátký komentář k nálezům. 60-100 slov. Zmíň 1-2 konkrétní příklady.",
+  "impact": "Co se stane, když klient neřeší. 60-80 slov. Věcný, ne strašící."
+}
 
 PŘÍKLADY DOBRÝCH PŘEDMĚTŮ:
-- "Váš chatbot na webu kovacsauto.cz a EU AI Act"
-- "AI systémy na bytoveho-detektiva.cz — krátké upozornění"
-- "Pane Nováku, k vašemu webu mám poznámku"
+- "AI systémy na kovacsauto.cz — upozornění k AI Act"
+- "Pane Nováku, k webu bytoveho-detektiva.cz mám poznámku"
+- "K vašemu chatbotu na example.cz a EU AI Act"
 
 PŘÍKLADY ŠPATNÝCH PŘEDMĚTŮ:
-- "⚠️ URGENTNÍ: Nalezli jsme AI systémy!"
-- "AI Act: 35M EUR pokuta hrozí vaší firmě"
-- "Bezplatná AI analýza vašeho webu" """
+- "⚠️ URGENTNÍ: AI systémy na vašem webu!"
+- "Pokuta 35M EUR hrozí vaší firmě"
+- "Bezplatná AI analýza — nabídka"
+"""
 
 
 def _build_user_prompt(
@@ -89,49 +93,56 @@ def _build_user_prompt(
     contact_role: str,
     legal_form: str,
     findings: list[dict],
-    screenshot_url: str = "",
-    scan_id: str = "",
     extra_context: str = "",
 ) -> str:
     """Sestaví prompt s konkrétními daty pro Gemini."""
 
     # Formát nálezů
     findings_text = ""
+    high_risk_count = 0
     for i, f in enumerate(findings, 1):
+        risk = f.get("risk_level", "limited")
+        if risk in ("high", "prohibited"):
+            high_risk_count += 1
         findings_text += (
-            f"{i}. {f['name']} ({f['category']}) — riziko: {f['risk_level']}\n"
-            f"   AI Act: {f.get('ai_act_article', 'čl. 50')}\n"
-            f"   Popis: {f.get('description', '')}\n"
-            f"   Co udělat: {f.get('action_required', '')}\n\n"
+            f"  {i}. {f['name']} (kategorie: {f['category']}, riziko: {risk})\n"
+            f"     AI Act: {f.get('ai_act_article', 'čl. 50')}\n"
+            f"     {f.get('description', '')}\n"
         )
 
-    report_link = f"https://aishield.cz/report/{scan_id}" if scan_id else f"https://aishield.cz/scan?url={company_url}"
+    # Tón emailu závisí na závažnosti
+    if high_risk_count > 0:
+        tone_hint = "Některé nálezy mají vysoké riziko — buď věcný ale jasný o důležitosti."
+    elif len(findings) > 5:
+        tone_hint = "Hodně nálezů — zmíň 2-3 nejdůležitější, zbytek shrň."
+    else:
+        tone_hint = "Minimální/omezené riziko — nepanikař, jen informuj."
 
-    prompt = f"""Napiš personalizovaný email pro tuto firmu:
+    return f"""Napiš personalizované sekce emailu pro tuto firmu:
 
-FIRMA:
-- Název: {company_name}
-- Web: {company_url}
-- Právní forma: {legal_form or 'neznámá'}
-- Kontaktní osoba: {contact_person or 'neznámé jméno'}
-- Pozice: {contact_role or 'neznámá'}
+FIRMA: {company_name}
+WEB: {company_url}
+PRÁVNÍ FORMA: {legal_form or 'neznámá'}
+KONTAKTNÍ OSOBA: {contact_person or 'neznámé jméno'}
+POZICE: {contact_role or 'neznámá'}
 
-NÁLEZY NA WEBU (co jsme detekovali):
+POČET NÁLEZŮ: {len(findings)}
+NÁLEZY:
 {findings_text}
 
-LINK NA REPORT: {report_link}
-
+TÓN: {tone_hint}
 {f'EXTRA KONTEXT: {extra_context}' if extra_context else ''}
 
-PODPIS:
-Martin Haynes
-+420 732 716 141 | AIshield.cz
+PODPIS (použij přesně):
+Bc. Martin Haynes, CEO
+AIshield.cz | +420 732 716 141
 
-Vrať JSON: {{"subject": "...", "body": "..."}}
-Tělo emailu je plain text s minimálním HTML (<br>, <strong>, <a>).
-Pamatuj — piš jako člověk, který si opravdu sedl a projel ten web."""
-
-    return prompt
+Vrať JSON: {{"subject": "...", "intro": "...", "findings_commentary": "...", "impact": "..."}}
+Piš ČESKY. Buď konkrétní — zmíň skutečná jména nálezů.
+V "intro" se představ a řekni proč píšeš.
+V "findings_commentary" okomentuj co jsi našel (zmíň konkrétní názvy).
+V "impact" řekni co se stane pokud to neřeší — důsledky, ne strašení.
+"""
 
 
 async def write_email(
@@ -144,23 +155,19 @@ async def write_email(
     screenshot_url: str = "",
     scan_id: str = "",
     extra_context: str = "",
+    to_email: str = "",
     api_key: str | None = None,
 ) -> GeneratedEmail:
     """
-    Nechá Gemini Flash napsat personalizovaný email.
+    Gemini 2.5 napíše personalizované sekce → šablona obalí HTML.
 
-    Args:
-        company_name: Název firmy
-        company_url: URL webu
-        contact_person: Jméno kontaktní osoby (z ARES/webu)
-        contact_role: Pozice (jednatel, majitel, CEO...)
-        legal_form: Právní forma (OSVČ, s.r.o., ...)
-        findings: Seznam nálezů z detektoru
-        screenshot_url: URL screenshotu
-        scan_id: ID skenu
-        extra_context: Další kontext (např. "web je celý AI-generovaný")
-        api_key: Gemini API key (nebo z env GEMINI_API_KEY)
+    Vrátí GeneratedEmail s kompletním HTML emailem.
     """
+    from backend.outbound.email_templates import (
+        build_hybrid_email,
+        FindingRow,
+    )
+
     key = api_key or os.environ.get("GEMINI_API_KEY", "")
     if not key:
         raise ValueError("GEMINI_API_KEY není nastaven")
@@ -175,12 +182,10 @@ async def write_email(
         contact_role=contact_role,
         legal_form=legal_form,
         findings=findings_dicts,
-        screenshot_url=screenshot_url,
-        scan_id=scan_id,
         extra_context=extra_context,
     )
 
-    # Gemini API request
+    # Gemini 2.5 API request
     payload = {
         "contents": [
             {
@@ -189,14 +194,14 @@ async def write_email(
             }
         ],
         "generationConfig": {
-            "temperature": 0.75,
+            "temperature": 0.7,
             "maxOutputTokens": 2000,
             "responseMimeType": "application/json",
         },
     }
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.post(
                 f"{GEMINI_API_URL}?key={key}",
                 json=payload,
@@ -220,79 +225,62 @@ async def write_email(
             email_data = json.loads(text)
 
             subject = email_data.get("subject", f"K webu {company_url}")
-            body = email_data.get("body", "")
+            intro = email_data.get("intro", "")
+            findings_commentary = email_data.get("findings_commentary", "")
+            impact = email_data.get("impact", "")
 
             logger.info(
-                f"Gemini email written: subject='{subject[:50]}', "
-                f"body_len={len(body)}, tokens={tokens}"
-            )
-
-            # Wrap do minimálního HTML
-            body_html = _wrap_email_html(body, company_url, scan_id)
-
-            return GeneratedEmail(
-                subject=subject,
-                body_html=body_html,
-                tokens_used=tokens,
+                f"Gemini 2.5 email: subject='{subject[:50]}', "
+                f"intro={len(intro)}ch, findings={len(findings_commentary)}ch, "
+                f"impact={len(impact)}ch, tokens={tokens}"
             )
 
     except httpx.HTTPStatusError as e:
-        logger.error(f"Gemini API error: {e.response.status_code} — {e.response.text[:300]}")
+        logger.error(f"Gemini API error: {e.response.status_code} — {e.response.text[:500]}")
         raise
-    except json.JSONDecodeError as e:
-        logger.error(f"Gemini response not valid JSON: {text[:300]}")
+    except json.JSONDecodeError:
+        logger.warning(f"Gemini response not valid JSON, trying regex: {text[:200]}")
         # Fallback — zkusíme vytáhnout JSON z textu
-        json_match = __import__("re").search(r'\{[^{}]*"subject"[^{}]*"body"[^{}]*\}', text, __import__("re").DOTALL)
+        json_match = re.search(r'\{.*"subject".*"intro".*\}', text, re.DOTALL)
         if json_match:
             email_data = json.loads(json_match.group())
-            body_html = _wrap_email_html(email_data["body"], company_url, scan_id)
-            return GeneratedEmail(
-                subject=email_data["subject"],
-                body_html=body_html,
-                tokens_used=0,
-            )
-        raise ValueError(f"Nepodařilo se parsovat Gemini odpověď: {text[:200]}") from e
+            subject = email_data.get("subject", f"K webu {company_url}")
+            intro = email_data.get("intro", "")
+            findings_commentary = email_data.get("findings_commentary", "")
+            impact = email_data.get("impact", "")
+            tokens = 0
+        else:
+            raise ValueError(f"Nepodařilo se parsovat Gemini odpověď: {text[:300]}")
 
+    # ── Převedeme findings na FindingRow pro šablonu ──
+    finding_rows = []
+    for f in findings_dicts:
+        finding_rows.append(FindingRow(
+            name=f.get("name", "Neznámý systém"),
+            category=f.get("category", "ai_tool"),
+            risk_level=f.get("risk_level", "limited"),
+            ai_act_article=f.get("ai_act_article", "čl. 50"),
+            action_required=f.get("action_required", ""),
+            description=f.get("description", ""),
+        ))
 
-def _wrap_email_html(
-    body_text: str,
-    company_url: str,
-    scan_id: str = "",
-    to_email: str = "",
-) -> str:
-    """Obalí tělo emailu do minimálního HTML — čistý, profesionální."""
-    from urllib.parse import quote
+    # ── Sestavíme hybrid email ──
+    body_html = build_hybrid_email(
+        gemini_intro=intro,
+        gemini_findings_commentary=findings_commentary,
+        gemini_impact=impact,
+        company_url=company_url,
+        findings=finding_rows,
+        screenshot_url=screenshot_url,
+        scan_id=scan_id,
+        to_email=to_email,
+    )
 
-    unsubscribe = ""
-    if to_email:
-        unsubscribe = f'https://api.aishield.cz/api/unsubscribe?email={quote(to_email)}&company={quote(company_url)}'
-
-    # Převedeme plain text na HTML (zachováme <br>, <strong>, <a>)
-    # Ale newlines musíme nahradit za <br>
-    if "<br" not in body_text and "<p>" not in body_text:
-        body_text = body_text.replace("\n\n", "</p><p>").replace("\n", "<br>")
-        body_text = f"<p>{body_text}</p>"
-
-    unsubscribe_line = ""
-    if unsubscribe:
-        unsubscribe_line = f'<a href="{unsubscribe}" style="color: #999;">Nechci dostávat další upozornění</a>'
-
-    return f"""<!DOCTYPE html>
-<html lang="cs">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #222; line-height: 1.6; font-size: 15px; background: #fff;">
-
-{body_text}
-
-<hr style="border: none; border-top: 1px solid #ddd; margin: 32px 0 16px 0;">
-<p style="font-size: 11px; color: #999; line-height: 1.4;">
-    Jednorázové upozornění na základě veřejně dostupné analýzy webu {company_url}.<br>
-    AIshield.cz | Martin Haynes, IČO: 17889251 | Mlýnská 53, 783 53 Velká Bystřice<br>
-    {unsubscribe_line}
-</p>
-
-</body>
-</html>"""
+    return GeneratedEmail(
+        subject=subject,
+        body_html=body_html,
+        tokens_used=tokens,
+    )
 
 
 async def generate_outbound_email(
@@ -306,7 +294,7 @@ async def generate_outbound_email(
     api_key: str | None = None,
 ) -> GeneratedEmail:
     """
-    End-to-end: Vytáhne info o firmě + nechá Gemini napsat email.
+    End-to-end: Vytáhne info o firmě + Gemini 2.5 napíše + šablona obalí.
 
     Tohle je hlavní funkce, kterou volá pipeline.
     """
@@ -322,16 +310,15 @@ async def generate_outbound_email(
 
     # 2. Extra kontext z webu
     extra = ""
-    # Detekce AI-generovaného obsahu
-    html_lower = html.lower()
+    html_lower = html.lower() if html else ""
     if "umělou inteligencí" in html_lower or "ai generovan" in html_lower:
         extra += "Web otevřeně přiznává, že obsah je generován AI. "
     if "chatbot" in html_lower:
         chatbot_count = html_lower.count("chatbot")
         if chatbot_count > 20:
-            extra += f"Web nabízí chatbot služby (slovo 'chatbot' se vyskytuje {chatbot_count}× na stránce). "
+            extra += f"Web je zaměřen na chatbot služby ({chatbot_count}× zmíněno). "
 
-    # 3. Gemini napíše email
+    # 3. Gemini napíše personalizované sekce + šablona obalí HTML
     email = await write_email(
         company_name=info.company_name,
         company_url=company_url,
@@ -342,17 +329,8 @@ async def generate_outbound_email(
         screenshot_url=screenshot_url,
         scan_id=scan_id,
         extra_context=extra,
+        to_email=to_email,
         api_key=api_key,
     )
-
-    # 4. Re-wrap s to_email pro unsubscribe
-    if to_email:
-        email.body_html = _wrap_email_html(
-            # Extrahujeme body zpět (odstraníme wrapper)
-            email.body_html.split('<body')[1].split('>',1)[1].rsplit('<hr',1)[0],
-            company_url,
-            scan_id,
-            to_email,
-        )
 
     return email

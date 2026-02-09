@@ -13,6 +13,7 @@ Klíčové vlastnosti:
 import httpx
 import random
 import asyncio
+import logging
 from datetime import datetime, timedelta
 from backend.config import get_settings
 from backend.database import get_supabase
@@ -30,6 +31,8 @@ from backend.outbound.sender_rotation import (
     get_total_remaining,
     get_senders_dashboard,
 )
+
+logger = logging.getLogger(__name__)
 
 # Max emailů na jednu firmu (1. email + 2 follow-upy)
 MAX_EMAILS_PER_COMPANY = 3
@@ -110,6 +113,98 @@ async def send_email(
         )
         response.raise_for_status()
         return response.json()
+
+
+async def check_delivery_status(resend_id: str) -> dict:
+    """
+    Zkontroluje stav doručení emailu přes Resend API.
+    Vrací: {"id": "...", "status": "delivered|bounced|...", "last_event": "..."}
+    """
+    settings = get_settings()
+    if not settings.resend_api_key or not resend_id or resend_id == "dry_run":
+        return {"id": resend_id, "status": "unknown", "reason": "no API key or dry run"}
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"https://api.resend.com/emails/{resend_id}",
+                headers={
+                    "Authorization": f"Bearer {settings.resend_api_key}",
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            return {
+                "id": resend_id,
+                "status": data.get("last_event", "sent"),
+                "to": data.get("to", []),
+                "subject": data.get("subject", ""),
+                "created_at": data.get("created_at", ""),
+                "last_event": data.get("last_event", ""),
+            }
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Resend status check error: {e.response.status_code}")
+        return {"id": resend_id, "status": "error", "error": str(e)}
+    except Exception as e:
+        logger.error(f"Delivery check failed: {e}")
+        return {"id": resend_id, "status": "error", "error": str(e)}
+
+
+async def get_delivery_report(hours: int = 24) -> dict:
+    """
+    Vrátí souhrnný report doručení za posledních N hodin.
+    Kontroluje stav každého emailu přes Resend API.
+    """
+    supabase = get_supabase()
+    since = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+
+    res = supabase.table("email_log").select(
+        "resend_id, to_email, subject, status, sent_at"
+    ).gte("sent_at", since).order("sent_at", desc=True).execute()
+
+    emails = res.data or []
+    report = {
+        "total": len(emails),
+        "delivered": 0,
+        "opened": 0,
+        "clicked": 0,
+        "bounced": 0,
+        "pending": 0,
+        "emails": [],
+    }
+
+    for email in emails:
+        resend_id = email.get("resend_id", "")
+        if resend_id and resend_id != "dry_run":
+            status = await check_delivery_status(resend_id)
+            last_event = status.get("last_event", "sent")
+
+            # Update local status if changed
+            if last_event in ("delivered", "opened", "clicked", "bounced", "complained"):
+                supabase.table("email_log").update({
+                    "status": last_event,
+                }).eq("resend_id", resend_id).execute()
+        else:
+            last_event = email.get("status", "unknown")
+
+        if last_event == "delivered":
+            report["delivered"] += 1
+        elif last_event in ("opened", "clicked"):
+            report["opened"] += 1
+        elif last_event in ("bounced", "complained"):
+            report["bounced"] += 1
+        else:
+            report["pending"] += 1
+
+        report["emails"].append({
+            "to": email.get("to_email", ""),
+            "subject": email.get("subject", ""),
+            "status": last_event,
+            "sent_at": email.get("sent_at", ""),
+        })
+
+    return report
 
 
 async def get_companies_to_email(limit: int = 50) -> list[dict]:
