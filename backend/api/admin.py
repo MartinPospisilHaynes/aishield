@@ -79,11 +79,50 @@ async def admin_email_health():
 async def resend_webhook(request: Request):
     """
     Webhook od Resend — bounce, complaint, delivered, opened, clicked.
-    Nastavit v Resend dashboard: POST https://api.aishield.cz/api/admin/resend-webhook
+    Ověřuje HMAC-SHA256 podpis přes svapi_id header.
     """
+    import hmac
+    import hashlib
+    from backend.config import get_settings
+
+    settings = get_settings()
+    body_bytes = await request.body()
+
+    # Resend posílá podpis v hlavičce svix-signature
+    signature_header = request.headers.get("svix-signature", "")
+    svix_id = request.headers.get("svix-id", "")
+    svix_timestamp = request.headers.get("svix-timestamp", "")
+
+    if settings.resend_webhook_secret and signature_header:
+        # Resend/Svix: sign = base64(HMAC-SHA256(secret, "{msg_id}.{timestamp}.{body}"))
+        import base64
+        secret = settings.resend_webhook_secret
+        # Svix secrets start with whsec_ prefix, decode the base64 part after it
+        if secret.startswith("whsec_"):
+            secret_bytes = base64.b64decode(secret[6:])
+        else:
+            secret_bytes = secret.encode()
+
+        to_sign = f"{svix_id}.{svix_timestamp}.{body_bytes.decode()}".encode()
+        expected = base64.b64encode(
+            hmac.new(secret_bytes, to_sign, hashlib.sha256).digest()
+        ).decode()
+
+        # Header contains space-separated versioned sigs: "v1,<sig1> v1,<sig2>"
+        valid = any(
+            part.split(",", 1)[1] == expected
+            for part in signature_header.split(" ")
+            if "," in part
+        )
+        if not valid:
+            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
     try:
-        body = await request.json()
+        import json
+        body = json.loads(body_bytes)
         result = await process_resend_webhook(body)
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         return {"error": str(e)}

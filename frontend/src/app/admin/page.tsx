@@ -185,17 +185,16 @@ export default function AdminPage() {
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-lg font-semibold text-cyan-400">🛡️ Doručitelnost emailů</h2>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                        health.mode === "stopped" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
-                                        health.mode === "braking" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
-                                        health.mode === "accelerating" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
-                                        health.mode === "startup" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
-                                        "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                    }`}>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${health.mode === "stopped" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                            health.mode === "braking" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                                                health.mode === "accelerating" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                                                    health.mode === "startup" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
+                                                        "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                        }`}>
                                         {health.mode === "stopped" ? "🚨 ZASTAVENO" :
-                                         health.mode === "braking" ? "⚠️ BRZDA" :
-                                         health.mode === "accelerating" ? "🚀 ZRYCHLUJE" :
-                                         health.mode === "startup" ? "🏁 START" : "✈️ CRUISE"}
+                                            health.mode === "braking" ? "⚠️ BRZDA" :
+                                                health.mode === "accelerating" ? "🚀 ZRYCHLUJE" :
+                                                    health.mode === "startup" ? "🏁 START" : "✈️ CRUISE"}
                                     </span>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -234,12 +233,11 @@ export default function AdminPage() {
                                 {health.warnings.length > 0 && (
                                     <div className="space-y-1">
                                         {health.warnings.map((w, i) => (
-                                            <div key={i} className={`text-xs rounded-lg px-3 py-2 ${
-                                                w.includes("STOP") || w.includes("KRITICKÉ") ? "text-red-400 bg-red-500/10 border border-red-500/20" :
-                                                w.includes("⚠️") ? "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20" :
-                                                w.includes("🚀") ? "text-green-400 bg-green-500/10 border border-green-500/20" :
-                                                "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20"
-                                            }`}>
+                                            <div key={i} className={`text-xs rounded-lg px-3 py-2 ${w.includes("STOP") || w.includes("KRITICKÉ") ? "text-red-400 bg-red-500/10 border border-red-500/20" :
+                                                    w.includes("⚠️") ? "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20" :
+                                                        w.includes("🚀") ? "text-green-400 bg-green-500/10 border border-green-500/20" :
+                                                            "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20"
+                                                }`}>
                                                 {w}
                                             </div>
                                         ))}

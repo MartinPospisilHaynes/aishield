@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     # ── Resend ──
     resend_api_key: str = ""
     email_from: str = "info@aishield.cz"
+    resend_webhook_secret: str = ""
 
     class Config:
         env_file = "../../.env"
