@@ -23,6 +23,7 @@ from backend.api.widget import router as widget_router
 from backend.api.agency import router as agency_router
 from backend.api.enterprise import router as enterprise_router
 from backend.api.send_report import router as send_report_router
+from backend.api.ares_lookup import router as ares_lookup_router
 
 # ── Vytvoření aplikace ──
 app = FastAPI(
@@ -60,6 +61,7 @@ app.include_router(widget_router, prefix="/api", tags=["Widget"])
 app.include_router(agency_router, prefix="/api/admin", tags=["Agency"])
 app.include_router(enterprise_router, prefix="/api", tags=["Enterprise"])
 app.include_router(send_report_router, prefix="/api", tags=["SendReport"])
+app.include_router(ares_lookup_router, prefix="/api", tags=["ARES"])
 
 
 @app.get("/")

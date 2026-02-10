@@ -1,9 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { Suspense } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aishield.cz";
+
+/** Normalize URL: accept "www.firma.cz" or "firma.cz" and prepend https:// */
+function normalizeUrl(raw: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+}
 
 function RegistraceInner() {
     const [email, setEmail] = useState("");
@@ -17,6 +27,8 @@ function RegistraceInner() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [partner, setPartner] = useState<string | null>(null);
+    const [aresLoading, setAresLoading] = useState(false);
+    const [aresStatus, setAresStatus] = useState<"idle" | "found" | "not-found">("idle");
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = createClient();
@@ -27,6 +39,40 @@ function RegistraceInner() {
     }, [searchParams]);
 
     const redirectTo = searchParams.get("redirect") || "/dashboard";
+
+    // ── ARES lookup when IČO has 8 digits ──
+    const lookupAres = useCallback(async (icoValue: string) => {
+        if (icoValue.length !== 8) {
+            setAresStatus("idle");
+            return;
+        }
+        setAresLoading(true);
+        setAresStatus("idle");
+        try {
+            const res = await fetch(`${API_URL}/api/ares/${icoValue}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCompanyName(data.name || "");
+                setAresStatus("found");
+            } else {
+                setAresStatus("not-found");
+            }
+        } catch {
+            setAresStatus("not-found");
+        } finally {
+            setAresLoading(false);
+        }
+    }, []);
+
+    function handleIcoChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const cleaned = e.target.value.replace(/\D/g, "").slice(0, 8);
+        setIco(cleaned);
+        if (cleaned.length === 8) {
+            lookupAres(cleaned);
+        } else {
+            setAresStatus("idle");
+        }
+    }
 
     async function handleRegister(e: React.FormEvent) {
         e.preventDefault();
@@ -46,6 +92,7 @@ function RegistraceInner() {
         }
 
         // 1. Registrace v Supabase Auth
+        const normalizedWeb = normalizeUrl(webUrl);
         const { data, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -53,7 +100,7 @@ function RegistraceInner() {
                 data: {
                     company_name: companyName,
                     ico: ico || undefined,
-                    web_url: webUrl || undefined,
+                    web_url: normalizedWeb || undefined,
                     gdpr_consent: true,
                     gdpr_consent_at: new Date().toISOString(),
                     partner: partner || undefined,
@@ -143,6 +190,49 @@ function RegistraceInner() {
                             </div>
                         )}
 
+                        {/* IČO — first field, triggers ARES auto-fill */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                IČO <span className="text-slate-500">(volitelné)</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={ico}
+                                    onChange={handleIcoChange}
+                                    placeholder="12345678"
+                                    maxLength={8}
+                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                        text-white placeholder:text-slate-500
+                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                        transition-all"
+                                />
+                                {aresLoading && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg className="animate-spin h-5 w-5 text-cyan-400" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                    </div>
+                                )}
+                                {aresStatus === "found" && !aresLoading && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                            {aresStatus === "found" && (
+                                <p className="mt-1 text-xs text-green-400">Firma nalezena v ARES — údaje předvyplněny</p>
+                            )}
+                            {aresStatus === "not-found" && (
+                                <p className="mt-1 text-xs text-amber-400">IČO nebylo nalezeno v ARES — vyplňte údaje ručně</p>
+                            )}
+                        </div>
+
+                        {/* Company name — auto-filled from ARES */}
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
                                 Název firmy
@@ -153,45 +243,28 @@ function RegistraceInner() {
                                 onChange={(e) => setCompanyName(e.target.value)}
                                 placeholder="Vaše firma s.r.o."
                                 required
+                                className={`w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                    text-white placeholder:text-slate-500
+                                    focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                    transition-all ${aresStatus === "found" ? "border-green-500/30 bg-green-500/5" : ""}`}
+                            />
+                        </div>
+
+                        {/* Web URL — accepts www.firma.cz, firma.cz, or full URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                Web <span className="text-slate-500">(volitelné)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={webUrl}
+                                onChange={(e) => setWebUrl(e.target.value)}
+                                placeholder="www.vasefirma.cz"
                                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
                                     text-white placeholder:text-slate-500
                                     focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
                                     transition-all"
                             />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                                    IČO <span className="text-slate-500">(volitelné)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={ico}
-                                    onChange={(e) => setIco(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                                    placeholder="12345678"
-                                    maxLength={8}
-                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
-                                        text-white placeholder:text-slate-500
-                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
-                                        transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                                    Web <span className="text-slate-500">(volitelné)</span>
-                                </label>
-                                <input
-                                    type="url"
-                                    value={webUrl}
-                                    onChange={(e) => setWebUrl(e.target.value)}
-                                    placeholder="https://vasefirma.cz"
-                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
-                                        text-white placeholder:text-slate-500
-                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
-                                        transition-all"
-                                />
-                            </div>
                         </div>
 
                         <div>

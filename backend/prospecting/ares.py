@@ -126,7 +126,7 @@ async def search_ares_company(ico: str) -> Optional[AresCompany]:
     return AresCompany(
         ico=item.get("ico", ico),
         name=item.get("obchodniJmeno", ""),
-        legal_form=item.get("pravniForma", {}).get("nazev", ""),
+        legal_form=item.get("pravniForma", {}).get("nazev", "") if isinstance(item.get("pravniForma"), dict) else str(item.get("pravniForma", "")),
         nace=item.get("czNace", []),
         address=", ".join(address_parts),
         region=sidlo.get("nazevObce", ""),
