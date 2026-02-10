@@ -24,6 +24,16 @@ export default function Header() {
         <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
                 <a href="/" className="flex items-center gap-2 group">
+                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 2L4 7v9c0 7.73 5.12 14.95 12 17 6.88-2.05 12-9.27 12-17V7L16 2z" fill="url(#shield-grad)" fillOpacity="0.15" stroke="url(#shield-grad)" strokeWidth="1.5" />
+                        <path d="M12 16l3 3 5-6" stroke="url(#shield-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <defs>
+                            <linearGradient id="shield-grad" x1="4" y1="2" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#d946ef" />
+                                <stop offset="1" stopColor="#06b6d4" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                     <span className="text-2xl font-extrabold tracking-tighter">
                         <span className="text-white">AI</span>
                         <span className="neon-text">shield</span>
