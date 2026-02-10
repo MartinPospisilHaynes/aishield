@@ -95,7 +95,7 @@ export default function PricingPage() {
 
     async function handleCheckout(planKey: string) {
         if (planKey === "enterprise") {
-            window.location.href = "mailto:info@aishield.cz?subject=AIshield%20ENTERPRISE%20-%20zájem";
+            router.push("/enterprise");
             return;
         }
 

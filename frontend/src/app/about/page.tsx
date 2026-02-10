@@ -59,6 +59,32 @@ export default function AboutPage() {
                             <li>Měsíčně monitoruje změny</li>
                         </ol>
                     </div>
+
+                    {/* CTA sekce */}
+                    <div className="rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-6 text-center space-y-4">
+                        <h2 className="text-xl font-semibold text-white">Chcete zjistit, jak jste na tom?</h2>
+                        <p className="text-slate-400 text-sm">
+                            Spusťte bezplatný sken vašeho webu a za 30 sekund zjistíte, které AI systémy používáte
+                            a co musíte řešit.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                            <a
+                                href="/scan"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Skenovat web ZDARMA
+                            </a>
+                            <a
+                                href="/pricing"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 px-6 py-3 text-sm font-medium text-white hover:bg-white/15 transition"
+                            >
+                                Zobrazit ceník →
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

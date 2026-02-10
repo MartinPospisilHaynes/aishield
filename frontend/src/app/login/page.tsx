@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 
@@ -12,7 +12,15 @@ function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') || '/dashboard';
+    const authError = searchParams.get('error');
     const supabase = createClient();
+
+    // Show auth callback errors
+    useEffect(() => {
+        if (authError === 'auth_callback_failed') {
+            setError('Ověření se nezdařilo. Zkuste se prosím přihlásit znovu.');
+        }
+    }, [authError]);
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();

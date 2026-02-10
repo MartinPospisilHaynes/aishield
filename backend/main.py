@@ -21,6 +21,7 @@ from backend.api.admin import router as admin_router
 from backend.api.unsubscribe import router as unsubscribe_router
 from backend.api.widget import router as widget_router
 from backend.api.agency import router as agency_router
+from backend.api.enterprise import router as enterprise_router
 
 # ── Vytvoření aplikace ──
 app = FastAPI(
@@ -56,6 +57,7 @@ app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(unsubscribe_router, prefix="/api", tags=["Unsubscribe"])
 app.include_router(widget_router, prefix="/api", tags=["Widget"])
 app.include_router(agency_router, prefix="/api/admin", tags=["Agency"])
+app.include_router(enterprise_router, prefix="/api", tags=["Enterprise"])
 
 
 @app.get("/")
