@@ -105,7 +105,7 @@ export default function TermsPage() {
                                 </li>
                                 <li>
                                     U vyšších balíčků: technickou asistenci s implementací
-                                    (widget, transparenční stránka)
+                                    (HTML šablona transparenční stránky, chatbot oznámení)
                                 </li>
                             </ul>
                             <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 mt-3">
@@ -225,8 +225,8 @@ export default function TermsPage() {
                             </p>
                             <p>
                                 5.3. U balíčku PRO zahrnuje dodání i technickou asistenci
-                                s implementací (instalace widgetu, úprava transparenční
-                                stránky). Uživatel je povinen poskytnout potřebnou součinnost
+                                s implementací (nasazení HTML šablony transparenční stránky,
+                                úprava chatbot oznámení). Uživatel je povinen poskytnout potřebnou součinnost
                                 (přístupové údaje, kontakt na správce webu apod.).
                             </p>
                             <p>
@@ -493,8 +493,8 @@ export default function TermsPage() {
                             <p>
                                 13.2.{" "}
                                 <strong className="text-white">PRO</strong> — vše z BASIC
-                                a navíc: technická asistence s instalací widgetu na web
-                                Uživatele, nastavení transparenční stránky, úprava chatbot
+                                a navíc: technická asistence s nasazením HTML šablony transparenční
+                                stránky na web Uživatele, úprava chatbot
                                 oznámení a prioritní zpracování. Technická podpora po dobu
                                 30 dní od dodání.
                             </p>

@@ -12,23 +12,56 @@ export default function AboutPage() {
                 <div className="mt-8 max-w-none space-y-8 text-slate-300 leading-relaxed">
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Co je AI Act?</h2>
-                        <p className="text-slate-400">
+                        <p className="text-slate-400 mb-3">
                             AI Act (Nařízení EU 2024/1689) je první komplexní zákon na světě,
                             který reguluje umělou inteligenci. Je to obdoba GDPR, ale pro AI.
                             Platí pro <strong className="text-white">každou firmu v EU</strong>, která používá nebo
                             nasazuje AI systémy.
                         </p>
+                        <p className="text-slate-400 mb-3">
+                            Většina firem přitom <strong className="text-white">ani netuší, že na jejich webu AI běží</strong>.
+                            Spousta pluginů a nástrojů třetích stran používá umělou inteligenci v pozadí —
+                            chatboty, analytika, doporučovací systémy nebo antispam. Některé se na webu
+                            objeví automaticky po aktualizaci platformy (WordPress, Shoptet, Shopify),
+                            bez vědomí provozovatele.
+                        </p>
+                        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                            <p className="text-red-400 font-semibold">
+                                To, že jste AI systém na web vědomě nenasadili, neznamená, že tam není.
+                                A pokud tam je a není správně označen — je to porušení AI Act
+                                a hrozí vám pokuta.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Týká se to mé firmy?</h2>
                         <p className="text-slate-400 mb-3">Pokud máte na webu cokoliv z tohoto, tak <strong className="text-white">ANO</strong>:</p>
                         <ul className="space-y-2 text-slate-400">
-                            <li>🤖 Chatbot (Smartsupp, Tidio, LiveAgent...)</li>
-                            <li>📊 AI analytiku (Google Analytics 4 s ML predikcemi)</li>
-                            <li>🛒 AI doporučovací systém (e-shop &quot;mohlo by se vám líbit&quot;)</li>
-                            <li>📝 AI generovaný obsah (texty, obrázky)</li>
-                            <li>🎯 AI cílení reklam</li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-fuchsia-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" /></svg>
+                                <span>Chatbot (Smartsupp, Tidio, LiveAgent, Crisp...)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>
+                                <span>AI analytiku (Google Analytics 4 s ML predikcemi, Hotjar)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
+                                <span>AI doporučovací systém (e-shop &quot;mohlo by se vám líbit&quot;)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M2.25 18V6a2.25 2.25 0 0 1 2.25-2.25h15A2.25 2.25 0 0 1 21.75 6v12A2.25 2.25 0 0 1 19.5 20.25H4.5A2.25 2.25 0 0 1 2.25 18Z" /></svg>
+                                <span>AI generovaný obsah (texty, obrázky, překlady)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                                <span>AI cílení reklam (Google Performance Max, Meta Advantage+)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
+                                <span>AI antispam a bezpečnostní filtry (reCAPTCHA, Cloudflare Bot Management)</span>
+                            </li>
                         </ul>
                     </div>
 
@@ -44,8 +77,14 @@ export default function AboutPage() {
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Klíčové deadliny</h2>
                         <ul className="space-y-2 text-slate-400">
-                            <li>✅ <strong className="text-white">2. února 2025</strong> — AI gramotnost (čl. 4) + zakázané praktiky (čl. 5) — JIŽ PLATÍ!</li>
-                            <li>⚠️ <strong className="text-white">2. srpna 2026</strong> — Transparenční povinnosti (čl. 50) + povinnosti nasazovačů (čl. 26)</li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                <span><strong className="text-white">2. února 2025</strong> — AI gramotnost (čl. 4) + zakázané praktiky (čl. 5) — JIŽ PLATÍ!</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <svg className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                                <span><strong className="text-white">2. srpna 2026</strong> — Transparenční povinnosti (čl. 50) + povinnosti nasazovačů (čl. 26)</span>
+                            </li>
                         </ul>
                     </div>
 
@@ -54,10 +93,27 @@ export default function AboutPage() {
                         <ol className="space-y-2 text-slate-400 list-decimal list-inside">
                             <li>Proskenuje váš web a najde všechny AI systémy</li>
                             <li>Klasifikuje rizika podle AI Act</li>
-                            <li>Vygeneruje kompletní dokumentaci</li>
-                            <li>Dodá widget pro transparenční oznámení</li>
-                            <li>Měsíčně monitoruje změny</li>
+                            <li>Vygeneruje kompletní dokumentační podklady (AI Act Compliance Kit)</li>
+                            <li>Připraví hotovou HTML šablonu transparenční stránky pro váš web</li>
+                            <li>U balíčku PRO: technická asistence s implementací na váš web</li>
                         </ol>
+                        <p className="text-slate-500 text-sm mt-3">
+                            Volitelně: měsíční monitoring webu — automaticky hlídáme,
+                            zda se na vašem webu neobjevily nové AI systémy.{" "}
+                            <a href="/pricing" className="text-neon-fuchsia hover:underline">Více v ceníku →</a>
+                        </p>
+                    </div>
+
+                    {/* Právní upozornění */}
+                    <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-6">
+                        <h2 className="text-xl font-semibold text-white mb-3">Důležité upozornění</h2>
+                        <p className="text-slate-400">
+                            AIshield.cz je <strong className="text-white">automatizovaný technický nástroj</strong>,
+                            nikoliv právní služba. Výstupy slouží jako kvalitní podklad pro vaši compliance —
+                            nejsou individuálním právním posouzením. Klidně s nimi můžete navštívit
+                            právníka dle vašeho výběru. Podrobnosti v{" "}
+                            <a href="/terms" className="text-neon-fuchsia hover:underline">obchodních podmínkách</a>.
+                        </p>
                     </div>
 
                     {/* CTA sekce */}
