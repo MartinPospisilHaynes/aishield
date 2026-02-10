@@ -482,24 +482,24 @@ function ScanPageInner() {
                             </div>
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                    <span className="text-slate-500">Skenovaný web</span>
+                                    <span className="text-white">Skenovaný web</span>
                                     <span className="font-medium text-white">{scanResult.url}</span>
                                 </div>
                                 {scanResult.company_name && (
                                     <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                        <span className="text-slate-500">Firma</span>
+                                        <span className="text-white">Firma</span>
                                         <span className="font-medium text-white">{scanResult.company_name}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                    <span className="text-slate-500">Nalezené AI systémy</span>
+                                    <span className="text-white">Nalezené AI systémy</span>
                                     <span className="font-bold text-xl text-white">{findings.length}</span>
                                 </div>
                                 {aiClassified && (
                                     <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                        <span className="text-slate-500">Ověřeno</span>
+                                        <span className="text-white">Ověřeno</span>
                                         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-400">
-                                            <IconSparkles className="w-4 h-4" /> Claude AI verified
+                                            <IconSparkles className="w-4 h-4" /> Claude Opus 4.6
                                         </span>
                                     </div>
                                 )}
@@ -573,11 +573,6 @@ function ScanPageInner() {
                                                     <p className="text-xs text-slate-500 mt-1">{categoryLabel(f.category)}</p>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    {f.source === "ai_classified" && (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/15 border border-purple-500/30 px-2 py-0.5 text-xs font-medium text-purple-400">
-                                                            <IconSparkles className="w-3.5 h-3.5" /> AI verified
-                                                        </span>
-                                                    )}
                                                     <RiskTooltip level={f.risk_level}>
                                                         <span className={"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium " + riskBadge(f.risk_level)}>
                                                             <span className={"inline-block w-2 h-2 rounded-full " + riskDotColor(f.risk_level)} />
