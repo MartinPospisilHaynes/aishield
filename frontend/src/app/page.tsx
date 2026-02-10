@@ -631,7 +631,7 @@ export default function HomePage() {
                         </p>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                         {DELIVERABLES.map((item, i) => (
                             <DeliverableCard key={i} item={item} />
                         ))}
