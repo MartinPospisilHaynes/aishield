@@ -91,6 +91,8 @@ export default function RootLayout({
                                         <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors">Ochrana soukromí</a></li>
                                         <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors">Obchodní podmínky</a></li>
                                         <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors">GDPR</a></li>
+                                        <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors">Cookies</a></li>
+                                        <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors">AI Act souhlas</a></li>
                                     </ul>
                                 </div>
 
@@ -136,7 +138,6 @@ export default function RootLayout({
                                     <ul className="space-y-3 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
-                                        <li>Mlýnská 53, 783 53 Velká Bystřice</li>
                                         <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors">+420 732 716 141</a></li>
                                         <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors">info@aishield.cz</a></li>
                                     </ul>
