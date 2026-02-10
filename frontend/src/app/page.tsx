@@ -438,9 +438,9 @@ export default function HomePage() {
 
                     {/* Subheadline */}
                     <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
-                        Zjistěte to za minutu. Náš robot proskenuje váš web,
-                        najde AI systémy a řekne vám přesně, co musíte udělat.
-                        Při nesplnění hrozí pokutou až 35 milionů EUR.
+                        Pro velký úspěch GDPR si Evropská Unie vymyslela další povinnost
+                        pro podnikatele, tentokrát kvůli regulaci umělé inteligence.
+                        Vy se však nebojte — Vše zařídíme za Vás na pár kliknutí.
                     </p>
 
                     {/* Penalty info */}
