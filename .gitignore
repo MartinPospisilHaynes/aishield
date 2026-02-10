@@ -52,3 +52,4 @@ generated_pdfs/
 # ── Database ──
 *.sqlite3
 *.db
+.env*.local
