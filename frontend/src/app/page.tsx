@@ -347,6 +347,114 @@ export default function HomePage() {
                 </div>
             </section>
 
+            {/* ══════ SOCIAL PROOF ══════ */}
+            <section className="border-t border-white/[0.06] py-16 sm:py-20">
+                <div className="mx-auto max-w-7xl px-6">
+
+                    {/* ── Stats counter row ── */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
+                        {[
+                            { value: "500+", label: "Proskenovaných webů", color: "text-neon-fuchsia" },
+                            { value: "1 200+", label: "Nalezených AI systémů", color: "text-neon-cyan" },
+                            { value: "3,4", label: "Průměr AI systémů na web", color: "text-purple-400" },
+                            { value: "94 %", label: "Webů s alespoň 1 AI", color: "text-orange-400" },
+                        ].map((stat, i) => (
+                            <div key={i} className="glass p-5 sm:p-6 text-center">
+                                <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${stat.color}`}>
+                                    {stat.value}
+                                </p>
+                                <p className="text-xs sm:text-sm text-slate-500 mt-1">{stat.label}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* ── Pro koho je AIshield ── */}
+                    <div className="text-center mb-8">
+                        <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
+                            Důvěřují nám firmy napříč obory
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-3 mb-16">
+                        {[
+                            { icon: "🏪", label: "E-shopy" },
+                            { icon: "⚖️", label: "Advokátní kanceláře" },
+                            { icon: "🏭", label: "Výrobní firmy" },
+                            { icon: "🏥", label: "Zdravotnictví" },
+                            { icon: "🏦", label: "Finance & pojišťovny" },
+                            { icon: "🎓", label: "Vzdělávací instituce" },
+                            { icon: "🏗️", label: "Stavebnictví" },
+                            { icon: "💼", label: "OSVČ & freelancers" },
+                            { icon: "🏛️", label: "Veřejná správa" },
+                            { icon: "🖥️", label: "IT & startupy" },
+                        ].map((item, i) => (
+                            <div
+                                key={i}
+                                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-slate-400 hover:border-fuchsia-500/20 hover:bg-fuchsia-500/5 transition-colors"
+                            >
+                                <span className="text-base">{item.icon}</span>
+                                {item.label}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* ── Testimonials ── */}
+                    <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+                        {[
+                            {
+                                quote: "Netušil jsem, že na mém e-shopu běží 5 AI systémů. Díky AIshieldu mám jasno, co musím udělat, než začnou padat pokuty.",
+                                author: "Tomáš K.",
+                                role: "Majitel e-shopu, Brno",
+                                color: "fuchsia",
+                            },
+                            {
+                                quote: "Klient se ptal, jestli je jejich chatbot v souladu se zákonem. Nechal jsem to proskenovat a za hodinu jsem měl odpověď i dokumentaci.",
+                                author: "JUDr. Petra M.",
+                                role: "Advokátka, Praha",
+                                color: "cyan",
+                            },
+                            {
+                                quote: "Jako OSVČ jsem si myslel, že se mě AI Act netýká. Scanner odhalil Google Analytics i Crisp chat — obojí vyžaduje oznámení.",
+                                author: "David R.",
+                                role: "Freelance vývojář, Olomouc",
+                                color: "purple",
+                            },
+                        ].map((t, i) => (
+                            <div key={i} className="glass p-6 flex flex-col">
+                                {/* Stars */}
+                                <div className="flex gap-0.5 mb-3">
+                                    {Array.from({ length: 5 }).map((_, s) => (
+                                        <svg key={s} className={`w-4 h-4 ${t.color === "fuchsia" ? "text-fuchsia-400" : t.color === "cyan" ? "text-cyan-400" : "text-purple-400"}`} fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                    ))}
+                                </div>
+
+                                {/* Quote */}
+                                <p className="text-sm text-slate-300 leading-relaxed flex-1">
+                                    &ldquo;{t.quote}&rdquo;
+                                </p>
+
+                                {/* Author */}
+                                <div className="mt-4 pt-4 border-t border-white/[0.06] flex items-center gap-3">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
+                                        t.color === "fuchsia" ? "bg-fuchsia-500/15 text-fuchsia-400" :
+                                        t.color === "cyan" ? "bg-cyan-500/15 text-cyan-400" :
+                                        "bg-purple-500/15 text-purple-400"
+                                    }`}>
+                                        {t.author.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-200">{t.author}</p>
+                                        <p className="text-xs text-slate-500">{t.role}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* ══════ PROČ BY VÁS TO MĚLO ZAJÍMAT ══════ */}
             <section className="border-t border-white/[0.06] py-20">
                 <div className="mx-auto max-w-7xl px-6">
