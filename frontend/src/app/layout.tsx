@@ -57,7 +57,7 @@ export default function RootLayout({
                     {/* ── Footer ── */}
                     <footer className="border-t border-white/[0.06] bg-dark-950">
                         <div className="mx-auto max-w-7xl px-6 py-16">
-                            <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
+                            <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
                                 {/* Brand */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-4">
@@ -94,6 +94,42 @@ export default function RootLayout({
                                     </ul>
                                 </div>
 
+                                {/* Legislativa EU */}
+                                <div>
+                                    <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">
+                                        <span className="inline-flex items-center gap-1.5">
+                                            <svg className="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                                            Legislativa EU
+                                        </span>
+                                    </h3>
+                                    <ul className="space-y-3 text-sm">
+                                        <li>
+                                            <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium inline-flex items-center gap-1">
+                                                Nařízení EU 2024/1689 (AI Act)
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.mpo.gov.cz/cz/podnikani/umela-inteligence/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                                MPO — Umělá inteligence
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.vlada.cz/cz/evropske-zalezitosti/umela-inteligence/narodni-strategie-umele-inteligence-193246/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                                NAIS — Národní strategie AI
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://digital-strategy.ec.europa.eu/cs/policies/european-approach-artificial-intelligence" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                                EU Digital Strategy — AI
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
                                 {/* Kontakt */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Kontakt</h3>
@@ -108,7 +144,19 @@ export default function RootLayout({
                             </div>
 
                             <div className="mt-12 border-t border-white/[0.06] pt-8 text-center text-sm text-slate-600">
-                                &copy; {new Date().getFullYear()} AIshield.cz — Provozovatel: Martin Haynes, IČO: 17889251
+                                <p>&copy; {new Date().getFullYear()} AIshield.cz — Provozovatel: Martin Haynes, IČO: 17889251</p>
+                                <p className="mt-2">
+                                    Vytvořila agentura{" "}
+                                    <a
+                                        href="https://www.desperados-design.cz"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold transition-colors hover:brightness-125"
+                                        style={{ color: "#ff2d95" }}
+                                    >
+                                        Desperados-design.cz
+                                    </a>
+                                </p>
                             </div>
                         </div>
                     </footer>
