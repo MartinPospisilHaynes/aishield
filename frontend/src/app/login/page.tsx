@@ -122,7 +122,7 @@ function LoginForm() {
                             </a>
                         </p>
                         <p className="text-sm">
-                            <a href="mailto:info@aishield.cz?subject=Reset hesla" className="text-slate-500 hover:text-slate-300 transition-colors">
+                            <a href="/zapomenute-heslo" className="text-slate-500 hover:text-slate-300 transition-colors">
                                 Zapomenuté heslo?
                             </a>
                         </p>

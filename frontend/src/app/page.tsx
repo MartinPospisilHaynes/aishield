@@ -483,7 +483,14 @@ export default function HomePage() {
                                 Skenovat ZDARMA
                             </button>
                         </form>
-                        <p className="text-xs text-slate-600 mt-2 text-center">Stačí zadat doménu — např. vasefirma.cz</p>
+                        <p className="text-sm text-slate-400 mt-3 text-center leading-relaxed">
+                            Po velkém úspěchu GDPR si Evropská Unie přichystala další povinnost pro podnikatele.
+                            Vše zařídíme za Vás na pár kliknutí.
+                        </p>
+                        <p className="text-xs text-slate-600 mt-2 text-center">
+                            Zjistěte to za minutu. Náš robot proskenuje váš web, najde AI systémy
+                            a řekne vám přesně, co musíte udělat. Při nesplnění hrozí pokutou až 35 milionů EUR.
+                        </p>
                     </div>
                 </div>
             </section>

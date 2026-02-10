@@ -312,10 +312,10 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                             <div key={i} className="flex flex-col items-center relative z-10">
                                 <div
                                     className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${step.done
-                                            ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
-                                            : isCurrent
-                                                ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
-                                                : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
+                                        ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+                                        : isCurrent
+                                            ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
+                                            : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
                                         }`}
                                 >
                                     {step.done ? (
@@ -328,10 +328,10 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                                 </div>
                                 <span
                                     className={`text-xs mt-2.5 font-medium text-center ${step.done
-                                            ? "text-green-400/80"
-                                            : isCurrent
-                                                ? "text-fuchsia-400"
-                                                : "text-slate-600"
+                                        ? "text-green-400/80"
+                                        : isCurrent
+                                            ? "text-fuchsia-400"
+                                            : "text-slate-600"
                                         }`}
                                 >
                                     {step.label}
@@ -784,13 +784,12 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                                     <span className="text-slate-300 font-medium">
                                         {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
                                     </span>
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                        order.status === "PAID"
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
                                             ? "bg-green-500/10 text-green-400"
                                             : order.status === "CREATED"
                                                 ? "bg-amber-500/10 text-amber-400"
                                                 : "bg-red-500/10 text-red-400"
-                                    }`}>
+                                        }`}>
                                         {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká na platbu" : order.status}
                                     </span>
                                 </div>
