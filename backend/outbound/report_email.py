@@ -5,6 +5,8 @@ Includes: scan results, positive AI messaging, SEO benefit,
 pricing plans, registration CTA, and contact info.
 """
 
+from datetime import date
+
 RISK_LABELS = {
     "high": "Vysoké riziko",
     "limited": "Omezené riziko",
@@ -23,6 +25,77 @@ CATEGORY_LABELS = {
     "recommender": "Doporučovací systém",
     "content_gen": "Generování obsahu",
 }
+
+# EU AI Act article URLs (EUR-Lex)
+_AI_ACT_BASE = "https://eur-lex.europa.eu/legal-content/CS/TXT/HTML/?uri=OJ:L_202401689"
+AI_ACT_LINKS = {
+    "čl. 50": f"{_AI_ACT_BASE}#art_50",
+    "čl. 50 odst. 1": f"{_AI_ACT_BASE}#art_50",
+    "čl. 50 odst. 4": f"{_AI_ACT_BASE}#art_50",
+    "čl. 4": f"{_AI_ACT_BASE}#art_4",
+    "čl. 6": f"{_AI_ACT_BASE}#art_6",
+    "čl. 9": f"{_AI_ACT_BASE}#art_9",
+    "čl. 13": f"{_AI_ACT_BASE}#art_13",
+    "čl. 14": f"{_AI_ACT_BASE}#art_14",
+    "čl. 26": f"{_AI_ACT_BASE}#art_26",
+    "čl. 27": f"{_AI_ACT_BASE}#art_27",
+}
+
+# Per-category short "how we fix it" text
+OFFER_TEXT = {
+    "chatbot": "Připravíme oznámení pro návštěvníky, nastavíme transparenční widget a zajistíme evidenci v registru AI systémů.",
+    "analytics": "Vytvoříme transparenční stránku s popisem analytických AI nástrojů a aktualizujeme informační povinnost.",
+    "recommender": "Popíšeme fungování doporučovacího systému, připravíme informační text pro uživatele a zajistíme soulad s čl. 50.",
+    "content_gen": "Označíme AI-generovaný obsah, připravíme interní pravidla a zajistíme transparentnost pro návštěvníky.",
+}
+DEFAULT_OFFER = "Zajistíme kompletní soulad s AI Act — od dokumentace přes označení až po registraci systému."
+
+# Shield logo SVG (inline, compact)
+SHIELD_LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 40 40" style="vertical-align:middle;margin-right:10px;">'
+    '<defs><linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">'
+    '<stop offset="0%" stop-color="#d946ef"/>'
+    '<stop offset="100%" stop-color="#06b6d4"/>'
+    '</linearGradient></defs>'
+    '<path d="M20 2 L36 10 L36 22 C36 30 28 37 20 39 C12 37 4 30 4 22 L4 10 Z" '
+    'fill="url(#sg)" opacity="0.9"/>'
+    '<path d="M14 20 L18 24 L26 16" stroke="#fff" stroke-width="2.5" '
+    'fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+    '</svg>'
+)
+
+# AI Act enforcement date
+_AI_ACT_DATE = date(2026, 8, 2)
+
+
+def _make_article_link(article_text: str) -> str:
+    """Convert article reference like 'čl. 50 odst. 1' into a hyperlink."""
+    for ref, url in AI_ACT_LINKS.items():
+        if ref in article_text:
+            return article_text.replace(
+                ref,
+                f'<a href="{url}" style="color:#a78bfa;text-decoration:underline;" target="_blank">{ref}</a>',
+                1,
+            )
+    # Fallback: link the whole text to the base
+    return f'<a href="{_AI_ACT_BASE}" style="color:#a78bfa;text-decoration:underline;" target="_blank">{article_text}</a>'
+
+
+def _days_remaining() -> str:
+    """Human-readable countdown to AI Act enforcement date."""
+    delta = _AI_ACT_DATE - date.today()
+    days = delta.days
+    if days <= 0:
+        return "AI Act je již v platnosti"
+    months = days // 30
+    remaining_days = days % 30
+    if months >= 2:
+        return f"{months} měsíců a {remaining_days} dní"
+    elif months == 1:
+        return f"1 měsíc a {remaining_days} dní"
+    else:
+        return f"{days} dní"
+
 
 # Dark theme brand colors matching the website
 D = {
@@ -86,10 +159,11 @@ def generate_report_email_html(
                 f'margin-top:8px;font-style:italic;">{ai_text}</div>'
             )
         if article:
+            linked_article = _make_article_link(article)
             extras += (
                 f'<div style="margin-top:6px;font-size:13px;">'
                 f'<span style="color:{D["text_muted"]};">Článek:</span> '
-                f'<span style="color:{D["text_secondary"]};">{article}</span></div>'
+                f'<span style="color:{D["text_secondary"]};">{linked_article}</span></div>'
             )
         if action:
             extras += (
@@ -97,6 +171,17 @@ def generate_report_email_html(
                 f'<span style="color:{D["text_muted"]};">Co udělat:</span> '
                 f'<span style="color:{D["accent_cyan"]};">{action}</span></div>'
             )
+
+        # "Co vám nabízíme" — brief offer per category
+        category = f.get("category", "")
+        offer = OFFER_TEXT.get(category, DEFAULT_OFFER)
+        extras += (
+            f'<div style="margin-top:6px;font-size:13px;">'
+            f'<span style="color:{D["text_muted"]};">Co vám nabízíme:</span> '
+            f'<span style="color:{D["accent_fuchsia"]};">{offer}</span>'
+            f' <a href="https://aishield.cz/pricing" style="color:{D["accent_cyan"]};text-decoration:underline;font-size:12px;">Vyřešíme to za vás &rarr;</a>'
+            f'</div>'
+        )
 
         findings_html += f"""
         <tr>
@@ -158,7 +243,7 @@ def generate_report_email_html(
         <!-- HEADER -->
         <div style="background:linear-gradient(135deg, {D["gradient_start"]}, {D["gradient_mid"]}, {D["gradient_end"]});padding:36px 24px;text-align:center;border-bottom:1px solid {D["border"]};">
             <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">
-                <span style="color:#ffffff;">AI</span><span style="background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">shield</span><span style="color:{D["text_muted"]};font-size:16px;font-weight:400;">.cz</span>
+                {SHIELD_LOGO_SVG}<span style="color:#ffffff;">AI</span><span style="background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">shield</span><span style="color:{D["text_muted"]};font-size:16px;font-weight:400;">.cz</span>
             </div>
             <div style="font-size:14px;color:{D["text_secondary"]};margin-top:6px;">Výsledky AI Act compliance skenu</div>
         </div>
@@ -186,7 +271,8 @@ def generate_report_email_html(
                 <strong style="color:#ffffff;">{findings_count} {sys_word}</strong>,
                 které nejsou v souladu s povinnostmi dle EU AI Act.
                 Od <strong style="color:#ffffff;">2. srpna 2026</strong> musí být všechny AI systémy
-                interagující s návštěvníky řádně označeny (čl.&nbsp;50, Nařízení&nbsp;2024/1689).
+                interagující s návštěvníky řádně označeny
+                (<a href="{AI_ACT_LINKS['čl. 50']}" style="color:#fca5a5;text-decoration:underline;" target="_blank">čl.&nbsp;50, Nařízení&nbsp;2024/1689</a>).
                 Nesplnění hrozí pokutou <strong style="color:#ffffff;">až 15&nbsp;milionů&nbsp;EUR nebo 3&nbsp;%&nbsp;obratu</strong>.
             </p>
         </div>
@@ -247,29 +333,71 @@ def generate_report_email_html(
                 Co pro vás připravíme?
             </div>
             <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_fuchsia"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128203; Compliance Report</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní přehled AI systémů a stavu vašeho webu</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="3" stroke="{D['accent_fuchsia']}" stroke-width="1.5"/><path d="M8 12h8M8 8h8M8 16h5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Compliance Report</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Kompletní přehled AI systémů a stavu vašeho webu</div>
+                        </td>
+                    </tr></table>
                 </td></tr>
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_cyan"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128221; Akční plán</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Co udělat a do kdy — krok za krokem s checkboxy</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="{D['accent_cyan']}" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Akční plán</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Co udělat a do kdy — krok za krokem s checkboxy</div>
+                        </td>
+                    </tr></table>
                 </td></tr>
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_purple"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128218; Registr AI systémů</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Evidence AI nástrojů — připraveno pro úřady</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 10h16M4 14h10M4 18h7" stroke="{D['accent_purple']}" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Registr AI systémů</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Evidence AI nástrojů — připraveno pro úřady</div>
+                        </td>
+                    </tr></table>
                 </td></tr>
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["success"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#127760; Transparenční stránka</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Hotový HTML kód pro váš web — stačí vložit</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="{D['success']}" stroke-width="1.5"/><path d="M12 3C12 3 6 8 6 12s3 6 6 6" stroke="{D['success']}" stroke-width="1.5"/><path d="M12 3c0 0 6 5 6 9s-3 6-6 6" stroke="{D['success']}" stroke-width="1.5"/><path d="M3 12h18" stroke="{D['success']}" stroke-width="1.5"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Transparenční stránka</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Hotový HTML kód pro váš web — stačí vložit</div>
+                        </td>
+                    </tr></table>
                 </td></tr>
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["warning"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128172; Chatbot oznámení + AI politika firmy</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Povinné texty pro zákazníky + interní pravidla pro zaměstnance</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="{D['warning']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Chatbot oznámení + AI politika firmy</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Povinné texty pro zákazníky + interní pravidla pro zaměstnance</div>
+                        </td>
+                    </tr></table>
                 </td></tr>
-                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_fuchsia"]};">
-                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#127891; Školení zaměstnanců</div>
-                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Osnova povinného školení dle čl. 4 AI Act</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 14v7" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M21 9v5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M6 11.5V17c0 1 2.7 3 6 3s6-2 6-3v-5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Školení zaměstnanců</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Osnova povinného školení dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a></div>
+                        </td>
+                    </tr></table>
                 </td></tr>
             </table>
         </div>
@@ -369,10 +497,12 @@ def generate_report_email_html(
                 Do platnosti AI Act zbývá
             </div>
             <div style="font-size:32px;font-weight:800;color:{D["danger"]};margin-top:8px;">
-                2. srpna 2026
+                {_days_remaining()}
             </div>
             <p style="font-size:13px;color:{D["text_muted"]};margin-top:10px;line-height:1.6;">
-                Po tomto datu mohou úřady udělovat pokuty za nesoulad s AI Act.
+                <a href="{AI_ACT_LINKS['čl. 50']}" style="color:#fca5a5;text-decoration:underline;" target="_blank">AI Act</a>
+                přichází v platnost <strong style="color:#fca5a5;">2.&nbsp;srpna&nbsp;2026</strong>.
+                Po tomto datu mohou úřady udělovat pokuty za nesoulad.
                 Doporučujeme začít s úpravami co nejdříve.
             </p>
         </div>

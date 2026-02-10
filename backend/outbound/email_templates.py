@@ -501,8 +501,13 @@ def _header_html(company_url: str) -> str:
                     <tr>
                         <td>
                             <a href="https://aishield.cz" style="text-decoration: none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 40 40" style="vertical-align:middle;margin-right:8px;">
+                                    <defs><linearGradient id="osg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#d946ef"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+                                    <path d="M20 2 L36 10 L36 22 C36 30 28 37 20 39 C12 37 4 30 4 22 L4 10 Z" fill="url(#osg)" opacity="0.9"/>
+                                    <path d="M14 20 L18 24 L26 16" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                                 <span style="font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
-                                    &#128737; AIshield.cz
+                                    AIshield.cz
                                 </span>
                             </a>
                             <br>
