@@ -65,15 +65,15 @@ const plans = [
         name: "ENTERPRISE",
         price: "49 999+",
         priceNote: "individuální",
-        description: "Kompletní řešení + právní review + monitoring",
+        description: "Rozšířené řešení + odborná kontrola + monitoring",
         features: [
             "Vše z PRO",
-            "Konzultace s AI Act specialistou",
-            "Právní review dokumentů",
-            "Měsíční monitoring (299 Kč/měs)",
+            "Konzultace s compliance specialistou",
+            "Metodická kontrola úplnosti dokumentace",
+            "Měsíční monitoring webu (volitelný doplněk)",
             "Dotazník interních AI systémů",
             "Školení AI literacy (čl. 4)",
-            "SLA s garantovanou odezvou",
+            "SLA s cílovou dobou odezvy",
         ],
         notIncluded: [],
         cta: "Kontaktovat nás",
@@ -133,14 +133,14 @@ export default function PricingPage() {
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
-                        Bez skrytých poplatků
+                        Transparentní ceny
                     </div>
                     <h1 className="text-4xl font-extrabold tracking-tight">
                         Vyberte si svůj{" "}
                         <span className="neon-text">compliance balíček</span>
                     </h1>
                     <p className="mt-4 text-slate-400 text-lg leading-relaxed">
-                        Jednorázová platba. Žádné měsíční poplatky. Platba kartou,
+                        Jednorázové balíčky + volitelný měsíční monitoring. Platba kartou,
                         bankovním převodem, Apple Pay nebo Google Pay.
                     </p>
                 </div>
@@ -158,8 +158,8 @@ export default function PricingPage() {
                         <div
                             key={plan.key}
                             className={`relative rounded-2xl border p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
-                                    ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
-                                    : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
+                                ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
+                                : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
                                 }`}
                         >
                             {/* Badge */}
@@ -177,8 +177,8 @@ export default function PricingPage() {
                             {/* Icon + Name */}
                             <div className="flex items-center gap-3 mb-4">
                                 <div className={`p-2.5 rounded-xl ${plan.highlighted
-                                        ? "bg-fuchsia-500/10 text-fuchsia-400"
-                                        : "bg-white/5 text-slate-400"
+                                    ? "bg-fuchsia-500/10 text-fuchsia-400"
+                                    : "bg-white/5 text-slate-400"
                                     }`}>
                                     {plan.icon}
                                 </div>
@@ -225,10 +225,10 @@ export default function PricingPage() {
                                 onClick={() => handleCheckout(plan.key)}
                                 disabled={loading === plan.key}
                                 className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${plan.highlighted
-                                        ? "btn-primary"
-                                        : plan.key === "enterprise"
-                                            ? "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
-                                            : "btn-secondary"
+                                    ? "btn-primary"
+                                    : plan.key === "enterprise"
+                                        ? "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
+                                        : "btn-secondary"
                                     }`}
                             >
                                 {loading === plan.key ? "Přesměrování na platbu..." : plan.cta}
@@ -268,6 +268,85 @@ export default function PricingPage() {
                     </div>
                 </div>
 
+                {/* Monitoring */}
+                <div className="mt-20">
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-medium text-cyan-300 mb-4">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Volitelný doplněk
+                        </div>
+                        <h2 className="text-2xl font-bold">
+                            Měsíční <span className="neon-text">monitoring</span> webu
+                        </h2>
+                        <p className="mt-3 text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
+                            AI systémy se na vašem webu mohou objevit kdykoliv — po aktualizaci pluginu,
+                            upgradu platformy nebo změně služby třetí strany. Monitoring vás ochrání.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                        {/* Monitoring BASIC */}
+                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+                            <h3 className="text-lg font-bold text-white mb-1">Monitoring</h3>
+                            <div className="mb-3">
+                                <span className="text-2xl font-extrabold text-white">299</span>
+                                <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mb-4">nebo 2 990 Kč/rok (ušetříte 17&nbsp;%)</p>
+                            <ul className="space-y-2 text-sm">
+                                {[
+                                    "1× měsíčně automatický sken webu",
+                                    "Srovnání s předchozím skenem (diff)",
+                                    "Emailové upozornění při nálezu",
+                                    "Aktualizovaný Compliance Report",
+                                    "Aktualizovaný Registr AI systémů",
+                                    "Historie skenů v dashboardu",
+                                ].map((f) => (
+                                    <li key={f} className="flex items-start gap-2">
+                                        <svg className="w-4 h-4 mt-0.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-slate-300">{f}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Monitoring PRO */}
+                        <div className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-6">
+                            <h3 className="text-lg font-bold text-white mb-1">Monitoring Plus</h3>
+                            <div className="mb-3">
+                                <span className="text-2xl font-extrabold neon-text">599</span>
+                                <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mb-4">nebo 5 990 Kč/rok (ušetříte 17&nbsp;%)</p>
+                            <ul className="space-y-2 text-sm">
+                                {[
+                                    "2× měsíčně automatický sken webu",
+                                    "Vše z Monitoring",
+                                    "Aktualizace VŠECH 7 dokumentů",
+                                    "Implementace změn na webu klienta",
+                                    "Prioritní emailová podpora",
+                                    "Čtvrtletní souhrnný přehled",
+                                ].map((f) => (
+                                    <li key={f} className="flex items-start gap-2">
+                                        <svg className="w-4 h-4 mt-0.5 text-fuchsia-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-slate-300">{f}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-xs text-slate-500 mt-6">
+                        Monitoring je volitelný doplněk ke všem balíčkům. Minimální doba: 3 měsíce. Výpověď: 1 měsíc.
+                    </p>
+                </div>
+
                 {/* FAQ */}
                 <div className="mt-20 max-w-2xl mx-auto">
                     <h2 className="text-2xl font-bold text-center mb-8">Časté dotazy k platbám</h2>
@@ -279,11 +358,23 @@ export default function PricingPage() {
                             },
                             {
                                 q: "Je to jednorázová platba?",
-                                a: "Ano. Balíčky BASIC a PRO jsou jednorázové — žádné skryté předplatné. ENTERPRISE zahrnuje volitelný měsíční monitoring za 299 Kč/měs."
+                                a: "Balíčky BASIC a PRO jsou jednorázové. Monitoring je volitelný měsíční doplněk — můžete ho přidat ke kterémukoliv balíčku, ale nemusíte."
                             },
                             {
                                 q: "Co dostanu po zaplacení?",
                                 a: "Okamžitě po platbě se vám odemkne Dashboard, kde najdete všech 7 compliance dokumentů v PDF, akční plán a transparenční stránku."
+                            },
+                            {
+                                q: "Proč potřebuji měsíční monitoring?",
+                                a: "AI systémy se na webu objevují i bez vašeho vědomí — po aktualizaci pluginu, upgradu e-shopové platformy, změně chatbotu nebo aktivaci AI funkcí třetí stranou (analytika, reklamy, platební brána). Monitoring každý měsíc váš web proskenuje a upozorní vás na změny."
+                            },
+                            {
+                                q: "Můžu monitoring kdykoliv zrušit?",
+                                a: "Ano. Minimální doba je 3 měsíce, poté můžete kdykoliv vypovědět s 1měsíční výpovědní lhůtou. Při roční platbě ušetříte 17 %."
+                            },
+                            {
+                                q: "Nahradíte advokáta?",
+                                a: "Ne — jsme technický nástroj, ne právní poradna. Připravíme vám dokumentační podklady, které můžete vzít k právníkovi k odborné revizi."
                             },
                             {
                                 q: "Můžu dostat fakturu?",
