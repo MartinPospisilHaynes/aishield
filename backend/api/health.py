@@ -5,6 +5,7 @@ Ověření, že API běží a databáze je dostupná.
 
 from fastapi import APIRouter
 from backend.database import get_supabase
+from backend.monitoring.engine_health import engine_monitor
 from datetime import datetime
 
 router = APIRouter()
@@ -37,4 +38,17 @@ async def health_check():
         "database_message": db_message,
         "timestamp": datetime.utcnow().isoformat(),
         "version": "0.1.0",
+    }
+
+
+@router.get("/health/engine")
+async def engine_health_status():
+    """
+    Engine health — detailed error counters from scan pipeline.
+    Shows per-error-type counts (last 1h, lifetime) and cooldown status.
+    """
+    return {
+        "status": "ok",
+        "engine_errors": engine_monitor.get_health_status(),
+        "timestamp": datetime.utcnow().isoformat(),
     }

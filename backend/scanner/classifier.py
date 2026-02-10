@@ -17,6 +17,7 @@ import anthropic
 
 from backend.config import get_settings
 from backend.scanner.detector import DetectedAI
+from backend.monitoring.engine_health import engine_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -129,14 +130,37 @@ class AIClassifier:
 
         try:
             return await self._claude_classify(url, findings)
-        except anthropic.AuthenticationError:
+        except anthropic.AuthenticationError as e:
             logger.error("[Classifier] Neplatný API klíč!")
+            await engine_monitor.report_error(
+                "anthropic_auth", scan_id=None, url=url,
+                details=str(e),
+            )
             return self._fallback_classify(findings)
-        except anthropic.RateLimitError:
+        except anthropic.RateLimitError as e:
             logger.warning("[Classifier] Rate limit — fallback")
+            await engine_monitor.report_error(
+                "anthropic_rate_limit", scan_id=None, url=url,
+                details=str(e),
+            )
+            return self._fallback_classify(findings)
+        except anthropic.APIStatusError as e:
+            # Catches 529 Overloaded, billing errors, etc.
+            error_type = "anthropic_overloaded" if e.status_code == 529 else "pipeline_error"
+            if "credit" in str(e).lower() or "billing" in str(e).lower():
+                error_type = "anthropic_tokens_depleted"
+            logger.error(f"[Classifier] API status error {e.status_code}: {e}")
+            await engine_monitor.report_error(
+                error_type, scan_id=None, url=url,
+                details=f"Status {e.status_code}: {e}",
+            )
             return self._fallback_classify(findings)
         except Exception as e:
             logger.error(f"[Classifier] Chyba: {e}", exc_info=True)
+            await engine_monitor.report_error(
+                "pipeline_error", scan_id=None, url=url,
+                details=f"Classifier exception: {e}",
+            )
             return self._fallback_classify(findings)
 
     async def _claude_classify(

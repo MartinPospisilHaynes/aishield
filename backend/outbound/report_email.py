@@ -1,9 +1,9 @@
 """
-AIshield.cz — Scan Report Email Template
-Branded HTML email with scan results, pricing info, and contact CTA.
+AIshield.cz — Scan Report Email Template v2
+Dark theme branded HTML email matching web design.
+Includes: scan results, positive AI messaging, SEO benefit,
+pricing plans, registration CTA, and contact info.
 """
-
-from backend.outbound.email_templates import BRAND
 
 RISK_LABELS = {
     "high": "Vysoké riziko",
@@ -12,9 +12,9 @@ RISK_LABELS = {
 }
 
 RISK_COLORS = {
-    "high": {"bg": "#fef2f2", "border": "#fca5a5", "text": "#991b1b", "dot": "#ef4444"},
-    "limited": {"bg": "#fefce8", "border": "#fde047", "text": "#854d0e", "dot": "#eab308"},
-    "minimal": {"bg": "#f0fdf4", "border": "#86efac", "text": "#166534", "dot": "#22c55e"},
+    "high": {"bg": "#3b1118", "border": "#ef4444", "text": "#fca5a5", "dot": "#ef4444"},
+    "limited": {"bg": "#3b2e0a", "border": "#eab308", "text": "#fde68a", "dot": "#eab308"},
+    "minimal": {"bg": "#0a3b1e", "border": "#22c55e", "text": "#86efac", "dot": "#22c55e"},
 }
 
 CATEGORY_LABELS = {
@@ -24,6 +24,28 @@ CATEGORY_LABELS = {
     "content_gen": "Generování obsahu",
 }
 
+# Dark theme brand colors matching the website
+D = {
+    "bg_body": "#0a0a1a",
+    "bg_card": "#0f172a",
+    "bg_section": "#131b2e",
+    "bg_elevated": "#1a2340",
+    "border": "#1e293b",
+    "border_light": "#334155",
+    "text": "#f1f5f9",
+    "text_secondary": "#94a3b8",
+    "text_muted": "#64748b",
+    "accent_fuchsia": "#d946ef",
+    "accent_cyan": "#06b6d4",
+    "accent_purple": "#7c3aed",
+    "gradient_start": "#0f172a",
+    "gradient_mid": "#1e1b4b",
+    "gradient_end": "#312e81",
+    "success": "#22c55e",
+    "warning": "#eab308",
+    "danger": "#ef4444",
+}
+
 
 def generate_report_email_html(
     url: str,
@@ -31,146 +53,158 @@ def generate_report_email_html(
     findings: list[dict],
     scan_id: str,
 ) -> str:
-    """Generate branded HTML email with scan results."""
+    """Generate dark-themed branded HTML email with scan results, pricing, and CTAs."""
 
     findings_count = len(findings)
     high_count = sum(1 for f in findings if f.get("risk_level") == "high")
     limited_count = sum(1 for f in findings if f.get("risk_level") == "limited")
     minimal_count = sum(1 for f in findings if f.get("risk_level") == "minimal")
 
-    # Plural helper
     if findings_count == 1:
-        sys_word = "systém"
+        sys_word = "AI systém"
     elif findings_count < 5:
-        sys_word = "systémy"
+        sys_word = "AI systémy"
     else:
-        sys_word = "systémů"
+        sys_word = "AI systémů"
 
-    # Build findings rows
+    # ── Build findings rows ──
     findings_html = ""
     for f in findings:
         rl = f.get("risk_level", "minimal")
         colors = RISK_COLORS.get(rl, RISK_COLORS["minimal"])
-        cat_label = CATEGORY_LABELS.get(f.get("category", ""), f.get("category", ""))
-        name = f.get("name", "")
+        cat_label = CATEGORY_LABELS.get(f.get("category", ""), f.get("category", "Neznámá kategorie"))
+        name = f.get("name", "Neznámý systém")
         ai_text = f.get("ai_classification_text", "")
         article = f.get("ai_act_article", "")
         action = f.get("action_required", "")
+        risk_label = RISK_LABELS.get(rl, rl)
 
-        ai_text_html = ""
+        extras = ""
         if ai_text:
-            ai_text_html = (
-                f'<div style="font-size:13px;color:{BRAND["text_light"]};'
+            extras += (
+                f'<div style="font-size:13px;color:{D["text_muted"]};'
                 f'margin-top:8px;font-style:italic;">{ai_text}</div>'
             )
-
-        article_html = ""
         if article:
-            article_html = (
-                f'<div style="margin-top:8px;font-size:13px;">'
-                f'<span style="color:{BRAND["text_light"]};">Článek:</span> '
-                f'<span style="color:{BRAND["text"]};">{article}</span></div>'
+            extras += (
+                f'<div style="margin-top:6px;font-size:13px;">'
+                f'<span style="color:{D["text_muted"]};">Článek:</span> '
+                f'<span style="color:{D["text_secondary"]};">{article}</span></div>'
             )
-
-        action_html = ""
         if action:
-            action_html = (
+            extras += (
                 f'<div style="margin-top:4px;font-size:13px;">'
-                f'<span style="color:{BRAND["text_light"]};">Co udělat:</span> '
-                f'<span style="color:{BRAND["text"]};">{action}</span></div>'
+                f'<span style="color:{D["text_muted"]};">Co udělat:</span> '
+                f'<span style="color:{D["accent_cyan"]};">{action}</span></div>'
             )
-
-        risk_label = RISK_LABELS.get(rl, rl)
 
         findings_html += f"""
         <tr>
-            <td style="padding:16px;border-bottom:1px solid {BRAND["border"]};">
-                <div style="font-weight:600;color:{BRAND["text"]};font-size:15px;">{name}</div>
-                <div style="font-size:12px;color:{BRAND["text_light"]};margin-top:2px;">{cat_label}</div>
-                {ai_text_html}
-                {article_html}
-                {action_html}
+            <td style="padding:16px;border-bottom:1px solid {D["border"]};">
+                <div style="font-weight:600;color:{D["text"]};font-size:15px;">{name}</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">{cat_label}</div>
+                {extras}
             </td>
-            <td style="padding:16px;border-bottom:1px solid {BRAND["border"]};text-align:center;vertical-align:top;">
+            <td style="padding:16px;border-bottom:1px solid {D["border"]};text-align:center;vertical-align:top;">
                 <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:{colors['bg']};color:{colors['text']};border:1px solid {colors['border']};">
                     {risk_label}
                 </span>
             </td>
         </tr>"""
 
-    # Risk overview boxes
+    # ── Risk summary boxes ──
     risk_boxes = ""
     if high_count:
         risk_boxes += (
-            '<td style="text-align:center;padding:12px;background:#fef2f2;'
-            'border-radius:12px;border:1px solid #fca5a5;">'
+            f'<td style="text-align:center;padding:14px;background:#3b1118;'
+            f'border-radius:12px;border:1px solid #ef4444;">'
             f'<div style="font-size:28px;font-weight:700;color:#ef4444;">{high_count}</div>'
-            '<div style="font-size:12px;color:#991b1b;">Vysoké riziko</div></td>'
+            f'<div style="font-size:12px;color:#fca5a5;margin-top:2px;">Vysoké riziko</div></td>'
         )
     if limited_count:
         risk_boxes += (
-            '<td style="text-align:center;padding:12px;background:#fefce8;'
-            'border-radius:12px;border:1px solid #fde047;">'
+            f'<td style="text-align:center;padding:14px;background:#3b2e0a;'
+            f'border-radius:12px;border:1px solid #eab308;">'
             f'<div style="font-size:28px;font-weight:700;color:#eab308;">{limited_count}</div>'
-            '<div style="font-size:12px;color:#854d0e;">Omezené riziko</div></td>'
+            f'<div style="font-size:12px;color:#fde68a;margin-top:2px;">Omezené riziko</div></td>'
         )
     if minimal_count:
         risk_boxes += (
-            '<td style="text-align:center;padding:12px;background:#f0fdf4;'
-            'border-radius:12px;border:1px solid #86efac;">'
+            f'<td style="text-align:center;padding:14px;background:#0a3b1e;'
+            f'border-radius:12px;border:1px solid #22c55e;">'
             f'<div style="font-size:28px;font-weight:700;color:#22c55e;">{minimal_count}</div>'
-            '<div style="font-size:12px;color:#166534;">Minimální riziko</div></td>'
+            f'<div style="font-size:12px;color:#86efac;margin-top:2px;">Minimální riziko</div></td>'
         )
 
     risk_table = ""
     if risk_boxes:
         risk_table = (
-            '<div style="margin:0 24px 24px;">'
-            '<table style="width:100%;border-collapse:separate;border-spacing:8px 0;">'
+            f'<div style="margin:0 24px 24px;">'
+            f'<table style="width:100%;border-collapse:separate;border-spacing:8px 0;">'
             f'<tr>{risk_boxes}</tr></table></div>'
         )
 
+    # ── Build the full HTML ──
     html = f"""<!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIshield.cz — Výsledky skenu</title>
+    <title>AIshield.cz — Výsledky AI Act skenu</title>
 </head>
-<body style="margin:0;padding:0;background:{BRAND["bg_light"]};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-    <div style="max-width:640px;margin:0 auto;background:{BRAND["bg"]};">
+<body style="margin:0;padding:0;background:{D["bg_body"]};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <div style="max-width:640px;margin:0 auto;background:{D["bg_card"]};">
 
         <!-- HEADER -->
-        <div style="background:linear-gradient(135deg,{BRAND["gradient_start"]},{BRAND["gradient_mid"]},{BRAND["gradient_end"]});padding:32px 24px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">AIshield.cz</div>
-            <div style="font-size:14px;color:{BRAND["accent_light"]};margin-top:4px;">Výsledky AI Act compliance skenu</div>
+        <div style="background:linear-gradient(135deg, {D["gradient_start"]}, {D["gradient_mid"]}, {D["gradient_end"]});padding:36px 24px;text-align:center;border-bottom:1px solid {D["border"]};">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">
+                <span style="color:#ffffff;">AI</span><span style="background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">shield</span><span style="color:{D["text_muted"]};font-size:16px;font-weight:400;">.cz</span>
+            </div>
+            <div style="font-size:14px;color:{D["text_secondary"]};margin-top:6px;">Výsledky AI Act compliance skenu</div>
         </div>
 
-        <!-- RED WARNING -->
-        <div style="margin:24px;padding:20px;background:#fef2f2;border:2px solid #fca5a5;border-radius:12px;">
-            <div style="font-size:16px;font-weight:700;color:#991b1b;">Na vašem webu byly nalezeny AI systémy bez povinného označení</div>
-            <p style="font-size:14px;color:#7f1d1d;margin-top:8px;line-height:1.6;">
-                Na webu <strong>{url}</strong> jsme nalezli <strong>{findings_count} AI {sys_word}</strong>,
-                které nejsou označeny pro návštěvníky.
-                Od <strong>2. srpna 2026</strong> je toto porušením EU AI Act (Nařízení 2024/1689, čl. 50)
-                a hrozí pokuta <strong>až 15 milionů EUR nebo 3 % obratu</strong>.
+        <!-- POSITIVE AI MESSAGE -->
+        <div style="margin:24px;padding:20px;background:linear-gradient(135deg, #0a2a1e, #0f2b3d);border:1px solid {D["success"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["success"]};">
+                &#10003; Skvělá zpráva — váš web využívá umělou inteligenci!
+            </div>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
+                Používáním AI technologií na svém webu máte <strong style="color:{D["text"]};">významnou konkurenční výhodu</strong>.
+                Chatboty, analytika a doporučovací systémy zlepšují zákaznický zážitek a konverze.
+                Teď jen potřebujete mít vše <strong style="color:{D["text"]};">legislativně v pořádku</strong>,
+                aby vám tato výhoda zůstala i po začátku platnosti EU AI Act.
             </p>
         </div>
 
-        <!-- SUMMARY -->
-        <div style="margin:0 24px 24px;padding:20px;background:{BRAND["bg_light"]};border:1px solid {BRAND["border"]};border-radius:12px;">
+        <!-- WARNING: FINDINGS -->
+        <div style="margin:0 24px 24px;padding:20px;background:#2a1015;border:2px solid {D["danger"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:#fca5a5;">
+                &#9888; Na vašem webu byly nalezeny AI systémy vyžadující úpravu
+            </div>
+            <p style="font-size:14px;color:#f8a0a0;margin-top:10px;line-height:1.7;">
+                Na webu <strong style="color:#ffffff;">{url}</strong> jsme identifikovali
+                <strong style="color:#ffffff;">{findings_count} {sys_word}</strong>,
+                které nejsou v souladu s povinnostmi dle EU AI Act.
+                Od <strong style="color:#ffffff;">2. srpna 2026</strong> musí být všechny AI systémy
+                interagující s návštěvníky řádně označeny (čl.&nbsp;50, Nařízení&nbsp;2024/1689).
+                Nesplnění hrozí pokutou <strong style="color:#ffffff;">až 15&nbsp;milionů&nbsp;EUR nebo 3&nbsp;%&nbsp;obratu</strong>.
+            </p>
+        </div>
+
+        <!-- SUMMARY BOX -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
             <table style="width:100%;border-collapse:collapse;">
                 <tr>
-                    <td style="padding:6px 0;font-size:14px;color:{BRAND["text_light"]};">Skenovaný web</td>
-                    <td style="padding:6px 0;font-size:14px;font-weight:600;color:{BRAND["text"]};text-align:right;">{url}</td>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Skenovaný web</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["accent_cyan"]};text-align:right;">{url}</td>
                 </tr>
                 <tr>
-                    <td style="padding:6px 0;font-size:14px;color:{BRAND["text_light"]};">Firma</td>
-                    <td style="padding:6px 0;font-size:14px;font-weight:600;color:{BRAND["text"]};text-align:right;">{company_name}</td>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Firma</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["text"]};text-align:right;">{company_name}</td>
                 </tr>
                 <tr>
-                    <td style="padding:6px 0;font-size:14px;color:{BRAND["text_light"]};">Nalezené AI systémy</td>
-                    <td style="padding:6px 0;font-size:22px;font-weight:700;color:{BRAND["text"]};text-align:right;">{findings_count}</td>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Nalezené AI systémy</td>
+                    <td style="padding:8px 0;font-size:26px;font-weight:700;color:{D["accent_fuchsia"]};text-align:right;">{findings_count}</td>
                 </tr>
             </table>
         </div>
@@ -178,68 +212,193 @@ def generate_report_email_html(
         <!-- RISK BOXES -->
         {risk_table}
 
-        <!-- WHAT IT MEANS -->
-        <div style="margin:0 24px 24px;padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
-            <p style="font-size:14px;color:#92400e;margin:0;line-height:1.6;">
-                <strong style="color:{BRAND["text"]};">Váš web musí být upraven.</strong>
-                Nalezené AI systémy vyžadují buď označení pro návštěvníky, interní evidenci, nebo obojí.
-                Bez úprav riskujete pokutu dle EU AI Act.
-            </p>
-        </div>
-
         <!-- FINDINGS TABLE -->
         <div style="margin:0 24px 24px;">
-            <div style="font-size:16px;font-weight:700;color:{BRAND["text"]};margin-bottom:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:12px;">
                 Nalezené AI systémy ({findings_count})
             </div>
-            <table style="width:100%;border-collapse:collapse;border:1px solid {BRAND["border"]};border-radius:12px;overflow:hidden;">
-                <tr style="background:{BRAND["bg_light"]};">
-                    <th style="padding:12px 16px;text-align:left;font-size:13px;color:{BRAND["text_light"]};font-weight:600;border-bottom:1px solid {BRAND["border"]};">Nález</th>
-                    <th style="padding:12px 16px;text-align:center;font-size:13px;color:{BRAND["text_light"]};font-weight:600;border-bottom:1px solid {BRAND["border"]};">Riziko</th>
+            <table style="width:100%;border-collapse:collapse;border:1px solid {D["border"]};border-radius:12px;overflow:hidden;">
+                <tr style="background:{D["bg_elevated"]};">
+                    <th style="padding:12px 16px;text-align:left;font-size:13px;color:{D["text_muted"]};font-weight:600;border-bottom:1px solid {D["border"]};">Nález</th>
+                    <th style="padding:12px 16px;text-align:center;font-size:13px;color:{D["text_muted"]};font-weight:600;border-bottom:1px solid {D["border"]};">Riziko</th>
                 </tr>
                 {findings_html}
             </table>
         </div>
 
-        <!-- BOTTOM WARNING -->
-        <div style="margin:0 24px 24px;padding:16px;background:#fef2f2;border:2px solid #fca5a5;border-radius:12px;">
-            <div style="font-size:14px;font-weight:700;color:#991b1b;">Důležité: Toto musíte řešit</div>
-            <p style="font-size:13px;color:#7f1d1d;margin-top:6px;line-height:1.5;">
-                Výše uvedené AI systémy na vašem webu nemají povinné oznámení pro návštěvníky.
-                Dle EU AI Act (čl. 50) musí být návštěvníkům jasně sděleno, že komunikují s AI.
-                Povinnost platí od 2. srpna 2026.
+        <!-- SEO BENEFIT PANEL -->
+        <div style="margin:0 24px 24px;padding:20px;background:linear-gradient(135deg, #0f1b3d, #1a1040);border:1px solid {D["accent_purple"]};border-radius:12px;">
+            <div style="font-size:15px;font-weight:700;color:{D["accent_fuchsia"]};">
+                &#128640; Compliance jako konkurenční výhoda v&nbsp;SEO
+            </div>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
+                Weby, které transparentně informují návštěvníky o používání AI technologií,
+                získávají <strong style="color:{D["text"]};">vyšší důvěryhodnost</strong> nejen u uživatelů, ale i u vyhledávačů.
+                Google i Seznam při hodnocení stránek zohledňují kvalitu zásad ochrany soukromí
+                a transparentnosti — weby splňující regulatorní požadavky jsou
+                <strong style="color:{D["accent_cyan"]};">lépe indexovány a zobrazovány na vyšších pozicích</strong>.
+                Compliance s AI Act tak není jen povinnost, ale i investice do vaší online viditelnosti.
             </p>
         </div>
 
-        <!-- PRICING CTA -->
-        <div style="margin:0 24px 24px;padding:24px;background:linear-gradient(135deg,{BRAND["gradient_start"]},{BRAND["gradient_mid"]});border-radius:12px;text-align:center;">
-            <div style="font-size:18px;font-weight:700;color:#ffffff;">Chcete to vyřešit za vás?</div>
-            <p style="font-size:14px;color:{BRAND["accent_light"]};margin-top:8px;line-height:1.5;">
-                Připravíme kompletní dokumentaci, transparenční stránku a vše potřebné pro soulad s AI Act.
-            </p>
-            <div style="margin-top:16px;">
-                <a href="https://aishield.cz/pricing" style="display:inline-block;padding:12px 32px;background:{BRAND["accent"]};color:#ffffff;font-weight:600;font-size:14px;border-radius:8px;text-decoration:none;">
-                    Zobrazit ceník služeb
-                </a>
+        <!-- WHAT WE DELIVER -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:16px;text-align:center;">
+                Co pro vás připravíme?
+            </div>
+            <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_fuchsia"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128203; Compliance Report</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní přehled AI systémů a stavu vašeho webu</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_cyan"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128221; Akční plán</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Co udělat a do kdy — krok za krokem s checkboxy</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_purple"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128218; Registr AI systémů</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Evidence AI nástrojů — připraveno pro úřady</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["success"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#127760; Transparenční stránka</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Hotový HTML kód pro váš web — stačí vložit</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["warning"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#128172; Chatbot oznámení + AI politika firmy</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Povinné texty pro zákazníky + interní pravidla pro zaměstnance</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;border-left:3px solid {D["accent_fuchsia"]};">
+                    <div style="font-size:14px;font-weight:600;color:{D["text"]};">&#127891; Školení zaměstnanců</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Osnova povinného školení dle čl. 4 AI Act</div>
+                </td></tr>
+            </table>
+        </div>
+
+        <!-- PRICING PLANS -->
+        <div style="margin:0 24px 24px;">
+            <div style="font-size:18px;font-weight:700;color:{D["text"]};margin-bottom:16px;text-align:center;">
+                Vyberte si balíček, který vám vyhovuje
+            </div>
+
+            <!-- BASIC -->
+            <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+                <table style="width:100%;border-collapse:collapse;"><tr>
+                    <td style="vertical-align:top;">
+                        <div style="font-size:16px;font-weight:700;color:{D["text"]};">BASIC</div>
+                        <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Compliance Kit — dokumenty ke stažení</div>
+                    </td>
+                    <td style="text-align:right;vertical-align:top;">
+                        <div style="font-size:24px;font-weight:800;color:{D["text"]};">4 999 Kč</div>
+                        <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
+                    </td>
+                </tr></table>
+                <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                    ✓ Sken webu + AI Act report &nbsp;&nbsp;
+                    ✓ 7 PDF dokumentů &nbsp;&nbsp;
+                    ✓ Transparenční stránka &nbsp;&nbsp;
+                    ✓ Akční plán &nbsp;&nbsp;
+                    ✓ Registr AI systémů
+                </div>
+            </div>
+
+            <!-- PRO (highlighted) -->
+            <div style="margin-bottom:12px;padding:3px;background:linear-gradient(135deg, {D["accent_fuchsia"]}, {D["accent_cyan"]});border-radius:14px;">
+                <div style="padding:20px;background:{D["bg_card"]};border-radius:12px;">
+                    <div style="text-align:center;margin-bottom:8px;">
+                        <span style="display:inline-block;padding:3px 14px;border-radius:20px;font-size:11px;font-weight:600;color:#ffffff;background:linear-gradient(135deg, {D["accent_fuchsia"]}, {D["accent_purple"]});">
+                            &#11088; Nejoblíbenější
+                        </span>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;"><tr>
+                        <td style="vertical-align:top;">
+                            <div style="font-size:16px;font-weight:700;color:{D["text"]};">PRO</div>
+                            <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Vše z BASIC + implementace na klíč</div>
+                        </td>
+                        <td style="text-align:right;vertical-align:top;">
+                            <div style="font-size:24px;font-weight:800;background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">14 999 Kč</div>
+                            <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
+                        </td>
+                    </tr></table>
+                    <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                        ✓ Vše z BASIC &nbsp;&nbsp;
+                        ✓ Instalace widgetu na web &nbsp;&nbsp;
+                        ✓ Nastavení transparenční stránky &nbsp;&nbsp;
+                        ✓ Úprava chatbot oznámení &nbsp;&nbsp;
+                        ✓ 30 dní podpora &nbsp;&nbsp;
+                        ✓ Prioritní zpracování
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTERPRISE -->
+            <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+                <table style="width:100%;border-collapse:collapse;"><tr>
+                    <td style="vertical-align:top;">
+                        <div style="font-size:16px;font-weight:700;color:{D["text"]};">ENTERPRISE</div>
+                        <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + monitoring</div>
+                    </td>
+                    <td style="text-align:right;vertical-align:top;">
+                        <div style="font-size:24px;font-weight:800;color:{D["text"]};">49 999+ Kč</div>
+                        <div style="font-size:11px;color:{D["text_muted"]};">individuální</div>
+                    </td>
+                </tr></table>
+                <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                    ✓ Vše z PRO &nbsp;&nbsp;
+                    ✓ Konzultace se specialistou &nbsp;&nbsp;
+                    ✓ Měsíční monitoring &nbsp;&nbsp;
+                    ✓ Školení AI literacy &nbsp;&nbsp;
+                    ✓ SLA s dobou odezvy
+                </div>
             </div>
         </div>
 
+        <!-- CTA BUTTONS -->
+        <div style="margin:0 24px 24px;text-align:center;">
+            <a href="https://aishield.cz/pricing" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_purple"]});color:#ffffff;font-weight:700;font-size:15px;border-radius:12px;text-decoration:none;margin-bottom:12px;">
+                Zobrazit ceník a objednat
+            </a>
+            <br>
+            <a href="https://aishield.cz/registrace" style="display:inline-block;padding:12px 32px;background:transparent;color:{D["accent_cyan"]};font-weight:600;font-size:14px;border-radius:12px;text-decoration:none;border:1px solid {D["accent_cyan"]};margin-top:8px;">
+                Vytvořit účet zdarma
+            </a>
+        </div>
+
+        <!-- DEADLINE COUNTDOWN -->
+        <div style="margin:0 24px 24px;padding:20px;background:#2a1015;border:2px solid {D["danger"]};border-radius:12px;text-align:center;">
+            <div style="font-size:13px;color:#fca5a5;text-transform:uppercase;letter-spacing:1px;font-weight:600;">
+                Do platnosti AI Act zbývá
+            </div>
+            <div style="font-size:32px;font-weight:800;color:{D["danger"]};margin-top:8px;">
+                2. srpna 2026
+            </div>
+            <p style="font-size:13px;color:{D["text_muted"]};margin-top:10px;line-height:1.6;">
+                Po tomto datu mohou úřady udělovat pokuty za nesoulad s AI Act.
+                Doporučujeme začít s úpravami co nejdříve.
+            </p>
+        </div>
+
         <!-- CONTACT -->
-        <div style="margin:0 24px 24px;padding:20px;background:{BRAND["bg_light"]};border:1px solid {BRAND["border"]};border-radius:12px;text-align:center;">
-            <div style="font-size:15px;font-weight:600;color:{BRAND["text"]};">Máte otázky? Ozvěte se nám</div>
-            <div style="margin-top:10px;font-size:14px;color:{BRAND["text_light"]};">
-                <a href="mailto:info@aishield.cz" style="color:{BRAND["accent"]};text-decoration:none;">info@aishield.cz</a>
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;text-align:center;">
+            <div style="font-size:15px;font-weight:600;color:{D["text"]};">Máte otázky? Ozvěte se nám</div>
+            <div style="margin-top:12px;font-size:14px;">
+                <a href="mailto:info@aishield.cz" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">info@aishield.cz</a>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <a href="tel:+420773216877" style="color:{BRAND["accent"]};text-decoration:none;">+420 773 216 877</a>
+                <a href="tel:+420773216877" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">+420 773 216 877</a>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:{D["text_muted"]};">
+                Odpovídáme do 24 hodin v pracovní dny.
             </div>
         </div>
 
         <!-- FOOTER -->
-        <div style="background:linear-gradient(135deg,{BRAND["gradient_start"]},{BRAND["gradient_mid"]});padding:24px;text-align:center;">
-            <div style="font-size:13px;color:{BRAND["accent_light"]};">AIshield.cz — AI Act compliance pro české firmy</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:8px;">
-                Tento email byl vygenerován na základě automatického skenu webu {url}.
-                <br>2025 AIshield.cz | Desperados-design.cz
+        <div style="background:linear-gradient(135deg, {D["gradient_start"]}, {D["gradient_mid"]});padding:28px 24px;text-align:center;border-top:1px solid {D["border"]};">
+            <div style="font-size:14px;font-weight:600;color:{D["text_secondary"]};">
+                <span style="color:#ffffff;">AI</span><span style="color:{D["accent_fuchsia"]};">shield</span><span style="color:{D["text_muted"]};">.cz</span>
+                &nbsp;— AI Act compliance pro české firmy
+            </div>
+            <div style="font-size:11px;color:{D["text_muted"]};margin-top:10px;line-height:1.6;">
+                Tento email byl vygenerován na základě automatického skenu webu {url}.<br>
+                &copy; 2025 AIshield.cz | Provozovatel: Martin Haynes, IČO: 17889251
             </div>
         </div>
 

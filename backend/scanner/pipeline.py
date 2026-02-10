@@ -15,6 +15,7 @@ from backend.database import get_supabase
 from backend.scanner.web_scanner import WebScanner, ScannedPage
 from backend.scanner.detector import AIDetector, DetectedAI
 from backend.scanner.classifier import AIClassifier, ClassifiedFinding
+from backend.monitoring.engine_health import engine_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,15 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
 
         if page.error:
             logger.error(f"[Pipeline] Chyba scanneru: {page.error}")
+            # Classify Playwright errors
+            err_lower = page.error.lower()
+            if "timeout" in err_lower:
+                err_type = "playwright_timeout"
+            elif "browser" in err_lower or "chromium" in err_lower or "crash" in err_lower:
+                err_type = "playwright_crash"
+            else:
+                err_type = "pipeline_error"
+            await engine_monitor.report_error(err_type, scan_id, url, page.error)
             _mark_error(supabase, scan_id, page.error)
             return {"status": "error", "error": page.error}
 
@@ -166,6 +176,15 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
 
     except Exception as e:
         logger.error(f"[Pipeline] EXCEPTION: {e}", exc_info=True)
+        # Classify exception type
+        err_str = str(e).lower()
+        if "supabase" in err_str or "postgrest" in err_str or "database" in err_str:
+            err_type = "database_error"
+        elif "playwright" in err_str or "browser" in err_str:
+            err_type = "playwright_crash"
+        else:
+            err_type = "pipeline_error"
+        await engine_monitor.report_error(err_type, scan_id, url, str(e))
         _mark_error(supabase, scan_id, str(e))
         return {"status": "error", "error": str(e)}
 
