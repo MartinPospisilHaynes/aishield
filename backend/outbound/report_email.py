@@ -179,7 +179,6 @@ def generate_report_email_html(
             f'<div style="margin-top:6px;font-size:13px;">'
             f'<span style="color:{D["text_muted"]};">Co vám nabízíme:</span> '
             f'<span style="color:{D["accent_fuchsia"]};">{offer}</span>'
-            f' <a href="https://aishield.cz/pricing" style="color:{D["accent_cyan"]};text-decoration:underline;font-size:12px;">Vyřešíme to za vás &rarr;</a>'
             f'</div>'
         )
 
@@ -499,10 +498,10 @@ def generate_report_email_html(
             <div style="font-size:32px;font-weight:800;color:{D["danger"]};margin-top:8px;">
                 {_days_remaining()}
             </div>
-            <p style="font-size:13px;color:{D["text_muted"]};margin-top:10px;line-height:1.6;">
-                <a href="{AI_ACT_LINKS['čl. 50']}" style="color:#fca5a5;text-decoration:underline;" target="_blank">AI Act</a>
-                přichází v platnost <strong style="color:#fca5a5;">2.&nbsp;srpna&nbsp;2026</strong>.
-                Po tomto datu mohou úřady udělovat pokuty za nesoulad.
+            <p style="font-size:13px;color:#e2e8f0;margin-top:10px;line-height:1.6;">
+                <a href="{AI_ACT_LINKS['čl. 50']}" style="color:#fca5a5;text-decoration:underline;font-weight:600;" target="_blank">AI Act</a>
+                přichází v platnost <strong style="color:#ffffff;">2.&nbsp;srpna&nbsp;2026</strong>.
+                Po tomto datu mohou úřady udělovat <strong style="color:#fca5a5;">pokuty za nesoulad</strong>.
                 Doporučujeme začít s úpravami co nejdříve.
             </p>
         </div>

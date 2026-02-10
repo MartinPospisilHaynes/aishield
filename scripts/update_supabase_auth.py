@@ -190,16 +190,16 @@ def update_supabase_auth():
         sys.exit(1)
 
     payload = {
-        "SITE_URL": SITE_URL,
-        "URI_ALLOW_LIST": "https://aishield.cz/**,https://www.aishield.cz/**,http://localhost:3000/**",
-        "MAILER_SUBJECTS_CONFIRMATION": CONFIRM_EMAIL_SUBJECT,
-        "MAILER_TEMPLATES_CONFIRMATION_CONTENT": CONFIRM_EMAIL_TEMPLATE,
-        "MAILER_SUBJECTS_RECOVERY": RECOVERY_SUBJECT,
-        "MAILER_TEMPLATES_RECOVERY_CONTENT": RECOVERY_TEMPLATE,
-        "MAILER_SUBJECTS_MAGIC_LINK": MAGIC_LINK_SUBJECT,
-        "MAILER_TEMPLATES_MAGIC_LINK_CONTENT": MAGIC_LINK_TEMPLATE,
-        "MAILER_SUBJECTS_EMAIL_CHANGE": EMAIL_CHANGE_SUBJECT,
-        "MAILER_TEMPLATES_EMAIL_CHANGE_CONTENT": EMAIL_CHANGE_TEMPLATE,
+        "site_url": SITE_URL,
+        "uri_allow_list": "https://aishield.cz/**,https://www.aishield.cz/**,http://localhost:3000/**",
+        "mailer_subjects_confirmation": CONFIRM_EMAIL_SUBJECT,
+        "mailer_templates_confirmation_content": CONFIRM_EMAIL_TEMPLATE,
+        "mailer_subjects_recovery": RECOVERY_SUBJECT,
+        "mailer_templates_recovery_content": RECOVERY_TEMPLATE,
+        "mailer_subjects_magic_link": MAGIC_LINK_SUBJECT,
+        "mailer_templates_magic_link_content": MAGIC_LINK_TEMPLATE,
+        "mailer_subjects_email_change": EMAIL_CHANGE_SUBJECT,
+        "mailer_templates_email_change_content": EMAIL_CHANGE_TEMPLATE,
     }
 
     data = json.dumps(payload).encode()
@@ -210,6 +210,7 @@ def update_supabase_auth():
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
+            "User-Agent": "AIshield-Config/1.0",
         },
     )
 
