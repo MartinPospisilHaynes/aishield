@@ -424,6 +424,21 @@ function ScanPageInner() {
                                 );
                             })}
                         </div>
+
+                        {/* Warning: do not leave page during final stage */}
+                        {currentStage >= SCAN_STAGES.length - 2 && (
+                            <div className="mt-4 flex items-start gap-3 rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 animate-in fade-in duration-500">
+                                <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 3l9.66 16.5a1 1 0 01-.87 1.5H3.21a1 1 0 01-.87-1.5L12 3z" />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-medium text-amber-300">Neopouštějte prosím tuto stránku</p>
+                                    <p className="text-xs text-amber-400/70 mt-0.5">
+                                        Generování compliance reportu může trvat 30–60 sekund. Umělá inteligence právě vyhodnocuje každý nález — prosím vyčkejte.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
