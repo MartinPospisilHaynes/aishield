@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#312e81"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield shape -->
+  <path d="M32 2 L56 14 C56 14 58 38 32 60 C6 38 8 14 8 14 Z" fill="url(#bg)" stroke="url(#accent)" stroke-width="2.5"/>
+  <!-- Inner glow line -->
+  <path d="M32 8 L50 18 C50 18 52 36 32 54 C12 36 14 18 14 18 Z" fill="none" stroke="url(#accent)" stroke-width="1" opacity="0.3"/>
+  <!-- Checkmark -->
+  <path d="M22 32 L29 39 L42 24" fill="none" stroke="url(#accent)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
