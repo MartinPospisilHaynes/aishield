@@ -53,7 +53,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.report,
         name: "Compliance Report",
-        desc: "Hlavní přehled stavu vašeho webu",
+        desc: "Kompletní přehled stavu vašeho webu",
         detail: null,
         bullets: [
             "Přehled všech AI systémů nalezených na vašem webu (chatboty, analytika, doporučovací systémy)",
@@ -79,7 +79,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.registry,
         name: "Registr AI systémů",
-        desc: "Evidence vašich AI nástrojů pro úřady",
+        desc: "Evidence AI nástrojů pro úřady",
         detail: null,
         bullets: [
             "Kompletní tabulka všech AI nástrojů, které ve firmě používáte",
@@ -92,7 +92,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.web,
         name: "Transparenční stránka",
-        desc: "Hotová stránka pro váš web",
+        desc: "Hotová podstránka pro váš web",
         detail: null,
         bullets: [
             "Hotový HTML kód stránky — stačí jen vložit na váš web",
@@ -105,7 +105,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.chatbot,
         name: "Chatbot oznámení",
-        desc: "Texty, které musí vidět vaši zákazníci",
+        desc: "Povinné texty pro vaše zákazníky",
         detail: null,
         bullets: [
             "Přesné texty oznámení pro chatboty (Smartsupp, Tidio, LiveChat, Crisp...)",
@@ -118,7 +118,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.policy,
         name: "AI politika firmy",
-        desc: "Interní pravidla pro vaše zaměstnance",
+        desc: "Interní pravidla pro zaměstnance",
         detail: null,
         bullets: [
             "Jasná pravidla, co zaměstnanci smí a nesmí dělat s AI nástroji",
@@ -144,7 +144,7 @@ const DELIVERABLES = [
     {
         icon: ICONS.shield,
         name: "Podpora souladu se zákonem",
-        desc: "Rozsáhlý balíček podkladů — klid na duši",
+        desc: "Kompletní balíček — klid na duši",
         detail: null,
         bullets: [
             "Všech 7 dokumentů dohromady = solidní základ pro soulad s AI Actem",
@@ -543,14 +543,16 @@ export default function HomePage() {
                     <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-8 text-center">
                         <div className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-4 py-1.5 mb-4">
                             <svg className="w-4 h-4 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="text-sm font-semibold text-neon-fuchsia">Lídři AI Act compliance v ČR</span>
+                            <span className="text-sm font-semibold text-neon-fuchsia">My jsme průkopníci a lídři AI Act compliance v ČR</span>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Nejkomplexnější AI Act řešení na českém trhu</h3>
+                        <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
                         <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                            Nikdo v Česku neposkytuje tak ucelený servis — od automatického skenu webu,
+                            Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
                             přes kompletní dokumentaci, až po průběžný monitoring.
-                            Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty —
-                            pomůžeme vám splnit zákon jednoduše a bez stresu.
+                            Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
+                            My Vám pomůžeme splnit zákon jednoduše a bez stresu.
+                            Nemusíte se tak o nic starat a můžete se věnovat dál důležitějším věcem,
+                            než je byrokracie z Bruselu. Jako je například Vaše podnikání.
                         </p>
                     </div>
                 </div>
