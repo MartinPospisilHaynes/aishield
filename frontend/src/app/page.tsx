@@ -491,6 +491,11 @@ export default function HomePage() {
                             Zjistěte to za minutu. Náš robot proskenuje váš web, najde AI systémy
                             a řekne vám přesně, co musíte udělat. Při nesplnění hrozí pokutou až 35 milionů EUR.
                         </p>
+                        <p className="text-xs text-slate-400 mt-3 text-center leading-relaxed bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-2.5">
+                            🔍 Náš sken využívá <strong className="text-slate-300">stejný přístup a kritéria</strong>, jaké budou
+                            používat kontrolní orgány Evropské unie při systematických inspekcích webů a e-shopů
+                            po nabytí účinnosti AI Act. Otestujte si svůj web dříve, než to udělají úřady za vás.
+                        </p>
                     </div>
                 </div>
             </section>
