@@ -804,10 +804,10 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                                         {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
                                     </span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
-                                            ? "bg-green-500/10 text-green-400"
-                                            : order.status === "CREATED"
-                                                ? "bg-amber-500/10 text-amber-400"
-                                                : "bg-red-500/10 text-red-400"
+                                        ? "bg-green-500/10 text-green-400"
+                                        : order.status === "CREATED"
+                                            ? "bg-amber-500/10 text-amber-400"
+                                            : "bg-red-500/10 text-red-400"
                                         }`}>
                                         {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká na platbu" : order.status}
                                     </span>

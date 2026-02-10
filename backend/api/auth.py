@@ -16,12 +16,14 @@ Použití v routerech:
 
 from __future__ import annotations
 
+import json as _json
 import logging
+import time
 from dataclasses import dataclass
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jose import JWTError, jwt, jwk
 
 from backend.config import get_settings
 
@@ -53,43 +55,114 @@ class AuthUser:
 
 
 def _get_supabase_jwt_secret() -> str:
-    """
-    Supabase JWT secret = supabase_anon_key pro HS256 ověření.
-    Supabase podepisuje tokeny pomocí JWT secret z jejich dashboardu.
-    Pro ověření na backendu potřebujeme buď:
-    - JWT Secret z Supabase dashboardu (Settings → API → JWT Secret)
-    - nebo anon key (pro HS256, pokud je to stejný klíč)
-
-    V praxi: Supabase JWT secret je SEPARÁTNÍ od anon key.
-    Doporučeno: přidat SUPABASE_JWT_SECRET do .env
-    Fallback: dekódujeme bez ověření podpisu + validujeme issuer/exp.
-    """
+    """Get HS256 JWT secret (for legacy tokens / anon/service keys)."""
     settings = get_settings()
-    # Preferujeme dedikovaný JWT secret
     jwt_secret = getattr(settings, "supabase_jwt_secret", None)
     if jwt_secret:
         return jwt_secret
-    # Fallback — anon key NENÍ JWT secret, ale můžeme validovat strukturu
     return ""
+
+
+# ── JWKS cache for ES256 verification ──
+_jwks_cache: dict = {"keys": {}, "fetched_at": 0}
+_JWKS_TTL = 3600  # re-fetch every hour
+
+
+def _fetch_jwks() -> dict[str, dict]:
+    """
+    Fetch JWKS (JSON Web Key Set) from Supabase Auth.
+    Supabase nové projekty (2025+) podepisují access tokeny pomocí ES256.
+    Veřejné klíče jsou na /.well-known/jwks.json.
+    """
+    import urllib.request
+
+    now = time.time()
+    if _jwks_cache["keys"] and (now - _jwks_cache["fetched_at"]) < _JWKS_TTL:
+        return _jwks_cache["keys"]
+
+    settings = get_settings()
+    url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+
+    try:
+        req = urllib.request.Request(url, headers={
+            "apikey": settings.supabase_anon_key,
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = _json.loads(resp.read())
+
+        keys_by_kid: dict[str, dict] = {}
+        for k in data.get("keys", []):
+            kid = k.get("kid")
+            if kid:
+                keys_by_kid[kid] = k
+
+        _jwks_cache["keys"] = keys_by_kid
+        _jwks_cache["fetched_at"] = now
+        logger.info(f"[Auth] JWKS fetched: {len(keys_by_kid)} key(s)")
+        return keys_by_kid
+
+    except Exception as e:
+        logger.warning(f"[Auth] JWKS fetch failed: {e}")
+        return _jwks_cache.get("keys", {})
 
 
 def _decode_token(token: str) -> dict:
     """
     Dekóduje a validuje Supabase JWT token.
 
-    Strategie:
-    1. Pokud máme JWT secret → ověříme HS256 podpis
-    2. Pokud nemáme → dekódujeme bez ověření podpisu,
-       ale validujeme issuer, expiration a strukturu
+    Podporuje:
+    - ES256 (nové Supabase projekty 2025+) — ověření JWKS veřejným klíčem
+    - HS256 (starší projekty) — ověření JWT secret
+    - Fallback: dekódování bez podpisu s validací issuer/exp
     """
     settings = get_settings()
-    jwt_secret = _get_supabase_jwt_secret()
-
-    # Očekávaný issuer = supabase_url + /auth/v1
     expected_issuer = f"{settings.supabase_url}/auth/v1"
 
-    if jwt_secret:
-        # Plná validace s ověřením podpisu
+    # 1. Peek at token header to determine algorithm
+    try:
+        headers = jwt.get_unverified_header(token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Neplatný token",
+        )
+
+    alg = headers.get("alg", "")
+    kid = headers.get("kid", "")
+
+    # 2. ES256 — verify with JWKS public key
+    if alg == "ES256" and kid:
+        jwks = _fetch_jwks()
+        key_data = jwks.get(kid)
+        if not key_data:
+            # Force refresh JWKS — key might have rotated
+            _jwks_cache["fetched_at"] = 0
+            jwks = _fetch_jwks()
+            key_data = jwks.get(kid)
+
+        if key_data:
+            try:
+                public_key = jwk.construct(key_data, algorithm="ES256")
+                payload = jwt.decode(
+                    token,
+                    public_key,
+                    algorithms=["ES256"],
+                    audience="authenticated",
+                    issuer=expected_issuer,
+                )
+                return payload
+            except JWTError as e:
+                logger.warning(f"[Auth] ES256 verification failed: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Neplatný nebo expirovaný token",
+                )
+        else:
+            logger.warning(f"[Auth] JWKS key not found for kid={kid}")
+
+    # 3. HS256 — verify with JWT secret
+    jwt_secret = _get_supabase_jwt_secret()
+    if alg == "HS256" and jwt_secret:
         try:
             payload = jwt.decode(
                 token,
@@ -100,46 +173,45 @@ def _decode_token(token: str) -> dict:
             )
             return payload
         except JWTError as e:
-            logger.warning(f"[Auth] JWT verification failed: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Neplatný nebo expirovaný token",
-            )
-    else:
-        # Bez JWT secret — dekódujeme a validujeme strukturu
-        try:
-            payload = jwt.decode(
-                token,
-                options={
-                    "verify_signature": False,
-                    "verify_exp": True,
-                    "verify_aud": False,
-                },
-            )
-        except JWTError as e:
-            logger.warning(f"[Auth] JWT decode failed: {e}")
+            logger.warning(f"[Auth] HS256 verification failed: {e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Neplatný nebo expirovaný token",
             )
 
-        # Validujeme issuer manuálně
-        iss = payload.get("iss", "")
-        if not iss.startswith(settings.supabase_url):
-            logger.warning(f"[Auth] Invalid issuer: {iss}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Neplatný token — nesprávný issuer",
-            )
+    # 4. Fallback — decode without signature, validate structure
+    try:
+        payload = jwt.decode(
+            token,
+            options={
+                "verify_signature": False,
+                "verify_exp": True,
+                "verify_aud": False,
+            },
+        )
+    except JWTError as e:
+        logger.warning(f"[Auth] JWT decode failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Neplatný nebo expirovaný token",
+        )
 
-        # Musí mít sub (user ID) a email
-        if not payload.get("sub"):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Neplatný token — chybí user ID",
-            )
+    # Validate issuer
+    iss = payload.get("iss", "")
+    if not iss.startswith(settings.supabase_url):
+        logger.warning(f"[Auth] Invalid issuer: {iss}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Neplatný token — nesprávný issuer",
+        )
 
-        return payload
+    if not payload.get("sub"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Neplatný token — chybí user ID",
+        )
+
+    return payload
 
 
 async def get_current_user(

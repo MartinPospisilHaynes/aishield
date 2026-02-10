@@ -617,6 +617,29 @@ function ScanPageInner() {
                             </div>
                         )}
 
+                        {/* ── Info: výsledky se mohou lišit ── */}
+                        {hasFindings && (
+                            <div className="rounded-xl bg-slate-500/5 border border-slate-500/15 p-4">
+                                <div className="flex items-start gap-3">
+                                    <IconInfo className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                                    <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
+                                        <p>
+                                            <strong className="text-slate-300">Výsledky opakovaných skenů se mohou mírně lišit.</strong>{" "}
+                                            Moderní weby dynamicky načítají AI skripty (chatboty, analytiku, personalizaci) na základě
+                                            geolokace návštěvníka, typu zařízení, denní doby, A/B testování nebo cookies.
+                                            Některé systémy se aktivují až po interakci uživatele — proto nemusí být při každém skenu viditelné.
+                                        </p>
+                                        <p>
+                                            Kompletní audit všech AI systémů na vašem webu — včetně těch skrytých v backendu —
+                                            provádíme v rámci placeného plánu po{" "}
+                                            <a href="/registrace" className="text-fuchsia-400 hover:text-fuchsia-300 underline">registraci</a>{" "}
+                                            a vyplnění detailního dotazníku.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* ── ČERVENÝ VAROVNÝ BANNER (dole) ── */}
                         {hasFindings && (
                             <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-5">
