@@ -4,18 +4,19 @@ Přehledový dashboard, manuální ovládání orchestrátoru,
 email health monitoring.
 """
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.outbound.orchestrator import get_stats, run_task, SCHEDULE
 from backend.outbound.deliverability import (
     get_email_health,
     process_resend_webhook,
 )
+from backend.api.auth import AuthUser, require_admin
 
 router = APIRouter()
 
 
 @router.get("/stats")
-async def admin_stats():
+async def admin_stats(user: AuthUser = Depends(require_admin)):
     """Vrátí přehledové statistiky pro admin dashboard."""
     try:
         stats = await get_stats()
@@ -25,7 +26,7 @@ async def admin_stats():
 
 
 @router.post("/run/{task_name}")
-async def admin_run_task(task_name: str):
+async def admin_run_task(task_name: str, user: AuthUser = Depends(require_admin)):
     """Manuálně spustí úlohu orchestrátoru."""
     if task_name not in SCHEDULE:
         raise HTTPException(
@@ -37,7 +38,7 @@ async def admin_run_task(task_name: str):
 
 
 @router.get("/email-log")
-async def admin_email_log(limit: int = 50):
+async def admin_email_log(limit: int = 50, user: AuthUser = Depends(require_admin)):
     """Vrátí posledních N odeslaných emailů."""
     from backend.database import get_supabase
     supabase = get_supabase()
@@ -50,7 +51,7 @@ async def admin_email_log(limit: int = 50):
 
 
 @router.get("/companies")
-async def admin_companies(status: str = "all", limit: int = 50):
+async def admin_companies(status: str = "all", limit: int = 50, user: AuthUser = Depends(require_admin)):
     """Vrátí přehled firem z prospecting DB."""
     from backend.database import get_supabase
     supabase = get_supabase()
@@ -66,7 +67,7 @@ async def admin_companies(status: str = "all", limit: int = 50):
 
 
 @router.get("/email-health")
-async def admin_email_health():
+async def admin_email_health(user: AuthUser = Depends(require_admin)):
     """Vrátí zdravotní metriky emailové kampaně."""
     try:
         health = await get_email_health()
@@ -132,7 +133,7 @@ async def resend_webhook(request: Request):
 
 
 @router.get("/alerts")
-async def admin_alerts(limit: int = 50):
+async def admin_alerts(limit: int = 50, user: AuthUser = Depends(require_admin)):
     """Vrátí posledních N alertů."""
     from backend.database import get_supabase
     supabase = get_supabase()
@@ -145,7 +146,7 @@ async def admin_alerts(limit: int = 50):
 
 
 @router.post("/legislative-alert")
-async def admin_legislative_alert(request: Request):
+async def admin_legislative_alert(request: Request, user: AuthUser = Depends(require_admin)):
     """
     Manuální trigger: Pošli legislativní alert VŠEM platícím klientům.
     Body: {"title": "...", "body_text": "..."}
@@ -164,7 +165,7 @@ async def admin_legislative_alert(request: Request):
 
 
 @router.get("/diffs")
-async def admin_diffs(limit: int = 20):
+async def admin_diffs(limit: int = 20, user: AuthUser = Depends(require_admin)):
     """Vrátí posledních N diffů (porovnání skenů)."""
     from backend.database import get_supabase
     supabase = get_supabase()

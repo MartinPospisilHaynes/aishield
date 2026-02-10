@@ -4,18 +4,39 @@ Endpointy pro zákaznický portál — přehled compliance stavu,
 dokumenty, skeny, akční plán.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from backend.database import get_supabase
+from backend.api.auth import AuthUser, get_current_user
 
 router = APIRouter()
 
 
+@router.get("/me")
+async def get_my_dashboard(user: AuthUser = Depends(get_current_user)):
+    """
+    Vrátí kompletní data pro dashboard přihlášeného uživatele.
+    Najde firmu podle emailu z JWT tokenu.
+    """
+    return await _load_dashboard(user.email)
+
+
 @router.get("/{user_email}")
-async def get_dashboard_data(user_email: str):
+async def get_dashboard_data(user_email: str, user: AuthUser = Depends(get_current_user)):
     """
-    Vrátí kompletní data pro dashboard jednoho zákazníka.
-    Najde firmu podle emailu, načte skeny, nálezy, dokumenty, objednávky.
+    Vrátí dashboard data pro konkrétní email.
+    Uživatel může přistoupit pouze ke svým datům (nebo admin k jakýmkoliv).
     """
+    from backend.api.auth import ADMIN_EMAILS
+
+    # Uživatel může vidět jen svá data, admin může vidět všechna
+    if user.email != user_email and user.email not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Přístup odepřen")
+
+    return await _load_dashboard(user_email)
+
+
+async def _load_dashboard(user_email: str):
+    """Interní funkce — načte dashboard data pro daný email."""
     supabase = get_supabase()
 
     # 1. Najít firmu podle emailu (nebo vrátit prázdný stav)

@@ -3,7 +3,7 @@ AIshield.cz — Payments API
 Endpointy pro GoPay: jednorázové platby, subscriptions (opakované platby), refundace.
 """
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from datetime import datetime
 import uuid
@@ -12,6 +12,7 @@ import logging
 from backend.config import get_settings
 from backend.database import get_supabase
 from backend.payments import get_gopay, PaymentState, RecurrenceCycle
+from backend.api.auth import AuthUser, get_current_user, get_optional_user
 
 logger = logging.getLogger(__name__)
 
@@ -97,9 +98,10 @@ class RefundRequest(BaseModel):
 
 
 @router.post("/checkout", response_model=CheckoutResponse)
-async def create_checkout(req: CheckoutRequest):
+async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_current_user)):
     """
     Vytvoří jednorázovou platbu v GoPay a vrátí URL na platební bránu.
+    Vyžaduje přihlášení.
     """
     if req.plan not in PLANS:
         raise HTTPException(status_code=400, detail=f"Neznámý balíček: {req.plan}")
@@ -156,7 +158,7 @@ async def create_checkout(req: CheckoutRequest):
 # ────────────────────────────────────────────────────────────
 
 @router.post("/subscribe", response_model=CheckoutResponse)
-async def create_subscription(req: SubscriptionRequest):
+async def create_subscription(req: SubscriptionRequest, user: AuthUser = Depends(get_current_user)):
     """
     Vytvoří subscription (opakované platby) v GoPay.
 
@@ -238,7 +240,7 @@ async def create_subscription(req: SubscriptionRequest):
 
 
 @router.post("/subscribe/charge")
-async def charge_subscription(req: SubscriptionChargeRequest):
+async def charge_subscription(req: SubscriptionChargeRequest, user: AuthUser = Depends(get_current_user)):
     """
     Strhne další platbu z existující subscription.
 
@@ -313,7 +315,7 @@ async def charge_subscription(req: SubscriptionChargeRequest):
 
 
 @router.post("/subscribe/cancel")
-async def cancel_subscription(subscription_id: str):
+async def cancel_subscription(subscription_id: str, user: AuthUser = Depends(get_current_user)):
     """
     Zruší subscription — přestane strhávat platby.
     Aktuální předplacené období zůstává platné.
@@ -355,7 +357,7 @@ async def cancel_subscription(subscription_id: str):
 
 
 @router.get("/subscribe/{subscription_id}")
-async def get_subscription_detail(subscription_id: str):
+async def get_subscription_detail(subscription_id: str, user: AuthUser = Depends(get_current_user)):
     """Vrátí detail subscription včetně GoPay recurrence info."""
     supabase = get_supabase()
 
@@ -391,7 +393,7 @@ async def get_subscription_detail(subscription_id: str):
 # ────────────────────────────────────────────────────────────
 
 @router.post("/refund")
-async def refund_payment(req: RefundRequest):
+async def refund_payment(req: RefundRequest, user: AuthUser = Depends(get_current_user)):
     """
     Vrátí peníze zákazníkovi — plná nebo částečná refundace.
 

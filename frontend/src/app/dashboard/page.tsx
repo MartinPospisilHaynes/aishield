@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { getDashboardData, type DashboardData } from "@/lib/api";
+import { createClient } from "@/lib/supabase-browser";
 
-type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny";
+type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "ucet";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     {
@@ -49,6 +50,15 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
         icon: (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        ),
+    },
+    {
+        key: "ucet",
+        label: "Můj účet",
+        icon: (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
         ),
     },
@@ -207,6 +217,7 @@ export default function DashboardPage() {
                     {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
                     {activeTab === "plan" && <TabPlan findings={data?.findings || []} />}
                     {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} />}
+                    {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                 </div>
             </div>
         </section>
@@ -683,6 +694,183 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
                     </div>
                 </div>
             ))}
+        </div>
+    );
+}
+
+/* ── Tab: Můj účet ── */
+function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordMsg, setPasswordMsg] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const meta = user?.user_metadata || {};
+    const companyName = meta.company_name || data?.company?.name || "—";
+    const ico = meta.ico || "—";
+    const webUrl = meta.web_url || data?.company?.url || "—";
+    const registeredAt = user?.created_at
+        ? new Date(user.created_at).toLocaleDateString("cs-CZ", {
+            day: "numeric", month: "long", year: "numeric"
+        })
+        : "—";
+
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            setPasswordMsg("Hesla se neshodují");
+            return;
+        }
+        if (newPassword.length < 6) {
+            setPasswordMsg("Heslo musí mít alespoň 6 znaků");
+            return;
+        }
+        setPasswordLoading(true);
+        setPasswordMsg("");
+        try {
+            const supabase = createClient();
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            setPasswordMsg("✅ Heslo bylo změněno");
+            setNewPassword("");
+            setConfirmPassword("");
+        } catch (err: any) {
+            setPasswordMsg(`❌ ${err.message || "Chyba při změně hesla"}`);
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6 max-w-2xl">
+            {/* Údaje o firmě */}
+            <div className="glass">
+                <h3 className="font-semibold mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Údaje o firmě
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <InfoRow label="Název firmy" value={companyName} />
+                    <InfoRow label="IČO" value={ico} />
+                    <InfoRow label="Web" value={webUrl} isUrl />
+                    <InfoRow label="Email" value={user?.email || "—"} />
+                    <InfoRow label="Registrace" value={registeredAt} />
+                    <InfoRow label="Partner" value={meta.partner || "—"} />
+                </div>
+            </div>
+
+            {/* Objednávky */}
+            {data?.orders && data.orders.length > 0 && (
+                <div className="glass">
+                    <h3 className="font-semibold mb-5 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Historie objednávek
+                    </h3>
+                    <div className="space-y-2">
+                        {data.orders.map((order) => (
+                            <div key={order.order_number} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm gap-2">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-slate-300 font-medium font-mono text-xs">{order.order_number}</span>
+                                    <span className="text-slate-500 text-xs">{order.plan.toUpperCase()}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-slate-400 text-xs">
+                                        {new Date(order.created_at).toLocaleDateString("cs-CZ")}
+                                    </span>
+                                    <span className="text-slate-300 font-medium">
+                                        {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
+                                    </span>
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                        order.status === "PAID"
+                                            ? "bg-green-500/10 text-green-400"
+                                            : order.status === "CREATED"
+                                                ? "bg-amber-500/10 text-amber-400"
+                                                : "bg-red-500/10 text-red-400"
+                                    }`}>
+                                        {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká na platbu" : order.status}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Změna hesla */}
+            <div className="glass">
+                <h3 className="font-semibold mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    Změna hesla
+                </h3>
+                <form onSubmit={handlePasswordChange} className="space-y-4 max-w-sm">
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Nové heslo</label>
+                        <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Minimálně 6 znaků"
+                            minLength={6}
+                            required
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5
+                                text-white placeholder:text-slate-500 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-1">Potvrdit nové heslo</label>
+                        <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Zadejte heslo znovu"
+                            minLength={6}
+                            required
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5
+                                text-white placeholder:text-slate-500 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                transition-all"
+                        />
+                    </div>
+                    {passwordMsg && (
+                        <p className={`text-sm ${passwordMsg.startsWith("✅") ? "text-green-400" : "text-red-400"}`}>
+                            {passwordMsg}
+                        </p>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={passwordLoading}
+                        className="btn-secondary text-sm px-5 py-2 disabled:opacity-50"
+                    >
+                        {passwordLoading ? "Ukládám..." : "Změnit heslo"}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ── Info Row ── */
+function InfoRow({ label, value, isUrl }: { label: string; value: string; isUrl?: boolean }) {
+    return (
+        <div className="rounded-lg border border-white/[0.04] bg-white/[0.01] px-4 py-3">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">{label}</p>
+            {isUrl && value !== "—" ? (
+                <a href={value.startsWith("http") ? value : `https://${value}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-cyan-400 hover:text-cyan-300 truncate block">
+                    {value}
+                </a>
+            ) : (
+                <p className="text-sm text-slate-200 truncate">{value}</p>
+            )}
         </div>
     );
 }

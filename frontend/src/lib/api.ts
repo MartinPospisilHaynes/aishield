@@ -3,7 +3,37 @@
  * Volání FastAPI backendu z Next.js frontendu.
  */
 
+import { createClient } from "@/lib/supabase-browser";
+
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim();
+
+// ── Auth helper ──
+// Získá access token z Supabase session pro Authorization: Bearer header
+
+async function getAuthToken(): Promise<string | null> {
+    try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+        return data.session?.access_token ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Centrální fetch s automatickým Bearer tokenem.
+ * Používejte místo raw fetch() pro chráněné endpointy.
+ */
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const token = await getAuthToken();
+    const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string> || {}),
+    };
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    return fetch(url, { ...options, headers });
+}
 
 // ── Lightweight logger ──
 // Logs API calls in dev + stores last N errors for debug panel
@@ -207,7 +237,7 @@ export async function confirmFinding(
     confirmed: boolean,
     note: string = ""
 ): Promise<{ finding_id: string; confirmed_by_client: string; message: string }> {
-    const res = await fetch(`${API_URL}/api/finding/${findingId}/confirm`, {
+    const res = await authFetch(`${API_URL}/api/finding/${findingId}/confirm`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmed, note }),
@@ -261,7 +291,7 @@ export interface QuestionnaireResult {
 export async function submitQuestionnaire(
     submission: QuestionnaireSubmission
 ): Promise<QuestionnaireResult> {
-    const res = await fetch(`${API_URL}/api/questionnaire/submit`, {
+    const res = await authFetch(`${API_URL}/api/questionnaire/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submission),
@@ -283,7 +313,7 @@ export async function getCombinedReport(
     scanId?: string
 ): Promise<any> {
     const params = scanId ? `?scan_id=${scanId}` : "";
-    const res = await fetch(
+    const res = await authFetch(
         `${API_URL}/api/questionnaire/${companyId}/combined-report${params}`
     );
 
@@ -317,7 +347,7 @@ export async function createCheckout(
     plan: string,
     email: string,
 ): Promise<CheckoutResponse> {
-    const res = await fetch(`${API_URL}/api/payments/checkout`, {
+    const res = await authFetch(`${API_URL}/api/payments/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, email }),
@@ -337,7 +367,7 @@ export async function createCheckout(
 export async function getPaymentStatus(
     paymentId: number,
 ): Promise<PaymentStatusResponse> {
-    const res = await fetch(`${API_URL}/api/payments/status/${paymentId}`);
+    const res = await authFetch(`${API_URL}/api/payments/status/${paymentId}`);
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
@@ -409,8 +439,7 @@ export interface DashboardData {
 export async function getDashboardData(
     email: string,
 ): Promise<DashboardData> {
-    // TODO: Add Authorization: Bearer ${session?.access_token} header
-    const res = await fetch(`${API_URL}/api/dashboard/${encodeURIComponent(email)}`);
+    const res = await authFetch(`${API_URL}/api/dashboard/${encodeURIComponent(email)}`);
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
@@ -440,25 +469,25 @@ export interface AdminStats {
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
-    const res = await fetch(`${API_URL}/api/admin/stats`);
+    const res = await authFetch(`${API_URL}/api/admin/stats`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function runAdminTask(taskName: string): Promise<Record<string, unknown>> {
-    const res = await fetch(`${API_URL}/api/admin/run/${taskName}`, { method: "POST" });
+    const res = await authFetch(`${API_URL}/api/admin/run/${taskName}`, { method: "POST" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function getAdminEmailLog(limit = 50) {
-    const res = await fetch(`${API_URL}/api/admin/email-log?limit=${limit}`);
+    const res = await authFetch(`${API_URL}/api/admin/email-log?limit=${limit}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function getAdminCompanies(status = "all", limit = 50) {
-    const res = await fetch(`${API_URL}/api/admin/companies?status=${status}&limit=${limit}`);
+    const res = await authFetch(`${API_URL}/api/admin/companies?status=${status}&limit=${limit}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -485,7 +514,7 @@ export interface EmailHealth {
 }
 
 export async function getEmailHealth(): Promise<EmailHealth> {
-    const res = await fetch(`${API_URL}/api/admin/email-health`);
+    const res = await authFetch(`${API_URL}/api/admin/email-health`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -493,19 +522,19 @@ export async function getEmailHealth(): Promise<EmailHealth> {
 // ── Monitoring / Alerts API ──
 
 export async function getAdminAlerts(limit = 50) {
-    const res = await fetch(`${API_URL}/api/admin/alerts?limit=${limit}`);
+    const res = await authFetch(`${API_URL}/api/admin/alerts?limit=${limit}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function getAdminDiffs(limit = 20) {
-    const res = await fetch(`${API_URL}/api/admin/diffs?limit=${limit}`);
+    const res = await authFetch(`${API_URL}/api/admin/diffs?limit=${limit}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function sendLegislativeAlert(title: string, bodyText: string) {
-    const res = await fetch(`${API_URL}/api/admin/legislative-alert`, {
+    const res = await authFetch(`${API_URL}/api/admin/legislative-alert`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, body_text: bodyText }),
@@ -525,7 +554,7 @@ export interface AgencyClient {
 }
 
 export async function startAgencyBatchScan(clients: AgencyClient[]) {
-    const res = await fetch(`${API_URL}/api/admin/agency/scan-batch`, {
+    const res = await authFetch(`${API_URL}/api/admin/agency/scan-batch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clients }),
@@ -535,13 +564,13 @@ export async function startAgencyBatchScan(clients: AgencyClient[]) {
 }
 
 export async function getAgencyBatchStatus(batchId: string) {
-    const res = await fetch(`${API_URL}/api/admin/agency/scan-batch/${batchId}`);
+    const res = await authFetch(`${API_URL}/api/admin/agency/scan-batch/${batchId}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
 
 export async function getAgencyClients() {
-    const res = await fetch(`${API_URL}/api/admin/agency/clients`);
+    const res = await authFetch(`${API_URL}/api/admin/agency/clients`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -554,7 +583,7 @@ export async function generateAgencyEmail(data: {
     findings_count?: number;
     scan_id?: string;
 }) {
-    const res = await fetch(`${API_URL}/api/admin/agency/generate-email`, {
+    const res = await authFetch(`${API_URL}/api/admin/agency/generate-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

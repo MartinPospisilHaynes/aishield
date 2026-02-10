@@ -399,8 +399,8 @@ function ScanPageInner() {
                                         key={i}
                                         className={"flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-500 " +
                                             (done ? "bg-green-500/8 border border-green-500/15" :
-                                            active ? "bg-fuchsia-500/10 border border-fuchsia-500/20" :
-                                            "bg-white/[0.02] border border-white/[0.04] opacity-40")
+                                                active ? "bg-fuchsia-500/10 border border-fuchsia-500/20" :
+                                                    "bg-white/[0.02] border border-white/[0.04] opacity-40")
                                         }
                                     >
                                         <div className="flex-shrink-0">
@@ -542,7 +542,7 @@ function ScanPageInner() {
                                             style={{
                                                 borderLeftColor:
                                                     f.risk_level === "high" ? "#ef4444" :
-                                                    f.risk_level === "limited" ? "#f97316" : "#22c55e",
+                                                        f.risk_level === "limited" ? "#f97316" : "#22c55e",
                                             }}
                                         >
                                             <div className="flex items-start justify-between">
@@ -677,7 +677,7 @@ function ScanPageInner() {
                             nebo blokuje automatické přístupy.
                         </p>
                         <button
-                            onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
+                            onClick={() => handleSubmit({ preventDefault: () => { } } as React.FormEvent)}
                             className="mt-4 btn-primary"
                         >
                             Zkusit znovu

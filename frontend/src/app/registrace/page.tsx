@@ -10,6 +10,9 @@ function RegistraceInner() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [companyName, setCompanyName] = useState("");
+    const [ico, setIco] = useState("");
+    const [webUrl, setWebUrl] = useState("");
+    const [gdprConsent, setGdprConsent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -36,6 +39,12 @@ function RegistraceInner() {
             return;
         }
 
+        if (!gdprConsent) {
+            setError("Pro registraci je nutný souhlas se zpracováním údajů");
+            setLoading(false);
+            return;
+        }
+
         // 1. Registrace v Supabase Auth
         const { data, error: authError } = await supabase.auth.signUp({
             email,
@@ -43,6 +52,10 @@ function RegistraceInner() {
             options: {
                 data: {
                     company_name: companyName,
+                    ico: ico || undefined,
+                    web_url: webUrl || undefined,
+                    gdpr_consent: true,
+                    gdpr_consent_at: new Date().toISOString(),
                     partner: partner || undefined,
                     utm_source: searchParams.get("utm_source") || undefined,
                     utm_medium: searchParams.get("utm_medium") || undefined,
@@ -147,6 +160,40 @@ function RegistraceInner() {
                             />
                         </div>
 
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                    IČO <span className="text-slate-500">(volitelné)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={ico}
+                                    onChange={(e) => setIco(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                                    placeholder="12345678"
+                                    maxLength={8}
+                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                        text-white placeholder:text-slate-500
+                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                        transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                    Web <span className="text-slate-500">(volitelné)</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    value={webUrl}
+                                    onChange={(e) => setWebUrl(e.target.value)}
+                                    placeholder="https://vasefirma.cz"
+                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                        text-white placeholder:text-slate-500
+                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                        transition-all"
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
                                 Email
@@ -200,9 +247,32 @@ function RegistraceInner() {
                             />
                         </div>
 
+                        {/* GDPR souhlas */}
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={gdprConsent}
+                                onChange={(e) => setGdprConsent(e.target.checked)}
+                                className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-fuchsia-500 
+                                    focus:ring-fuchsia-500/50 focus:ring-offset-0 cursor-pointer"
+                            />
+                            <span className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                                Souhlasím se{" "}
+                                <a href="/privacy" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline">
+                                    zpracováním osobních údajů
+                                </a>
+                                {" "}a{" "}
+                                <a href="/terms" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline">
+                                    obchodními podmínkami
+                                </a>
+                                . Vaše data zpracováváme výhradně pro poskytování služby
+                                AI Act compliance v souladu s GDPR.
+                            </span>
+                        </label>
+
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || !gdprConsent}
                             className="btn-primary w-full py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Registruji..." : "Vytvořit účet"}
@@ -218,13 +288,6 @@ function RegistraceInner() {
                         </p>
                     </div>
                 </div>
-
-                <p className="mt-6 text-center text-xs text-slate-600">
-                    Registrací souhlasíte s{" "}
-                    <a href="/terms" className="underline hover:text-slate-400">obchodními podmínkami</a>
-                    {" "}a{" "}
-                    <a href="/privacy" className="underline hover:text-slate-400">ochranou soukromí</a>.
-                </p>
             </div>
         </section>
     );

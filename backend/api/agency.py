@@ -4,9 +4,10 @@ Naskenuje weby stávajících klientů Desperados Design a
 připraví personalizované nabídky.
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from backend.database import get_supabase
+from backend.api.auth import AuthUser, require_admin
 from datetime import datetime, timezone
 import logging
 
@@ -215,6 +216,7 @@ info@desperados-design.cz"""
 async def agency_batch_scan(
     request: AgencyBatchRequest,
     background_tasks: BackgroundTasks,
+    user: AuthUser = Depends(require_admin),
 ):
     """
     Spustí hromadný sken klientů agentury na pozadí.
@@ -264,7 +266,7 @@ async def agency_batch_scan(
 
 
 @router.get("/agency/scan-batch/{batch_id}")
-async def agency_batch_status(batch_id: str):
+async def agency_batch_status(batch_id: str, user: AuthUser = Depends(require_admin)):
     """Vrátí stav hromadného skenu."""
     supabase = get_supabase()
     res = supabase.table("agency_batches").select("*").eq("id", batch_id).execute()
@@ -276,7 +278,7 @@ async def agency_batch_status(batch_id: str):
 
 
 @router.get("/agency/clients")
-async def agency_clients():
+async def agency_clients(user: AuthUser = Depends(require_admin)):
     """Vrátí všechny firmy s partner=desperados."""
     supabase = get_supabase()
     res = supabase.table("companies").select(
@@ -287,7 +289,7 @@ async def agency_clients():
 
 
 @router.post("/agency/generate-email")
-async def agency_generate_email(request: PersonalEmailRequest):
+async def agency_generate_email(request: PersonalEmailRequest, user: AuthUser = Depends(require_admin)):
     """
     Vygeneruje personalizovaný email pro klienta agentury.
     Vrací text k ručnímu odeslání (NE automaticky).
