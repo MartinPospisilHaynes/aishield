@@ -142,14 +142,13 @@ const DELIVERABLES = [
     },
     {
         icon: ICONS.shield,
-        name: "Plný soulad se zákonem",
-        desc: "Kompletní dokumentace — klid na duši",
+        name: "Podpora souladu se zákonem",
+        desc: "Rozsáhlý balíček podkladů — klid na duši",
         detail: null,
         bullets: [
-            "Všech 7 dokumentů dohromady = plný soulad se zákonem",
+            "Všech 7 dokumentů dohromady = solidní základ pro soulad s AI Actem",
             "Připraveni na případnou kontrolu ze strany úřadů",
-            "Dokumenty můžete vzít k právníkovi — jsou kompletní a připravené k revizi",
-            "Právník vám vše úředně ověří a opatří razítkem",
+            "Dokumenty můžete vzít k právníkovi — jsou připravené k odborné revizi",
             "Platnost dokumentů se vztahuje na dobu, po kterou používáte dané AI systémy",
         ],
     },
@@ -188,7 +187,7 @@ const FAQ_ITEMS = [
             "2) Dostanete přehled nalezených AI systémů. " +
             "3) Vyberete si balíček služeb a zaregistrujete se. " +
             "4) Vyplníte krátký dotazník o vaší firmě (jen klikáním, žádné složité psaní). " +
-            "5) Během několika hodin obdržíte kompletní dokumentaci.",
+            "5) Během několika hodin obdržíte veškerou dokumentaci.",
     },
     {
         q: "Co musím vyplnit v dotazníku?",
@@ -205,10 +204,10 @@ const FAQ_ITEMS = [
     },
     {
         q: "Nahradíte advokáta?",
-        a: "Ne — jsme technický nástroj, ne právní poradna. Identifikujeme problémy, připravíme kompletní dokumentaci a akční plány. " +
-            "Dokumenty, které od nás dostanete, jsou zcela kompletní. " +
+        a: "Ne — jsme technický nástroj, ne právní poradna. Identifikujeme AI systémy, připravíme dokumentační podklady a akční plány. " +
+            "Dokumenty, které od nás dostanete, slouží jako kvalitní základ pro vaši compliance. " +
             "Klidně s nimi můžete navštívit právníka dle vašeho výběru — " +
-            "ten vám vše úředně ověří a opatří razítkem. Naše dokumenty jsou na to připravené.",
+            "naše dokumenty jsou připravené k odborné revizi.",
     },
     {
         q: "Je skenování webu opravdu zdarma?",
@@ -356,11 +355,11 @@ export default function HomePage() {
                     <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-8 text-center">
                         <div className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-4 py-1.5 mb-4">
                             <svg className="w-4 h-4 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="text-sm font-semibold text-neon-fuchsia">První v Česku</span>
+                            <span className="text-sm font-semibold text-neon-fuchsia">Průkopníci v ČR</span>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Jsme první česká společnost, která řeší AI Act compliance</h3>
+                        <h3 className="text-xl font-bold text-white mb-3">Patříme k průkopníkům AI Act compliance v Česku</h3>
                         <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                            Přinášíme kompletní řešení pro všechny — od jednotlivých OSVČ a živnostníků,
+                            Přinášíme řešení pro všechny — od jednotlivých OSVČ a živnostníků,
                             přes malé e-shopy a firmy, až po velké korporáty.
                             Bez ohledu na to, jestli jste kadeřnice, účetní nebo technologická firma —
                             pomůžeme vám splnit zákon jednoduše a bez stresu.
@@ -405,7 +404,7 @@ export default function HomePage() {
                             <h3 className="text-lg font-semibold mb-2">Vyberete si služby</h3>
                             <p className="text-sm text-slate-400">
                                 Na základě výsledků si zvolíte, co potřebujete.
-                                Kompletní balíček nebo jen vybrané dokumenty.
+                                Celý balíček nebo jen vybrané dokumenty.
                             </p>
                         </div>
 
@@ -430,8 +429,8 @@ export default function HomePage() {
                             </div>
                             <h3 className="text-lg font-semibold mb-2">Dostanete dokumenty</h3>
                             <p className="text-sm text-slate-400">
-                                Během pár hodin obdržíte kompletní dokumentaci.
-                                Jste v souladu se zákonem a v klidu.
+                                Během pár hodin obdržíte veškerou dokumentaci.
+                                Máte solidní základ pro soulad se zákonem.
                             </p>
                         </div>
                     </div>
@@ -447,7 +446,7 @@ export default function HomePage() {
                             7 dokumentů v jednom <span className="neon-text">balíčku</span>
                         </h2>
                         <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            Kompletní AI Act Compliance Kit — všechno, co potřebujete na jedno kliknutí.
+                            AI Act Compliance Kit — všechno, co potřebujete na jedno kliknutí.
                             Klikněte na kteroukoliv položku pro podrobný popis.
                         </p>
                     </div>

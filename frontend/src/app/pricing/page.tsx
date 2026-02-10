@@ -95,7 +95,7 @@ export default function PricingPage() {
 
     async function handleCheckout(planKey: string) {
         if (planKey === "enterprise") {
-            window.location.href = "mailto:info@desperados-design.cz?subject=AIshield%20ENTERPRISE%20-%20zájem";
+            window.location.href = "mailto:info@aishield.cz?subject=AIshield%20ENTERPRISE%20-%20zájem";
             return;
         }
 
@@ -287,7 +287,7 @@ export default function PricingPage() {
                             },
                             {
                                 q: "Můžu dostat fakturu?",
-                                a: "Samozřejmě. Faktura se automaticky vygeneruje a odešle na váš email. Jsme plátci DPH."
+                                a: "Samozřejmě. Faktura se automaticky vygeneruje a odešle na váš email. Nejsme plátci DPH — uvedená cena je konečná."
                             },
                         ].map((faq) => (
                             <details

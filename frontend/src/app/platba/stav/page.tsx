@@ -185,7 +185,7 @@ function PaymentStatusContent() {
                         </a>
                         <p className="text-xs text-slate-500 mt-4">
                             Problém přetrvává?{" "}
-                            <a href="mailto:info@desperados-design.cz" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors">
+                            <a href="mailto:info@aishield.cz" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors">
                                 Kontaktujte nás
                             </a>
                         </p>
