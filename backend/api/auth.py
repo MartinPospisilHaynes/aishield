@@ -34,6 +34,12 @@ _bearer = HTTPBearer(auto_error=False)
 ADMIN_EMAILS: set[str] = {
     "martin@desperados-design.cz",
     "info@aishield.cz",
+    "info@desperados-design.cz",
+}
+
+# Test emails — mohou být smazány a znovu registrovány přes admin endpoint
+TEST_EMAILS: set[str] = {
+    "info@desperados-design.cz",
 }
 
 

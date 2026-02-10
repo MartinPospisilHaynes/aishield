@@ -24,6 +24,7 @@ CATEGORY_LABELS = {
     "analytics": "Analytika / Sledování",
     "recommender": "Doporučovací systém",
     "content_gen": "Generování obsahu",
+    "other": "Ostatní AI systém",
 }
 
 # EU AI Act article URLs (EUR-Lex)
@@ -260,6 +261,21 @@ def generate_report_email_html(
             </p>
         </div>
 
+        <!-- SEO BENEFIT PANEL -->
+        <div style="margin:0 24px 24px;padding:20px;background:linear-gradient(135deg, #0f1b3d, #1a1040);border:1px solid {D["accent_purple"]};border-radius:12px;">
+            <div style="font-size:15px;font-weight:700;color:{D["accent_fuchsia"]};">
+                &#128640; Compliance jako konkurenční výhoda v&nbsp;SEO
+            </div>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
+                Weby, které transparentně informují návštěvníky o používání AI technologií,
+                získávají <strong style="color:{D["text"]};">vyšší důvěryhodnost</strong> nejen u uživatelů, ale i u vyhledávačů.
+                Google i Seznam při hodnocení stránek zohledňují kvalitu zásad ochrany soukromí
+                a transparentnosti — weby splňující regulatorní požadavky jsou
+                <strong style="color:{D["accent_cyan"]};">lépe indexovány a zobrazovány na vyšších pozicích</strong>.
+                Compliance s AI Act tak není jen povinnost, ale i investice do vaší online viditelnosti.
+            </p>
+        </div>
+
         <!-- WARNING: FINDINGS -->
         <div style="margin:0 24px 24px;padding:20px;background:#2a1015;border:2px solid {D["danger"]};border-radius:12px;">
             <div style="font-size:16px;font-weight:700;color:#fca5a5;">
@@ -309,21 +325,6 @@ def generate_report_email_html(
                 </tr>
                 {findings_html}
             </table>
-        </div>
-
-        <!-- SEO BENEFIT PANEL -->
-        <div style="margin:0 24px 24px;padding:20px;background:linear-gradient(135deg, #0f1b3d, #1a1040);border:1px solid {D["accent_purple"]};border-radius:12px;">
-            <div style="font-size:15px;font-weight:700;color:{D["accent_fuchsia"]};">
-                &#128640; Compliance jako konkurenční výhoda v&nbsp;SEO
-            </div>
-            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
-                Weby, které transparentně informují návštěvníky o používání AI technologií,
-                získávají <strong style="color:{D["text"]};">vyšší důvěryhodnost</strong> nejen u uživatelů, ale i u vyhledávačů.
-                Google i Seznam při hodnocení stránek zohledňují kvalitu zásad ochrany soukromí
-                a transparentnosti — weby splňující regulatorní požadavky jsou
-                <strong style="color:{D["accent_cyan"]};">lépe indexovány a zobrazovány na vyšších pozicích</strong>.
-                Compliance s AI Act tak není jen povinnost, ale i investice do vaší online viditelnosti.
-            </p>
         </div>
 
         <!-- WHAT WE DELIVER -->

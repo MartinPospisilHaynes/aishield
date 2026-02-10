@@ -10,7 +10,8 @@ from backend.outbound.deliverability import (
     get_email_health,
     process_resend_webhook,
 )
-from backend.api.auth import AuthUser, require_admin
+from backend.api.auth import AuthUser, require_admin, TEST_EMAILS
+from backend.api.rate_limit import scan_limiter
 
 router = APIRouter()
 
@@ -175,3 +176,85 @@ async def admin_diffs(limit: int = 20, user: AuthUser = Depends(require_admin)):
     ).order("created_at", desc=True).limit(limit).execute()
 
     return {"diffs": res.data or [], "total": len(res.data or [])}
+
+
+# ── Test User Management ──
+
+
+@router.delete("/test-user/{email}")
+async def admin_delete_test_user(email: str, user: AuthUser = Depends(require_admin)):
+    """
+    Smaže testovacího uživatele ze Supabase Auth (umožní re-registraci).
+    Funguje POUZE pro emaily v TEST_EMAILS — ochrana před smazáním produkčních účtů.
+    """
+    if email not in TEST_EMAILS:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Email {email} není v seznamu testovacích emailů. "
+                   f"Povolené: {', '.join(sorted(TEST_EMAILS))}",
+        )
+
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    try:
+        # Najdi uživatele podle emailu v Supabase Auth (admin API)
+        users_response = supabase.auth.admin.list_users()
+        target_user = None
+        for u in users_response:
+            # supabase-py returns list of User objects
+            user_email = getattr(u, "email", None) or (u.get("email") if isinstance(u, dict) else None)
+            user_id = getattr(u, "id", None) or (u.get("id") if isinstance(u, dict) else None)
+            if user_email == email:
+                target_user = {"id": str(user_id), "email": user_email}
+                break
+
+        if not target_user:
+            return {"status": "not_found", "message": f"Uživatel {email} nenalezen v Supabase Auth"}
+
+        # Smazat uživatele
+        supabase.auth.admin.delete_user(target_user["id"])
+
+        return {
+            "status": "deleted",
+            "message": f"Uživatel {email} (ID: {target_user['id']}) byl smazán. "
+                       f"Nyní se může znovu zaregistrovat.",
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chyba při mazání uživatele: {str(e)}",
+        )
+
+
+@router.delete("/rate-limit-cache/{domain}")
+async def admin_clear_rate_limit_cache(domain: str, user: AuthUser = Depends(require_admin)):
+    """
+    Vyčistí rate limit URL cache pro danou doménu.
+    Umožní okamžitý resken webu bez čekání 24h.
+    """
+    normalized_domain = domain.lower().strip()
+    for prefix in ("https://", "http://"):
+        if normalized_domain.startswith(prefix):
+            normalized_domain = normalized_domain[len(prefix):]
+    if normalized_domain.startswith("www."):
+        normalized_domain = normalized_domain[4:]
+    normalized_domain = normalized_domain.rstrip("/")
+
+    cleared = []
+    with scan_limiter._lock:
+        to_delete = [
+            url for url in scan_limiter._url_cache
+            if url == normalized_domain or url.startswith(normalized_domain + "/")
+        ]
+        for url in to_delete:
+            del scan_limiter._url_cache[url]
+            cleared.append(url)
+
+    return {
+        "status": "cleared",
+        "domain": normalized_domain,
+        "cleared_urls": cleared,
+        "message": f"Vyčištěno {len(cleared)} záznamů z rate limit cache.",
+    }

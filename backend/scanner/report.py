@@ -93,6 +93,7 @@ def generate_html_report(data: ReportData) -> str:
             "analytics": "Analytika / Sledování",
             "recommender": "Doporučovací systém",
             "content_gen": "Generování obsahu",
+            "other": "Ostatní AI systém",
         }.get(f.get("category", ""), f.get("category", ""))
 
         source_badge = ""

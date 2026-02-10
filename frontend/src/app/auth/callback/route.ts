@@ -1,6 +1,13 @@
 /**
  * AIshield.cz — Supabase Auth callback
  * Zpracování potvrzení emailu a OAuth redirectů.
+ *
+ * Supabase flow:
+ *  1. Uživatel klikne na potvrzovací odkaz v emailu
+ *  2. Supabase ověří token a přesměruje sem s ?code=xxx
+ *  3. Vyměníme code za session (PKCE flow)
+ *  4. Pokud PKCE selže (např. jiný prohlížeč), email JE potvrzen —
+ *     přesměrujeme na login s úspěchovou hláškou
  */
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
@@ -34,10 +41,16 @@ export async function GET(request: Request) {
 
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
+            // PKCE výměna úspěšná — uživatel je přihlášen
             return NextResponse.redirect(`${origin}${next}`);
         }
+
+        // PKCE selhalo (jiný prohlížeč / cookies smazány) —
+        // email JE potvrzen Supabase, jen nelze vytvořit session.
+        // Přesměrujeme na login s pozitivní hláškou.
+        return NextResponse.redirect(`${origin}/login?verified=true`);
     }
 
-    // Pokud se něco pokazilo, přesměrovat na login s chybou
+    // Žádný code parametr — neplatný callback
     return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
 }

@@ -26,6 +26,11 @@ IP_WINDOW_SECONDS = 60 * 60           # 1 hodina
 GLOBAL_LIMIT = 200                     # skenů za hodinu globálně
 GLOBAL_WINDOW_SECONDS = 60 * 60       # 1 hodina
 
+# Domény vyloučené z URL cooldownu (pro testování)
+WHITELISTED_DOMAINS: set[str] = {
+    "desperados-design.cz",
+}
+
 
 @dataclass
 class URLCacheEntry:
@@ -137,8 +142,15 @@ class ScanRateLimiter:
             if is_admin:
                 return RateLimitResult(allowed=True)
 
-            # 1. URL cache — pokud byl tento web skenován za posledních 24h
-            if normalized in self._url_cache:
+            # Domain whitelist bypass — přeskočí URL cooldown (ale ne IP/global limit)
+            domain = normalized.split("/")[0]
+            domain_whitelisted = any(
+                domain == wd or domain.endswith("." + wd)
+                for wd in WHITELISTED_DOMAINS
+            )
+
+            # 1. URL cache — pokud byl tento web skenován za posledních 24h (skip pro whitelisted)
+            if normalized in self._url_cache and not domain_whitelisted:
                 entry = self._url_cache[normalized]
                 age = now - entry.scanned_at
                 if age < URL_COOLDOWN_SECONDS:

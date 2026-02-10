@@ -314,6 +314,7 @@ function ScanPageInner() {
             case "analytics": return "Analytika / Sledování";
             case "recommender": return "Doporučovací systém";
             case "content_gen": return "Generování obsahu";
+            case "other": return "Ostatní AI systém";
             default: return cat;
         }
     };

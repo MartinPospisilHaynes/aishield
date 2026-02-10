@@ -13,9 +13,10 @@ function LoginForm() {
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') || '/dashboard';
     const authError = searchParams.get('error');
+    const verified = searchParams.get('verified');
     const supabase = createClient();
 
-    // Show auth callback errors
+    // Show auth callback errors or verification success
     useEffect(() => {
         if (authError === 'auth_callback_failed') {
             setError('Ověření se nezdařilo. Zkuste se prosím přihlásit znovu.');
@@ -64,6 +65,11 @@ function LoginForm() {
 
                 <div className="glass">
                     <form className="space-y-5" onSubmit={handleLogin}>
+                        {verified && (
+                            <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+                                ✓ Email úspěšně ověřen! Nyní se přihlaste.
+                            </div>
+                        )}
                         {error && (
                             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                                 {error}
