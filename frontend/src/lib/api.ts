@@ -140,6 +140,26 @@ export async function startScan(url: string): Promise<ScanResponse> {
             body: JSON.stringify({ url }),
         });
 
+        if (res.status === 429) {
+            // Rate limit — may include cached scan results
+            const data = await res.json().catch(() => ({ detail: "Příliš mnoho požadavků" }));
+            const msg = data.detail || "Příliš mnoho požadavků. Zkuste to později.";
+            apiLog("warn", `POST ${endpoint} → 429 (rate limited)`, msg);
+
+            if (data.cached_scan_id) {
+                // Return cached scan as if it was a new scan
+                return {
+                    scan_id: data.cached_scan_id,
+                    company_id: data.cached_company_id || "",
+                    url,
+                    status: "cached",
+                    message: msg,
+                };
+            }
+
+            throw new Error(msg);
+        }
+
         if (!res.ok) {
             const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
             const msg = error.detail || `HTTP ${res.status}`;

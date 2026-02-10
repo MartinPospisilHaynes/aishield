@@ -4,12 +4,14 @@ Přijme URL, uloží do DB, vrátí scan_id.
 Skutečný scanner přijde v Fázi B (úkoly 6-10).
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
 from backend.database import get_supabase
 from backend.scanner.pipeline import run_scan_pipeline
 from backend.scanner.report import generate_html_report, ReportData
+from backend.api.auth import get_optional_user, AuthUser, ADMIN_EMAILS
+from backend.api.rate_limit import scan_limiter
 from datetime import datetime, timezone
 import re
 
@@ -57,16 +59,63 @@ class ScanStatusResponse(BaseModel):
 # ── Endpointy ──
 
 @router.post("/scan", response_model=ScanResponse)
-async def create_scan(request: ScanRequest, background_tasks: BackgroundTasks):
+async def create_scan(
+    request: ScanRequest,
+    background_tasks: BackgroundTasks,
+    http_request: Request = None,
+    user: AuthUser | None = Depends(get_optional_user),
+):
     """
     Spustí nový sken webu.
-    1. Najde nebo vytvoří firmu v DB podle URL
-    2. Vytvoří záznam skenu se statusem 'queued'
-    3. Spustí scan pipeline na pozadí
-    4. Vrátí scan_id (frontend pak polluje stav)
+    1. Rate limit kontrola (URL cache, IP limit, globální limit)
+    2. Najde nebo vytvoří firmu v DB podle URL
+    3. Vytvoří záznam skenu se statusem 'queued'
+    4. Spustí scan pipeline na pozadí
+    5. Vrátí scan_id (frontend pak polluje stav)
     """
     supabase = get_supabase()
     url = request.url
+
+    # ── Rate limiting ──
+    client_ip = "unknown"
+    if http_request:
+        client_ip = (
+            http_request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or http_request.headers.get("x-real-ip", "")
+            or http_request.client.host if http_request.client else "unknown"
+        )
+
+    is_authenticated = user is not None
+    is_admin = user is not None and user.email in ADMIN_EMAILS
+
+    limit_result = scan_limiter.check(
+        url=url,
+        client_ip=client_ip,
+        is_authenticated=is_authenticated,
+        is_admin=is_admin,
+    )
+
+    if not limit_result.allowed:
+        # Pokud máme cached výsledky, vrátíme scan_id pro přesměrování
+        if limit_result.cached_scan_id:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": limit_result.reason,
+                    "cached_scan_id": limit_result.cached_scan_id,
+                    "cached_company_id": limit_result.cached_company_id,
+                    "retry_after": limit_result.retry_after,
+                },
+                headers={"Retry-After": str(limit_result.retry_after)},
+            )
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": limit_result.reason,
+                "retry_after": limit_result.retry_after,
+            },
+            headers={"Retry-After": str(limit_result.retry_after)},
+        )
 
     try:
         # 1. Hledáme firmu podle URL
@@ -103,6 +152,9 @@ async def create_scan(request: ScanRequest, background_tasks: BackgroundTasks):
 
         # 4. Spustíme scan pipeline na pozadí
         background_tasks.add_task(run_scan_pipeline, scan_id, url, company_id)
+
+        # 5. Zaregistrujeme sken do rate limiter cache
+        scan_limiter.register_scan(url, scan_id, company_id)
 
         return ScanResponse(
             scan_id=scan_id,
