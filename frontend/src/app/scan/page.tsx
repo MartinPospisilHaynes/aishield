@@ -142,12 +142,7 @@ function ScanPageInner() {
     const [aiClassified, setAiClassified] = useState(false);
     const [scanId, setScanId] = useState<string | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Pokud přišel URL z homepage (?url=...)
-    useEffect(() => {
-        const urlParam = searchParams.get("url");
-        if (urlParam) setUrl(urlParam);
-    }, [searchParams]);
+    const autoStartedRef = useRef(false);
 
     // Cleanup polling on unmount
     useEffect(() => {
@@ -190,9 +185,8 @@ function ScanPageInner() {
         [fetchFindings]
     );
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        let normalizedUrl = url.trim();
+    const doScan = useCallback(async (rawUrl: string) => {
+        let normalizedUrl = rawUrl.trim();
         if (!normalizedUrl) return;
 
         // Normalize URL — add https:// if missing
@@ -227,6 +221,21 @@ function ScanPageInner() {
             setError(err instanceof Error ? err.message : "Nastala neočekávaná chyba");
             setLoading(false);
         }
+    }, [startPolling, fetchFindings]);
+
+    // Auto-start scan if URL param is present (?url=...)
+    useEffect(() => {
+        const urlParam = searchParams.get("url");
+        if (urlParam && !autoStartedRef.current) {
+            autoStartedRef.current = true;
+            setUrl(urlParam);
+            doScan(urlParam);
+        }
+    }, [searchParams, doScan]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await doScan(url);
     };
 
     const statusLabel = (status: string) => {

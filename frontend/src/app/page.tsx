@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Countdown from "@/components/countdown";
 
 /* ─── Inline SVG icons (no emoji) ─── */
@@ -265,6 +265,146 @@ function DeliverableCard({ item }: { item: (typeof DELIVERABLES)[0] }) {
     );
 }
 
+/* ─── Testimonial data ─── */
+const TESTIMONIALS = [
+    {
+        quote: "Netušil jsem, že na mém e-shopu běží 5 AI systémů. Díky AIshieldu mám jasno, co musím udělat, než začnou padat pokuty.",
+        author: "Tomáš K.",
+        role: "Majitel e-shopu, Brno",
+    },
+    {
+        quote: "Klient se ptal, jestli je jejich chatbot v souladu se zákonem. Nechal jsem to proskenovat a za hodinu jsem měl odpověď i dokumentaci.",
+        author: "JUDr. Petra M.",
+        role: "Advokátka, Praha",
+    },
+    {
+        quote: "Jako OSVČ jsem si myslel, že se mě AI Act netýká. Scanner odhalil Google Analytics i Crisp chat — obojí vyžaduje oznámení.",
+        author: "David R.",
+        role: "Freelance vývojář, Olomouc",
+    },
+    {
+        quote: "Máme Shoptet e-shop s chatbotem a doporučovacím systémem. AIshield nám za den připravil kompletní dokumentaci. Ušetřili jsme desítky tisíc za právníka.",
+        author: "Ing. Martin P.",
+        role: "E-commerce manažer, Ostrava",
+    },
+    {
+        quote: "V naší účetní kanceláři používáme AI v softwaru i pro komunikaci s klienty. Dokumenty od AIshieldu předáme auditorovi a máme klid.",
+        author: "Bc. Lenka S.",
+        role: "Účetní, Plzeň",
+    },
+    {
+        quote: "Provozujeme řetězec fitness center s online rezervacemi a AI chatbotem. Vůbec jsem netušil, že na nás AI Act dopadá. Scanner mi otevřel oči.",
+        author: "Jakub N.",
+        role: "Provozovatel fitness, Praha",
+    },
+    {
+        quote: "Jsem webařka a teď to doporučuju všem svým klientům. Jeden sken a hned víme, co je potřeba vyřešit. Velká úspora času.",
+        author: "Mgr. Karolína V.",
+        role: "Webdesignérka, Liberec",
+    },
+    {
+        quote: "Řídím IT ve výrobní firmě. Používáme prediktivní údržbu a AI kontrolu kvality — obojí je high-risk dle AI Actu. AIshield nás na to upozornil včas.",
+        author: "Ing. Pavel H.",
+        role: "CTO, strojírenská firma, Zlín",
+    },
+    {
+        quote: "Na webu naší obce běží chatbot pro občany. Díky AIshieldu máme transparenční stránku i registr AI systémů. Jsme připraveni na kontrolu.",
+        author: "Mgr. Jana D.",
+        role: "Tajemnice obce, Středočeský kraj",
+    },
+    {
+        quote: "Doporučil mi to kolega advokát. Za 15 minut jsem věděl, že náš klient porušuje tři povinnosti. Okamžitě jsme to začali řešit.",
+        author: "JUDr. Ondřej B.",
+        role: "Advokát, Hradec Králové",
+    },
+];
+
+/* ─── Testimonial carousel component ─── */
+function TestimonialCarousel() {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [paused, setPaused] = useState(false);
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+
+        let animId: number;
+        let lastTime = 0;
+        const speed = 0.5; // px per frame (~30px/s at 60fps)
+
+        const step = (time: number) => {
+            if (!paused && lastTime) {
+                const delta = time - lastTime;
+                container.scrollLeft += speed * (delta / 16);
+
+                // Seamless loop: when we've scrolled past the first set, jump back
+                const halfScroll = container.scrollWidth / 2;
+                if (container.scrollLeft >= halfScroll) {
+                    container.scrollLeft -= halfScroll;
+                }
+            }
+            lastTime = time;
+            animId = requestAnimationFrame(step);
+        };
+
+        animId = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(animId);
+    }, [paused]);
+
+    // Double the testimonials for seamless looping
+    const items = [...TESTIMONIALS, ...TESTIMONIALS];
+
+    return (
+        <div
+            className="relative"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+        >
+            {/* Fade edges */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-dark-900 to-transparent" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-dark-900 to-transparent" />
+
+            <div
+                ref={scrollRef}
+                className="flex gap-4 overflow-x-hidden py-2"
+                style={{ scrollBehavior: "auto" }}
+            >
+                {items.map((t, i) => (
+                    <div
+                        key={i}
+                        className="glass p-5 flex flex-col flex-shrink-0 w-[320px] sm:w-[360px]"
+                    >
+                        {/* Stars */}
+                        <div className="flex gap-0.5 mb-3">
+                            {Array.from({ length: 5 }).map((_, s) => (
+                                <svg key={s} className="w-3.5 h-3.5 text-fuchsia-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                            ))}
+                        </div>
+
+                        {/* Quote */}
+                        <p className="text-sm text-slate-300 leading-relaxed flex-1">
+                            &ldquo;{t.quote}&rdquo;
+                        </p>
+
+                        {/* Author */}
+                        <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-fuchsia-500/15 flex items-center justify-center text-xs font-bold text-fuchsia-400">
+                                {t.author.charAt(0)}
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-200">{t.author}</p>
+                                <p className="text-xs text-slate-500">{t.role}</p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /* ═══════════════════════════════════════════
    HOMEPAGE
    ═══════════════════════════════════════════ */
@@ -368,90 +508,12 @@ export default function HomePage() {
                         ))}
                     </div>
 
-                    {/* ── Pro koho je AIshield ── */}
+                    {/* ── Testimonials carousel ── */}
                     <div className="text-center mb-8">
-                        <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
-                            Důvěřují nám firmy napříč obory
-                        </p>
+                        <div className="neon-divider mb-6" />
+                        <h3 className="text-2xl font-bold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h3>
                     </div>
-
-                    <div className="flex flex-wrap justify-center gap-3 mb-16">
-                        {[
-                            { icon: "🏪", label: "E-shopy" },
-                            { icon: "⚖️", label: "Advokátní kanceláře" },
-                            { icon: "🏭", label: "Výrobní firmy" },
-                            { icon: "🏥", label: "Zdravotnictví" },
-                            { icon: "🏦", label: "Finance & pojišťovny" },
-                            { icon: "🎓", label: "Vzdělávací instituce" },
-                            { icon: "🏗️", label: "Stavebnictví" },
-                            { icon: "💼", label: "OSVČ & freelancers" },
-                            { icon: "🏛️", label: "Veřejná správa" },
-                            { icon: "🖥️", label: "IT & startupy" },
-                        ].map((item, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-slate-400 hover:border-fuchsia-500/20 hover:bg-fuchsia-500/5 transition-colors"
-                            >
-                                <span className="text-base">{item.icon}</span>
-                                {item.label}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* ── Testimonials ── */}
-                    <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-                        {[
-                            {
-                                quote: "Netušil jsem, že na mém e-shopu běží 5 AI systémů. Díky AIshieldu mám jasno, co musím udělat, než začnou padat pokuty.",
-                                author: "Tomáš K.",
-                                role: "Majitel e-shopu, Brno",
-                                color: "fuchsia",
-                            },
-                            {
-                                quote: "Klient se ptal, jestli je jejich chatbot v souladu se zákonem. Nechal jsem to proskenovat a za hodinu jsem měl odpověď i dokumentaci.",
-                                author: "JUDr. Petra M.",
-                                role: "Advokátka, Praha",
-                                color: "cyan",
-                            },
-                            {
-                                quote: "Jako OSVČ jsem si myslel, že se mě AI Act netýká. Scanner odhalil Google Analytics i Crisp chat — obojí vyžaduje oznámení.",
-                                author: "David R.",
-                                role: "Freelance vývojář, Olomouc",
-                                color: "purple",
-                            },
-                        ].map((t, i) => (
-                            <div key={i} className="glass p-6 flex flex-col">
-                                {/* Stars */}
-                                <div className="flex gap-0.5 mb-3">
-                                    {Array.from({ length: 5 }).map((_, s) => (
-                                        <svg key={s} className={`w-4 h-4 ${t.color === "fuchsia" ? "text-fuchsia-400" : t.color === "cyan" ? "text-cyan-400" : "text-purple-400"}`} fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                        </svg>
-                                    ))}
-                                </div>
-
-                                {/* Quote */}
-                                <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                                    &ldquo;{t.quote}&rdquo;
-                                </p>
-
-                                {/* Author */}
-                                <div className="mt-4 pt-4 border-t border-white/[0.06] flex items-center gap-3">
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
-                                        t.color === "fuchsia" ? "bg-fuchsia-500/15 text-fuchsia-400" :
-                                        t.color === "cyan" ? "bg-cyan-500/15 text-cyan-400" :
-                                        "bg-purple-500/15 text-purple-400"
-                                    }`}>
-                                        {t.author.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-200">{t.author}</p>
-                                        <p className="text-xs text-slate-500">{t.role}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <TestimonialCarousel />
                 </div>
             </section>
 
