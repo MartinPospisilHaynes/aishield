@@ -187,8 +187,8 @@ export default function DashboardPage() {
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
-                                    ? "text-fuchsia-400"
-                                    : "text-slate-500 hover:text-slate-300"
+                                ? "text-fuchsia-400"
+                                : "text-slate-500 hover:text-slate-300"
                                 }`}
                         >
                             {tab.icon}
@@ -300,13 +300,12 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
                                 <div
-                                    className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${
-                                        step.done
+                                    className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${step.done
                                             ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
                                             : isCurrent
                                                 ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
                                                 : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
-                                    }`}
+                                        }`}
                                 >
                                     {step.done ? (
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,13 +316,12 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                                     )}
                                 </div>
                                 <span
-                                    className={`text-xs mt-2.5 font-medium text-center ${
-                                        step.done
+                                    className={`text-xs mt-2.5 font-medium text-center ${step.done
                                             ? "text-green-400/80"
                                             : isCurrent
                                                 ? "text-fuchsia-400"
                                                 : "text-slate-600"
-                                    }`}
+                                        }`}
                                 >
                                     {step.label}
                                 </span>
@@ -418,10 +416,10 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                                         {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
                                     </span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
-                                            ? "bg-green-500/10 text-green-400"
-                                            : order.status === "CREATED"
-                                                ? "bg-amber-500/10 text-amber-400"
-                                                : "bg-red-500/10 text-red-400"
+                                        ? "bg-green-500/10 text-green-400"
+                                        : order.status === "CREATED"
+                                            ? "bg-amber-500/10 text-amber-400"
+                                            : "bg-red-500/10 text-red-400"
                                         }`}>
                                         {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká" : order.status}
                                     </span>
@@ -598,13 +596,13 @@ function TabPlan({ findings }: { findings: DashboardData["findings"] }) {
                     <div
                         key={f.id}
                         className={`flex items-start gap-4 rounded-xl border px-5 py-4 ${isResolved
-                                ? "border-green-500/10 bg-green-500/[0.03] opacity-60"
-                                : "border-white/[0.06] bg-white/[0.02]"
+                            ? "border-green-500/10 bg-green-500/[0.03] opacity-60"
+                            : "border-white/[0.06] bg-white/[0.02]"
                             }`}
                     >
                         <div className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border ${isResolved
-                                ? "border-green-500/30 bg-green-500/20"
-                                : "border-white/10 bg-white/5"
+                            ? "border-green-500/30 bg-green-500/20"
+                            : "border-white/10 bg-white/5"
                             } flex items-center justify-center`}>
                             {isResolved && (
                                 <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -656,10 +654,10 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
                     {/* Timeline dot */}
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
-                                ? "bg-green-500"
-                                : scan.status === "running"
-                                    ? "bg-amber-500 animate-pulse"
-                                    : "bg-red-500"
+                            ? "bg-green-500"
+                            : scan.status === "running"
+                                ? "bg-amber-500 animate-pulse"
+                                : "bg-red-500"
                             }`} />
                         {i < scans.length - 1 && <div className="w-px h-8 bg-white/[0.06]" />}
                     </div>
@@ -668,10 +666,10 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
                         <div className="flex items-center gap-3">
                             <p className="text-sm font-medium text-slate-200 truncate">{scan.url}</p>
                             <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${scan.status === "completed"
-                                    ? "bg-green-500/10 text-green-400"
-                                    : scan.status === "running"
-                                        ? "bg-amber-500/10 text-amber-400"
-                                        : "bg-red-500/10 text-red-400"
+                                ? "bg-green-500/10 text-green-400"
+                                : scan.status === "running"
+                                    ? "bg-amber-500/10 text-amber-400"
+                                    : "bg-red-500/10 text-red-400"
                                 }`}>
                                 {scan.status === "completed" ? "Dokončen" : scan.status === "running" ? "Probíhá" : scan.status}
                             </span>

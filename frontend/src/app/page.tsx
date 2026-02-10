@@ -53,74 +53,105 @@ const DELIVERABLES = [
         icon: ICONS.report,
         name: "Compliance Report",
         desc: "Hlavní přehled stavu vašeho webu",
-        detail:
-            "Dostanete srozumitelný dokument, kde je jasně napsáno, jaké AI nástroje na vašem webu jsou, " +
-            "co z toho je v pořádku a co je potřeba udělat. Žádný odborný žargon — vše vysvětleno česky a jednoduše. " +
-            "S tímto dokumentem přesně víte, na čem jste.",
+        detail: null,
+        bullets: [
+            "Přehled všech AI systémů nalezených na vašem webu (chatboty, analytika, doporučovací systémy)",
+            "U každého systému jasně napsáno, jestli je v pořádku nebo jestli porušuje zákon",
+            "Odkaz na konkrétní článek AI Actu, který se vás týká — v srozumitelné češtině",
+            "Celkové hodnocení: jak na tom váš web je a co musíte udělat jako první",
+            "Žádný právnický žargon — dokument pochopí i naprostý laik",
+        ],
     },
     {
         icon: ICONS.plan,
         name: "Akční plán",
         desc: "Co udělat a do kdy — krok za krokem",
-        detail:
-            "Seznam konkrétních kroků, které musíte udělat, aby váš web splňoval zákon. " +
-            "Každý krok má termín, je srozumitelně popsán a můžete si ho odškrtnout. " +
-            "Nic složitého — prostě seznam věcí k vyřízení, jako nákupní seznam.",
+        detail: null,
+        bullets: [
+            "Konkrétní seznam kroků, které musíte udělat — jako nákupní seznam",
+            "U každého kroku jasný termín, do kdy to musí být hotové",
+            "Seřazeno podle priority — co je nejdůležitější, to je nahoře",
+            "Můžete si odškrtávat splněné body — máte přehled o postupu",
+            "Obsahuje i kroky, které za vás může udělat váš webař nebo IT technik",
+        ],
     },
     {
         icon: ICONS.registry,
         name: "Registr AI systémů",
         desc: "Evidence vašich AI nástrojů pro úřady",
-        detail:
-            "Zákon vyžaduje, abyste měli přehled o tom, jaké AI nástroje používáte. " +
-            "My vám připravíme kompletní tabulku se všemi nástroji, jejich popisem a účelem. " +
-            "Pokud přijde kontrola, stačí ukázat tento dokument.",
+        detail: null,
+        bullets: [
+            "Kompletní tabulka všech AI nástrojů, které ve firmě používáte",
+            "U každého nástroje: název, co dělá, kdo ho používá a proč",
+            "Kategorizace podle rizika — jaký typ systému to je dle AI Actu",
+            "Přijde-li kontrola, stačí ukázat tento jeden dokument",
+            "Aktualizovatelný — když přidáte nový nástroj, snadno ho dopíšete",
+        ],
     },
     {
         icon: ICONS.web,
         name: "Transparenční stránka",
         desc: "Hotová stránka pro váš web",
-        detail:
-            "Připravíme vám hotovou stránku (HTML kód), kterou jen vložíte na svůj web. " +
-            "Na ní je přehledně napsáno, jaké AI nástroje používáte a proč. " +
-            "Zákon vyžaduje, abyste tuto informaci měli veřejně dostupnou pro návštěvníky.",
+        detail: null,
+        bullets: [
+            "Hotový HTML kód stránky — stačí jen vložit na váš web",
+            "Přehledně napsáno, jaké AI nástroje používáte a k čemu",
+            "Splňuje povinnost transparentnosti dle článku 50 AI Actu",
+            "Funguje na WordPress, Shoptet, Webnode, WooCommerce i vlastní weby",
+            "Design se automaticky přizpůsobí vašemu webu",
+        ],
     },
     {
         icon: ICONS.chatbot,
         name: "Chatbot oznámení",
         desc: "Texty, které musí vidět vaši zákazníci",
-        detail:
-            "Pokud máte na webu chatbot (např. Smartsupp, Tidio, LiveChat), musíte návštěvníkovi říct, " +
-            "že komunikuje s umělou inteligencí — ne s člověkem. " +
-            "Připravíme vám přesné texty, které stačí zkopírovat a vložit do nastavení chatbotu.",
+        detail: null,
+        bullets: [
+            "Přesné texty oznámení pro chatboty (Smartsupp, Tidio, LiveChat, Crisp...)",
+            "Návštěvník musí vědět, že komunikuje s AI — ne s člověkem",
+            "Připravené k okamžitému zkopírování do nastavení chatbotu",
+            "Verze v češtině i angličtině (pro zahraniční návštěvníky)",
+            "Návod krok za krokem, kam přesně text vložit v administraci chatbotu",
+        ],
     },
     {
         icon: ICONS.policy,
         name: "AI politika firmy",
         desc: "Interní pravidla pro vaše zaměstnance",
-        detail:
-            "Dokument pro vaši firmu, který popisuje, jak smíte umělou inteligenci používat. " +
-            "Týká se i věcí jako ChatGPT nebo AI v účetním softwaru. " +
-            "Když se kdokoliv zeptá, máte jasná pravidla.",
+        detail: null,
+        bullets: [
+            "Jasná pravidla, co zaměstnanci smí a nesmí dělat s AI nástroji",
+            "Konkrétně řeší ChatGPT, Copilot, AI v účetním softwaru i další",
+            "Co se smí psát do AI chatů a jaká data se nesmí sdílet",
+            "Jak zacházet s výstupy z AI — co kontrolovat, co ne",
+            "Připraveno k vytisknutí a podpisu zaměstnanci",
+        ],
     },
     {
         icon: ICONS.training,
         name: "Školení zaměstnanců",
         desc: "Osnova povinného školení o AI",
-        detail:
-            "Zákon vyžaduje, aby vaši zaměstnanci rozuměli základům umělé inteligence a pravidlům jejího používání. " +
-            "Připravíme vám osnovu školení s konkrétními tématy a příklady. " +
-            "Stačí ho projít s týmem — splníte tím zákonnou povinnost.",
+        detail: null,
+        bullets: [
+            "Kompletní osnova školení — co musíte s týmem probrat",
+            "Témata: co je AI, jaká jsou rizika, co říká zákon, jak AI bezpečně používat",
+            "Praktické příklady z praxe srozumitelné i pro neodborníky",
+            "Splňuje povinnost dle článku 4 AI Actu (AI gramotnost)",
+            "Můžete použít jako podklad pro interní školení nebo e-learning",
+        ],
     },
     {
         icon: ICONS.shield,
         name: "Plný soulad se zákonem",
         desc: "Kompletní dokumentace — klid na duši",
-        detail:
-            "Všech 7 dokumentů dohromady tvoří kompletní balíček. " +
-            "S nimi jste připraveni na případnou kontrolu. " +
-            "Můžete je vzít k právníkovi, který vám vše úředně potvrdí a opatří razítkem — " +
-            "dokumenty budou kompletní a připravené k právní revizi.",
+        detail: null,
+        bullets: [
+            "Všech 7 dokumentů dohromady = plný soulad se zákonem",
+            "Připraveni na případnou kontrolu ze strany úřadů",
+            "Dokumenty můžete vzít k právníkovi — jsou kompletní a připravené k revizi",
+            "Právník vám vše úředně ověří a opatří razítkem",
+            "Platnost dokumentů se vztahuje na dobu, po kterou používáte dané AI systémy",
+        ],
     },
 ];
 
@@ -215,7 +246,20 @@ function DeliverableCard({ item }: { item: (typeof DELIVERABLES)[0] }) {
             </div>
             {open && (
                 <div className="mt-4 pt-4 border-t border-white/[0.06]">
-                    <p className="text-sm text-slate-400 leading-relaxed">{item.detail}</p>
+                    {item.bullets ? (
+                        <ul className="space-y-2">
+                            {item.bullets.map((b, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-400 leading-relaxed">
+                                    <svg className="w-4 h-4 text-fuchsia-400/70 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                    </svg>
+                                    {b}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-slate-400 leading-relaxed">{item.detail}</p>
+                    )}
                 </div>
             )}
         </div>
@@ -247,7 +291,7 @@ export default function HomePage() {
 
                     {/* Headline */}
                     <h1 className="mx-auto max-w-5xl text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-10">
-                        Váš web porušuje{" "}
+                        Porušuje Váš web{" "}
                         <span className="neon-text">nový zákon EU</span>
                         {" "}o umělé inteligenci?
                     </h1>
@@ -256,6 +300,7 @@ export default function HomePage() {
                     <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
                         Zjistěte to za minutu. Náš robot proskenuje váš web,
                         najde AI systémy a řekne vám přesně, co musíte udělat.
+                        Při nesplnění hrozí pokutou až 35 milionů EUR.
                     </p>
 
                     {/* Penalty info */}
@@ -289,6 +334,37 @@ export default function HomePage() {
                                 Skenovat ZDARMA
                             </button>
                         </form>
+                    </div>
+                </div>
+            </section>
+
+            {/* ══════ PROČ BY VÁS TO MĚLO ZAJÍMAT ══════ */}
+            <section className="border-t border-white/[0.06] py-20">
+                <div className="mx-auto max-w-7xl px-6">
+                    <div className="text-center mb-12">
+                        <div className="neon-divider mb-6" />
+                        <h2 className="text-3xl font-extrabold sm:text-4xl">
+                            Proč by vás to mělo <span className="neon-text">zajímat</span>?
+                        </h2>
+                        <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
+                            Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
+                            A týká se i VAŠÍ firmy.
+                        </p>
+                    </div>
+
+                    {/* First in CZ panel */}
+                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-8 text-center">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-4 py-1.5 mb-4">
+                            <svg className="w-4 h-4 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                            <span className="text-sm font-semibold text-neon-fuchsia">První v Česku</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-3">Jsme první česká společnost, která řeší AI Act compliance</h3>
+                        <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                            Přinášíme kompletní řešení pro všechny — od jednotlivých OSVČ a živnostníků,
+                            přes malé e-shopy a firmy, až po velké korporáty.
+                            Bez ohledu na to, jestli jste kadeřnice, účetní nebo technologická firma —
+                            pomůžeme vám splnit zákon jednoduše a bez stresu.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -368,10 +444,10 @@ export default function HomePage() {
                     <div className="text-center mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            Co pro vás připravíme
+                            7 dokumentů v jednom <span className="neon-text">balíčku</span>
                         </h2>
                         <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            Kompletní sada dokumentů, díky které splníte zákon.
+                            Kompletní AI Act Compliance Kit — všechno, co potřebujete na jedno kliknutí.
                             Klikněte na kteroukoliv položku pro podrobný popis.
                         </p>
                     </div>
