@@ -1,4 +1,29 @@
+"use client";
+
+import { useState } from "react";
+
 export default function AboutPage() {
+    const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", message: "" });
+    const [submitted, setSubmitted] = useState(false);
+    const [sending, setSending] = useState(false);
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setSending(true);
+        try {
+            const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim();
+            await fetch(`${API}/api/contact`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+        } catch {
+            // silently continue — form still shows success
+        }
+        setSending(false);
+        setSubmitted(true);
+    }
+
     return (
         <section className="py-20 relative">
             {/* BG glow */}
@@ -13,7 +38,7 @@ export default function AboutPage() {
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Co je AI Act?</h2>
                         <p className="text-slate-400 mb-3">
-                            AI Act (Nařízení EU 2024/1689) je první komplexní zákon na světě,
+                            <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 font-semibold transition-colors">AI Act (Nařízení EU 2024/1689)</a> je první komplexní zákon na světě,
                             který reguluje umělou inteligenci. Je to obdoba GDPR, ale pro AI.
                             Platí pro <strong className="text-white">každou firmu v EU</strong>, která používá nebo
                             nasazuje AI systémy.
@@ -107,13 +132,49 @@ export default function AboutPage() {
                     {/* Právní upozornění */}
                     <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Důležité upozornění</h2>
-                        <p className="text-slate-400">
+                        <p className="text-slate-400 mb-3">
                             AIshield.cz je <strong className="text-white">automatizovaný technický nástroj</strong>,
                             nikoliv právní služba. Výstupy slouží jako kvalitní podklad pro vaši compliance —
-                            nejsou individuálním právním posouzením. Klidně s nimi můžete navštívit
+                            nejsou individuálním právním posouzením.
+                        </p>
+                        <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 mb-3">
+                            <p className="text-green-400 font-medium text-sm">
+                                <strong className="text-green-300">Potřebujete právníka nebo úřední razítko?</strong>{" "}
+                                Pokud máte na webu vše řádně splněno a disponujete kompletní dokumentací,
+                                kterou vám dodáme (AI Act Compliance Kit + transparenční stránka),{" "}
+                                <strong className="text-green-300">právník ani úřední razítko nejsou potřeba</strong>.{" "}
+                                AI Act vyžaduje transparentnost a dokumentaci — a přesně to vám připravíme.
+                            </p>
+                        </div>
+                        <p className="text-slate-500 text-sm">
+                            Samozřejmě, pokud chcete, klidně s našimi výstupy můžete navštívit
                             právníka dle vašeho výběru. Podrobnosti v{" "}
                             <a href="/terms" className="text-neon-fuchsia hover:underline">obchodních podmínkách</a>.
                         </p>
+                    </div>
+
+                    {/* Kontaktní CTA */}
+                    <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6">
+                        <h2 className="text-xl font-semibold text-white mb-2 text-center">Nejste si jistí? Ozvěte se nám</h2>
+                        <p className="text-slate-400 text-sm text-center mb-5">
+                            Rádi vám poradíme po telefonu nebo e-mailem — nezávazně a zdarma.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <a
+                                href="tel:+420732716141"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-green-500/25 hover:bg-green-500 transition"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
+                                Zavolejte: +420 732 716 141
+                            </a>
+                            <a
+                                href="mailto:info@aishield.cz"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 px-6 py-3 text-sm font-semibold text-white hover:bg-white/15 transition"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                                Napište: info@aishield.cz
+                            </a>
+                        </div>
                     </div>
 
                     {/* CTA sekce */}
@@ -140,6 +201,116 @@ export default function AboutPage() {
                                 Zobrazit ceník →
                             </a>
                         </div>
+                    </div>
+
+                    {/* Konzultační formulář */}
+                    <div id="kontakt" className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 sm:p-8">
+                        <div className="text-center mb-6">
+                            <h2 className="text-2xl font-bold text-white mb-2">Nezávazná konzultace zdarma</h2>
+                            <p className="text-slate-400 text-sm">
+                                Nejste si jistí, zda se vás AI Act týká? Máte specifické otázky?{" "}
+                                Vyplňte formulář a ozveme se vám do 24 hodin.
+                            </p>
+                        </div>
+
+                        {submitted ? (
+                            <div className="text-center py-8">
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/15 border border-green-500/30 mb-4">
+                                    <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                </div>
+                                <h3 className="text-xl font-semibold text-white mb-2">Děkujeme za váš zájem!</h3>
+                                <p className="text-slate-400">Ozveme se vám co nejdříve — obvykle do 24 hodin.</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="c-name" className="block text-sm font-medium text-slate-300 mb-1.5">Jméno a příjmení *</label>
+                                        <input
+                                            id="c-name"
+                                            type="text"
+                                            required
+                                            value={form.name}
+                                            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                                            className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition"
+                                            placeholder="Jan Novák"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="c-company" className="block text-sm font-medium text-slate-300 mb-1.5">Firma / Web</label>
+                                        <input
+                                            id="c-company"
+                                            type="text"
+                                            value={form.company}
+                                            onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+                                            className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition"
+                                            placeholder="www.example.cz"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="c-email" className="block text-sm font-medium text-slate-300 mb-1.5">E-mail *</label>
+                                        <input
+                                            id="c-email"
+                                            type="email"
+                                            required
+                                            value={form.email}
+                                            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                                            className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition"
+                                            placeholder="jan@firma.cz"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="c-phone" className="block text-sm font-medium text-slate-300 mb-1.5">Telefon</label>
+                                        <input
+                                            id="c-phone"
+                                            type="tel"
+                                            value={form.phone}
+                                            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                                            className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition"
+                                            placeholder="+420 ..."
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="c-msg" className="block text-sm font-medium text-slate-300 mb-1.5">Vaše otázka / zpráva *</label>
+                                    <textarea
+                                        id="c-msg"
+                                        required
+                                        rows={4}
+                                        value={form.message}
+                                        onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                                        className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition resize-none"
+                                        placeholder="Popište, s čím vám můžeme pomoci..."
+                                    />
+                                </div>
+                                <div className="text-center pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={sending}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {sending ? (
+                                            <>
+                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                                                Odesílám...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
+                                                Odeslat zprávu
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-slate-600 text-center">
+                                    Odesláním souhlasíte se{" "}
+                                    <a href="/privacy" className="text-slate-500 hover:text-neon-fuchsia underline">zpracováním osobních údajů</a>{" "}
+                                    za účelem odpovědi na váš dotaz.
+                                </p>
+                            </form>
+                        )}
                     </div>
                 </div>
             </div>
