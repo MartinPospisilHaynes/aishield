@@ -278,13 +278,12 @@ export default function EnterprisePage() {
                                     <div key={label} className="flex items-center gap-2">
                                         <button
                                             onClick={() => i + 1 < step ? setStep(i + 1) : undefined}
-                                            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition ${
-                                                i + 1 === step
+                                            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition ${i + 1 === step
                                                     ? "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30"
                                                     : i + 1 < step
-                                                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/25"
-                                                    : "bg-white/5 text-slate-500 border border-white/10"
-                                            }`}
+                                                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/25"
+                                                        : "bg-white/5 text-slate-500 border border-white/10"
+                                                }`}
                                         >
                                             {i + 1 < step && (
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -421,11 +420,10 @@ export default function EnterprisePage() {
                                                     key={ind}
                                                     type="button"
                                                     onClick={() => updateField("industry", ind)}
-                                                    className={`px-3 py-1.5 rounded-lg text-sm border transition ${
-                                                        form.industry === ind
+                                                    className={`px-3 py-1.5 rounded-lg text-sm border transition ${form.industry === ind
                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300"
                                                             : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {ind}
                                                 </button>
@@ -443,11 +441,10 @@ export default function EnterprisePage() {
                                                     key={size}
                                                     type="button"
                                                     onClick={() => updateField("companySize", size)}
-                                                    className={`px-4 py-3 rounded-xl text-sm border transition text-left ${
-                                                        form.companySize === size
+                                                    className={`px-4 py-3 rounded-xl text-sm border transition text-left ${form.companySize === size
                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300"
                                                             : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {size}
                                                 </button>
@@ -533,17 +530,15 @@ export default function EnterprisePage() {
                                                 key={sys}
                                                 type="button"
                                                 onClick={() => toggleArray("aiSystems", sys)}
-                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm border transition flex items-center gap-3 ${
-                                                    form.aiSystems.includes(sys)
+                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm border transition flex items-center gap-3 ${form.aiSystems.includes(sys)
                                                         ? "bg-fuchsia-500/15 border-fuchsia-500/30 text-white"
                                                         : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
-                                                <span className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-                                                    form.aiSystems.includes(sys)
+                                                <span className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${form.aiSystems.includes(sys)
                                                         ? "bg-fuchsia-500 border-fuchsia-500"
                                                         : "border-slate-600"
-                                                }`}>
+                                                    }`}>
                                                     {form.aiSystems.includes(sys) && (
                                                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -566,17 +561,15 @@ export default function EnterprisePage() {
                                                 key={svc}
                                                 type="button"
                                                 onClick={() => toggleArray("servicesNeeded", svc)}
-                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm border transition flex items-center gap-3 ${
-                                                    form.servicesNeeded.includes(svc)
+                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm border transition flex items-center gap-3 ${form.servicesNeeded.includes(svc)
                                                         ? "bg-fuchsia-500/15 border-fuchsia-500/30 text-white"
                                                         : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
-                                                <span className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-                                                    form.servicesNeeded.includes(svc)
+                                                <span className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${form.servicesNeeded.includes(svc)
                                                         ? "bg-fuchsia-500 border-fuchsia-500"
                                                         : "border-slate-600"
-                                                }`}>
+                                                    }`}>
                                                     {form.servicesNeeded.includes(svc) && (
                                                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -599,11 +592,10 @@ export default function EnterprisePage() {
                                                 key={opt.value}
                                                 type="button"
                                                 onClick={() => updateField("urgency", opt.value)}
-                                                className={`px-4 py-3 rounded-xl text-sm border transition text-left ${
-                                                    form.urgency === opt.value
+                                                className={`px-4 py-3 rounded-xl text-sm border transition text-left ${form.urgency === opt.value
                                                         ? "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300"
                                                         : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
                                                 {opt.label}
                                             </button>

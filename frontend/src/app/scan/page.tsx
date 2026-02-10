@@ -192,7 +192,14 @@ function ScanPageInner() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!url.trim()) return;
+        let normalizedUrl = url.trim();
+        if (!normalizedUrl) return;
+
+        // Normalize URL — add https:// if missing
+        if (!normalizedUrl.match(/^https?:\/\//i)) {
+            normalizedUrl = 'https://' + normalizedUrl;
+        }
+        setUrl(normalizedUrl);
 
         setLoading(true);
         setError(null);
@@ -203,7 +210,7 @@ function ScanPageInner() {
         if (pollingRef.current) clearInterval(pollingRef.current);
 
         try {
-            const result = await startScan(url);
+            const result = await startScan(normalizedUrl);
             setScanId(result.scan_id);
             const status = await getScanStatus(result.scan_id);
             setScanResult(status);
@@ -325,7 +332,7 @@ function ScanPageInner() {
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder="https://vasefirma.cz"
+                        placeholder="vasefirma.cz"
                         className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition-all"
                         required
                         disabled={loading}
@@ -342,6 +349,7 @@ function ScanPageInner() {
                         )}
                     </button>
                 </form>
+                <p className="text-xs text-slate-600 mt-2 text-center">Stačí zadat doménu — např. vasefirma.cz</p>
 
                 {/* Chyba */}
                 {error && (
@@ -642,19 +650,34 @@ function ScanPageInner() {
 
                 {/* Info box (před skenem) */}
                 {!scanResult && !loading && (
-                    <div className="mt-12 card text-center">
-                        <h3 className="font-semibold text-white mb-2">Co skenujeme?</h3>
-                        <ul className="text-sm text-slate-500 space-y-1">
-                            <li>🤖 Chatboty (Smartsupp, Tidio, Intercom...)</li>
-                            <li>📊 AI analytiku (GA4, Hotjar s AI features...)</li>
-                            <li>🎯 AI doporučovací systémy</li>
-                            <li>🖼️ AI generovaný obsah</li>
-                            <li>🔍 AI vyhledávání na webu</li>
-                        </ul>
-                        <p className="mt-4 text-xs text-slate-500">
-                            Skenování trvá 15–30 sekund. Používáme Playwright headless browser
-                            pro realistickou simulaci.
-                        </p>
+                    <div className="mt-12 space-y-6">
+                        <div className="card">
+                            <h3 className="font-semibold text-white mb-4 text-center">Co analyzujeme</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {[
+                                    { icon: <IconCpu className="w-5 h-5 text-fuchsia-400" />, label: "Chatboty a konverzační AI", desc: "Smartsupp, Tidio, Intercom, LiveAgent a další" },
+                                    { icon: <IconChartBar className="w-5 h-5 text-cyan-400" />, label: "AI analytika a sledování", desc: "GA4, Hotjar, Mixpanel s ML predikcemi" },
+                                    { icon: <IconTarget className="w-5 h-5 text-amber-400" />, label: "Doporučovací systémy", desc: "Personalizace produktů, obsahu a reklam" },
+                                    { icon: <IconPhoto className="w-5 h-5 text-purple-400" />, label: "AI generovaný obsah", desc: "Texty, obrázky, automatické překlady" },
+                                    { icon: <IconSearch className="w-5 h-5 text-green-400" />, label: "AI vyhledávání na webu", desc: "Sémantické vyhledávání, autocomplete" },
+                                    { icon: <IconShield className="w-5 h-5 text-blue-400" />, label: "Bezpečnostní AI systémy", desc: "Detekce podvodů, anti-spam, CAPTCHA" },
+                                ].map((item) => (
+                                    <div key={item.label} className="flex items-start gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                                        <div className="flex-shrink-0 mt-0.5">{item.icon}</div>
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-300">{item.label}</p>
+                                            <p className="text-xs text-slate-500">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-xs text-slate-600">
+                                Skenování trvá 15–30 sekund. Používáme headless browser pro realistickou simulaci návštěvy.
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>

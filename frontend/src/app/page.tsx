@@ -320,11 +320,20 @@ export default function HomePage() {
 
                     {/* CTA — Scanner Input */}
                     <div className="mx-auto mt-10 max-w-xl">
-                        <form className="flex gap-3" action="/scan">
+                        <form className="flex gap-3" action="/scan" onSubmit={(e) => {
+                            const form = e.currentTarget;
+                            const input = form.querySelector('input[name="url"]') as HTMLInputElement;
+                            let val = input.value.trim();
+                            if (val && !val.match(/^https?:\/\//i)) {
+                                val = 'https://' + val;
+                            }
+                            input.value = val;
+                        }}>
                             <input
-                                type="url"
+                                type="text"
                                 name="url"
-                                placeholder="https://vasefirma.cz"
+                                placeholder="vasefirma.cz"
+                                required
                                 className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-white
                                     placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
                                     focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
@@ -333,6 +342,7 @@ export default function HomePage() {
                                 Skenovat ZDARMA
                             </button>
                         </form>
+                        <p className="text-xs text-slate-600 mt-2 text-center">Stačí zadat doménu — např. vasefirma.cz</p>
                     </div>
                 </div>
             </section>
@@ -355,13 +365,13 @@ export default function HomePage() {
                     <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-8 text-center">
                         <div className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-4 py-1.5 mb-4">
                             <svg className="w-4 h-4 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="text-sm font-semibold text-neon-fuchsia">Průkopníci v ČR</span>
+                            <span className="text-sm font-semibold text-neon-fuchsia">Lídři AI Act compliance v ČR</span>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Patříme k průkopníkům AI Act compliance v Česku</h3>
+                        <h3 className="text-xl font-bold text-white mb-3">Nejkomplexnější AI Act řešení na českém trhu</h3>
                         <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                            Přinášíme řešení pro všechny — od jednotlivých OSVČ a živnostníků,
-                            přes malé e-shopy a firmy, až po velké korporáty.
-                            Bez ohledu na to, jestli jste kadeřnice, účetní nebo technologická firma —
+                            Nikdo v Česku neposkytuje tak ucelený servis — od automatického skenu webu,
+                            přes kompletní dokumentaci, až po průběžný monitoring.
+                            Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty —
                             pomůžeme vám splnit zákon jednoduše a bez stresu.
                         </p>
                     </div>

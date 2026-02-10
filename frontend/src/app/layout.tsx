@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/providers";
 import Header from "@/components/header";
+import ConsentBanner from "@/components/consent-banner";
 
 export const metadata: Metadata = {
     title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
@@ -112,6 +113,7 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </Providers>
+                <ConsentBanner />
             </body>
         </html>
     );

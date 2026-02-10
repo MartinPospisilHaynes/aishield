@@ -36,9 +36,6 @@ export default function Header() {
                     <a href="/scan" className={`text-sm transition-colors ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Skenovat web
                     </a>
-                    <a href="/dotaznik" className={`text-sm transition-colors ${isActive("/dotaznik") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
-                        Dotazník
-                    </a>
                     <a href="/pricing" className={`text-sm transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
@@ -112,9 +109,6 @@ export default function Header() {
                 <div className="md:hidden border-t border-white/[0.06] bg-dark-900/95 backdrop-blur-xl px-6 py-4 space-y-3">
                     <a href="/scan" className={`block text-sm transition-colors py-2 ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Skenovat web
-                    </a>
-                    <a href="/dotaznik" className={`block text-sm transition-colors py-2 ${isActive("/dotaznik") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
-                        Dotazník
                     </a>
                     <a href="/pricing" className={`block text-sm transition-colors py-2 ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
                         Ceník
