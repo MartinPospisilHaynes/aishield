@@ -3,7 +3,43 @@
  * Volání FastAPI backendu z Next.js frontendu.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim();
+
+// ── Lightweight logger ──
+// Logs API calls in dev + stores last N errors for debug panel
+
+const IS_DEV = process.env.NODE_ENV === "development";
+const MAX_LOG_ENTRIES = 50;
+
+interface LogEntry {
+    ts: string;
+    level: "info" | "warn" | "error";
+    msg: string;
+    detail?: string;
+}
+
+const _logs: LogEntry[] = [];
+
+function apiLog(level: LogEntry["level"], msg: string, detail?: string) {
+    const entry: LogEntry = { ts: new Date().toISOString(), level, msg, detail };
+    _logs.push(entry);
+    if (_logs.length > MAX_LOG_ENTRIES) _logs.shift();
+
+    if (IS_DEV || level === "error") {
+        const fn = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+        fn(`[AIshield API] ${msg}`, detail || "");
+    }
+}
+
+/** Get recent API logs (useful for debug panel) */
+export function getApiLogs(): LogEntry[] {
+    return [..._logs];
+}
+
+/** Clear stored logs */
+export function clearApiLogs() {
+    _logs.length = 0;
+}
 
 // ── Typy ──
 
@@ -64,45 +100,89 @@ export interface FindingsResponse {
  * Spustí nový sken webu — POST /api/scan
  */
 export async function startScan(url: string): Promise<ScanResponse> {
-    const res = await fetch(`${API_URL}/api/scan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-    });
+    const endpoint = `${API_URL}/api/scan`;
+    apiLog("info", `POST ${endpoint}`, `url=${url}`);
 
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
-        throw new Error(error.detail || `HTTP ${res.status}`);
+    try {
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+        });
+
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+            const msg = error.detail || `HTTP ${res.status}`;
+            apiLog("error", `POST ${endpoint} → ${res.status}`, msg);
+            throw new Error(msg);
+        }
+
+        const data = await res.json();
+        apiLog("info", `POST ${endpoint} → 200`, `scan_id=${data.scan_id}`);
+        return data;
+    } catch (err) {
+        if (err instanceof TypeError) {
+            apiLog("error", `POST ${endpoint} → NETWORK ERROR`, err.message);
+            throw new Error(`Nepodařilo se spojit s API (${API_URL}). ${err.message}`);
+        }
+        throw err;
     }
-
-    return res.json();
 }
 
 /**
  * Zjistí stav skenu — GET /api/scan/{scan_id}
  */
 export async function getScanStatus(scanId: string): Promise<ScanStatus> {
-    const res = await fetch(`${API_URL}/api/scan/${scanId}`);
+    const endpoint = `${API_URL}/api/scan/${scanId}`;
+    apiLog("info", `GET ${endpoint}`);
 
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
-        throw new Error(error.detail || `HTTP ${res.status}`);
+    try {
+        const res = await fetch(endpoint);
+
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+            const msg = error.detail || `HTTP ${res.status}`;
+            apiLog("error", `GET ${endpoint} → ${res.status}`, msg);
+            throw new Error(msg);
+        }
+
+        const data = await res.json();
+        apiLog("info", `GET ${endpoint} → ${data.status}`);
+        return data;
+    } catch (err) {
+        if (err instanceof TypeError) {
+            apiLog("error", `GET ${endpoint} → NETWORK ERROR`, err.message);
+            throw new Error(`Nepodařilo se spojit s API. ${err.message}`);
+        }
+        throw err;
     }
-
-    return res.json();
 }
 
 /**
  * Health check — GET /api/health
  */
 export async function checkHealth(): Promise<HealthResponse> {
-    const res = await fetch(`${API_URL}/api/health`);
+    const endpoint = `${API_URL}/api/health`;
+    apiLog("info", `GET ${endpoint}`);
 
-    if (!res.ok) {
-        throw new Error(`API nedostupné (HTTP ${res.status})`);
+    try {
+        const res = await fetch(endpoint);
+
+        if (!res.ok) {
+            apiLog("error", `GET ${endpoint} → ${res.status}`);
+            throw new Error(`API nedostupné (HTTP ${res.status})`);
+        }
+
+        const data = await res.json();
+        apiLog("info", `GET ${endpoint} → OK`, `db=${data.database}`);
+        return data;
+    } catch (err) {
+        if (err instanceof TypeError) {
+            apiLog("error", `GET ${endpoint} → NETWORK ERROR`, err.message);
+            throw new Error(`API nedostupné. ${err.message}`);
+        }
+        throw err;
     }
-
-    return res.json();
 }
 
 /**
