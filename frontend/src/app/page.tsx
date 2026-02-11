@@ -518,8 +518,8 @@ export default function HomePage() {
                         <p className="text-xs text-slate-500 mt-3 text-center">
                             Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
                         </p>
-                        <p className="text-xs text-slate-400 mt-3 text-center leading-relaxed bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-2.5">
-                            🔍 Náš sken využívá <strong className="text-slate-300">stejný přístup a kritéria</strong>, jaké budou
+                        <p className="text-sm sm:text-base text-slate-300 mt-4 text-center leading-relaxed bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-4 font-medium">
+                            🔍 Náš sken využívá <strong className="text-white">stejný přístup a kritéria</strong>, jaké budou
                             používat kontrolní orgány EU při systematických inspekcích webů a e-shopů
                             po nabytí účinnosti AI Act.
                         </p>
