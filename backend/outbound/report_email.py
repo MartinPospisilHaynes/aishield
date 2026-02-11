@@ -513,7 +513,7 @@ def generate_report_email_html(
             <div style="margin-top:12px;font-size:14px;">
                 <a href="mailto:info@aishield.cz" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">info@aishield.cz</a>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <a href="tel:+420773216877" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">+420 773 216 877</a>
+                <a href="tel:+420732716141" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">+420 732 716 141</a>
             </div>
             <div style="margin-top:8px;font-size:12px;color:{D["text_muted"]};">
                 Odpovídáme do 24 hodin v pracovní dny.
