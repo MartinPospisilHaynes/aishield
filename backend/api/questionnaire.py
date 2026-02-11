@@ -105,6 +105,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_social_scoring",
                 "text": "Bodujete zákazníky nebo zaměstnance podle chování? (Například: věrnostní systém, který omezuje služby při špatném skóre)",
                 "type": "yes_no_unknown",
+                "help_text": "Nepatří sem klasické věrnostní programy (sbírání bodů za nákupy). Jde o systémy, které omezují přístup ke službám na základě hodnocení chování.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -121,6 +122,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_subliminal_manipulation",
                 "text": "Používáte AI k ovlivňování lidí bez jejich vědomí? (Například: AI, která mění ceny podle nálady zákazníka)",
                 "type": "yes_no_unknown",
+                "help_text": "Jde o AI, která záměrně manipuluje rozhodování lidí technikami, které nelze rozumně rozpoznat.",
                 "risk_hint": "high",
                 "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
             },
@@ -541,7 +543,7 @@ async def get_questionnaire_structure():
     return {
         "sections": QUESTIONNAIRE_SECTIONS,
         "total_questions": sum(len(s["questions"]) for s in QUESTIONNAIRE_SECTIONS),
-        "estimated_time_minutes": 5,
+        "estimated_time_minutes": 5,  # 26 otázek × ~12s = cca 5 min
     }
 
 
@@ -803,6 +805,7 @@ def _get_recommendation(question_key: str, risk: str, tool_name: str, details: O
         "uses_ai_creditscoring": f"VYSOCE RIZIKOVÝ systém! Kreditní scoring je regulován přílohou III AI Act. Proveďte conformity assessment a zajistěte právo na vysvětlení rozhodnutí.",
         "uses_ai_insurance": f"VYSOCE RIZIKOVÝ systém! AI v pojišťovnictví spadá pod Přílohu III bod 5a. Zajistěte posouzení shody a právo pojistníka na vysvětlení.",
         # Zákaznický servis
+        "uses_ai_chatbot": f"Informujte návštěvníky, že komunikují s AI (čl. 50 odst. 1 AI Act). Přidejte jasné označení k {tool_name}.",
         "uses_ai_email_auto": f"Informujte zákazníky, že komunikují s AI (čl. 50 odst. 1). Přidejte jasné označení do automatických odpovědí.",
         "uses_ai_decision": f"AI rozhodující o právech zákazníků vyžaduje lidský dohled (čl. 14 AI Act). Zajistěte právo na přezkum člověkem.",
         # Kritická infrastruktura
@@ -812,6 +815,8 @@ def _get_recommendation(question_key: str, risk: str, tool_name: str, details: O
         "ai_processes_personal_data": f"Proveďte DPIA dle GDPR. Zajistěte právní základ pro zpracování a minimalizaci dat v AI systémech.",
         "ai_data_stored_eu": "Ověřte, kde jsou data AI systémů fyzicky uložena. Pro přenos mimo EU zajistěte adekvátní záruky (SCC, adequacy decision).",
         "ai_transparency_docs": "Vytvořte registr všech AI systémů ve firmě. Pro vysoce rizikové systémy je registrace v EU databázi povinná (čl. 49).",
+        # Provider / deployer
+        "develops_own_ai": "Jako vývojář (provider) AI systémů máte povinnosti dle čl. 16 AI Act — dokumentace, posouzení shody, registrace. Identifikujte risk kategorii každého vašeho AI produktu.",
         # AI gramotnost
         "has_ai_training": "Zajistěte proškolení zaměstnanců o bezpečném používání AI nástrojů. Článek 4 AI Act vyžaduje ‚dostatečnou úroveň AI gramotnosti'.",
         "has_ai_guidelines": "Vytvořte interní pravidla pro používání AI — co se smí sdílet, jaká data nesmí do AI nástrojů, a kdo je zodpovědný za dodržování.",
