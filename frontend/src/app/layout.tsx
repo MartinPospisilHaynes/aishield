@@ -45,6 +45,20 @@ export default function RootLayout({
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
                     rel="stylesheet"
                 />
+                {/* Auto-reload on chunk load error (stale deploy cache) */}
+                <script dangerouslySetInnerHTML={{
+                    __html: `
+                    if (typeof window !== 'undefined') {
+                        window.addEventListener('error', function(e) {
+                            if (e.message && (e.message.indexOf('ChunkLoadError') !== -1 || e.message.indexOf('Loading chunk') !== -1 || e.message.indexOf('Failed to fetch') !== -1)) {
+                                if (!sessionStorage.getItem('chunk_reload')) {
+                                    sessionStorage.setItem('chunk_reload', '1');
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    }
+                `}} />
             </head>
             <body className="bg-dark-900 text-slate-100">
                 <Providers>
