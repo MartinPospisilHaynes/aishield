@@ -1,11 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { getDashboardData, type DashboardData } from "@/lib/api";
+import {
+    getDashboardData,
+    startScan,
+    getScanStatus,
+    getScanFindings,
+    type DashboardData,
+    type ScanStatus,
+    type Finding,
+} from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 
 type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "ucet";
+
+/* ── Scan progress stages (reused from /scan) ── */
+const SCAN_STAGES = [
+    { label: "Připojování k webu", desc: "Otevíráme váš web v bezpečném prohlížeči" },
+    { label: "Načítání stránky", desc: "Čekáme, až se web kompletně načte" },
+    { label: "Analýza HTML kódu", desc: "Procházíme zdrojový kód stránky" },
+    { label: "Kontrola skriptů", desc: "Hledáme JavaScript knihovny třetích stran" },
+    { label: "Detekce chatbotů a AI nástrojů", desc: "Zjišťujeme, zda web obsahuje chatbota, personalizaci nebo AI vyhledávání" },
+    { label: "Analýza cookies a trackerů", desc: "Kontrolujeme analytické a sledovací cookies" },
+    { label: "Monitorování síťových požadavků", desc: "Sledujeme komunikaci s AI službami třetích stran" },
+    { label: "AI klasifikace nálezů", desc: "Umělá inteligence vyhodnocuje a ověřuje každý nález" },
+    { label: "Vyhodnocení rizik dle AI Act", desc: "Klasifikujeme rizika podle kategorií EU AI Act" },
+    { label: "Příprava vašeho reportu", desc: "Generujeme kompletní compliance report" },
+];
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     {
@@ -87,6 +109,127 @@ export default function DashboardPage() {
     const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState<Tab>("prehled");
 
+    // ── Inline scan state ──
+    const [scanActive, setScanActive] = useState(false);
+    const [scanLoading, setScanLoading] = useState(false);
+    const [scanError, setScanError] = useState<string | null>(null);
+    const [scanResult, setScanResult] = useState<ScanStatus | null>(null);
+    const [scanFindings, setScanFindings] = useState<Finding[]>([]);
+    const [scanStage, setScanStage] = useState(0);
+    const [scanDone, setScanDone] = useState(false);
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
+    const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Clean up timers on unmount
+    useEffect(() => {
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            if (stageRef.current) clearTimeout(stageRef.current);
+        };
+    }, []);
+
+    const reloadDashboard = useCallback(() => {
+        if (!user?.email) return;
+        getDashboardData(user.email)
+            .then(setData)
+            .catch(() => { /* silent */ });
+    }, [user?.email]);
+
+    const startStageAnimation = useCallback(() => {
+        setScanStage(0);
+        let stage = 0;
+        const intervals = [1800, 2200, 2500, 2800, 3200, 3000, 3500, 4000, 3000, 2500];
+        const advanceStage = () => {
+            stage++;
+            if (stage < SCAN_STAGES.length) {
+                setScanStage(stage);
+                stageRef.current = setTimeout(advanceStage, intervals[stage] || 2500);
+            }
+        };
+        stageRef.current = setTimeout(advanceStage, intervals[0]);
+    }, []);
+
+    const fetchScanFindings = useCallback(async (id: string) => {
+        try {
+            const res = await getScanFindings(id);
+            setScanFindings(res.findings);
+        } catch { /* silent */ }
+    }, []);
+
+    const startScanPolling = useCallback(
+        (id: string) => {
+            pollingRef.current = setInterval(async () => {
+                try {
+                    const status = await getScanStatus(id);
+                    setScanResult(status);
+                    if (status.status === "done" || status.status === "error") {
+                        if (pollingRef.current) clearInterval(pollingRef.current);
+                        pollingRef.current = null;
+                        if (stageRef.current) clearTimeout(stageRef.current);
+                        stageRef.current = null;
+                        setScanStage(SCAN_STAGES.length);
+                        setScanLoading(false);
+                        setScanDone(true);
+                        if (status.status === "done") {
+                            await fetchScanFindings(id);
+                            // Reload dashboard data after scan completes
+                            reloadDashboard();
+                        }
+                    }
+                } catch { /* keep polling */ }
+            }, 3000);
+        },
+        [fetchScanFindings, reloadDashboard]
+    );
+
+    const handleStartScan = useCallback(async () => {
+        const scanUrl = data?.company?.url || user?.user_metadata?.web_url;
+        if (!scanUrl) {
+            setScanError("Nemáme URL vašeho webu. Zadejte URL při registraci.");
+            setScanActive(true);
+            return;
+        }
+
+        setScanActive(true);
+        setScanLoading(true);
+        setScanError(null);
+        setScanResult(null);
+        setScanFindings([]);
+        setScanDone(false);
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        if (stageRef.current) clearTimeout(stageRef.current);
+
+        startStageAnimation();
+
+        try {
+            const result = await startScan(scanUrl);
+            const status = await getScanStatus(result.scan_id);
+            setScanResult(status);
+            if (status.status === "queued" || status.status === "running") {
+                startScanPolling(result.scan_id);
+            } else {
+                setScanLoading(false);
+                if (stageRef.current) clearTimeout(stageRef.current);
+                setScanStage(SCAN_STAGES.length);
+                setScanDone(true);
+                if (status.status === "done") {
+                    await fetchScanFindings(result.scan_id);
+                    reloadDashboard();
+                }
+            }
+        } catch (err) {
+            setScanError(err instanceof Error ? err.message : "Nastala neočekávaná chyba");
+            setScanLoading(false);
+            if (stageRef.current) clearTimeout(stageRef.current);
+        }
+    }, [data?.company?.url, user?.user_metadata?.web_url, startStageAnimation, startScanPolling, fetchScanFindings, reloadDashboard]);
+
+    const closeScanPanel = () => {
+        setScanActive(false);
+        setScanDone(false);
+        setScanError(null);
+    };
+
     useEffect(() => {
         if (!user?.email) return;
         setLoading(true);
@@ -132,9 +275,9 @@ export default function DashboardPage() {
                         ) : (
                             <>
                                 <p className="text-red-400 mb-4">{error}</p>
-                                <a href="/scan" className="btn-primary text-sm px-6 py-2">
+                                <button onClick={handleStartScan} className="btn-primary text-sm px-6 py-2">
                                     Spustit první sken
-                                </a>
+                                </button>
                             </>
                         )}
                     </div>
@@ -168,14 +311,126 @@ export default function DashboardPage() {
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <a href="/scan" className="btn-secondary text-sm px-4 py-2">
-                            Nový sken
-                        </a>
-                        <a href="/dotaznik" className="btn-primary text-sm px-4 py-2">
-                            Vyplnit dotazník
-                        </a>
+                        <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-4 py-2 disabled:opacity-50">
+                            {scanLoading ? "Skenuji..." : "Nový sken"}
+                        </button>
+                        {(data?.scans.length || 0) > 0 ? (
+                            <a href="/dotaznik" className="btn-primary text-sm px-4 py-2">
+                                Vyplnit dotazník
+                            </a>
+                        ) : (
+                            <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
+                                🔒 Dotazník
+                            </button>
+                        )}
                     </div>
                 </div>
+
+                {/* ═══ INLINE SCAN PANEL ═══ */}
+                {scanActive && (
+                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-6 relative">
+                        {/* Close button (only when not loading) */}
+                        {!scanLoading && (
+                            <button onClick={closeScanPanel} className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+
+                        {/* Error state */}
+                        {scanError && !scanLoading && (
+                            <div className="text-center py-4">
+                                <div className="inline-flex items-center gap-2 text-red-400 mb-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="font-medium">{scanError}</span>
+                                </div>
+                                <button onClick={handleStartScan} className="btn-secondary text-sm px-4 py-2 mt-2">
+                                    Zkusit znovu
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Scanning progress */}
+                        {scanLoading && (
+                            <>
+                                <div className="flex items-center gap-3 mb-5">
+                                    <svg className="w-7 h-7 text-fuchsia-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                    </svg>
+                                    <div>
+                                        <h3 className="font-semibold text-white">Skenování probíhá...</h3>
+                                        <p className="text-sm text-slate-400">Analyzujeme {scanResult?.url || data?.company?.url || ""}</p>
+                                    </div>
+                                </div>
+
+                                {/* Progress bar */}
+                                <div className="mb-4">
+                                    <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                                        <span>{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</span>
+                                        <span>{Math.round(((scanStage + 1) / SCAN_STAGES.length) * 100)} %</span>
+                                    </div>
+                                    <div className="h-2.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-fuchsia-600 via-purple-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
+                                            style={{ width: ((scanStage + 1) / SCAN_STAGES.length) * 100 + "%" }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Stage list */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                    {SCAN_STAGES.map((stage, i) => {
+                                        const done = i < scanStage;
+                                        const active = i === scanStage;
+                                        return (
+                                            <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-all ${done ? "text-green-400/70" : active ? "text-fuchsia-300 bg-fuchsia-500/10" : "text-slate-600"}`}>
+                                                {done ? (
+                                                    <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                ) : active ? (
+                                                    <div className="w-3.5 h-3.5 flex-shrink-0"><div className="h-2 w-2 rounded-full bg-fuchsia-400 animate-pulse mx-auto mt-[3px]" /></div>
+                                                ) : (
+                                                    <div className="w-3.5 h-3.5 flex-shrink-0"><div className="h-1.5 w-1.5 rounded-full bg-slate-700 mx-auto mt-1" /></div>
+                                                )}
+                                                {stage.label}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+
+                        {/* Scan complete */}
+                        {scanDone && !scanLoading && !scanError && (
+                            <div className="text-center py-4">
+                                <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-green-500/10 border border-green-500/20 mb-4">
+                                    <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="font-semibold text-green-400 text-lg mb-1">Sken dokončen!</h3>
+                                <p className="text-sm text-slate-400 mb-1">
+                                    Nalezeno <span className="text-white font-bold">{scanFindings.length}</span> AI {scanFindings.length === 1 ? "systém" : scanFindings.length < 5 ? "systémy" : "systémů"}
+                                </p>
+                                {scanResult?.total_findings != null && scanResult.total_findings > 0 && (
+                                    <p className="text-xs text-slate-500 mb-4">Výsledky byly uloženy do vašeho profilu</p>
+                                )}
+                                <div className="flex gap-3 justify-center">
+                                    <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
+                                        Zobrazit nálezy
+                                    </button>
+                                    {(data?.scans.length || 0) > 0 && (
+                                        <a href="/dotaznik" className="btn-primary text-sm px-4 py-2">
+                                            Vyplnit dotazník
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Stats cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -231,11 +486,11 @@ export default function DashboardPage() {
 
                 {/* Tab content */}
                 <div className="min-h-[400px]">
-                    {activeTab === "prehled" && <TabPrehled data={data} />}
-                    {activeTab === "findings" && <TabFindings findings={data?.findings || []} />}
+                    {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={(data?.scans.length || 0) > 0} />}
+                    {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
                     {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
-                    {activeTab === "plan" && <TabPlan findings={data?.findings || []} />}
-                    {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} />}
+                    {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
+                    {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                     {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                 </div>
             </div>
@@ -260,9 +515,9 @@ function StatCard({ label, value, sub, color, icon }: {
 }
 
 /* ── Tab: Přehled ── */
-function TabPrehled({ data }: { data: DashboardData | null }) {
+function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean }) {
     const hasPaidOrder = data?.orders.some((o) => o.status === "PAID") || false;
-    const hasScans = (data?.scans.length || 0) > 0;
+    const hasScans = hasScansOverride || (data?.scans.length || 0) > 0;
     const hasQuest = data?.questionnaire_status === "dokončen";
     const hasDocs = (data?.documents.length || 0) > 0;
 
@@ -271,15 +526,17 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
             done: hasScans,
             label: "Sken webu",
             desc: "Automatická detekce AI systémů na vašem webu",
-            href: "/scan",
-            cta: "Spustit sken",
+            href: null as string | null, // handled by button
+            cta: scanLoading ? "Skenuji..." : "Spustit sken",
+            onClick: onStartScan,
         },
         {
             done: hasQuest,
             label: "Dotazník",
             desc: "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
-            href: "/dotaznik",
-            cta: "Vyplnit dotazník",
+            href: hasScans ? "/dotaznik" : null,
+            cta: hasScans ? "Vyplnit dotazník" : "🔒 Nejprve skenujte web",
+            onClick: undefined as (() => void) | undefined,
         },
         {
             done: hasPaidOrder,
@@ -287,6 +544,7 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
             desc: "Odemkněte compliance dokumenty a akční plán",
             href: "/pricing",
             cta: "Vybrat balíček",
+            onClick: undefined as (() => void) | undefined,
         },
         {
             done: hasDocs,
@@ -294,6 +552,7 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
             desc: "7 PDF dokumentů pro splnění AI Act",
             href: "#",
             cta: "Viz tab Dokumenty",
+            onClick: undefined as (() => void) | undefined,
         },
     ];
 
@@ -370,11 +629,19 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
                             <h4 className="font-semibold text-fuchsia-300">{currentStep.label}</h4>
                         </div>
                         <p className="text-sm text-slate-400 mb-4 ml-9">{currentStep.desc}</p>
-                        {currentStep.href !== "#" && (
+                        {currentStep.onClick ? (
+                            <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-9 inline-block disabled:opacity-50">
+                                {currentStep.cta}
+                            </button>
+                        ) : currentStep.href && currentStep.href !== "#" ? (
                             <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-9 inline-block">
                                 {currentStep.cta}
                             </a>
-                        )}
+                        ) : !currentStep.href ? (
+                            <span className="text-sm text-slate-500 ml-9 inline-block opacity-60">
+                                {currentStep.cta}
+                            </span>
+                        ) : null}
                     </div>
                 )}
 
@@ -464,13 +731,13 @@ function TabPrehled({ data }: { data: DashboardData | null }) {
 }
 
 /* ── Tab: AI systémy (Findings) ── */
-function TabFindings({ findings }: { findings: DashboardData["findings"] }) {
+function TabFindings({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
     if (findings.length === 0) {
         return (
             <EmptyState
                 title="Zatím žádné AI systémy"
                 description="Spusťte sken webu pro automatickou detekci AI systémů na vašem webu."
-                href="/scan"
+                onAction={onStartScan}
                 cta="Spustit sken"
                 illustration={
                     <svg className="w-10 h-10 text-fuchsia-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -568,13 +835,13 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 }
 
 /* ── Tab: Akční plán ── */
-function TabPlan({ findings }: { findings: DashboardData["findings"] }) {
+function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
     if (findings.length === 0) {
         return (
             <EmptyState
                 title="Akční plán je prázdný"
                 description="Nejdříve proveďte sken webu — akční plán se vygeneruje z nálezů."
-                href="/scan"
+                onAction={onStartScan}
                 cta="Spustit sken"
                 illustration={
                     <svg className="w-10 h-10 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -660,13 +927,13 @@ function TabPlan({ findings }: { findings: DashboardData["findings"] }) {
 }
 
 /* ── Tab: Historie skenů ── */
-function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
+function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onStartScan: () => void }) {
     if (scans.length === 0) {
         return (
             <EmptyState
                 title="Zatím žádné skeny"
                 description="Spusťte první sken pro detekci AI systémů na vašem webu."
-                href="/scan"
+                onAction={onStartScan}
                 cta="Spustit sken"
                 illustration={
                     <svg className="w-10 h-10 text-emerald-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -894,8 +1161,8 @@ function InfoRow({ label, value, isUrl }: { label: string; value: string; isUrl?
 }
 
 /* ── Empty State ── */
-function EmptyState({ title, description, href, cta, illustration }: {
-    title: string; description: string; href: string; cta: string; illustration?: React.ReactNode;
+function EmptyState({ title, description, href, cta, onAction, illustration }: {
+    title: string; description: string; href?: string; cta: string; onAction?: () => void; illustration?: React.ReactNode;
 }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -908,9 +1175,15 @@ function EmptyState({ title, description, href, cta, illustration }: {
             </div>
             <h3 className="font-semibold text-slate-300 mb-1">{title}</h3>
             <p className="text-sm text-slate-500 max-w-sm mb-6">{description}</p>
-            <a href={href} className="btn-primary text-sm px-6 py-2.5">
-                {cta}
-            </a>
+            {onAction ? (
+                <button onClick={onAction} className="btn-primary text-sm px-6 py-2.5">
+                    {cta}
+                </button>
+            ) : href ? (
+                <a href={href} className="btn-primary text-sm px-6 py-2.5">
+                    {cta}
+                </a>
+            ) : null}
         </div>
     );
 }
