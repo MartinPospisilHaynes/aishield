@@ -77,6 +77,12 @@ const INDUSTRY_ICONS: Record<string, string> = {
     "Nemovitosti / Reality": "🏠",
     "Zemědělství": "🌾",
     "Jiné": "📦",
+    /* Company size */
+    "Jen já (OSVČ)": "👤",
+    "2–9 zaměstnanců": "👥",
+    "10–49 zaměstnanců": "🏢",
+    "50–249 zaměstnanců": "🏬",
+    "250+ zaměstnanců": "🏛️",
 };
 
 /* ═══════════════════════════════════════════
@@ -204,7 +210,7 @@ function QuestionnaireInner() {
                 ...ap,
                 [qKey]: {
                     ...ap[qKey],
-                    details: { ...ap[qKey].details, [fKey]: next.join(", ") },
+                    details: { ...ap[qKey].details, [fKey]: next },
                 },
             }));
             return { ...prev, [mkey]: next };
@@ -252,7 +258,11 @@ function QuestionnaireInner() {
             if (currentQuestion < totalQuestions) {
                 const q = allQuestions[currentQuestion];
                 if (q.type === "yes_no_unknown") {
-                    if (e.key === "1") { setAnswer(q.key, "yes"); setTimeout(goNext, 300); }
+                    if (e.key === "1") {
+                        setAnswer(q.key, "yes");
+                        // Don't auto-advance if there's a followup — let user fill it in
+                        if (!q.followup) setTimeout(goNext, 300);
+                    }
                     if (e.key === "2") { setAnswer(q.key, "no"); setTimeout(goNext, 300); }
                     if (e.key === "3") { setAnswer(q.key, "unknown"); setTimeout(goNext, 300); }
                 }

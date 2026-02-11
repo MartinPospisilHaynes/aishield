@@ -61,6 +61,36 @@ QUESTIONNAIRE_SECTIONS = [
                 "risk_hint": "none",
                 "ai_act_article": None,
             },
+            {
+                "key": "company_size",
+                "text": "Kolik má vaše firma zaměstnanců?",
+                "type": "single_select",
+                "options": [
+                    "Jen já (OSVČ)",
+                    "2–9 zaměstnanců",
+                    "10–49 zaměstnanců",
+                    "50–249 zaměstnanců",
+                    "250+ zaměstnanců",
+                ],
+                "help_text": "Malé a střední podniky mají dle AI Act některé úlevy.",
+                "risk_hint": "none",
+                "ai_act_article": "čl. 62 — povinnosti MSP a start-upů",
+            },
+            {
+                "key": "develops_own_ai",
+                "text": "Vyvíjíte vlastní AI systémy nebo modely?",
+                "type": "yes_no_unknown",
+                "help_text": "Trénujete vlastní modely, vyvíjíte AI software pro zákazníky, nebo AI integrujete do svých produktů?",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "ai_role", "label": "Jaká je vaše role?", "type": "multi_select",
+                         "options": ["Vyvíjíme AI (provider)", "Nasazujeme AI od jiných (deployer)", "Importujeme AI do EU (importer)", "Distribuujeme AI (distributor)"]},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 2 + čl. 28 — role v hodnotovém řetězci AI",
+            },
         ],
     },
     # ──────────────────────────────────────────────
@@ -103,7 +133,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "biometric_tool_name", "label": "Název systému", "type": "select",
                          "options": ["Kamerový systém", "Docházkový systém", "Přístupový systém", "Nevím název"]},
-                        {"key": "biometric_purpose", "label": "Účel", "type": "select",
+                        {"key": "biometric_purpose", "label": "Účel (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Docházka zaměstnanců", "Kontrola přístupu", "Identifikace zákazníků", "Bezpečnost"]},
                     ]
                 },
@@ -132,7 +162,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["ChatGPT", "Claude", "Gemini", "Copilot", "Perplexity", "Jiný"]},
                         {"key": "chatgpt_purpose", "label": "K čemu je používáte?", "type": "multi_select",
                          "options": ["Psaní textů", "Překlady", "Emaily", "Analýza dat", "Programování", "Zákaznický servis", "Jiné"]},
-                        {"key": "chatgpt_data_type", "label": "Jaká data do něj vkládáte?", "type": "select",
+                        {"key": "chatgpt_data_type", "label": "Jaká data do něj vkládáte?", "type": "multi_select",
                          "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data"]},
                     ]
                 },
@@ -149,7 +179,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "copilot_tool_name", "label": "Které nástroje používáte?", "type": "multi_select",
                          "options": ["GitHub Copilot", "Cursor", "Codeium", "Amazon CodeWhisperer", "Jiný"]},
-                        {"key": "copilot_code_type", "label": "Typ vyvíjeného software", "type": "select",
+                        {"key": "copilot_code_type", "label": "Typ vyvíjeného software", "type": "multi_select",
                          "options": ["Webové aplikace", "Mobilní aplikace", "Backend/API", "Data/ML", "Automatizace", "Jiné"]},
                     ]
                 },
@@ -165,8 +195,8 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "content_tool_name", "label": "Které nástroje používáte?", "type": "multi_select",
                          "options": ["DALL-E", "Midjourney", "Stable Diffusion", "Canva AI", "Jasper", "Copy.ai", "Jiný"]},
-                        {"key": "content_published", "label": "Publikujete AI obsah veřejně?", "type": "select",
-                         "options": ["Ano, na web/sociální sítě", "Pouze interně", "Ano, bez označení"]},
+                        {"key": "content_published", "label": "Kde AI obsah používáte?", "type": "multi_select",
+                         "options": ["Web / sociální sítě", "Interní materiály", "E-maily zákazníkům", "Reklamní kampaně"]},
                     ]
                 },
                 "risk_hint": "limited",
@@ -238,7 +268,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "emotion_tool_name", "label": "Název systému", "type": "select",
                          "options": ["Kamerový systém", "Call centrum analýza", "Vlastní systém", "Nevím název"]},
-                        {"key": "emotion_context", "label": "V jakém kontextu?", "type": "select",
+                        {"key": "emotion_context", "label": "V jakém kontextu? (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost"]},
                     ]
                 },
@@ -314,6 +344,23 @@ QUESTIONNAIRE_SECTIONS = [
         "description": "AI systémy v kontaktu se zákazníky vyžadují transparentnost.",
         "questions": [
             {
+                "key": "uses_ai_chatbot",
+                "text": "Máte na webu chatbota nebo virtuálního asistenta?",
+                "type": "yes_no_unknown",
+                "help_text": "Tidio, Smartsupp, Intercom, vlastní AI chat na webu...",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "chatbot_tool_name", "label": "Název nástroje", "type": "select",
+                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Vlastní řešení", "Nevím název"]},
+                        {"key": "chatbot_disclosed", "label": "Ví návštěvník, že komunikuje s AI?", "type": "select",
+                         "options": ["Ano, je to označeno", "Ne", "Částečně"]},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 50 odst. 1 — povinnost informovat o interakci s AI",
+            },
+            {
                 "key": "uses_ai_email_auto",
                 "text": "Automaticky odpovídáte na emaily zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
@@ -363,7 +410,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "infra_tool_name", "label": "Název systému", "type": "text"},
-                        {"key": "infra_sector", "label": "Sektor", "type": "select",
+                        {"key": "infra_sector", "label": "Sektor (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Energetika", "Doprava", "Vodohospodářství", "Telekomunikace", "Zdravotnictví", "Jiný"]},
                     ]
                 },
