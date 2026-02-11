@@ -438,24 +438,56 @@ export default function HomePage() {
 
                     {/* Subheadline */}
                     <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
-                        Pro velký úspěch GDPR si Evropská Unie vymyslela další povinnost
-                        pro podnikatele, tentokrát kvůli regulaci umělé inteligence.
-                        Vy se však nebojte — Vše zařídíme za Vás na pár kliknutí.
+                        Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
+                        Nestačí jen cookie lišta — zákon vyžaduje mnohem víc.
                     </p>
 
-                    {/* Penalty info */}
-                    <div className="mx-auto mt-6 max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                        <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3">
-                            <span className="font-bold text-red-400">až 35 mil. EUR</span>
-                            <p className="text-slate-500 text-xs mt-0.5">za zakázané AI praktiky (7&nbsp;%&nbsp;obratu)</p>
-                        </div>
-                        <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 px-4 py-3">
-                            <span className="font-bold text-orange-400">až 15 mil. EUR</span>
-                            <p className="text-slate-500 text-xs mt-0.5">za nesplnění povinností (3&nbsp;%&nbsp;obratu)</p>
-                        </div>
-                        <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
-                            <span className="font-bold text-yellow-400">až 7,5 mil. EUR</span>
-                            <p className="text-slate-500 text-xs mt-0.5">za nepravdivé informace (1&nbsp;%&nbsp;obratu)</p>
+                    {/* Povinnosti — odrážky */}
+                    <div className="mx-auto mt-8 max-w-2xl text-left">
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
+                            Co zákon vyžaduje od webů a e-shopů
+                        </h3>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                            {[
+                                {
+                                    icon: "📋",
+                                    title: "Zpracovaná dokumentace",
+                                    desc: "Compliance report, registr AI systémů, akční plán — vše musíte mít připravené pro případ kontroly.",
+                                },
+                                {
+                                    icon: "🖨️",
+                                    title: "Dokumenty v tištěné podobě",
+                                    desc: "Zákon vyžaduje, aby dokumentace byla dostupná v tištěné formě a podepsaná odpovědnou osobou.",
+                                },
+                                {
+                                    icon: "🎓",
+                                    title: "Školení zaměstnanců (čl. 4)",
+                                    desc: "Každý zaměstnanec musí projít školením o AI gramotnosti. My vám dodáme on-line školení na míru.",
+                                },
+                                {
+                                    icon: "✍️",
+                                    title: "Záznam o proškolení s podpisy",
+                                    desc: "Po absolvování školení stačí vytisknout záznam, nechat podepsat zaměstnanci — a povinnost je splněna.",
+                                },
+                                {
+                                    icon: "💬",
+                                    title: "Označení chatbotů a AI nástrojů",
+                                    desc: "Návštěvník musí vědět, že komunikuje s AI. Připravíme vám přesné texty oznámení.",
+                                },
+                                {
+                                    icon: "🌐",
+                                    title: "Transparenční stránka na webu",
+                                    desc: "Hotová podstránka s přehledem AI systémů na vašem webu. Stačí ji jen vložit.",
+                                },
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
+                                    <span className="text-xl mt-0.5 flex-shrink-0">{item.icon}</span>
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-200">{item.title}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -483,18 +515,13 @@ export default function HomePage() {
                                 Skenovat ZDARMA
                             </button>
                         </form>
-                        <p className="text-sm text-slate-400 mt-3 text-center leading-relaxed">
-                            Po velkém úspěchu GDPR si Evropská Unie přichystala další povinnost pro podnikatele.
-                            Vše zařídíme za Vás na pár kliknutí.
-                        </p>
-                        <p className="text-xs text-slate-600 mt-2 text-center">
-                            Zjistěte to za minutu. Náš robot proskenuje váš web, najde AI systémy
-                            a řekne vám přesně, co musíte udělat. Při nesplnění hrozí pokutou až 35 milionů EUR.
+                        <p className="text-xs text-slate-500 mt-3 text-center">
+                            Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
                         </p>
                         <p className="text-xs text-slate-400 mt-3 text-center leading-relaxed bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-2.5">
                             🔍 Náš sken využívá <strong className="text-slate-300">stejný přístup a kritéria</strong>, jaké budou
-                            používat kontrolní orgány Evropské unie při systematických inspekcích webů a e-shopů
-                            po nabytí účinnosti AI Act. Otestujte si svůj web dříve, než to udělají úřady za vás.
+                            používat kontrolní orgány EU při systematických inspekcích webů a e-shopů
+                            po nabytí účinnosti AI Act.
                         </p>
                     </div>
                 </div>
