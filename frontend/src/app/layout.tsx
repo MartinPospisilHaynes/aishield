@@ -38,10 +38,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="cs" translate="no" className="notranslate">
+        <html lang="cs">
             <head>
                 <meta name="theme-color" content="#7c3aed" />
-                <meta name="google" content="notranslate" />
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
                     rel="stylesheet"
@@ -86,7 +85,7 @@ export default function RootLayout({
                                                 </linearGradient>
                                             </defs>
                                         </svg>
-                                        <span className="text-xl font-extrabold tracking-tighter">
+                                        <span className="text-xl font-extrabold tracking-tighter" translate="no">
                                             <span className="text-white">AI</span>
                                             <span className="neon-text">shield</span>
                                             <span className="text-slate-600 text-sm font-normal ml-0.5">.cz</span>

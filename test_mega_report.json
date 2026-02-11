@@ -1,0 +1,427 @@
+{
+  "timestamp": "2026-02-11 22:45:30",
+  "total": 52,
+  "passed": 52,
+  "failed": 0,
+  "skipped": 0,
+  "warned": 0,
+  "duration_s": 72.9,
+  "tests": [
+    {
+      "name": "API health check",
+      "phase": "Infra",
+      "passed": true,
+      "detail": "API=ok, DB=connected, version=0.1.0",
+      "duration": 0.17,
+      "critical": true
+    },
+    {
+      "name": "API root info",
+      "phase": "Infra",
+      "passed": true,
+      "detail": "name=🛡️ AIshield.cz API, v=0.1.0",
+      "duration": 0.03,
+      "critical": false
+    },
+    {
+      "name": "Engine health",
+      "phase": "Infra",
+      "passed": true,
+      "detail": "engine=ok",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "Recent scans endpoint",
+      "phase": "Infra",
+      "passed": true,
+      "detail": "recent_scans=3",
+      "duration": 0.1,
+      "critical": false
+    },
+    {
+      "name": "Všech 14 veřejných stránek",
+      "phase": "Frontend",
+      "passed": true,
+      "detail": "Všech 14 stránek HTTP 200 ✓",
+      "duration": 0.31,
+      "critical": false
+    },
+    {
+      "name": "robots.txt",
+      "phase": "Frontend",
+      "passed": true,
+      "detail": "robots.txt OK (119 bytes)",
+      "duration": 0.06,
+      "critical": false
+    },
+    {
+      "name": "sitemap.xml",
+      "phase": "Frontend",
+      "passed": true,
+      "detail": "sitemap.xml OK, 13 URL",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "favicon.ico",
+      "phase": "Frontend",
+      "passed": true,
+      "detail": "favicon.ico OK (15086 bytes)",
+      "duration": 0.06,
+      "critical": false
+    },
+    {
+      "name": "Viewport meta tag",
+      "phase": "Responsive",
+      "passed": true,
+      "detail": "viewport meta tag nalezen ✓",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "Mobile UA (iPhone)",
+      "phase": "Responsive",
+      "passed": true,
+      "detail": "Všech 5 stránek OK s iPhone UA",
+      "duration": 0.46,
+      "critical": false
+    },
+    {
+      "name": "Tablet UA (iPad)",
+      "phase": "Responsive",
+      "passed": true,
+      "detail": "Všech 4 stránek OK s iPad UA",
+      "duration": 0.29,
+      "critical": false
+    },
+    {
+      "name": "Responsive CSS classes",
+      "phase": "Responsive",
+      "passed": true,
+      "detail": "Responsive classes: sm:, md:, lg:, hamburger menu ✓",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "8 prohlížečů/zařízení",
+      "phase": "Responsive",
+      "passed": true,
+      "detail": "Všech 8 prohlížečů/zařízení OK: Chrome, Firefox, Safari, Edge, Android, iPhone, iPad, Android Tablet",
+      "duration": 0.53,
+      "critical": false
+    },
+    {
+      "name": "lang='cs' na <html>",
+      "phase": "i18n",
+      "passed": true,
+      "detail": "lang=\"cs\" ✓",
+      "duration": 0.09,
+      "critical": false
+    },
+    {
+      "name": "Překlad není globálně blokován",
+      "phase": "i18n",
+      "passed": true,
+      "detail": "<html> nemá translate='no' → Google Translate povolený ✓\nBrand translate='no': ✓",
+      "duration": 0.08,
+      "critical": false
+    },
+    {
+      "name": "Google notranslate meta",
+      "phase": "i18n",
+      "passed": true,
+      "detail": "meta google=notranslate odstraněn ✓",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "Český obsah přítomný",
+      "phase": "i18n",
+      "passed": true,
+      "detail": "Český obsah nalezen: pokut, zákon, sken, firma, compliance",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "Scan stránka přeložitelná",
+      "phase": "i18n",
+      "passed": true,
+      "detail": "Scan stránka přeložitelná ✓",
+      "duration": 0.06,
+      "critical": false
+    },
+    {
+      "name": "OpenGraph meta tagy",
+      "phase": "SEO",
+      "passed": true,
+      "detail": "OG tagy: title, description, url, site_name, locale, type",
+      "duration": 0.08,
+      "critical": false
+    },
+    {
+      "name": "Theme color",
+      "phase": "SEO",
+      "passed": true,
+      "detail": "theme-color nalezen ✓",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "Fonty (Inter / display=swap)",
+      "phase": "SEO",
+      "passed": true,
+      "detail": "Inter font + display=swap ✓",
+      "duration": 0.07,
+      "critical": false
+    },
+    {
+      "name": "HTTPS redirect",
+      "phase": "SEO",
+      "passed": true,
+      "detail": "HTTP→HTTPS redirect: 308 → https://aishield.cz/",
+      "duration": 0.03,
+      "critical": false
+    },
+    {
+      "name": "Bezpečnostní hlavičky",
+      "phase": "SEO",
+      "passed": true,
+      "detail": "HSTS: ✓\nContent-Type: text/html",
+      "duration": 0.06,
+      "critical": false
+    },
+    {
+      "name": "Reset testovacího účtu",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "user_id=84226b9a-983e-43d1-b2f8-e822107c2b8d\nVyčištěno: findings (pro 2 skenů), questionnaire_responses (pro 1 klientů), scan_diffs, scans, clients, documents, alerts, widget_configs, companies, orders, subscriptions, auth user c85c6ee0-be68-4660-825f-b13b37749ad1",
+      "duration": 1.81,
+      "critical": true
+    },
+    {
+      "name": "Login (Supabase JWT)",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "email=info@desperados-design.cz, company=Test Firma s.r.o., web=https://www.desperados-design.cz",
+      "duration": 0.21,
+      "critical": true
+    },
+    {
+      "name": "Auth callback route",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "auth/callback dostupný (HTTP 307)",
+      "duration": 0.29,
+      "critical": false
+    },
+    {
+      "name": "Dashboard prázdný po resetu",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "Dashboard prázdný po resetu ✓",
+      "duration": 0.41,
+      "critical": false
+    },
+    {
+      "name": "Dashboard vyžaduje auth",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "Dashboard vyžaduje JWT ✓ (HTTP 401)",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "ARES IČO lookup",
+      "phase": "Auth",
+      "passed": true,
+      "detail": "IČO=17889251, firma=Martin Haynes",
+      "duration": 0.25,
+      "critical": false
+    },
+    {
+      "name": "Spuštění skenu",
+      "phase": "Sken",
+      "passed": true,
+      "detail": "scan_id=7ec1fe3f-ca25-4e6e-860d-bc4c85a4d335, company_id=4ba8eadc-6a4b-43c2-ab27-66ac8b0e77ee",
+      "duration": 0.42,
+      "critical": true
+    },
+    {
+      "name": "Polling — čekání na dokončení",
+      "phase": "Sken",
+      "passed": true,
+      "detail": "DONE ✅ findings=4, company=Test Firma s.r.o., 55s",
+      "duration": 59.06,
+      "critical": true
+    },
+    {
+      "name": "Findings (nálezy)",
+      "phase": "Sken",
+      "passed": true,
+      "detail": "nálezy=4, false_pos=6, ai_classified=True",
+      "duration": 0.2,
+      "critical": false
+    },
+    {
+      "name": "HTML report",
+      "phase": "Sken",
+      "passed": true,
+      "detail": "HTML report: 18980B, obsahuje firmu: ✓",
+      "duration": 0.31,
+      "critical": false
+    },
+    {
+      "name": "Potvrzení nálezu klientem",
+      "phase": "Sken",
+      "passed": true,
+      "detail": "Finding fc58f347... potvrzeno klientem ✓",
+      "duration": 0.2,
+      "critical": false
+    },
+    {
+      "name": "Dashboard → firma nalezena",
+      "phase": "Link",
+      "passed": true,
+      "detail": "Firma: Test Firma s.r.o. (https://www.desperados-design.cz)",
+      "duration": 0.54,
+      "critical": true
+    },
+    {
+      "name": "Dashboard → skeny viditelné",
+      "phase": "Link",
+      "passed": true,
+      "detail": "skenů=1, findings=10",
+      "duration": 0.62,
+      "critical": false
+    },
+    {
+      "name": "Dashboard by email",
+      "phase": "Link",
+      "passed": true,
+      "detail": "Dashboard by email OK, firma=Test Firma s.r.o.",
+      "duration": 0.53,
+      "critical": false
+    },
+    {
+      "name": "Struktura dotazníku",
+      "phase": "Quest",
+      "passed": true,
+      "detail": "sekcí=9, otázek=23, čas=5 min",
+      "duration": 0.05,
+      "critical": false
+    },
+    {
+      "name": "Odeslání odpovědí",
+      "phase": "Quest",
+      "passed": true,
+      "detail": "uloženo=11, AI=4",
+      "duration": 1.27,
+      "critical": false
+    },
+    {
+      "name": "Výsledky dotazníku",
+      "phase": "Quest",
+      "passed": true,
+      "detail": "odpovědí=11",
+      "duration": 0.2,
+      "critical": false
+    },
+    {
+      "name": "Combined report",
+      "phase": "Quest",
+      "passed": true,
+      "detail": "riziko=limited, AI systémy=8, akce=6",
+      "duration": 0.4,
+      "critical": false
+    },
+    {
+      "name": "Odeslání report emailu",
+      "phase": "Email",
+      "passed": true,
+      "detail": "Report email → info@desperados-design.cz ✓",
+      "duration": 1.19,
+      "critical": false
+    },
+    {
+      "name": "Payment status (neexistující)",
+      "phase": "Pay",
+      "passed": true,
+      "detail": "Neexistující platba → HTTP 502 ✓",
+      "duration": 0.46,
+      "critical": false
+    },
+    {
+      "name": "Document templates",
+      "phase": "Pay",
+      "passed": true,
+      "detail": "šablon=7: compliance_report, transparency_page, action_plan...",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "Unsubscribe stránka",
+      "phase": "API",
+      "passed": true,
+      "detail": "Unsubscribe HTML stránka OK",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "Widget config",
+      "phase": "API",
+      "passed": true,
+      "detail": "Widget config OK, source=?",
+      "duration": 0.44,
+      "critical": false
+    },
+    {
+      "name": "Widget embed.js",
+      "phase": "API",
+      "passed": true,
+      "detail": "Widget embed.js OK (1748B)",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "Admin endpointy vyžadují auth",
+      "phase": "Security",
+      "passed": true,
+      "detail": "Všech 3 admin endpointů vyžaduje auth ✓",
+      "duration": 0.12,
+      "critical": false
+    },
+    {
+      "name": "Scan rate limiting",
+      "phase": "Security",
+      "passed": true,
+      "detail": "Rate limit funguje ✓ (HTTP 429)",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "CORS hlavičky",
+      "phase": "Security",
+      "passed": true,
+      "detail": "CORS: https://aishield.cz",
+      "duration": 0.04,
+      "critical": false
+    },
+    {
+      "name": "Dashboard — kompletní profil",
+      "phase": "Final",
+      "passed": true,
+      "detail": "✅ KOMPLETNÍ PROFIL:\n   firma: Test Firma s.r.o.\n   url: https://www.desperados-design.cz\n   skeny: 1, nálezy: 10\n   dotazník: dokončen, score: 0",
+      "duration": 0.62,
+      "critical": false
+    },
+    {
+      "name": "Frontend /dashboard middleware",
+      "phase": "Final",
+      "passed": true,
+      "detail": "Dashboard → redirect na login ✓",
+      "duration": 0.09,
+      "critical": false
+    }
+  ]
+}

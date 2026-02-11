@@ -34,7 +34,7 @@ export default function Header() {
                             </linearGradient>
                         </defs>
                     </svg>
-                    <span className="text-2xl font-extrabold tracking-tighter">
+                    <span className="text-2xl font-extrabold tracking-tighter" translate="no">
                         <span className="text-white">AI</span>
                         <span className="neon-text">shield</span>
                         <span className="text-slate-500 text-sm font-normal ml-0.5">.cz</span>

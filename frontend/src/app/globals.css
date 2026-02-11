@@ -39,6 +39,7 @@
     .glass {
         @apply rounded-2xl border border-white/[0.08] p-6;
         background: rgba(30, 41, 59, 0.6);
+        -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
     }
 

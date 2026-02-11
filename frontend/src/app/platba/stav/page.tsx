@@ -136,44 +136,59 @@ function PaymentStatusContent() {
     }
 
     // ── Platba neúspěšná / zrušená / čekající ──
-    const stateLabels: Record<string, { title: string; desc: string; color: string }> = {
+    const stateLabels: Record<string, { title: string; desc: string; bgBlob: string; bgIcon: string; borderIcon: string; textIcon: string }> = {
         CANCELED: {
             title: "Platba zrušena",
             desc: "Platbu jste zrušili. Můžete to zkusit znovu.",
-            color: "red",
+            bgBlob: "bg-red-500/5",
+            bgIcon: "bg-red-500/10",
+            borderIcon: "border-red-500/20",
+            textIcon: "text-red-400",
         },
         TIMEOUTED: {
             title: "Platba vypršela",
             desc: "Čas na dokončení platby vypršel. Zkuste to znovu.",
-            color: "yellow",
+            bgBlob: "bg-yellow-500/5",
+            bgIcon: "bg-yellow-500/10",
+            borderIcon: "border-yellow-500/20",
+            textIcon: "text-yellow-400",
         },
         CREATED: {
             title: "Čeká na zaplacení",
             desc: "Platba byla vytvořena, ale ještě nebyla dokončena.",
-            color: "yellow",
+            bgBlob: "bg-yellow-500/5",
+            bgIcon: "bg-yellow-500/10",
+            borderIcon: "border-yellow-500/20",
+            textIcon: "text-yellow-400",
         },
         PAYMENT_METHOD_CHOSEN: {
             title: "Zpracovává se",
             desc: "Platba se zpracovává. Vyčkejte prosím.",
-            color: "cyan",
+            bgBlob: "bg-cyan-500/5",
+            bgIcon: "bg-cyan-500/10",
+            borderIcon: "border-cyan-500/20",
+            textIcon: "text-cyan-400",
         },
     };
 
     const stateInfo = stateLabels[status?.state || ""] || {
         title: "Neznámý stav",
         desc: "Zkuste stránku obnovit nebo nás kontaktujte.",
-        color: "yellow",
+        bgBlob: "bg-yellow-500/5",
+        bgIcon: "bg-yellow-500/10",
+        borderIcon: "border-yellow-500/20",
+        textIcon: "text-yellow-400",
     };
 
     return (
         <section className="py-20 relative">
             <div className="absolute inset-0 -z-10">
-                <div className={`absolute top-[30%] left-[40%] h-[400px] w-[400px] rounded-full bg-${stateInfo.color}-500/5 blur-[120px]`} />
+                <div className={`absolute top-[30%] left-[40%] h-[400px] w-[400px] rounded-full ${stateInfo.bgBlob} blur-[120px]`} />
             </div>
             <div className="mx-auto max-w-md px-6 text-center">
                 <div className="glass py-12">
-                    <div className={`mx-auto mb-4 w-16 h-16 rounded-2xl bg-${stateInfo.color}-500/10 border border-${stateInfo.color}-500/20 flex items-center justify-center`}>
-                        <svg className={`w-8 h-8 text-${stateInfo.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className={`mx-auto mb-4 w-16 h-16 rounded-2xl ${stateInfo.bgIcon} border ${stateInfo.borderIcon} flex items-center justify-center`}>
+                        <svg className={`w-8 h-8 ${stateInfo.textIcon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
