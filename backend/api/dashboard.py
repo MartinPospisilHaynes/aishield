@@ -17,7 +17,8 @@ async def get_my_dashboard(user: AuthUser = Depends(get_current_user)):
     Vrátí kompletní data pro dashboard přihlášeného uživatele.
     Najde firmu podle emailu z JWT tokenu.
     """
-    return await _load_dashboard(user.email)
+    web_url = user.metadata.get("web_url", "") if user.metadata else ""
+    return await _load_dashboard(user.email, web_url=web_url)
 
 
 @router.get("/{user_email}")
@@ -32,19 +33,44 @@ async def get_dashboard_data(user_email: str, user: AuthUser = Depends(get_curre
     if user.email != user_email and user.email not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Přístup odepřen")
 
-    return await _load_dashboard(user_email)
+    web_url = user.metadata.get("web_url", "") if user.metadata else ""
+    return await _load_dashboard(user_email, web_url=web_url)
 
 
-async def _load_dashboard(user_email: str):
+async def _load_dashboard(user_email: str, web_url: str = ""):
     """Interní funkce — načte dashboard data pro daný email."""
     supabase = get_supabase()
 
-    # 1. Najít firmu podle emailu (nebo vrátit prázdný stav)
+    # 1. Najít firmu podle emailu
     company_res = supabase.table("companies").select("*").eq(
         "email", user_email
     ).execute()
 
     company = company_res.data[0] if company_res.data else None
+
+    # 1b. Fallback: zkusit najít podle web_url z user_metadata
+    #     (pro případ, že sken proběhl dříve než se propojil email)
+    if not company and web_url:
+        url_variants = [web_url]
+        # Zkusit i varianty s/bez www
+        if "://www." in web_url:
+            url_variants.append(web_url.replace("://www.", "://"))
+        else:
+            url_variants.append(web_url.replace("://", "://www."))
+        for url_v in url_variants:
+            company_res2 = supabase.table("companies").select("*").eq(
+                "url", url_v
+            ).limit(1).execute()
+            if company_res2.data:
+                company = company_res2.data[0]
+                # Propojíme — nastavíme email na company, aby příště fungovalo rovnou
+                try:
+                    supabase.table("companies").update(
+                        {"email": user_email}
+                    ).eq("id", company["id"]).execute()
+                except Exception:
+                    pass
+                break
 
     if not company:
         # Zkusit najít podle objednávky
@@ -88,11 +114,21 @@ async def _load_dashboard(user_email: str):
         "email", user_email
     ).order("created_at", desc=True).execute()
 
-    # 6. Dotazník
-    quest_res = supabase.table("questionnaire_responses").select("id").eq(
-        "company_id", company_id
-    ).limit(1).execute()
-    questionnaire_status = "dokončen" if quest_res.data else "nevyplněn"
+    # 6. Dotazník — přes tabulku clients (client.company_id → questionnaire_responses.client_id)
+    questionnaire_status = "nevyplněn"
+    try:
+        # Najdi klienta pro tuto firmu
+        client_res = supabase.table("clients").select("id").eq(
+            "company_id", company_id
+        ).limit(1).execute()
+        if client_res.data:
+            client_id = client_res.data[0]["id"]
+            quest_res = supabase.table("questionnaire_responses").select("id").eq(
+                "client_id", client_id
+            ).limit(1).execute()
+            questionnaire_status = "dokončen" if quest_res.data else "nevyplněn"
+    except Exception:
+        pass  # Tabulka nemusí existovat
 
     # 7. Compliance skóre
     total_findings = len(findings)

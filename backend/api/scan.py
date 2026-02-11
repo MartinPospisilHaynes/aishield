@@ -119,18 +119,31 @@ async def create_scan(
 
     try:
         # 1. Hledáme firmu podle URL
-        existing = supabase.table("companies").select("id, name").eq("url", url).limit(1).execute()
+        existing = supabase.table("companies").select("id, name, email").eq("url", url).limit(1).execute()
+
+        user_email = user.email if user else None
+        user_meta = user.metadata if user else {}
+        company_name_from_meta = user_meta.get("company_name", "")
 
         if existing.data:
             company_id = existing.data[0]["id"]
+            # Pokud je uživatel přihlášený a firma nemá email → propojíme
+            if user_email and not existing.data[0].get("email"):
+                update_data = {"email": user_email}
+                if company_name_from_meta:
+                    update_data["name"] = company_name_from_meta
+                supabase.table("companies").update(update_data).eq("id", company_id).execute()
         else:
-            # Vytvoříme novou firmu (zatím s doménou jako jménem)
+            # Vytvoříme novou firmu — s emailem pokud je uživatel přihlášený
             domain = re.sub(r"^https?://", "", url).split("/")[0]
-            new_company = supabase.table("companies").insert({
-                "name": domain,
+            insert_data = {
+                "name": company_name_from_meta or domain,
                 "url": url,
                 "source": "manual",
-            }).execute()
+            }
+            if user_email:
+                insert_data["email"] = user_email
+            new_company = supabase.table("companies").insert(insert_data).execute()
             company_id = new_company.data[0]["id"]
 
         # 2. Vytvoříme sken
@@ -139,7 +152,7 @@ async def create_scan(
             "company_id": company_id,
             "url_scanned": url,
             "status": "queued",
-            "triggered_by": "client",
+            "triggered_by": "client" if not user else "authenticated",
             "started_at": now,
         }).execute()
 
