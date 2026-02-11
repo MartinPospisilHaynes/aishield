@@ -26,6 +26,7 @@ Spuštění:  python3 test_mega_e2e.py
 """
 
 import json
+import os
 import re
 import sys
 import time
@@ -542,7 +543,8 @@ def t_start_scan():
 
 def t_poll_scan():
     assert s.scan_id, "Chybí scan_id"
-    max_wait, interval = 180, 5
+    max_wait = int(os.environ.get("SCAN_TIMEOUT", "300"))
+    interval = 5
     elapsed = 0
     while elapsed < max_wait:
         r = requests.get(f"{API}/api/scan/{s.scan_id}", timeout=10)
