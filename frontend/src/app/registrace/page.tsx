@@ -123,13 +123,25 @@ function RegistraceInner() {
             return;
         }
 
-        // 2. Pokud Supabase potvrdil email automaticky (dev mode), jít na dashboard
+        // 2. Detekce už existujícího účtu — Supabase vrátí user bez identit
+        //    (bezpečnostní ochrana proti zjišťování existujících emailů)
+        const identities = data.user?.identities ?? [];
+        if (identities.length === 0) {
+            setError(
+                "Tento email je už registrovaný. Přihlaste se na stránce přihlášení, " +
+                "nebo použijte funkci 'Zapomenuté heslo' pro reset hesla."
+            );
+            setLoading(false);
+            return;
+        }
+
+        // 3. Pokud Supabase potvrdil email automaticky (dev mode), jít na dashboard
         if (data.session) {
             router.push(redirectTo);
             return;
         }
 
-        // 3. Jinak zobrazit hlášku o potvrzení emailu
+        // 4. Jinak zobrazit hlášku o potvrzení emailu
         setSuccess(true);
         setLoading(false);
     }
@@ -147,11 +159,37 @@ function RegistraceInner() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h2 className="text-xl font-bold mb-2">Zkontrolujte email</h2>
-                        <p className="text-slate-400 text-sm">
+                        <h2 className="text-xl font-bold mb-2">Zkontrolujte svůj email</h2>
+                        <p className="text-slate-400 text-sm leading-relaxed">
                             Na adresu <strong className="text-slate-200">{email}</strong> jsme
                             odeslali potvrzovací odkaz. Klikněte na něj pro aktivaci účtu.
                         </p>
+
+                        <div className="mt-5 space-y-3 text-left">
+                            <div className="flex items-start gap-3 rounded-xl bg-amber-500/8 border border-amber-500/15 px-4 py-3">
+                                <span className="text-amber-400 text-lg mt-0.5">⏱️</span>
+                                <p className="text-xs text-amber-300/80 leading-relaxed">
+                                    <strong className="text-amber-300">Doručení může trvat 1–5 minut.</strong>{" "}
+                                    Mějte prosím strpení — email je na cestě.
+                                </p>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-xl bg-slate-500/8 border border-slate-500/15 px-4 py-3">
+                                <span className="text-slate-400 text-lg mt-0.5">📂</span>
+                                <p className="text-xs text-slate-400 leading-relaxed">
+                                    <strong className="text-slate-300">Zkontrolujte složku SPAM / Hromadné.</strong>{" "}
+                                    Potvrzovací email může skončit ve spamu — podívejte se i tam.
+                                </p>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-xl bg-slate-500/8 border border-slate-500/15 px-4 py-3">
+                                <span className="text-slate-400 text-lg mt-0.5">🔄</span>
+                                <p className="text-xs text-slate-400 leading-relaxed">
+                                    Email stále nepřišel? Zkuste se{" "}
+                                    <a href="/registrace" className="text-fuchsia-400 hover:underline font-medium">registrovat znovu</a>{" "}
+                                    a pečlivě zkontrolujte, zda je email zadaný správně.
+                                </p>
+                            </div>
+                        </div>
+
                         <a href="/login" className="btn-secondary mt-6 inline-flex">
                             Zpět na přihlášení
                         </a>
