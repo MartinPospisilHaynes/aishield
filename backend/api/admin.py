@@ -258,3 +258,193 @@ async def admin_clear_rate_limit_cache(domain: str, user: AuthUser = Depends(req
         "cleared_urls": cleared,
         "message": f"Vyčištěno {len(cleared)} záznamů z rate limit cache.",
     }
+
+
+# ── Test Account Reset (veřejný endpoint, ale jen pro TEST_EMAILS) ──
+
+
+@router.post("/test-reset")
+async def test_reset_user(request: Request):
+    """
+    Kompletní reset testovacího účtu:
+      1. Smaže uživatele ze Supabase Auth (pokud existuje)
+      2. Vyčistí VŠECHNA data v DB (skeny, dotazník, dokumenty, …)
+      3. Vytvoří nového uživatele s auto-potvrzeným emailem
+      4. Vyčistí rate-limit cache pro testovací doménu
+
+    Endpoint je veřejný (bez JWT), ale funguje POUZE pro emaily
+    v TEST_EMAILS — nelze zneužít pro produkční účty.
+
+    Body: {"email": "...", "password": "...", "web_url": "..."}
+    """
+    import logging
+    log = logging.getLogger("test-reset")
+
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = body.get("password", "")
+    web_url = (body.get("web_url") or "").strip().lower()
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="email a password jsou povinné")
+
+    if email not in TEST_EMAILS:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Email {email} není testovací. Povolené: {', '.join(sorted(TEST_EMAILS))}",
+        )
+
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    cleanup_log = []
+
+    # ── 1. Najdi existujícího uživatele ──
+    old_user_id = None
+    try:
+        users_response = supabase.auth.admin.list_users()
+        for u in users_response:
+            u_email = getattr(u, "email", None) or (u.get("email") if isinstance(u, dict) else None)
+            u_id = getattr(u, "id", None) or (u.get("id") if isinstance(u, dict) else None)
+            if u_email == email:
+                old_user_id = str(u_id)
+                break
+    except Exception as e:
+        log.warning(f"Nepodařilo se získat seznam uživatelů: {e}")
+
+    # ── 2. Vyčisti DB data (pokud existuje starý účet) ──
+    if old_user_id:
+        # Najdi company_id podle emailu
+        company_id = None
+        try:
+            comp = supabase.table("companies").select("id").eq("email", email).execute()
+            if comp.data:
+                company_id = comp.data[0]["id"]
+        except Exception:
+            pass
+
+        if company_id:
+            # Smaž závislé tabulky (children first)
+            tables_by_company = [
+                "findings",   # přes scan_id, ale smažeme přes company scan
+                "scan_diffs",
+                "questionnaire_responses",  # přes client_id
+                "clients",
+                "documents",
+                "alerts",
+                "widget_configs",
+                "report_leads",
+            ]
+
+            # Findings — musíme najít scan_ids nejdřív
+            try:
+                scans = supabase.table("scans").select("id").eq("company_id", company_id).execute()
+                scan_ids = [s["id"] for s in (scans.data or [])]
+                if scan_ids:
+                    for sid in scan_ids:
+                        supabase.table("findings").delete().eq("scan_id", sid).execute()
+                    cleanup_log.append(f"findings (pro {len(scan_ids)} skenů)")
+            except Exception as e:
+                log.warning(f"Čištění findings: {e}")
+
+            # Questionnaire responses — přes clients
+            try:
+                clients = supabase.table("clients").select("id").eq("company_id", company_id).execute()
+                client_ids = [c["id"] for c in (clients.data or [])]
+                if client_ids:
+                    for cid in client_ids:
+                        supabase.table("questionnaire_responses").delete().eq("client_id", cid).execute()
+                    cleanup_log.append(f"questionnaire_responses (pro {len(client_ids)} klientů)")
+            except Exception as e:
+                log.warning(f"Čištění questionnaire_responses: {e}")
+
+            # Přímé tabulky s company_id
+            for tbl in ["scan_diffs", "scans", "clients", "documents", "alerts", "widget_configs"]:
+                try:
+                    supabase.table(tbl).delete().eq("company_id", company_id).execute()
+                    cleanup_log.append(tbl)
+                except Exception as e:
+                    log.warning(f"Čištění {tbl}: {e}")
+
+            # report_leads — company_id nebo email
+            try:
+                supabase.table("report_leads").delete().eq("company_id", company_id).execute()
+                supabase.table("report_leads").delete().eq("email", email).execute()
+                cleanup_log.append("report_leads")
+            except Exception:
+                pass
+
+            # Smaž samotnou company
+            try:
+                supabase.table("companies").delete().eq("id", company_id).execute()
+                cleanup_log.append("companies")
+            except Exception as e:
+                log.warning(f"Čištění companies: {e}")
+
+        # Tabulky přímo podle emailu (bez company_id)
+        for tbl in ["orders", "subscriptions"]:
+            try:
+                supabase.table(tbl).delete().eq("email", email).execute()
+                cleanup_log.append(tbl)
+            except Exception:
+                pass
+
+        # ── 3. Smaž uživatele ze Supabase Auth ──
+        try:
+            supabase.auth.admin.delete_user(old_user_id)
+            cleanup_log.append(f"auth user {old_user_id}")
+        except Exception as e:
+            log.warning(f"Smazání auth uživatele: {e}")
+
+    # ── 4. Vytvoř nového uživatele s AUTO-POTVRZENÍM ──
+    try:
+        new_user = supabase.auth.admin.create_user({
+            "email": email,
+            "password": password,
+            "email_confirm": True,  # ← klíčové: přeskočí email verifikaci
+            "user_metadata": {
+                "company_name": "Test Firma s.r.o.",
+                "web_url": web_url or "https://www.desperados-design.cz",
+                "ico": "12345678",
+                "gdpr_consent": True,
+                "gdpr_consent_at": "2026-02-11T00:00:00Z",
+                "test_account": True,
+            },
+        })
+        new_user_id = getattr(new_user, "id", None) or (new_user.user.id if hasattr(new_user, "user") else "unknown")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Nepodařilo se vytvořit testovacího uživatele: {str(e)}",
+        )
+
+    # ── 5. Vyčisti rate-limit cache pro testovací doménu ──
+    test_domain = (web_url or "desperados-design.cz").lower()
+    for prefix in ("https://", "http://", "www."):
+        if test_domain.startswith(prefix):
+            test_domain = test_domain[len(prefix):]
+    test_domain = test_domain.rstrip("/")
+
+    rate_cleared = 0
+    try:
+        with scan_limiter._lock:
+            to_del = [u for u in scan_limiter._url_cache if u == test_domain or u.startswith(test_domain + "/")]
+            for u in to_del:
+                del scan_limiter._url_cache[u]
+                rate_cleared += 1
+    except Exception:
+        pass
+
+    return {
+        "status": "reset_complete",
+        "email": email,
+        "new_user_id": str(new_user_id),
+        "auto_confirmed": True,
+        "cleaned_tables": cleanup_log,
+        "rate_limit_cleared": rate_cleared,
+        "message": (
+            f"✅ Testovací účet {email} byl kompletně resetován. "
+            f"Vyčištěno: {', '.join(cleanup_log) if cleanup_log else 'žádná stará data'}. "
+            f"Účet je auto-potvrzený — můžete se rovnou přihlásit."
+        ),
+    }
