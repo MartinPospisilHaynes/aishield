@@ -1,0 +1,69 @@
+---
+name: "🐛 Bug report"
+description: "Něco nefunguje správně"
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Děkujeme za nahlášení! Vyplňte prosím co nejvíce informací.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Popis problému"
+      description: "Co se děje? Co jste očekávali?"
+      placeholder: "Po kliknutí na 'Skenovat' se nic nestane..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Kroky k reprodukci"
+      description: "Jak problém zopakovat?"
+      value: |
+        1. Jdi na '...'
+        2. Klikni na '...'
+        3. Vyplň '...'
+        4. Chyba se objeví
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Oblast"
+      options:
+        - Frontend (web)
+        - Backend (API)
+        - Dashboard
+        - Sken
+        - Dotazník
+        - Platby
+        - Email
+        - Jiné
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: "Zařízení"
+      options:
+        - Desktop (PC/Mac)
+        - Mobil (iPhone)
+        - Mobil (Android)
+        - Tablet (iPad)
+        - Tablet (Android)
+
+  - type: input
+    id: browser
+    attributes:
+      label: "Prohlížeč"
+      placeholder: "Chrome 122, Safari 17, Firefox 123..."
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Screenshot / chybová hláška"
+      description: "Přetáhněte screenshot sem nebo vložte chybovou hlášku"

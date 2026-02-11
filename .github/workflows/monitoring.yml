@@ -1,0 +1,52 @@
+name: "🔔 Denní monitoring"
+
+# Každý den v 6:00 a 18:00 UTC zkontroluj že web a API běží
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: "🏥 Health check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check API
+        run: |
+          echo "## 🛡️ AIshield Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # API health
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.aishield.cz/api/health)
+          if [ "$API_STATUS" = "200" ]; then
+            echo "| ✅ API | HTTP $API_STATUS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ API | HTTP $API_STATUS |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Frontend
+          WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://aishield.cz)
+          if [ "$WEB_STATUS" = "200" ]; then
+            echo "| ✅ Web | HTTP $WEB_STATUS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ Web | HTTP $WEB_STATUS |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Engine
+          ENG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.aishield.cz/api/health/engine)
+          if [ "$ENG_STATUS" = "200" ]; then
+            echo "| ✅ Engine | HTTP $ENG_STATUS |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| ❌ Engine | HTTP $ENG_STATUS |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Fail pokud něco nefunguje
+          if [ "$API_STATUS" != "200" ] || [ "$WEB_STATUS" != "200" ]; then
+            echo "❌ Některé služby nefungují!"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ Všechny služby běží"
