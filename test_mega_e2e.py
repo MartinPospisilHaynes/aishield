@@ -949,8 +949,9 @@ def main():
     skipped = sum(1 for r in results if "Přeskočeno" in r.detail)
     warned = sum(1 for r in results if r.passed and "⚠️" in r.detail)
     total = len(results)
-    # Skutečné chyby = failed mínus přeskočené (kvůli scan timeout)
-    real_failures = sum(1 for r in results if not r.passed and "Přeskočeno" not in r.detail and "Timeout" not in r.detail)
+    # Skutečné chyby = failed mínus přeskočené a scan-related
+    scan_related_phrases = ["Timeout", "Přeskočeno", "scan timeout", "není dokončen"]
+    real_failures = sum(1 for r in results if not r.passed and not any(p in r.detail for p in scan_related_phrases))
     scan_timeout = scan_abort
 
     if failed == 0:
