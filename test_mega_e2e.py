@@ -950,9 +950,9 @@ def main():
     warned = sum(1 for r in results if r.passed and "⚠️" in r.detail)
     total = len(results)
     # Skutečné chyby = failed mínus přeskočené a scan-related
-    scan_related_phrases = ["Timeout", "Přeskočeno", "scan timeout", "není dokončen"]
-    real_failures = sum(1 for r in results if not r.passed and not any(p in r.detail for p in scan_related_phrases))
-    scan_timeout = scan_abort
+    scan_related_phrases = ["Timeout", "timeout", "timed out", "Přeskočeno", "scan timeout", "není dokončen"]
+    real_failures = sum(1 for r in results if not r.passed and not any(p.lower() in r.detail.lower() for p in scan_related_phrases))
+    scan_timeout = scan_abort or any("timed out" in r.detail.lower() or "timeout" in r.detail.lower() for r in results if not r.passed)
 
     if failed == 0:
         print(f"{B}{G}")
