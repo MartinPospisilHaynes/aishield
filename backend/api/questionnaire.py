@@ -927,6 +927,22 @@ async def _get_or_create_client(supabase, company_id: str) -> str:
     if result.data:
         return result.data[0]["id"]
 
+    # Ujistit se, že firma existuje v tabulce companies
+    comp_check = supabase.table("companies") \
+        .select("id") \
+        .eq("id", company_id) \
+        .limit(1) \
+        .execute()
+
+    if not comp_check.data:
+        # Firma neexistuje → vytvořit ji
+        supabase.table("companies").insert({
+            "id": company_id,
+            "name": f"Firma (dotazník)",
+            "ico": "",
+        }).execute()
+        logger.info(f"[Questionnaire] Vytvořena firma {company_id} z dotazníku")
+
     # Vytvořit nového anonymního clienta
     new_client = supabase.table("clients").insert({
         "company_id": company_id,
