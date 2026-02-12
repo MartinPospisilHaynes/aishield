@@ -838,7 +838,12 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
                 "tool_name": "",
                 "risk_level": "limited",  # "Nevím" = nejisté, ale potenciální riziko
                 "ai_act_article": q_def.get("ai_act_article", ""),
-                "recommendation": f"U otázky „{q_def['text']}" jste odpověděli „Nevím". Doporučujeme to ověřit — pokud se tato oblast týká vaší firmy, může jít o {('vysoce rizikový' if risk == 'high' else 'středně rizikový')} AI systém dle AI Act.",
+                "recommendation": (
+                    f'U otázky "{q_def["text"]}" jste odpověděli "Nevím". '
+                    f'Doporučujeme to ověřit — pokud se tato oblast týká vaší firmy, '
+                    f'může jít o {"vysoce rizikový" if risk == "high" else "středně rizikový"} '
+                    f'AI systém dle AI Act.'
+                ),
                 "priority": "střední",
             })
 

@@ -3,6 +3,7 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import HeaderVisibility from "@/components/header-visibility";
 import ConsentBanner from "@/components/consent-banner";
+import ChatWidget from "@/components/chat-widget";
 
 export const metadata: Metadata = {
     title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
@@ -187,6 +188,7 @@ export default function RootLayout({
                     </footer>
                 </Providers>
                 <ConsentBanner />
+                <ChatWidget />
             </body>
         </html>
     );
