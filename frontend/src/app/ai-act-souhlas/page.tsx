@@ -18,7 +18,7 @@ export default function AiActSouhlasPage() {
                     Transparenční oznámení o AI (AI Act)
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Dle čl. 50 Nařízení EU 2024/1689 (AI Act) — platné od 1. ledna 2026
+                    Dle čl. 50 Nařízení EU 2024/1689 (AI Act) — účinnost od 2. srpna 2026
                 </p>
 
                 <div className="mt-8 space-y-8 text-slate-300 leading-relaxed">
@@ -51,7 +51,17 @@ export default function AiActSouhlasPage() {
                                 <p className="text-sm text-slate-400">
                                     <strong className="text-slate-300">Účel:</strong> Klasifikace nalezených AI systémů, generování compliance dokumentace.<br />
                                     <strong className="text-slate-300">Kategorie:</strong> AI systém obecného účelu.<br />
-                                    <strong className="text-slate-300">Poskytovatel:</strong> Anthropic, PBC (USA, adekvátní ochrana údajů).<br />
+                                    <strong className="text-slate-300">Poskytovatel:</strong> Anthropic, PBC (USA, přenos dle EU-US Data Privacy Framework).<br />
+                                    <strong className="text-slate-300">Data:</strong> Zpracováváme pouze technické údaje z veřejně dostupných webových stránek. Osobní data nejsou do AI systému předávána.
+                                </p>
+                            </div>
+
+                            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                                <h3 className="font-semibold text-slate-200 mb-1">OpenAI</h3>
+                                <p className="text-sm text-slate-400">
+                                    <strong className="text-slate-300">Účel:</strong> Analýza AI systémů a generování compliance dokumentace.<br />
+                                    <strong className="text-slate-300">Kategorie:</strong> AI systém obecného účelu.<br />
+                                    <strong className="text-slate-300">Poskytovatel:</strong> OpenAI, L.L.C. (USA, přenos dle EU-US Data Privacy Framework).<br />
                                     <strong className="text-slate-300">Data:</strong> Zpracováváme pouze technické údaje z veřejně dostupných webových stránek. Osobní data nejsou do AI systému předávána.
                                 </p>
                             </div>

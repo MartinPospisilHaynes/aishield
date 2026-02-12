@@ -675,19 +675,19 @@ function QuestionnaireInner() {
                         {isLast ? (
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting}
-                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50"
+                                disabled={submitting || !ans?.answer}
+                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {submitting ? "Odesílám…" : "Odeslat dotazník →"}
                             </button>
-                        ) : (
+                        ) : ans?.answer ? (
                             <button
                                 onClick={goNext}
                                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
                             >
                                 Další →
                             </button>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>

@@ -464,9 +464,9 @@ function ScanPageInner() {
                                             <strong className="text-white">až 15 milionů EUR nebo 3 % obratu</strong>.
                                         </p>
                                         <p className="mt-3 text-sm font-semibold text-white bg-red-500/20 rounded-lg px-4 py-2.5 leading-relaxed border border-red-500/30">
-                                            ⚠️ Pokud tyto nedostatky odhalil náš software, odhalí je i kontrolní orgány EU.
-                                            Po nabytí účinnosti zákona začnou evropské úřady provádět systematické inspekce
-                                            webových stránek a e-shopů — a používají přitom stejné metody jako my.
+                                            ⚠️ Pokud tyto nedostatky odhalil náš software, mohou je najít i kontrolní orgány EU.
+                                            Po nabytí plné účinnosti zákona začnou evropské úřady provádět systematické inspekce
+                                            webových stránek a e-shopů.
                                         </p>
                                     </div>
                                 </div>

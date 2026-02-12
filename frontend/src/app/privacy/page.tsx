@@ -128,6 +128,11 @@ export default function PrivacyPage() {
                             systémů a generování dokumentace (bez přenosu osobních údajů
                             uživatelů)
                         </li>
+                        <li>
+                            <strong className="text-white">Anthropic (Claude AI)</strong> — klasifikace
+                            nalezených AI systémů a generování compliance dokumentace
+                            (bez přenosu osobních údajů uživatelů)
+                        </li>
                     </ul>
                     <p className="mt-3">
                         Vaše údaje neprodáváme a nesdílíme s třetími stranami pro
@@ -202,13 +207,15 @@ export default function PrivacyPage() {
             title: "8. Cookies",
             content: (
                 <>
-                    <p>Používáme pouze technicky nezbytné cookies pro:</p>
+                    <p>Používáme následující typy cookies:</p>
                     <ul className="mt-2 space-y-2 list-disc list-inside">
-                        <li>Přihlášení a správu relace (session cookies)</li>
-                        <li>Bezpečnostní tokeny (CSRF ochrana)</li>
+                        <li><strong className="text-white">Nezbytné cookies</strong> — session a souhlas s cookies (nelze vypnout)</li>
+                        <li><strong className="text-white">Funkční cookies</strong> — historie skenů pro snadnější návrat k výsledkům (scan_history, 30 dní)</li>
                     </ul>
                     <p className="mt-3">
-                        Nepoužíváme reklamní ani analytické cookies třetích stran.
+                        Pro analýzu návštěvnosti používáme Vercel Analytics s anonymizovanými daty — <strong className="text-white">bez sledovacích cookies třetích stran</strong>.
+                        Nepoužíváme reklamní cookies (Facebook Pixel, Google Ads apod.).
+                        Více viz <a href="/cookies" className="text-neon-fuchsia hover:underline">Zásady používání cookies</a>.
                     </p>
                 </>
             ),
@@ -257,7 +264,7 @@ export default function PrivacyPage() {
             <div className="mx-auto max-w-3xl px-6">
                 <h1 className="text-3xl font-bold text-white">Ochrana soukromí</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 10. února 2025
+                    Poslední aktualizace: 12. února 2026
                 </p>
 
                 <div className="mt-8 space-y-6">

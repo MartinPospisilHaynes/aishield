@@ -35,6 +35,13 @@ Tvůj úkol:
    nebo je to jen ZMÍNKA v textu (deployed=false). Například e-shop může mít v patičce
    odkaz "porovnání chatbotů" — to neznamená, že chatbot používá.
 
+   DŮLEŽITÉ PRO DEPLOYED=FALSE:
+   - Pokud je nález jen textová zmínka názvu produktu/platformy BEZ aktivního nasazení → deployed=false
+   - Pokud je nález jen v obsahu blogu, popisu, článku, patičce, nebo seznamu partnerů → deployed=false
+   - Pokud není jasný důkaz o aktivním skriptu, API volání nebo běžícím widgetu → deployed=false
+   - Raději označ jako deployed=false než jako deployed=true s "Nízké riziko / Pouze zmínka"
+   - NIKDY neoznačuj jako deployed=true s popisem typu "pouze zmínka" nebo "ne nasazený" — to je logický rozpor
+
 2. Pro nasazené systémy upřesni:
    - risk_level: "minimal", "limited", "high" nebo "unacceptable" podle AI Act
    - ai_act_article: konkrétní článek/odstavec AI Act

@@ -424,7 +424,7 @@ export default function HomePage() {
                     {/* Countdown */}
                     <div className="mb-6">
                         <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-4">
-                            Do platnosti zákona AI Act zbývá
+                            Do plné účinnosti AI Act zbývá
                         </p>
                         <Countdown />
                     </div>
@@ -456,18 +456,18 @@ export default function HomePage() {
                                 },
                                 {
                                     icon: "🖨️",
-                                    title: "Dokumenty v tištěné podobě",
-                                    desc: "Zákon vyžaduje, aby dokumentace byla dostupná v tištěné formě a podepsaná odpovědnou osobou.",
+                                    title: "Kompletní dokumentace k předložení",
+                                    desc: "Pro případ kontroly potřebujete mít dokumentaci připravenou k předložení — vygenerujeme vám ji v PDF i k tisku.",
                                 },
                                 {
                                     icon: "🎓",
                                     title: "Školení zaměstnanců (čl. 4)",
-                                    desc: "Každý zaměstnanec musí projít školením o AI gramotnosti. My vám dodáme on-line školení na míru.",
+                                    desc: "Všichni zaměstnanci pracující s AI nástroji musí projít školením o AI gramotnosti. Dodáme vám on-line školení na míru.",
                                 },
                                 {
                                     icon: "✍️",
-                                    title: "Záznam o proškolení s podpisy",
-                                    desc: "Po absolvování školení stačí vytisknout záznam, nechat podepsat zaměstnanci — a povinnost je splněna.",
+                                    title: "Záznam o proškolení",
+                                    desc: "Po absolvování školení vám vygenerujeme záznam o proškolení — doporučujeme vytisknout a archivovat pro případ kontroly.",
                                 },
                                 {
                                     icon: "💬",
@@ -519,9 +519,8 @@ export default function HomePage() {
                             Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
                         </p>
                         <p className="text-sm sm:text-base text-slate-300 mt-4 text-center leading-relaxed bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-4 font-medium">
-                            🔍 Náš sken využívá <strong className="text-white">stejný přístup a kritéria</strong>, jaké budou
-                            používat kontrolní orgány EU při systematických inspekcích webů a e-shopů
-                            po nabytí účinnosti AI Act.
+                            🔍 Náš sken simuluje, <strong className="text-white">co kontrolní orgány EU mohou na vašem webu najít</strong> při
+                            systematických inspekcích webů a e-shopů po nabytí účinnosti AI Act.
                         </p>
                     </div>
                 </div>
@@ -758,7 +757,7 @@ export default function HomePage() {
                     {/* Bottom countdown */}
                     <div className="mt-12">
                         <p className="text-xs font-medium uppercase tracking-wider text-red-400/70 mb-3">
-                            Do platnosti AI Act zbývá
+                            Do plné účinnosti AI Act zbývá
                         </p>
                         <Countdown className="scale-[0.85] sm:scale-100" />
                     </div>
