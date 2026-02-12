@@ -42,8 +42,8 @@ export async function middleware(request: NextRequest) {
 
     if (isProtected && !user) {
         const loginUrl = new URL("/login", request.url);
-        // Validate redirect is a safe relative path
-        const redirectPath = request.nextUrl.pathname;
+        // Preserve full path including query string for redirect after login
+        const redirectPath = request.nextUrl.pathname + request.nextUrl.search;
         if (redirectPath.startsWith("/") && !redirectPath.startsWith("//") && !redirectPath.includes("://")) {
             loginUrl.searchParams.set("redirect", redirectPath);
         }

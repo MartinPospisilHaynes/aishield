@@ -137,6 +137,7 @@ function QuestionnaireInner() {
     const [answers, setAnswers] = useState<Record<string, Answer>>({});
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [companyId, setCompanyId] = useState<string | null>(null);
     const [scanId, setScanId] = useState<string | null>(null);
@@ -156,9 +157,12 @@ function QuestionnaireInner() {
         fetch(`${API_URL}/api/questionnaire/structure`)
             .then((r) => r.json())
             .then((data) => {
-                setSections(data.sections || []);
+                const secs = data.sections || [];
+                const total = secs.reduce((n: number, s: Section) => n + s.questions.length, 0);
+                console.log(`[Dotazník] Načteno ${secs.length} sekcí, ${total} otázek`);
+                setSections(secs);
                 const init: Record<string, Answer> = {};
-                for (const s of data.sections || []) {
+                for (const s of secs) {
                     for (const q of s.questions) {
                         init[q.key] = {
                             question_key: q.key,
@@ -230,7 +234,11 @@ function QuestionnaireInner() {
         setDirection("forward");
         setCurrentQuestion((p) => {
             // Never go beyond last question via goNext — submit button handles that
-            if (p >= totalQuestions - 1) return p;
+            if (p >= totalQuestions - 1) {
+                console.log(`[Dotazník] goNext blocked: already at last question (${p}/${totalQuestions})`);
+                return p;
+            }
+            console.log(`[Dotazník] goNext: ${p} → ${p + 1} / ${totalQuestions}`);
             return p + 1;
         });
     }, [totalQuestions]);
@@ -286,9 +294,13 @@ function QuestionnaireInner() {
         });
     }, []);
 
-    /* ── Submit ── */
-    const handleSubmit = async () => {
+    /* ── Submit & Redirect to Dashboard ── */
+    const handleSubmit = useCallback(async () => {
+        if (submitting) return; // prevent double-submit
         setSubmitting(true);
+        setSubmitError(null);
+        console.log('[Dotazník] Odesílám odpovědi...');
+
         const list = Object.values(answers)
             .filter((a) => a.answer !== "")
             .map((a) => ({
@@ -298,27 +310,38 @@ function QuestionnaireInner() {
                 details: Object.keys(a.details).length > 0 ? a.details : null,
                 tool_name: a.tool_name || null,
             }));
+
+        console.log(`[Dotazník] Počet odpovědí: ${list.length}, company_id: ${companyId}`);
+
         try {
+            const cid = companyId || crypto.randomUUID();
             const res = await fetch(`${API_URL}/api/questionnaire/submit`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    company_id: companyId || "anonymous",
+                    company_id: cid,
                     scan_id: scanId,
                     answers: list,
                 }),
             });
-            if (!res.ok) throw new Error("Chyba serveru");
+
+            if (!res.ok) {
+                const errText = await res.text().catch(() => 'unknown');
+                console.error(`[Dotazník] Server error ${res.status}:`, errText);
+                throw new Error(`Server vrátil chybu (${res.status})`);
+            }
+
             const data = await res.json();
-            setResult(data.analysis);
-            setCurrentQuestion(totalQuestions + 1); // results screen
-        } catch {
-            // still show results screen with null
-            setCurrentQuestion(totalQuestions + 1);
-        } finally {
+            console.log('[Dotazník] Úspěšně odesláno:', data);
+
+            // Redirect to dashboard
+            router.push("/dashboard");
+        } catch (err) {
+            console.error('[Dotazník] Chyba při odesílání:', err);
+            setSubmitError(err instanceof Error ? err.message : String(err));
             setSubmitting(false);
         }
-    };
+    }, [submitting, answers, companyId, scanId, router]);
 
     /* ── Keyboard handler ── */
     useEffect(() => {
@@ -330,18 +353,29 @@ function QuestionnaireInner() {
                 if (q.type === "yes_no_unknown") {
                     if (e.key === "1") {
                         setAnswer(q.key, "yes");
-                        // Don't auto-advance if there's a followup or on last question
-                        if (!q.followup && !isLastQ) setTimeout(goNext, 300);
+                        if (isLastQ) { console.log('[Dotazník] Keyboard 1=yes on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
+                        else if (!q.followup) setTimeout(goNext, 300);
                     }
-                    if (e.key === "2") { setAnswer(q.key, "no"); if (!isLastQ) setTimeout(goNext, 300); }
-                    if (e.key === "3") { setAnswer(q.key, "unknown"); if (!isLastQ) setTimeout(goNext, 300); }
+                    if (e.key === "2") {
+                        setAnswer(q.key, "no");
+                        if (isLastQ) { console.log('[Dotazník] Keyboard 2=no on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
+                        else setTimeout(goNext, 300);
+                    }
+                    if (e.key === "3") {
+                        setAnswer(q.key, "unknown");
+                        if (isLastQ) { console.log('[Dotazník] Keyboard 3=unknown on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
+                        else setTimeout(goNext, 300);
+                    }
                 }
             }
-            if (e.key === "Enter" && !isLastQ) goNext();
+            if (e.key === "Enter") {
+                if (isLastQ) handleSubmit();
+                else goNext();
+            }
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
-    }, [currentQuestion, totalQuestions, allQuestions, goNext, setAnswer]);
+    }, [currentQuestion, totalQuestions, allQuestions, goNext, setAnswer, handleSubmit]);
 
     /* ── Progress ── */
     const progressPct =
@@ -365,98 +399,67 @@ function QuestionnaireInner() {
         );
     }
 
-    /* ── Results screen ── */
-    if (currentQuestion > totalQuestions) {
-        const high = result?.risk_breakdown?.high || 0;
-        const limited = result?.risk_breakdown?.limited || 0;
-        const minimal = result?.risk_breakdown?.minimal || 0;
-
+    /* ── Submitting overlay — full screen ── */
+    if (submitting) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-                <div className="w-full max-w-xl animate-fade-in">
-                    {submitting ? (
-                        <div className="text-center">
-                            <div className="w-16 h-16 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin mx-auto mb-6" />
-                            <h2 className="text-2xl font-bold text-white mb-2">Hotovo! Analyzujeme vaše odpovědi…</h2>
-                            <p className="text-slate-400">Chvilku strpení.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="text-center mb-8">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center mx-auto mb-6">
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                                </div>
-                                <h2 className="text-3xl font-bold text-white mb-2">Dotazník odeslán!</h2>
-                                <p className="text-slate-400">Vaše odpovědi byly uloženy. Zde je předběžný rizikový profil.</p>
-                            </div>
+                <div className="text-center animate-fade-in">
+                    <div className="w-20 h-20 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin mx-auto mb-8" />
+                    <h2 className="text-2xl font-bold text-white mb-3">Odesílám váš dotazník…</h2>
+                    <p className="text-slate-400 mb-2">Analyzujeme vaše odpovědi.</p>
+                    <p className="text-slate-500 text-sm">Za moment vás přesměrujeme do klientské zóny.</p>
+                </div>
+                <style>{`
+                    @keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+                    .animate-fade-in { animation: fade-in 0.4s ease-out; }
+                `}</style>
+            </div>
+        );
+    }
 
-                            {/* Risk summary cards */}
-                            <div className="grid grid-cols-3 gap-3 mb-6">
-                                {[
-                                    { n: high, label: "Vysoce rizikových", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
-                                    { n: limited, label: "Omezeného rizika", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-                                    { n: minimal, label: "Minimální riziko", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-                                ].map((item, i) => (
-                                    <div key={i} className={`rounded-2xl border p-4 text-center backdrop-blur-xl ${item.bg}`}>
-                                        <div className={`text-3xl font-black ${item.color}`}>{item.n}</div>
-                                        <div className="text-slate-400 text-xs mt-1">{item.label}</div>
-                                    </div>
-                                ))}
-                            </div>
+    /* ── Submit error screen ── */
+    if (submitError) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+                <div className="text-center animate-fade-in max-w-md">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Odeslání se nezdařilo</h2>
+                    <p className="text-slate-400 mb-2">Zkuste to prosím znovu.</p>
+                    <p className="text-slate-500 text-xs mb-6 font-mono">{submitError}</p>
+                    <div className="flex gap-3 justify-center">
+                        <button
+                            onClick={() => { setSubmitError(null); handleSubmit(); }}
+                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
+                        >
+                            Zkusit znovu
+                        </button>
+                        <button
+                            onClick={() => router.push("/dashboard")}
+                            className="px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-300 font-medium transition-all hover:bg-white/[0.1]"
+                        >
+                            Dashboard
+                        </button>
+                    </div>
+                </div>
+                <style>{`
+                    @keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+                    .animate-fade-in { animation: fade-in 0.4s ease-out; }
+                `}</style>
+            </div>
+        );
+    }
 
-                            {/* Next steps info */}
-                            <div className="bg-white/[0.04] backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-5 mb-6">
-                                <h3 className="text-cyan-300 font-semibold text-sm mb-3">Co bude dál?</h3>
-                                <div className="space-y-2.5">
-                                    {[
-                                        "Vaše odpovědi analyzujeme společně s výsledky skenu webu",
-                                        "Kompletní analýzu najdete v klientské zóně (dashboard)",
-                                        "Odpovědi můžete kdykoli upravit v klientské zóně",
-                                        "V případě nejasností vás budeme kontaktovat emailem",
-                                    ].map((step, i) => (
-                                        <div key={i} className="flex items-start gap-2.5">
-                                            <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
-                                            </svg>
-                                            <p className="text-slate-300 text-sm">{step}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Recommendations preview */}
-                            {result && result.recommendations.length > 0 && (
-                                <div className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 mb-6">
-                                    <h3 className="text-white font-bold mb-4">Top doporučení</h3>
-                                    <div className="space-y-3">
-                                        {result.recommendations.slice(0, 3).map((rec, i) => (
-                                            <div key={i} className="flex items-start gap-3">
-                                                <span className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${rec.risk_level === "high" ? "bg-red-400" : rec.risk_level === "limited" ? "bg-amber-400" : "bg-emerald-400"
-                                                    }`} />
-                                                <p className="text-slate-300 text-sm leading-relaxed">{rec.recommendation}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* CTAs */}
-                            <div className="space-y-3">
-                                <button
-                                    onClick={() => router.push("/dashboard")}
-                                    className="w-full py-4 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold text-lg transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
-                                >
-                                    Zobrazit výsledky v dashboardu
-                                </button>
-                                <button
-                                    onClick={() => router.push("/pricing")}
-                                    className="w-full py-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-300 font-medium transition-all hover:bg-white/[0.1]"
-                                >
-                                    Objednat compliance balíček
-                                </button>
-                            </div>
-                        </>
-                    )}
+    /* ── Results screen (legacy fallback — should auto-redirect to /dashboard now) ── */
+    if (currentQuestion > totalQuestions) {
+        // Auto-redirect to dashboard
+        router.push("/dashboard");
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-slate-400">Přesměrování do klientské zóny…</p>
                 </div>
             </div>
         );
@@ -611,7 +614,12 @@ function QuestionnaireInner() {
                                                 });
                                             } else {
                                                 setAnswer(q.key, opt);
-                                                if (!isLast) setTimeout(goNext, 350);
+                                                if (isLast) {
+                                                    console.log('[Dotazník] Poslední otázka (single-select) zodpovězena, auto-submit');
+                                                    setTimeout(handleSubmit, 600);
+                                                } else {
+                                                    setTimeout(goNext, 350);
+                                                }
                                             }
                                         }}
                                         className={`
@@ -722,9 +730,12 @@ function QuestionnaireInner() {
                                     key={opt.value}
                                     onClick={() => {
                                         setAnswer(q.key, opt.value);
-                                        // Auto-advance for "no" and "unknown" (no followup), delayed for "yes" if followup
-                                        // NEVER auto-advance on the last question — user must click "Odeslat"
-                                        if (!isLast && (opt.value !== "yes" || !q.followup)) {
+                                        if (isLast) {
+                                            // LAST QUESTION: auto-submit after visual feedback
+                                            console.log('[Dotazník] Poslední otázka zodpovězena, auto-submit za 600ms');
+                                            setTimeout(handleSubmit, 600);
+                                        } else if (opt.value !== "yes" || !q.followup) {
+                                            // Auto-advance for no/unknown, or yes without followup
                                             setTimeout(goNext, 350);
                                         }
                                     }}
@@ -869,9 +880,9 @@ function QuestionnaireInner() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || !ans?.answer}
-                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse"
+                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse shadow-lg shadow-cyan-500/20"
                             >
-                                {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                {submitting ? "Odesílám…" : "🚀 Odeslat a zobrazit výsledky"}
                             </button>
                         ) : ans?.answer ? (
                             <button
