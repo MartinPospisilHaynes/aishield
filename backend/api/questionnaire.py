@@ -241,8 +241,9 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "recruitment_tool", "label": "Název nástroje", "type": "select",
-                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Vlastní systém", "Jiný", "Nevím název"]},
+                        {"key": "recruitment_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Vlastní systém", "Jiné"]},
+                        {"key": "recruitment_tool_other", "label": "Upřesněte (volitelné)", "type": "text"},
                         {"key": "recruitment_autonomous", "label": "Rozhoduje AI samostatně o kandidátech?", "type": "select",
                          "options": ["Ano, automaticky filtruje", "Ne, pouze doporučuje", "Částečně"]},
                     ]
@@ -302,8 +303,9 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "accounting_tool", "label": "Název nástroje", "type": "select",
-                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Vlastní/jiný", "Nevím název"]},
+                        {"key": "accounting_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Vlastní/jiný"]},
+                        {"key": "accounting_tool_other", "label": "Upřesněte (volitelné)", "type": "text"},
                         {"key": "accounting_decisions", "label": "Dělá AI autonomní finanční rozhodnutí?", "type": "select",
                          "options": ["Ne, pouze asistuje", "Ano, schvaluje platby", "Ano, hodnotí kreditní riziko"]},
                     ]
@@ -361,8 +363,9 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "chatbot_tool_name", "label": "Název nástroje", "type": "select",
-                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Vlastní řešení", "Nevím název"]},
+                        {"key": "chatbot_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Vlastní řešení", "Jiné"]},
+                        {"key": "chatbot_tool_other", "label": "Upřesněte (volitelné)", "type": "text"},
                         {"key": "chatbot_disclosed", "label": "Ví návštěvník, že komunikuje s AI?", "type": "select",
                          "options": ["Ano, je to označeno", "Ne", "Částečně"]},
                     ]
@@ -378,8 +381,9 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "email_tool", "label": "Název nástroje", "type": "select",
-                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "Vlastní řešení", "Nevím název"]},
+                        {"key": "email_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "Vlastní řešení", "Jiné"]},
+                        {"key": "email_tool_other", "label": "Upřesněte (volitelné)", "type": "text"},
                         {"key": "email_disclosed", "label": "Ví zákazník, že odpovídá AI?", "type": "select",
                          "options": ["Ano, je to označeno", "Ne", "Někdy"]},
                     ]
@@ -451,13 +455,14 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_safety_component",
                 "text": "Je AI součástí bezpečnostní komponenty vašeho produktu?",
                 "type": "yes_no_unknown",
-                "help_text": "Například: AI řídí brzdy, monitoruje bezpečnost výroby nebo je součástí zdravotnického přístroje.",
+                "help_text": "Například: AI řídí brzdy, monitoruje bezpečnost výroby nebo je součástí zdravotnického přístroje. CE označení znamená, že výrobce prohlašuje shodu s požadavky EU.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "safety_product", "label": "O jaký produkt jde?", "type": "text"},
                         {"key": "safety_ce_mark", "label": "Má produkt CE označení?", "type": "select",
-                         "options": ["Ano", "Ne", "V procesu"]},
+                         "options": ["Ano", "Ne", "V procesu", "Nevím co je CE označení"]},
+                        {"key": "safety_ce_mark_info", "label": "ℹ️ CE označení = prohlášení výrobce, že produkt splňuje požadavky EU legislativy. AI Act rozšiřuje CE požadavky na vysoce rizikové AI systémy.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -596,6 +601,16 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
 
     # Najít nebo vytvořit anonymního clienta pro tuto firmu
     client_id = await _get_or_create_client(supabase, submission.company_id)
+
+    # Smazat staré odpovědi pokud existují (umožňuje editaci)
+    try:
+        supabase.table("questionnaire_responses") \
+            .delete() \
+            .eq("client_id", client_id) \
+            .execute()
+        logger.info(f"[Questionnaire] Smazány staré odpovědi pro client {client_id}")
+    except Exception as e:
+        logger.warning(f"[Questionnaire] Nepodařilo se smazat staré odpovědi: {e}")
 
     # Uložit každou odpověď
     saved_count = 0
@@ -785,6 +800,7 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
             question_map[q["key"]] = q
 
     yes_answers = [a for a in answers if a.answer == "yes"]
+    unknown_answers = [a for a in answers if a.answer == "unknown"]
     risk_breakdown = {"high": 0, "limited": 0, "minimal": 0}
     recommendations = []
 
@@ -808,6 +824,24 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
             "priority": "vysoká" if risk == "high" else "střední" if risk == "limited" else "nízká",
         })
 
+    # Doporučení pro "Nevím" odpovědi — uživatel si není jist, může to znamenat riziko
+    for ans in unknown_answers:
+        q_def = question_map.get(ans.question_key)
+        if not q_def:
+            continue
+
+        risk = q_def.get("risk_hint", "minimal")
+        # "Nevím" u vysoce rizikových oblastí je samo o sobě riziko
+        if risk in ("high", "limited"):
+            recommendations.append({
+                "question_key": ans.question_key,
+                "tool_name": "",
+                "risk_level": "limited",  # "Nevím" = nejisté, ale potenciální riziko
+                "ai_act_article": q_def.get("ai_act_article", ""),
+                "recommendation": f"U otázky „{q_def['text']}" jste odpověděli „Nevím". Doporučujeme to ověřit — pokud se tato oblast týká vaší firmy, může jít o {('vysoce rizikový' if risk == 'high' else 'středně rizikový')} AI systém dle AI Act.",
+                "priority": "střední",
+            })
+
     # Seřadit doporučení: high → limited → minimal
     risk_order = {"high": 0, "limited": 1, "minimal": 2}
     recommendations.sort(key=lambda r: risk_order.get(r["risk_level"], 3))
@@ -815,6 +849,7 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
     return {
         "total_answers": len(answers),
         "ai_systems_declared": len(yes_answers),
+        "unknown_count": len(unknown_answers),
         "risk_breakdown": risk_breakdown,
         "recommendations": recommendations,
     }

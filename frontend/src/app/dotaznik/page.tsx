@@ -12,7 +12,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 interface FollowupField {
     key: string;
     label: string;
-    type: "text" | "select" | "multi_select";
+    type: "text" | "select" | "multi_select" | "info";
     options?: string[];
 }
 
@@ -59,30 +59,68 @@ interface AnalysisResult {
 }
 
 /* ═══════════════════════════════════════════
-   INDUSTRY ICONS (emoji map)
+   INDUSTRY ICONS (professional SVG)
    ═══════════════════════════════════════════ */
 
-const INDUSTRY_ICONS: Record<string, string> = {
-    "E-shop / Online obchod": "🛒",
-    "Účetnictví / Finance": "💰",
-    "Zdravotnictví": "🏥",
-    "Vzdělávání / Školství": "🎓",
-    "Výroba / Průmysl": "🏭",
-    "IT / Technologie": "💻",
-    "Stavebnictví": "🏗️",
-    "Doprava / Logistika": "🚛",
-    "Restaurace / Gastronomie": "🍽️",
-    "Kadeřnictví / Kosmetika": "💇",
-    "Právní služby": "⚖️",
-    "Nemovitosti / Reality": "🏠",
-    "Zemědělství": "🌾",
-    "Jiné": "📦",
+const INDUSTRY_SVG: Record<string, React.ReactNode> = {
+    "E-shop / Online obchod": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+    ),
+    "Účetnictví / Finance": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    ),
+    "Zdravotnictví": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+    ),
+    "Vzdělávání / Školství": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
+    ),
+    "Výroba / Průmysl": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17l-5.67 3.1a.75.75 0 01-1.12-.66V6.57a.75.75 0 01.38-.66l5.67-3.1a.75.75 0 01.74 0l5.67 3.1a.75.75 0 01.38.66v11.04a.75.75 0 01-1.12.66l-5.67-3.1a.75.75 0 00-.74 0zM12 8.25v7.5" /></svg>
+    ),
+    "IT / Technologie": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+    ),
+    "Stavebnictví": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 0h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>
+    ),
+    "Doprava / Logistika": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25h.008v.008h-.008v-.008zm0-3h17.25V6.375a1.125 1.125 0 00-1.125-1.125H3.375A1.125 1.125 0 002.25 6.375v4.875h.008z" /></svg>
+    ),
+    "Restaurace / Gastronomie": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.379a48.474 48.474 0 00-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 016 13.12M12.265 3.11a.375.375 0 11-.53 0L12 2.845l.265.265z" /></svg>
+    ),
+    "Kadeřnictví / Kosmetika": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+    ),
+    "Právní služby": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" /></svg>
+    ),
+    "Nemovitosti / Reality": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+    ),
+    "Zemědělství": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+    ),
+    "Jiné": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+    ),
     /* Company size */
-    "Jen já (OSVČ)": "👤",
-    "2–9 zaměstnanců": "👥",
-    "10–49 zaměstnanců": "🏢",
-    "50–249 zaměstnanců": "🏬",
-    "250+ zaměstnanců": "🏛️",
+    "Jen já (OSVČ)": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+    ),
+    "2–9 zaměstnanců": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+    ),
+    "10–49 zaměstnanců": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+    ),
+    "50–249 zaměstnanců": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>
+    ),
+    "250+ zaměstnanců": (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>
+    ),
 };
 
 /* ═══════════════════════════════════════════
@@ -105,6 +143,7 @@ function QuestionnaireInner() {
     const [direction, setDirection] = useState<"forward" | "back">("forward");
     const [sectionFlash, setSectionFlash] = useState<string | null>(null);
     const [multiSelections, setMultiSelections] = useState<Record<string, string[]>>({});
+    const [isEditMode, setIsEditMode] = useState(false);
 
     /* ── Flat question list ── */
     const allQuestions: (Question & { _section: string })[] = sections.flatMap((s) =>
@@ -136,12 +175,54 @@ function QuestionnaireInner() {
             .catch(() => setLoading(false));
     }, []);
 
-    /* ── URL params ── */
+    /* ── URL params + pre-fill existing answers in edit mode ── */
     useEffect(() => {
         const cid = searchParams.get("company_id");
         const sid = searchParams.get("scan_id");
+        const edit = searchParams.get("edit");
         if (cid) setCompanyId(cid);
         if (sid) setScanId(sid);
+        if (edit === "true") setIsEditMode(true);
+
+        // Pre-fill existing answers if company_id present
+        if (cid) {
+            fetch(`${API_URL}/api/questionnaire/${cid}/results`)
+                .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+                .then((data) => {
+                    if (data.answers && data.answers.length > 0) {
+                        const multiUpdates: Record<string, string[]> = {};
+                        setAnswers((prev) => {
+                            const updated = { ...prev };
+                            for (const a of data.answers) {
+                                if (updated[a.question_key]) {
+                                    updated[a.question_key] = {
+                                        ...updated[a.question_key],
+                                        answer: a.answer || "",
+                                        details: a.details || {},
+                                        tool_name: a.tool_name || "",
+                                    };
+                                    // Restore multi-select state for top-level multi_select
+                                    if (a.answer && a.answer.includes(", ")) {
+                                        const mkey = `topLevel__${a.question_key}`;
+                                        multiUpdates[mkey] = a.answer.split(", ");
+                                    }
+                                    // Restore multi-select state for followup fields
+                                    if (a.details) {
+                                        for (const [fkey, fval] of Object.entries(a.details)) {
+                                            if (Array.isArray(fval)) {
+                                                multiUpdates[`${a.question_key}__${fkey}`] = fval;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return updated;
+                        });
+                        setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
+                    }
+                })
+                .catch(() => { /* No existing answers — that's fine */ });
+        }
     }, [searchParams]);
 
     /* ── Navigation helpers ── */
@@ -300,12 +381,12 @@ function QuestionnaireInner() {
                                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center mx-auto mb-6">
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
                                 </div>
-                                <h2 className="text-3xl font-bold text-white mb-2">Analýza dokončena</h2>
-                                <p className="text-slate-400">Zde je váš rizikový profil</p>
+                                <h2 className="text-3xl font-bold text-white mb-2">Dotazník odeslán!</h2>
+                                <p className="text-slate-400">Vaše odpovědi byly uloženy. Zde je předběžný rizikový profil.</p>
                             </div>
 
                             {/* Risk summary cards */}
-                            <div className="grid grid-cols-3 gap-3 mb-8">
+                            <div className="grid grid-cols-3 gap-3 mb-6">
                                 {[
                                     { n: high, label: "Vysoce rizikových", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
                                     { n: limited, label: "Omezeného rizika", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
@@ -316,6 +397,26 @@ function QuestionnaireInner() {
                                         <div className="text-slate-400 text-xs mt-1">{item.label}</div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Next steps info */}
+                            <div className="bg-white/[0.04] backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-5 mb-6">
+                                <h3 className="text-cyan-300 font-semibold text-sm mb-3">Co bude dál?</h3>
+                                <div className="space-y-2.5">
+                                    {[
+                                        "Vaše odpovědi analyzujeme společně s výsledky skenu webu",
+                                        "Kompletní analýzu najdete v klientské zóně (dashboard)",
+                                        "Odpovědi můžete kdykoli upravit v klientské zóně",
+                                        "V případě nejasností vás budeme kontaktovat emailem",
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex items-start gap-2.5">
+                                            <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                                            </svg>
+                                            <p className="text-slate-300 text-sm">{step}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Recommendations preview */}
@@ -366,13 +467,27 @@ function QuestionnaireInner() {
 
                 <div className="relative z-10 w-full max-w-lg text-center animate-fade-in">
                     <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
-                        Pojďme zjistit,{" "}
-                        <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-                            jak na tom jste
-                        </span>
+                        {isEditMode ? (
+                            <>
+                                Úprava{" "}
+                                <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+                                    vašich odpovědí
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                Pojďme zjistit,{" "}
+                                <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+                                    jak na tom jste
+                                </span>
+                            </>
+                        )}
                     </h1>
                     <p className="text-slate-400 text-lg mb-10">
-                        {totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.
+                        {isEditMode
+                            ? "Vaše předchozí odpovědi jsou předvyplněné. Projděte otázky a upravte, co potřebujete."
+                            : `${totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
+                        }
                     </p>
 
                     {/* Feature cards */}
@@ -480,14 +595,29 @@ function QuestionnaireInner() {
                                         {selected && isMulti && (
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mb-1"><path d="M20 6L9 17l-5-5" /></svg>
                                         )}
-                                        <span className="text-2xl block mb-2">
-                                            {INDUSTRY_ICONS[opt] || "📦"}
+                                        <span className="block mb-2 text-slate-400">
+                                            {INDUSTRY_SVG[opt] || (
+                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                                            )}
                                         </span>
                                         <span className="text-sm font-medium leading-tight block">{opt}</span>
                                     </button>
                                 );
                             })}
                         </div>
+
+                        {/* "Jiné" text input for top-level multi_select */}
+                        {isMulti && selectedItems.includes("Jiné") && (
+                            <div className="mt-4">
+                                <input
+                                    type="text"
+                                    placeholder="Upřesněte vaše odvětví…"
+                                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                    value={(ans?.details[`${q.key}_other`] as string) || ""}
+                                    onChange={(e) => setDetail(q.key, `${q.key}_other`, e.target.value)}
+                                />
+                            </div>
+                        )}
 
                         {/* Navigation */}
                         <div className="flex justify-between mt-8">
@@ -590,9 +720,19 @@ function QuestionnaireInner() {
                                 <div className="space-y-4">
                                     {q.followup.fields.map((field) => (
                                         <div key={field.key}>
-                                            <label className="block text-slate-400 text-sm mb-2 font-medium">
-                                                {field.label}
-                                            </label>
+                                            {/* Info type → informational text */}
+                                            {field.type === "info" ? (
+                                                <div className="flex items-start gap-2 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 px-4 py-3">
+                                                    <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <p className="text-slate-400 text-xs leading-relaxed">{field.label}</p>
+                                                </div>
+                                            ) : (
+                                                <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                    {field.label}
+                                                </label>
+                                            )}
 
                                             {/* Select → tile grid */}
                                             {field.type === "select" && field.options && (
@@ -620,30 +760,42 @@ function QuestionnaireInner() {
 
                                             {/* Multi-select → tile grid with checkmarks */}
                                             {field.type === "multi_select" && field.options && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {field.options.map((opt) => {
-                                                        const mkey = `${q.key}__${field.key}`;
-                                                        const selected = (multiSelections[mkey] || []).includes(opt);
-                                                        return (
-                                                            <button
-                                                                key={opt}
-                                                                onClick={() => toggleMulti(q.key, field.key, opt)}
-                                                                className={`
-                                  px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2
-                                  ${selected
-                                                                        ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
-                                                                        : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
-                                                                    }
-                                `}
-                                                            >
-                                                                {selected && (
-                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                                                                )}
-                                                                {opt}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                                <>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const mkey = `${q.key}__${field.key}`;
+                                                            const selected = (multiSelections[mkey] || []).includes(opt);
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => toggleMulti(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {selected && (
+                                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+                                                                    )}
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {/* "Jiné" text input — show when "Jiné" is selected */}
+                                                    {(multiSelections[`${q.key}__${field.key}`] || []).includes("Jiné") && (
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Upřesněte, jaký jiný nástroj…"
+                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                            value={(ans?.details[`${field.key}_other`] as string) || ""}
+                                                            onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
+                                                        />
+                                                    )}
+                                                </>
                                             )}
 
                                             {/* Text → minimal input (fallback) */}

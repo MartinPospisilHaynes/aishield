@@ -315,8 +315,8 @@ export default function DashboardPage() {
                             {scanLoading ? "Skenuji..." : "Nový sken"}
                         </button>
                         {(data?.scans.length || 0) > 0 ? (
-                            <a href="/dotaznik" className="btn-primary text-sm px-4 py-2">
-                                Vyplnit dotazník
+                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${data?.questionnaire_status === 'dokončen' ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                {data?.questionnaire_status === 'dokončen' ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
                             </a>
                         ) : (
                             <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
@@ -422,8 +422,8 @@ export default function DashboardPage() {
                                         Zobrazit nálezy
                                     </button>
                                     {(data?.scans.length || 0) > 0 && (
-                                        <a href="/dotaznik" className="btn-primary text-sm px-4 py-2">
-                                            Vyplnit dotazník
+                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}${data?.questionnaire_status === 'dokončen' ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                            {data?.questionnaire_status === 'dokončen' ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
                                         </a>
                                     )}
                                 </div>
@@ -444,9 +444,10 @@ export default function DashboardPage() {
                     <StatCard
                         label="AI systémy nalezeny"
                         value={String(findingsCount)}
-                        sub={highRisk > 0 ? `${highRisk} vysoké riziko` : "Žádné kritické"}
+                        sub={highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : findingsCount > 0 ? "Pouze ze skenu webu" : "Sken zatím nebyl proveden"}
                         color={highRisk > 0 ? "text-red-400" : "text-green-400"}
                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+                        tooltip="Toto číslo zahrnuje pouze AI systémy nalezené skenem webu. Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů."
                     />
                     <StatCard
                         label="Dokumenty"
@@ -458,7 +459,7 @@ export default function DashboardPage() {
                     <StatCard
                         label="Dotazník"
                         value={data?.questionnaire_status === "dokončen" ? "Hotovo" : "Čeká"}
-                        sub={data?.questionnaire_status === "dokončen" ? "Vyplněn" : "Vyplňte pro přesnější analýzu"}
+                        sub={data?.questionnaire_status === "dokončen" ? "Vyplněn — klikněte pro úpravu" : "Vyplňte pro přesnější analýzu"}
                         color={data?.questionnaire_status === "dokončen" ? "text-green-400" : "text-amber-400"}
                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
                     />
@@ -499,17 +500,37 @@ export default function DashboardPage() {
 }
 
 /* ── Stat Card ── */
-function StatCard({ label, value, sub, color, icon }: {
-    label: string; value: string; sub: string; color: string; icon?: React.ReactNode;
+function StatCard({ label, value, sub, color, icon, tooltip }: {
+    label: string; value: string; sub: string; color: string; icon?: React.ReactNode; tooltip?: string;
 }) {
+    const [showTip, setShowTip] = useState(false);
     return (
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all relative">
             <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
-                {icon && <span className="text-slate-600">{icon}</span>}
+                <div className="flex items-center gap-1.5">
+                    {tooltip && (
+                        <button
+                            onClick={() => setShowTip(!showTip)}
+                            onMouseEnter={() => setShowTip(true)}
+                            onMouseLeave={() => setShowTip(false)}
+                            className="text-slate-600 hover:text-slate-400 transition-colors"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                    )}
+                    {icon && <span className="text-slate-600">{icon}</span>}
+                </div>
             </div>
             <p className={`text-3xl font-extrabold mt-1 ${color}`}>{value}</p>
             <p className="text-xs text-slate-500 mt-1">{sub}</p>
+            {tooltip && showTip && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-2 p-3 rounded-xl bg-slate-800 border border-white/[0.1] shadow-xl text-xs text-slate-300 leading-relaxed">
+                    {tooltip}
+                </div>
+            )}
         </div>
     );
 }
@@ -533,9 +554,9 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         {
             done: hasQuest,
             label: "Dotazník",
-            desc: "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
-            href: hasScans ? "/dotaznik" : null,
-            cta: hasScans ? "Vyplnit dotazník" : "🔒 Nejprve skenujte web",
+            desc: hasQuest ? "Odpovědi můžete kdykoli upravit" : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
+            href: hasScans ? `/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}` : null,
+            cta: hasScans ? (hasQuest ? "Upravit odpovědi" : "Vyplnit dotazník") : "🔒 Nejprve skenujte web",
             onClick: undefined as (() => void) | undefined,
         },
         {
