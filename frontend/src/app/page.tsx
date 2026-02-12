@@ -543,16 +543,24 @@ export default function HomePage() {
                         <p className="text-xs text-slate-500 mt-3 text-center">
                             Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
                         </p>
-                        <p className="text-sm sm:text-base text-slate-300 mt-4 text-center leading-relaxed bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-4 font-medium">
-                            <span className="inline-flex items-center gap-2">
-                                <svg className="w-5 h-5 text-fuchsia-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <div className="mt-4 bg-white/[0.05] border border-white/[0.08] rounded-xl px-6 py-5">
+                            <div className="flex items-start gap-3">
+                                <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
                                 </svg>
-                                Po 2. srpnu 2026 začne EU <strong className="text-white">systematicky kontrolovat weby a e-shopy</strong> pomocí automatizovaných nástrojů.
-                            </span>
-                            {" "}Náš sken funguje na stejném principu — odhalí přesně to, co najdou kontrolní orgány.
-                            Zjistěte stav svého webu dříve, než to udělá někdo jiný.
-                        </p>
+                                <div className="text-sm sm:text-base text-slate-300 leading-relaxed">
+                                    <p className="font-medium">
+                                        Po 2. srpnu 2026 začne EU{" "}
+                                        <strong className="text-white">systematicky kontrolovat weby a e-shopy</strong>{" "}
+                                        pomocí automatizovaných nástrojů.
+                                    </p>
+                                    <p className="mt-2 text-slate-400">
+                                        Náš sken funguje na stejném principu — odhalí přesně to, co najdou kontrolní orgány.
+                                        Zjistěte stav svého webu dříve, než to udělá někdo jiný.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -33,10 +33,10 @@ export default function ContactForm() {
     return (
         <div id="kontakt" className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 sm:p-8">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">Nezávazná konzultace zdarma</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">Napište nám</h2>
                 <p className="text-slate-400 text-sm">
-                    Nejste si jistí, zda se vás AI Act týká? Máte specifické otázky?{" "}
-                    Vyplňte formulář a ozveme se vám do 24 hodin.
+                    Máte dotaz ohledně AI Actu nebo našich služeb?{" "}
+                    Zanechte nám zprávu a ozveme se vám co nejdříve.
                 </p>
             </div>
 

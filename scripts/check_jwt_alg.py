@@ -1,9 +1,12 @@
 """Test JWT decode with different secrets and approaches."""
-import json, base64
+import json, base64, os
 from jose import jwt, jws
 import time
 
-jwt_secret = "y63S9cg9Bsjbevec2KQTAnliMiN72Gy7cnSq7uCIPkUA48+Mi2CIpb02IWOjICUQRdJkO80XnMY13QFJoOpPig=="
+jwt_secret = os.environ.get("SUPABASE_JWT_SECRET", "")
+if not jwt_secret:
+    print("ERROR: Set SUPABASE_JWT_SECRET env var first")
+    exit(1)
 
 # 1. Self-signed test
 payload = {"sub": "test", "iss": "test", "exp": int(time.time()) + 3600}
@@ -12,7 +15,10 @@ decoded = jwt.decode(token, jwt_secret, algorithms=["HS256"])
 print("1. Self-signed HS256 test: OK")
 
 # 2. Decode service role key with jwt_secret
-service_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdxY3JrdHRsZm5xYmpncGdjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDU3MTMxNywiZXhwIjoyMDg2MTQ3MzE3fQ.dxjnj7uQ3-uRRmqFa-MXnM6t3xL-Fci8A-xTqOvy-MU"
+service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+if not service_key:
+    print("ERROR: Set SUPABASE_SERVICE_ROLE_KEY env var first")
+    exit(1)
 try:
     d = jwt.decode(service_key, jwt_secret, algorithms=["HS256"], options={"verify_aud": False})
     role = d.get("role")

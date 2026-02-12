@@ -27,6 +27,7 @@ from backend.api.send_report import router as send_report_router
 from backend.api.ares_lookup import router as ares_lookup_router
 from backend.security.export import router as export_router
 from backend.api.chat import router as chat_router
+from backend.api.contact import router as contact_router
 
 # ── Vytvoření aplikace ──
 from backend.config import get_settings as _get_settings
@@ -72,6 +73,7 @@ app.include_router(send_report_router, prefix="/api", tags=["SendReport"])
 app.include_router(ares_lookup_router, prefix="/api", tags=["ARES"])
 app.include_router(export_router, prefix="/api/admin", tags=["Export"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
+app.include_router(contact_router, prefix="/api", tags=["Contact"])
 
 
 @app.get("/")

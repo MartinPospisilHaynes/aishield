@@ -25,11 +25,13 @@ export default function Header() {
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
                 <a href="/" className="flex items-center gap-2 group">
                     <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 2L4 7v9c0 7.73 5.12 14.95 12 17 6.88-2.05 12-9.27 12-17V7L16 2z" fill="url(#shield-grad)" fillOpacity="0.15" stroke="url(#shield-grad)" strokeWidth="1.5" />
-                        <path d="M12 16l3 3 5-6" stroke="url(#shield-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M16 1.5C16 1.5 4 6 4 6v10.5c0 4.2 1.8 8.2 4.8 11.1C11.5 30.2 13.9 31.5 16 32c2.1-.5 4.5-1.8 7.2-4.4C26.2 24.7 28 20.7 28 16.5V6L16 1.5z" fill="url(#shield-grad-h)" fillOpacity="0.25" stroke="url(#shield-grad-h)" strokeWidth="2" strokeLinejoin="round" />
+                        <path d="M16 5C16 5 7 9 7 9v7.5c0 3.3 1.4 6.5 3.8 8.8C12.9 27.3 14.7 28.3 16 28.7c1.3-.4 3.1-1.4 5.2-3.4C23.6 22.9 25 19.8 25 16.5V9L16 5z" fill="none" stroke="url(#shield-grad-h)" strokeWidth="0.8" opacity="0.4" strokeLinejoin="round" />
+                        <path d="M12 16.5l3 3 5.5-6.5" stroke="url(#shield-grad-h)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         <defs>
-                            <linearGradient id="shield-grad" x1="4" y1="2" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                            <linearGradient id="shield-grad-h" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
                                 <stop stopColor="#d946ef" />
+                                <stop offset="0.5" stopColor="#a855f7" />
                                 <stop offset="1" stopColor="#06b6d4" />
                             </linearGradient>
                         </defs>

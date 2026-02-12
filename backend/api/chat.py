@@ -4,6 +4,7 @@ Umělá inteligence na webových stránkách AIshield.cz.
 Loguje všechny konverzace do Supabase pro zpětnou vazbu.
 """
 
+import base64
 import logging
 import os
 import time
@@ -11,6 +12,7 @@ import uuid
 from datetime import datetime, timezone
 
 import httpx
+from cryptography.fernet import Fernet
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -23,6 +25,35 @@ GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 )
+
+# ── Šifrování osobních údajů v chatu ──
+def _get_fernet():
+    """Vrátí Fernet instanci pro šifrování/dešifrování chat zpráv."""
+    key = os.environ.get("CHAT_ENCRYPTION_KEY", "")
+    if not key:
+        return None
+    return Fernet(key.encode())
+
+
+def _encrypt(text: str) -> str:
+    """Zašifruje text pomocí Fernet. Pokud klíč chybí, vrátí originál."""
+    f = _get_fernet()
+    if not f:
+        logger.warning("CHAT_ENCRYPTION_KEY nenastavený — data ukládána bez šifrování")
+        return text
+    return f.encrypt(text.encode("utf-8")).decode("utf-8")
+
+
+def _decrypt(token: str) -> str:
+    """Dešifruje text. Pokud selže (data nejsou šifrovaná), vrátí originál."""
+    f = _get_fernet()
+    if not f:
+        return token
+    try:
+        return f.decrypt(token.encode("utf-8")).decode("utf-8")
+    except Exception:
+        return token  # pravděpodobně starý nešifrovaný záznam
+
 
 # ── Rate limiting (jednoduchý in-memory) ──
 _rate_limits: dict[str, list[float]] = {}
@@ -185,7 +216,7 @@ def _log_message(session_id: str, role: str, content: str, page_url: str | None 
         sb.table("chat_messages").insert({
             "session_id": session_id,
             "role": role,
-            "content": content[:5000],
+            "content": _encrypt(content[:5000]),
             "page_url": page_url,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
