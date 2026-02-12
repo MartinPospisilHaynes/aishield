@@ -228,8 +228,12 @@ function QuestionnaireInner() {
     /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
         setDirection("forward");
-        setCurrentQuestion((p) => p + 1);
-    }, []);
+        setCurrentQuestion((p) => {
+            // Never go beyond last question via goNext — submit button handles that
+            if (p >= totalQuestions - 1) return p;
+            return p + 1;
+        });
+    }, [totalQuestions]);
 
     const goBack = useCallback(() => {
         setDirection("back");
@@ -524,7 +528,32 @@ function QuestionnaireInner() {
        ═══════════════════════════════════════════ */
 
     const q = allQuestions[currentQuestion];
-    if (!q) return null;
+    if (!q) {
+        // Safety: should never happen, but if question index is out of bounds,
+        // show the welcome screen instead of a black screen
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+                <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Něco se pokazilo</h2>
+                    <p className="text-slate-400 mb-6">Dotazník se nepodařilo správně načíst.</p>
+                    <div className="flex gap-3 justify-center">
+                        <button
+                            onClick={() => setCurrentQuestion(-1)}
+                            className="px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-300 font-medium transition-all hover:bg-white/[0.1]"
+                        >
+                            Zkusit znovu
+                        </button>
+                        <a href="/dashboard" className="px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold">
+                            Zpět na dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const ans = answers[q.key];
     const isLast = currentQuestion === totalQuestions - 1;
@@ -582,7 +611,7 @@ function QuestionnaireInner() {
                                                 });
                                             } else {
                                                 setAnswer(q.key, opt);
-                                                setTimeout(goNext, 350);
+                                                if (!isLast) setTimeout(goNext, 350);
                                             }
                                         }}
                                         className={`
@@ -628,7 +657,17 @@ function QuestionnaireInner() {
                             >
                                 ← Zpět
                             </button>
-                            {(isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
+                            {isLast ? (
+                                (isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={submitting}
+                                        className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 animate-pulse"
+                                    >
+                                        {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                    </button>
+                                )
+                            ) : (isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
                                 <button
                                     onClick={goNext}
                                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"

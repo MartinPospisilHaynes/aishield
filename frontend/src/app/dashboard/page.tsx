@@ -920,9 +920,9 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                     <div>
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Co je tento akční plán?</h4>
                         <p className="text-xs text-slate-400 leading-relaxed">
-                            Toto jsou kroky, které <strong className="text-slate-300">vy jako provozovatel webu</strong> musíte splnit, 
-                            abyste byli v souladu s EU AI Act. Každý bod představuje konkrétní opatření — klikněte na zaškrtávací políčko, 
-                            jakmile daný krok vyřešíte. Zkratka <strong className="text-slate-300">ÚOOÚ</strong> = Úřad pro ochranu osobních údajů 
+                            Toto jsou kroky, které <strong className="text-slate-300">vy jako provozovatel webu</strong> musíte splnit,
+                            abyste byli v souladu s EU AI Act. Každý bod představuje konkrétní opatření — klikněte na zaškrtávací políčko,
+                            jakmile daný krok vyřešíte. Zkratka <strong className="text-slate-300">ÚOOÚ</strong> = Úřad pro ochranu osobních údajů
                             (český dozorový orgán pro AI Act).
                         </p>
                     </div>
