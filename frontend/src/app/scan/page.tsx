@@ -440,6 +440,19 @@ function ScanPageInner() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Waiting message when animation is done but scan still running */}
+                        {currentStage >= SCAN_STAGES.length - 1 && (
+                            <div className="mt-4 flex items-center gap-3 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/25 px-4 py-3">
+                                <div className="w-5 h-5 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin flex-shrink-0" />
+                                <div>
+                                    <p className="text-sm font-medium text-fuchsia-300">Finalizujeme report, vyčkejte prosím…</p>
+                                    <p className="text-xs text-fuchsia-400/60 mt-0.5">
+                                        Výsledky se zobrazí automaticky. Obvykle to trvá ještě 15–30 sekund.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -559,12 +572,7 @@ function ScanPageInner() {
                                     {findings.map((f) => (
                                         <div
                                             key={f.id}
-                                            className="card border-l-4"
-                                            style={{
-                                                borderLeftColor:
-                                                    f.risk_level === "high" ? "#ef4444" :
-                                                        f.risk_level === "limited" ? "#f97316" : "#22c55e",
-                                            }}
+                                            className="card"
                                         >
                                             <div className="flex items-start justify-between">
                                                 <div>

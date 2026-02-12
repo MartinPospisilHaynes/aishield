@@ -213,11 +213,10 @@ export default function ChatWidget() {
                     {/* ── Header ── */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-fuchsia-600/10 to-purple-600/10 border-b border-white/[0.06]">
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-700 flex items-center justify-center flex-shrink-0">
-                                <svg className="w-5 h-5 text-white" viewBox="0 0 32 32" fill="none">
-                                    <path d="M16 2L4 7v9c0 7.73 5.12 14.95 12 17 6.88-2.05 12-9.27 12-17V7L16 2z" fill="url(#shg)" fillOpacity="0.3" stroke="url(#shg)" strokeWidth="1.5" />
-                                    <path d="M12 16l3 3 5-6" stroke="url(#shg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <defs><linearGradient id="shg" x1="4" y1="2" x2="28" y2="28"><stop stopColor="#d946ef" /><stop offset="1" stopColor="#06b6d4" /></linearGradient></defs>
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-fuchsia-500/20">
+                                <svg className="w-5 h-5" viewBox="0 0 32 32" fill="none">
+                                    <path d="M16 3L5 8v8.5c0 3.8 1.6 7.4 4.3 10C12 29 14.2 30.2 16 30.8c1.8-.6 4-1.8 6.7-4.3C25.4 23.9 27 20.3 27 16.5V8L16 3z" fill="white" fillOpacity="0.25" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+                                    <path d="M12 16.5l3 3 5.5-6.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </div>
                             <div>
@@ -245,8 +244,8 @@ export default function ChatWidget() {
                             >
                                 <div
                                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${msg.role === "user"
-                                            ? "bg-fuchsia-600/20 border border-fuchsia-500/20 text-slate-200"
-                                            : "bg-white/[0.04] border border-white/[0.06] text-slate-300"
+                                        ? "bg-fuchsia-600/20 border border-fuchsia-500/20 text-slate-200"
+                                        : "bg-white/[0.04] border border-white/[0.06] text-slate-300"
                                         }`}
                                 >
                                     {msg.role === "assistant" ? renderContent(msg.content) : (
@@ -284,13 +283,6 @@ export default function ChatWidget() {
                                 ))}
                             </div>
                         )}
-                    </div>
-
-                    {/* ── AI disclosure ── */}
-                    <div className="px-4 py-1.5 text-center border-t border-white/[0.04]">
-                        <p className="text-[10px] text-slate-600">
-                            Odpov\u00edd\u00e1 um\u011bl\u00e1 inteligence &middot; Informace maj\u00ed orienta\u010dn\u00ed charakter
-                        </p>
                     </div>
 
                     {/* ── Input ── */}

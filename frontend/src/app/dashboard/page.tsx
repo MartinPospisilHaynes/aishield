@@ -399,6 +399,19 @@ export default function DashboardPage() {
                                         );
                                     })}
                                 </div>
+
+                                {/* Waiting message when animation finishes but scan still running */}
+                                {scanStage >= SCAN_STAGES.length - 1 && (
+                                    <div className="mt-4 flex items-center gap-3 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/25 px-4 py-3">
+                                        <div className="w-4 h-4 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium text-fuchsia-300">Finalizujeme report, vyčkejte prosím…</p>
+                                            <p className="text-xs text-fuchsia-400/60 mt-0.5">
+                                                Výsledky se zobrazí automaticky. Analýza AI systémů může trvat až 60 sekund.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
 
@@ -857,6 +870,8 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 
 /* ── Tab: Akční plán ── */
 function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
+    const [localResolved, setLocalResolved] = useState<Record<string, boolean>>({});
+
     if (findings.length === 0) {
         return (
             <EmptyState
@@ -873,31 +888,52 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
         );
     }
 
+    const toggleResolved = (id: string) => {
+        setLocalResolved((prev) => ({ ...prev, [id]: !prev[id] }));
+    };
+
     // Seřadit: high → medium → low, nepotvrzené první
     const sorted = [...findings].sort((a, b) => {
         const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
         const rA = riskOrder[a.risk_level] ?? 3;
         const rB = riskOrder[b.risk_level] ?? 3;
         if (rA !== rB) return rA - rB;
-        // Nevyřešené první
-        const aResolved = a.confirmed_by_client === "false_positive" || a.status === "resolved";
-        const bResolved = b.confirmed_by_client === "false_positive" || b.status === "resolved";
-        if (aResolved !== bResolved) return aResolved ? 1 : -1;
+        const aRes = a.confirmed_by_client === "false_positive" || a.status === "resolved" || localResolved[a.id];
+        const bRes = b.confirmed_by_client === "false_positive" || b.status === "resolved" || localResolved[b.id];
+        if (aRes !== bRes) return aRes ? 1 : -1;
         return 0;
     });
 
     const total = sorted.length;
     const resolved = sorted.filter(
-        (f) => f.confirmed_by_client === "false_positive" || f.status === "resolved"
+        (f) => f.confirmed_by_client === "false_positive" || f.status === "resolved" || localResolved[f.id]
     ).length;
 
     return (
         <div className="space-y-4">
+            {/* Explanation header */}
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
+                <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Co je tento akční plán?</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                            Toto jsou kroky, které <strong className="text-slate-300">vy jako provozovatel webu</strong> musíte splnit, 
+                            abyste byli v souladu s EU AI Act. Každý bod představuje konkrétní opatření — klikněte na zaškrtávací políčko, 
+                            jakmile daný krok vyřešíte. Zkratka <strong className="text-slate-300">ÚOOÚ</strong> = Úřad pro ochranu osobních údajů 
+                            (český dozorový orgán pro AI Act).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             {/* Progress bar */}
             <div className="glass">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-300">Postup</span>
-                    <span className="text-sm text-slate-400">{resolved}/{total} vyřešeno</span>
+                    <span className="text-sm font-medium text-slate-300">Váš postup</span>
+                    <span className="text-sm text-slate-400">{resolved}/{total} splněno</span>
                 </div>
                 <div className="h-2 rounded-full bg-white/5 overflow-hidden">
                     <div
@@ -909,18 +945,19 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
 
             {/* Action items */}
             {sorted.map((f) => {
-                const isResolved = f.confirmed_by_client === "false_positive" || f.status === "resolved";
+                const isResolved = f.confirmed_by_client === "false_positive" || f.status === "resolved" || localResolved[f.id];
                 return (
                     <div
                         key={f.id}
-                        className={`flex items-start gap-4 rounded-xl border px-5 py-4 ${isResolved
+                        onClick={() => toggleResolved(f.id)}
+                        className={`flex items-start gap-4 rounded-xl border px-5 py-4 cursor-pointer transition-all hover:border-white/[0.15] ${isResolved
                             ? "border-green-500/10 bg-green-500/[0.03] opacity-60"
                             : "border-white/[0.06] bg-white/[0.02]"
                             }`}
                     >
-                        <div className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border ${isResolved
+                        <div className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border transition-all ${isResolved
                             ? "border-green-500/30 bg-green-500/20"
-                            : "border-white/10 bg-white/5"
+                            : "border-white/20 bg-white/5 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/10"
                             } flex items-center justify-center`}>
                             {isResolved && (
                                 <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -932,7 +969,8 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                             <p className={`text-sm font-medium ${isResolved ? "line-through text-slate-500" : "text-slate-200"}`}>
                                 {f.action_required || f.name}
                             </p>
-                            <div className="flex items-center gap-3 mt-1">
+                            <p className="text-xs text-slate-500 mt-1">{f.name}</p>
+                            <div className="flex items-center gap-3 mt-1.5">
                                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
                                     }`}>
                                     {f.risk_level === "high" ? "Vysoká priorita" : f.risk_level === "medium" ? "Střední" : "Nízká"}

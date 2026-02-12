@@ -320,19 +320,20 @@ function QuestionnaireInner() {
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (currentQuestion < 0 || currentQuestion > totalQuestions) return;
+            const isLastQ = currentQuestion === totalQuestions - 1;
             if (currentQuestion < totalQuestions) {
                 const q = allQuestions[currentQuestion];
                 if (q.type === "yes_no_unknown") {
                     if (e.key === "1") {
                         setAnswer(q.key, "yes");
-                        // Don't auto-advance if there's a followup — let user fill it in
-                        if (!q.followup) setTimeout(goNext, 300);
+                        // Don't auto-advance if there's a followup or on last question
+                        if (!q.followup && !isLastQ) setTimeout(goNext, 300);
                     }
-                    if (e.key === "2") { setAnswer(q.key, "no"); setTimeout(goNext, 300); }
-                    if (e.key === "3") { setAnswer(q.key, "unknown"); setTimeout(goNext, 300); }
+                    if (e.key === "2") { setAnswer(q.key, "no"); if (!isLastQ) setTimeout(goNext, 300); }
+                    if (e.key === "3") { setAnswer(q.key, "unknown"); if (!isLastQ) setTimeout(goNext, 300); }
                 }
             }
-            if (e.key === "Enter") goNext();
+            if (e.key === "Enter" && !isLastQ) goNext();
         };
         window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
@@ -683,7 +684,8 @@ function QuestionnaireInner() {
                                     onClick={() => {
                                         setAnswer(q.key, opt.value);
                                         // Auto-advance for "no" and "unknown" (no followup), delayed for "yes" if followup
-                                        if (opt.value !== "yes" || !q.followup) {
+                                        // NEVER auto-advance on the last question — user must click "Odeslat"
+                                        if (!isLast && (opt.value !== "yes" || !q.followup)) {
                                             setTimeout(goNext, 350);
                                         }
                                     }}
@@ -828,9 +830,9 @@ function QuestionnaireInner() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || !ans?.answer}
-                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse"
                             >
-                                {submitting ? "Odesílám…" : "Odeslat dotazník →"}
+                                {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
                             </button>
                         ) : ans?.answer ? (
                             <button
