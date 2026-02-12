@@ -104,9 +104,9 @@ QUESTIONNAIRE_SECTIONS = [
         "questions": [
             {
                 "key": "uses_social_scoring",
-                "text": "Hodnotíte lidi komplexním skóre chování, které ovlivňuje jejich přístup ke službám? (Například: zákazník má horší podmínky kvůli ‚skóre' z nesouvisející oblasti)",
+                "text": "Hodnotíte lidi komplexním skóre chování, které ovlivňuje jejich přístup ke službám?",
                 "type": "yes_no_unknown",
-                "help_text": "Nepatří sem věrnostní programy (sbírání bodů za nákupy). Zakázané je hodnocení lidí na základě širokého profilu (chování, sociální sítě) vedoucí k omezení služeb v nesouvisejícím kontextu.",
+                "help_text": "Například: zákazník má horší podmínky kvůli ‚skóre' z nesouvisející oblasti. Nepatří sem věrnostní programy. Zakázané je hodnocení na základě širokého profilu vedoucí k omezení služeb v nesouvisejícím kontextu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -121,15 +121,16 @@ QUESTIONNAIRE_SECTIONS = [
             },
             {
                 "key": "uses_subliminal_manipulation",
-                "text": "Používáte AI k ovlivňování lidí bez jejich vědomí? (Například: AI, která mění ceny podle nálady zákazníka)",
+                "text": "Používáte AI k ovlivňování lidí bez jejich vědomí?",
                 "type": "yes_no_unknown",
-                "help_text": "Jde o AI využívající podprahové techniky nebo cílící na zranitelnost osob (věk, zdravotní stav, finanční tíseň) k ovlivnění rozhodnutí, které by jinak neučinily. Nepatří sem běžná personalizace nabídek.",
+                "help_text": "Například: AI mění ceny podle nálady zákazníka. Jde o podprahové techniky nebo cílení na zranitelné osoby (věk, zdravotní stav, finanční tíseň). Nepatří sem běžná personalizace nabídek.",
                 "risk_hint": "high",
                 "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
             },
             {
                 "key": "uses_realtime_biometric",
-                "text": "Používáte biometrickou identifikaci (obličej, otisk prstu, hlas)? (Například: docházkový systém nebo kamera rozpoznávající konkrétní osoby)",
+                "text": "Používáte biometrickou identifikaci (obličej, otisk prstu, hlas)?",
+                "help_text": "Například: docházkový systém, kamera rozpoznávající konkrétní osoby nebo přístupový systém na otisk prstu.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -193,6 +194,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_content",
                 "text": "Generujete obrázky, videa nebo texty pomocí AI?",
                 "type": "yes_no_unknown",
+                "help_text": "DALL-E, Midjourney, Stable Diffusion, Canva AI, Jasper, Copy.ai a podobné nástroje.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -209,6 +211,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_deepfake",
                 "text": "Vytváříte syntetická videa, klonujete hlas nebo používáte AI avatary?",
                 "type": "yes_no_unknown",
+                "help_text": "Například: HeyGen, Synthesia, ElevenLabs nebo vlastní nástroje na generování videa/hlasu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -232,7 +235,8 @@ QUESTIONNAIRE_SECTIONS = [
         "questions": [
             {
                 "key": "uses_ai_recruitment",
-                "text": "Používáte AI při náboru zaměstnanců? (třídění životopisů, hodnocení kandidátů)",
+                "text": "Používáte AI při náboru zaměstnanců?",
+                "help_text": "Například: třídění životopisů, automatické hodnocení kandidátů, AI pohovory.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -248,7 +252,8 @@ QUESTIONNAIRE_SECTIONS = [
             },
             {
                 "key": "uses_ai_employee_monitoring",
-                "text": "Sledujete zaměstnance pomocí AI? (produktivita, pohyb, chování)",
+                "text": "Sledujete zaměstnance pomocí AI?",
+                "help_text": "Například: měření produktivity, GPS sledování, analýza chování, kamerový dohled s AI.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -266,6 +271,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_emotion_recognition",
                 "text": "Rozpoznáváte emoce zaměstnanců nebo zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
+                "help_text": "Například: analýza výrazu obličeje, tónu hlasu v call centru, sledování nálady zaměstnanců.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -323,7 +329,8 @@ QUESTIONNAIRE_SECTIONS = [
             },
             {
                 "key": "uses_ai_insurance",
-                "text": "Používáte AI v pojišťovnictví? (stanovení pojistného, likvidace škod)",
+                "text": "Používáte AI v pojišťovnictví?",
+                "help_text": "Například: stanovení pojistného, automatická likvidace škod, hodnocení rizik.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -367,6 +374,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_email_auto",
                 "text": "Automaticky odpovídáte na emaily zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
+                "help_text": "Například: Freshdesk AI, Zendesk AI, Intercom nebo vlastní AI auto-reply.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -383,7 +391,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_decision",
                 "text": "Rozhoduje AI o reklamacích, slevách nebo přístupu ke službám?",
                 "type": "yes_no_unknown",
-                "help_text": "Například: automatické zamítnutí reklamace, AI určuje slevu...",
+                "help_text": "Například: automatické zamítnutí reklamace, AI určuje výši slevy, blokace přístupu ke službě.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -425,7 +433,8 @@ QUESTIONNAIRE_SECTIONS = [
         "questions": [
             {
                 "key": "uses_ai_critical_infra",
-                "text": "Řídí AI něco kritického ve vaší firmě? (energie, voda, doprava, síť)",
+                "text": "Řídí AI něco kritického ve vaší firmě?",
+                "help_text": "Například: řízení energetiky, vodohospodářství, dopravy, telekomunikační sítě.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -442,6 +451,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_safety_component",
                 "text": "Je AI součástí bezpečnostní komponenty vašeho produktu?",
                 "type": "yes_no_unknown",
+                "help_text": "Například: AI řídí brzdy, monitoruje bezpečnost výroby nebo je součástí zdravotnického přístroje.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
