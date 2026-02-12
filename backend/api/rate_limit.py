@@ -245,3 +245,55 @@ class ScanRateLimiter:
 
 # ── Singleton instance ──
 scan_limiter = ScanRateLimiter()
+
+
+# ═══════════════════════════════════════════════════════════════
+#  Admin Rate Limiter — ochrana admin endpointů
+# ═══════════════════════════════════════════════════════════════
+
+ADMIN_RATE_LIMIT = 60          # max requestů za okno
+ADMIN_RATE_WINDOW = 60         # okno v sekundách (1 minuta)
+
+
+class AdminRateLimiter:
+    """
+    Jednoduchý in-memory rate limiter pro admin endpointy.
+    Limit: 60 req/min per IP (nebo per user email).
+    """
+
+    def __init__(self):
+        self._lock = Lock()
+        self._requests: dict[str, list[float]] = defaultdict(list)
+
+    def check(self, key: str) -> tuple[bool, int]:
+        """
+        Zkontroluje rate limit pro daný klíč (IP nebo email).
+        Vrátí (allowed, retry_after_seconds).
+        """
+        now = time.time()
+        cutoff = now - ADMIN_RATE_WINDOW
+
+        with self._lock:
+            # Vyčistit staré záznamy
+            self._requests[key] = [t for t in self._requests[key] if t > cutoff]
+
+            if len(self._requests[key]) >= ADMIN_RATE_LIMIT:
+                # Spočítat retry-after
+                oldest = self._requests[key][0]
+                retry_after = int(oldest + ADMIN_RATE_WINDOW - now) + 1
+                return False, max(1, retry_after)
+
+            self._requests[key].append(now)
+            return True, 0
+
+    def cleanup(self):
+        """Vyčistí staré záznamy (volat periodicky)."""
+        cutoff = time.time() - ADMIN_RATE_WINDOW * 2
+        with self._lock:
+            expired = [k for k, timestamps in self._requests.items()
+                       if not timestamps or timestamps[-1] < cutoff]
+            for k in expired:
+                del self._requests[k]
+
+
+admin_limiter = AdminRateLimiter()

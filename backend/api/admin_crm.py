@@ -8,12 +8,38 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 import time
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.api.auth import AuthUser, require_admin
+from backend.api.rate_limit import admin_limiter
 from backend.config import get_settings
+
+
+async def _check_admin_rate_limit(request: Request):
+    """Admin rate limit per IP."""
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+    ip = ip.split(",")[0].strip()
+    allowed, retry_after = admin_limiter.check(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Příliš mnoho požadavků. Zkuste za {retry_after}s.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+# ── XSS sanitizace & validace ──
+MAX_TITLE_LENGTH = 500
+MAX_DESCRIPTION_LENGTH = 10_000
+MAX_FIELD_LENGTH = 1_000
+
+def _strip_html(text: str) -> str:
+    """Odstraní HTML tagy z textu (prevence XSS)."""
+    if not text:
+        return text
+    return re.sub(r"<[^>]+>", "", text).strip()
 
 logger = logging.getLogger(__name__)
 
@@ -216,6 +242,13 @@ async def crm_update_company_status(
     if not update_data:
         raise HTTPException(status_code=400, detail="Žádná platná pole k aktualizaci")
 
+    # ── XSS sanitizace textových polí ──
+    for field in ("next_action", "assigned_to", "workflow_status", "payment_status", "priority"):
+        if field in update_data and isinstance(update_data[field], str):
+            update_data[field] = _strip_html(update_data[field])
+            if len(update_data[field]) > MAX_FIELD_LENGTH:
+                raise HTTPException(status_code=400, detail=f"{field} max {MAX_FIELD_LENGTH} znaků")
+
     try:
         # Update company
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -272,11 +305,17 @@ async def crm_add_note(
     body = await request.json()
 
     activity_type = body.get("activity_type", "note")
-    title = body.get("title", "")
-    description = body.get("description", "")
+    title = _strip_html(body.get("title", ""))
+    description = _strip_html(body.get("description", ""))
 
     if not title:
         raise HTTPException(status_code=400, detail="title je povinný")
+
+    # ── Limity velikosti (DoS prevence) ──
+    if len(title) > MAX_TITLE_LENGTH:
+        raise HTTPException(status_code=400, detail=f"title max {MAX_TITLE_LENGTH} znaků")
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        raise HTTPException(status_code=400, detail=f"description max {MAX_DESCRIPTION_LENGTH} znaků")
 
     # Ověříme že firma existuje
     company_res = supabase.table("companies").select("id").eq("id", company_id).execute()
@@ -410,7 +449,11 @@ async def crm_pipeline(user: AuthUser = Depends(require_admin)):
 # ─────────────────────────────────────────────
 
 @router.get("/crm/dashboard-stats")
-async def crm_dashboard_stats(user: AuthUser = Depends(require_admin)):
+async def crm_dashboard_stats(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
     """Rozšířené statistiky pro CRM dashboard."""
     from backend.database import get_supabase
     supabase = get_supabase()

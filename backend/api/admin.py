@@ -11,14 +11,31 @@ from backend.outbound.deliverability import (
     process_resend_webhook,
 )
 from backend.api.auth import AuthUser, require_admin, TEST_EMAILS
-from backend.api.rate_limit import scan_limiter
+from backend.api.rate_limit import scan_limiter, admin_limiter
 from backend.security import log_access
 
 router = APIRouter()
 
 
+# ── Admin rate limit dependency ──
+async def _check_admin_rate_limit(request: Request):
+    """FastAPI dependency: kontroluje admin rate limit per IP."""
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+    ip = ip.split(",")[0].strip()
+    allowed, retry_after = admin_limiter.check(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Příliš mnoho požadavků. Zkuste za {retry_after}s.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+
 @router.get("/stats")
-async def admin_stats(user: AuthUser = Depends(require_admin)):
+async def admin_stats(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
     """Vrátí přehledové statistiky pro admin dashboard."""
     try:
         stats = await get_stats()
@@ -69,10 +86,16 @@ async def admin_companies(status: str = "all", limit: int = 50, user: AuthUser =
 
 
 @router.get("/email-health")
-async def admin_email_health(user: AuthUser = Depends(require_admin)):
+async def admin_email_health(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
     """Vrátí zdravotní metriky emailové kampaně."""
     try:
         health = await get_email_health()
+        # Přidáme top-level status pro E2E testy a dashboard
+        is_healthy = health.get("is_healthy", False)
+        health["status"] = "ok" if is_healthy else "warning"
         return health
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
