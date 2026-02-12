@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Pokud jde o chráněnou routu a uživatel není přihlášen → redirect na login
-    const isProtected = PROTECTED_ROUTES.some((route) =>
+    // /admin/login je výjimka — má vlastní CRM autentizaci
+    const isAdminLogin = request.nextUrl.pathname === "/admin/login";
+    const isProtected = !isAdminLogin && PROTECTED_ROUTES.some((route) =>
         request.nextUrl.pathname.startsWith(route),
     );
 
