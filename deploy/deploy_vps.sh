@@ -146,8 +146,8 @@ PATH=/opt/aishield/venv/bin:/usr/local/bin:/usr/bin:/bin
 # Lead scoring — denně v 7:00
 0 7 * * * root cd /opt/aishield && /opt/aishield/venv/bin/python3 -c "import asyncio; from backend.prospecting.lead_scoring import score_all_companies; asyncio.run(score_all_companies())" >> /var/log/aishield-scoring.log 2>&1
 
-# Cleanup orchestrator logs starší 30 dní — měsíčně
-0 2 1 * * root cd /opt/aishield && /opt/aishield/venv/bin/python3 -c "from backend.services.supabase_client import get_supabase; from datetime import datetime, timedelta; s=get_supabase(); s.table('orchestrator_log').delete().lt('started_at', (datetime.utcnow()-timedelta(days=30)).isoformat()).execute()" >> /var/log/aishield-cleanup.log 2>&1
+# Data retention cleanup — denně v 4:00 (audit log, staré eventy, neaktivní firmy)
+0 4 * * * root cd /opt/aishield && /opt/aishield/venv/bin/python3 -m backend.security.data_cleanup >> /var/log/aishield-cleanup.log 2>&1
 CRON
 
 chmod 644 /etc/cron.d/aishield

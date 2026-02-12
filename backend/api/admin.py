@@ -12,6 +12,7 @@ from backend.outbound.deliverability import (
 )
 from backend.api.auth import AuthUser, require_admin, TEST_EMAILS
 from backend.api.rate_limit import scan_limiter
+from backend.security import log_access
 
 router = APIRouter()
 
@@ -448,3 +449,127 @@ async def test_reset_user(request: Request):
             f"Účet je auto-potvrzený — můžete se rovnou přihlásit."
         ),
     }
+
+
+# ── Audit Log & Data Purge ──
+
+
+@router.get("/audit-log")
+async def admin_audit_log(
+    limit: int = 100,
+    resource_type: str = "",
+    user: AuthUser = Depends(require_admin),
+):
+    """Vrátí posledních N záznamů z audit logu."""
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    query = supabase.table("data_access_log").select("*")
+    if resource_type:
+        query = query.eq("resource_type", resource_type)
+    res = query.order("created_at", desc=True).limit(limit).execute()
+
+    return {"logs": res.data or [], "total": len(res.data or [])}
+
+
+@router.delete("/company/{company_id}/purge")
+async def admin_purge_company(
+    company_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Kompletní smazání VŠECH dat firmy z DB (GDPR právo na výmaz).
+    Doporučeno: nejprve exportovat přes GET /api/admin/export/{company_id}.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    # Ověříme že firma existuje
+    company = supabase.table("companies").select("id, name, url, email").eq("id", company_id).execute()
+    if not company.data:
+        raise HTTPException(status_code=404, detail="Firma nenalezena")
+
+    company_info = company.data[0]
+    company_name = company_info.get("name", "?")
+
+    # Audit log PŘED smazáním
+    await log_access(
+        actor_email=user.email,
+        action="delete",
+        resource_type="company",
+        resource_id=company_id,
+        resource_detail=f"PURGE: {company_name} ({company_info.get('url', '')})",
+        request=request,
+        metadata={"company": company_info},
+    )
+
+    deleted = []
+
+    # 1. Findings (přes scan_ids)
+    scans = supabase.table("scans").select("id").eq("company_id", company_id).execute()
+    for s in (scans.data or []):
+        supabase.table("findings").delete().eq("scan_id", s["id"]).execute()
+    if scans.data:
+        deleted.append(f"findings ({len(scans.data)} skenů)")
+
+    # 2. Questionnaire responses (přes client_ids)
+    clients = supabase.table("clients").select("id").eq("company_id", company_id).execute()
+    for c in (clients.data or []):
+        supabase.table("questionnaire_responses").delete().eq("client_id", c["id"]).execute()
+        supabase.table("documents").delete().eq("client_id", c["id"]).execute()
+        supabase.table("alerts").delete().eq("client_id", c["id"]).execute()
+    if clients.data:
+        deleted.append(f"questionnaire + docs + alerts ({len(clients.data)} klientů)")
+
+    # 3. Přímé tabulky
+    for tbl in ["scan_diffs", "scans", "clients", "widget_configs"]:
+        try:
+            supabase.table(tbl).delete().eq("company_id", company_id).execute()
+            deleted.append(tbl)
+        except Exception:
+            pass
+
+    # 4. Objednávky podle emailu
+    email = company_info.get("email")
+    if email:
+        for tbl in ["orders", "subscriptions"]:
+            try:
+                supabase.table(tbl).delete().eq("email", email).execute()
+                deleted.append(tbl)
+            except Exception:
+                pass
+
+    # 5. Smaž firmu samotnou
+    supabase.table("companies").delete().eq("id", company_id).execute()
+    deleted.append("companies")
+
+    return {
+        "status": "purged",
+        "company_id": company_id,
+        "company_name": company_name,
+        "deleted": deleted,
+        "message": f"Všechna data firmy {company_name} byla smazána (GDPR výmaz).",
+    }
+
+
+@router.post("/cleanup/run")
+async def admin_run_cleanup(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """Manuálně spustí data retention cleanup."""
+    from backend.security.data_cleanup import run_cleanup
+
+    result = await run_cleanup()
+
+    await log_access(
+        actor_email=user.email,
+        action="delete",
+        resource_type="cleanup",
+        resource_detail="Manuální spuštění data retention cleanup",
+        request=request,
+        metadata=result.get("report", {}),
+    )
+
+    return result

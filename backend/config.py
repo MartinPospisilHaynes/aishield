@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     email_from: str = "info@aishield.cz"
     resend_webhook_secret: str = ""
 
+    # ── Data Security ──
+    data_export_key: str = ""  # Fernet klíč pro šifrovaný export (vygeneruj: python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
+
     class Config:
         env_file = "../../.env"
         env_file_encoding = "utf-8"
