@@ -41,7 +41,7 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "company_industry",
                 "text": "Čím se vaše firma zabývá?",
-                "type": "single_select",
+                "type": "multi_select",
                 "options": [
                     "E-shop / Online obchod",
                     "Účetnictví / Finance",
@@ -58,6 +58,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "Zemědělství",
                     "Jiné",
                 ],
+                "help_text": "Vyberte všechna odvětví, která se vás týkají.",
                 "risk_hint": "none",
                 "ai_act_article": None,
             },
@@ -89,7 +90,7 @@ QUESTIONNAIRE_SECTIONS = [
                     ]
                 },
                 "risk_hint": "high",
-                "ai_act_article": "čl. 2 + čl. 28 — role v hodnotovém řetězci AI",
+                "ai_act_article": "čl. 3 (definice rolí) + čl. 16–29 — povinnosti dle role v řetězci AI",
             },
         ],
     },
@@ -99,20 +100,20 @@ QUESTIONNAIRE_SECTIONS = [
     {
         "id": "prohibited_systems",
         "title": "Zakázané praktiky",
-        "description": "Systémy, které AI Act výslovně zakazuje (čl. 5). Pokuta až 35 mil. EUR.",
+        "description": "Systémy, které AI Act výslovně zakazuje (čl. 5). Většina firem žádný nepoužívá — ověřte si to.",
         "questions": [
             {
                 "key": "uses_social_scoring",
-                "text": "Bodujete zákazníky nebo zaměstnance podle chování? (Například: věrnostní systém, který omezuje služby při špatném skóre)",
+                "text": "Hodnotíte lidi komplexním skóre chování, které ovlivňuje jejich přístup ke službám? (Například: zákazník má horší podmínky kvůli ‚skóre' z nesouvisející oblasti)",
                 "type": "yes_no_unknown",
-                "help_text": "Nepatří sem klasické věrnostní programy (sbírání bodů za nákupy). Jde o systémy, které omezují přístup ke službám na základě hodnocení chování.",
+                "help_text": "Nepatří sem věrnostní programy (sbírání bodů za nákupy). Zakázané je hodnocení lidí na základě širokého profilu (chování, sociální sítě) vedoucí k omezení služeb v nesouvisejícím kontextu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "scoring_tool_name", "label": "Název systému", "type": "select",
                          "options": ["Vlastní systém", "Salesforce", "HubSpot", "Jiný CRM", "Nevím název"]},
-                        {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "select",
-                         "options": ["Zaměstnanci", "Zákazníci", "Obojí"]},
+                        {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "multi_select",
+                         "options": ["Zaměstnanci", "Zákazníci"]},
                     ]
                 },
                 "risk_hint": "high",
@@ -122,13 +123,13 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_subliminal_manipulation",
                 "text": "Používáte AI k ovlivňování lidí bez jejich vědomí? (Například: AI, která mění ceny podle nálady zákazníka)",
                 "type": "yes_no_unknown",
-                "help_text": "Jde o AI, která záměrně manipuluje rozhodování lidí technikami, které nelze rozumně rozpoznat.",
+                "help_text": "Jde o AI využívající podprahové techniky nebo cílící na zranitelnost osob (věk, zdravotní stav, finanční tíseň) k ovlivnění rozhodnutí, které by jinak neučinily. Nepatří sem běžná personalizace nabídek.",
                 "risk_hint": "high",
                 "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
             },
             {
                 "key": "uses_realtime_biometric",
-                "text": "Rozpoznáváte lidi kamerou v reálném čase? (Například: kamera na vstupu, která identifikuje obličeje)",
+                "text": "Používáte biometrickou identifikaci (obličej, otisk prstu, hlas)? (Například: docházkový systém nebo kamera rozpoznávající konkrétní osoby)",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -140,7 +141,7 @@ QUESTIONNAIRE_SECTIONS = [
                     ]
                 },
                 "risk_hint": "high",
-                "ai_act_article": "čl. 5 odst. 1 písm. h) — zákaz biometrické identifikace v reálném čase",
+                "ai_act_article": "čl. 5 odst. 1 písm. h) — ve veřejném prostoru zakázáno; jinde vysoce riziková (Příloha III)",
             },
         ],
     },
@@ -165,7 +166,7 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "chatgpt_purpose", "label": "K čemu je používáte?", "type": "multi_select",
                          "options": ["Psaní textů", "Překlady", "Emaily", "Analýza dat", "Programování", "Zákaznický servis", "Jiné"]},
                         {"key": "chatgpt_data_type", "label": "Jaká data do něj vkládáte?", "type": "multi_select",
-                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data"]},
+                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data", "Zdrojový kód / obchodní tajemství"]},
                     ]
                 },
                 "risk_hint": "limited",
@@ -186,7 +187,7 @@ QUESTIONNAIRE_SECTIONS = [
                     ]
                 },
                 "risk_hint": "minimal",
-                "ai_act_article": "čl. 50 — transparentnost AI generovaného kódu",
+                "ai_act_article": None,
             },
             {
                 "key": "uses_ai_content",
@@ -237,7 +238,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "recruitment_tool", "label": "Název nástroje", "type": "select",
-                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Vlastní systém", "Jiný", "Nevím název"]},
+                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Vlastní systém", "Jiný", "Nevím název"]},
                         {"key": "recruitment_autonomous", "label": "Rozhoduje AI samostatně o kandidátech?", "type": "select",
                          "options": ["Ano, automaticky filtruje", "Ne, pouze doporučuje", "Částečně"]},
                     ]
@@ -296,7 +297,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "accounting_tool", "label": "Název nástroje", "type": "select",
-                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "Vlastní/jiný", "Nevím název"]},
+                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Vlastní/jiný", "Nevím název"]},
                         {"key": "accounting_decisions", "label": "Dělá AI autonomní finanční rozhodnutí?", "type": "select",
                          "options": ["Ne, pouze asistuje", "Ano, schvaluje platby", "Ano, hodnotí kreditní riziko"]},
                     ]
@@ -354,7 +355,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "chatbot_tool_name", "label": "Název nástroje", "type": "select",
-                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Vlastní řešení", "Nevím název"]},
+                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Vlastní řešení", "Nevím název"]},
                         {"key": "chatbot_disclosed", "label": "Ví návštěvník, že komunikuje s AI?", "type": "select",
                          "options": ["Ano, je to označeno", "Ne", "Částečně"]},
                     ]
@@ -388,11 +389,29 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "decision_scope", "label": "O čem AI rozhoduje?", "type": "text"},
                         {"key": "decision_human_review", "label": "Je k dispozici lidský přezkum?", "type": "select",
-                         "options": ["Ano, vždy", "Na vyžádání", "Ne"]},
+                         "options": ["Ano, lidský dohled u každého rozhodnutí", "Částečně — AI doporučuje, člověk schvaluje", "Ne, AI rozhoduje autonomně"]},
                     ]
                 },
                 "risk_hint": "high",
                 "ai_act_article": "čl. 14 — lidský dohled nad vysoce rizikovými systémy",
+            },
+            {
+                "key": "uses_dynamic_pricing",
+                "text": "Používáte AI k automatickému nastavování cen podle chování zákazníka?",
+                "type": "yes_no_unknown",
+                "help_text": "Například: ceny na e-shopu se mění podle historie nákupů, lokace nebo profilu zákazníka. Dynamické ceny dle sezóny nebo poptávky jsou běžné — problém je personalizace cílící na zranitelné skupiny.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "pricing_tool", "label": "Název nástroje", "type": "text"},
+                        {"key": "pricing_basis", "label": "Na základě čeho se ceny mění?", "type": "multi_select",
+                         "options": ["Historie nákupů", "Lokace zákazníka", "Čas / sezóna", "Profil zákazníka", "Poptávka", "Jiné"]},
+                        {"key": "pricing_disclosed", "label": "Ví zákazník o personalizaci cen?", "type": "select",
+                         "options": ["Ano", "Ne", "Částečně"]},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 5 odst. 1 písm. a/b) — potenciálně manipulativní, pokud cílí na zranitelné osoby",
             },
         ],
     },
@@ -448,7 +467,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "ai_processes_personal_data",
                 "text": "Zpracovávají vaše AI systémy osobní údaje?",
                 "type": "yes_no_unknown",
-                "help_text": "Jména, emaily, rodná čísla, fotografie, zdravotní údaje...",
+                "help_text": "Jména, emaily, rodná čísla, fotografie, zdravotní údaje... U vysoce rizikových AI systémů doporučujeme DPIA (GDPR čl. 35) i FRIA — posouzení dopadů na základní práva (AI Act čl. 27).",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -458,8 +477,8 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Ano", "Ne", "Nevím co to je"]},
                     ]
                 },
-                "risk_hint": "high",
-                "ai_act_article": "čl. 10 — správa dat pro vysoce rizikové AI",
+                "risk_hint": "limited",
+                "ai_act_article": "GDPR čl. 35 (DPIA) + AI Act čl. 10/27 — správa dat a posouzení dopadů",
             },
             {
                 "key": "ai_data_stored_eu",
@@ -506,6 +525,13 @@ QUESTIONNAIRE_SECTIONS = [
         ],
     },
 ]
+
+# Pořadí sekcí: od jednoduchých k náročným, zakázané praktiky až ke konci
+_SECTION_ORDER = [
+    "industry", "internal_ai", "customer_service", "hr", "finance",
+    "prohibited_systems", "infrastructure_safety", "data_protection", "ai_literacy",
+]
+QUESTIONNAIRE_SECTIONS.sort(key=lambda s: _SECTION_ORDER.index(s["id"]))
 
 
 # ── Pydantic modely ──
@@ -808,6 +834,7 @@ def _get_recommendation(question_key: str, risk: str, tool_name: str, details: O
         "uses_ai_chatbot": f"Informujte návštěvníky, že komunikují s AI (čl. 50 odst. 1 AI Act). Přidejte jasné označení k {tool_name}.",
         "uses_ai_email_auto": f"Informujte zákazníky, že komunikují s AI (čl. 50 odst. 1). Přidejte jasné označení do automatických odpovědí.",
         "uses_ai_decision": f"AI rozhodující o právech zákazníků vyžaduje lidský dohled (čl. 14 AI Act). Zajistěte právo na přezkum člověkem.",
+        "uses_dynamic_pricing": "Dynamické ceny řízené AI mohou být problematické, pokud cílí na zranitelné skupiny (čl. 5 AI Act). Zajistěte transparentnost cenotvorby a nediskriminaci zákazníků.",
         # Kritická infrastruktura
         "uses_ai_critical_infra": f"VYSOCE RIZIKOVÝ systém! AI v kritické infrastruktuře spadá pod Přílohu III bod 2. Proveďte conformity assessment a zajistěte systém řízení rizik dle čl. 9.",
         "uses_ai_safety_component": f"VYSOCE RIZIKOVÝ systém! AI jako bezpečnostní komponenta spadá pod čl. 6 odst. 1. Zajistěte CE označení a conformity assessment.",

@@ -147,24 +147,8 @@ function QuestionnaireInner() {
     /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
         setDirection("forward");
-        // Check section transition
-        if (currentQuestion >= 0 && currentQuestion < totalQuestions - 1) {
-            const cur = allQuestions[currentQuestion];
-            const nxt = allQuestions[currentQuestion + 1];
-            if (cur._section !== nxt._section) {
-                const sec = sections.find((s) => s.id === nxt._section);
-                if (sec) {
-                    setSectionFlash(sec.title);
-                    setTimeout(() => {
-                        setSectionFlash(null);
-                        setCurrentQuestion((p) => p + 1);
-                    }, 800);
-                    return;
-                }
-            }
-        }
         setCurrentQuestion((p) => p + 1);
-    }, [currentQuestion, totalQuestions, allQuestions, sections]);
+    }, []);
 
     const goBack = useCallback(() => {
         setDirection("back");
@@ -290,20 +274,6 @@ function QuestionnaireInner() {
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-slate-400">Připravuji dotazník…</p>
-                </div>
-            </div>
-        );
-    }
-
-    /* ── Section flash overlay ── */
-    if (sectionFlash) {
-        return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <div className="text-center animate-fade-in">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center mx-auto mb-6">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">{sectionFlash}</h2>
                 </div>
             </div>
         );
@@ -444,8 +414,12 @@ function QuestionnaireInner() {
     const isLast = currentQuestion === totalQuestions - 1;
     const showFollowup = ans?.answer === "yes" && q.followup;
 
-    /* ── Industry select (first question, type single_select) ── */
-    if (q.type === "single_select" && q.options) {
+    /* ── Multi-select grid (industry, etc.) ── */
+    if ((q.type === "multi_select" || q.type === "single_select") && q.options) {
+        const isMulti = q.type === "multi_select";
+        const mkey = `topLevel__${q.key}`;
+        const selectedItems = isMulti ? (multiSelections[mkey] || []) : [];
+
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
                 {/* Progress bar */}
@@ -453,19 +427,47 @@ function QuestionnaireInner() {
 
                 <div className="flex-1 flex items-center justify-center p-4 pt-16">
                     <div className={`w-full max-w-2xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8 text-center">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center">
                             {q.text}
                         </h2>
 
+                        {/* Help text */}
+                        {q.help_text && (
+                            <p className="text-slate-400 text-sm mb-6 text-center">
+                                {q.help_text}
+                            </p>
+                        )}
+                        {!q.help_text && isMulti && (
+                            <p className="text-slate-500 text-sm mb-6 text-center">
+                                Můžete zvolit více možností
+                            </p>
+                        )}
+                        {!q.help_text && !isMulti && <div className="mb-6" />}
+
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {q.options.map((opt) => {
-                                const selected = ans?.answer === opt;
+                                const selected = isMulti
+                                    ? selectedItems.includes(opt)
+                                    : ans?.answer === opt;
                                 return (
                                     <button
                                         key={opt}
                                         onClick={() => {
-                                            setAnswer(q.key, opt);
-                                            setTimeout(goNext, 350);
+                                            if (isMulti) {
+                                                // Toggle multi-select
+                                                setMultiSelections((prev) => {
+                                                    const current = prev[mkey] || [];
+                                                    const next = current.includes(opt)
+                                                        ? current.filter((v) => v !== opt)
+                                                        : [...current, opt];
+                                                    // Store as comma-separated in answer for submission
+                                                    setAnswer(q.key, next.join(", "));
+                                                    return { ...prev, [mkey]: next };
+                                                });
+                                            } else {
+                                                setAnswer(q.key, opt);
+                                                setTimeout(goNext, 350);
+                                            }
                                         }}
                                         className={`
                       p-4 rounded-2xl border text-left transition-all duration-200
@@ -475,6 +477,9 @@ function QuestionnaireInner() {
                                             }
                     `}
                                     >
+                                        {selected && isMulti && (
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mb-1"><path d="M20 6L9 17l-5-5" /></svg>
+                                        )}
                                         <span className="text-2xl block mb-2">
                                             {INDUSTRY_ICONS[opt] || "📦"}
                                         </span>
@@ -484,7 +489,7 @@ function QuestionnaireInner() {
                             })}
                         </div>
 
-                        {/* Back button */}
+                        {/* Navigation */}
                         <div className="flex justify-between mt-8">
                             <button
                                 onClick={goBack}
@@ -492,7 +497,7 @@ function QuestionnaireInner() {
                             >
                                 ← Zpět
                             </button>
-                            {ans?.answer && (
+                            {(isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
                                 <button
                                     onClick={goNext}
                                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
@@ -537,9 +542,9 @@ function QuestionnaireInner() {
                     {/* Answer tiles */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
                         {([
-                            { value: "yes", label: "Ano", sub: "1", activeClass: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300", icon: "✓" },
-                            { value: "no", label: "Ne", sub: "2", activeClass: "bg-slate-500/15 border-slate-400/30 text-slate-300", icon: "✕" },
-                            { value: "unknown", label: "Nevím", sub: "3", activeClass: "bg-amber-500/15 border-amber-500/40 text-amber-300", icon: "?" },
+                            { value: "yes", label: "Ano", activeClass: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300", icon: "✓" },
+                            { value: "no", label: "Ne", activeClass: "bg-slate-500/15 border-slate-400/30 text-slate-300", icon: "✕" },
+                            { value: "unknown", label: "Nevím", activeClass: "bg-amber-500/15 border-amber-500/40 text-amber-300", icon: "?" },
                         ] as const).map((opt) => {
                             const selected = ans?.answer === opt.value;
                             return (
@@ -562,7 +567,6 @@ function QuestionnaireInner() {
                                 >
                                     <span className="text-2xl block mb-1">{opt.icon}</span>
                                     <span className="text-base font-semibold block">{opt.label}</span>
-                                    <span className="text-[10px] text-slate-500 absolute top-2 right-3">{opt.sub}</span>
                                 </button>
                             );
                         })}

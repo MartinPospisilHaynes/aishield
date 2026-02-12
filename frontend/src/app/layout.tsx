@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/providers";
-import Header from "@/components/header";
+import HeaderVisibility from "@/components/header-visibility";
 import ConsentBanner from "@/components/consent-banner";
 
 export const metadata: Metadata = {
@@ -62,8 +62,8 @@ export default function RootLayout({
             </head>
             <body className="bg-dark-900 text-slate-100">
                 <Providers>
-                    {/* ── Header ── */}
-                    <Header />
+                    {/* ── Header (skrytý v dotazníku — koliduje s progress barem) ── */}
+                    <HeaderVisibility />
 
                     {/* ── Main Content ── */}
                     <main className="min-h-screen">{children}</main>
