@@ -4,6 +4,8 @@ Veřejný endpoint pro odhlášení z emailových notifikací.
 Povinné dle GDPR — musí fungovat jedním klikem.
 """
 
+import html as html_mod
+
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from datetime import datetime
@@ -18,6 +20,9 @@ async def unsubscribe_page(company: str = "", email: str = ""):
     GET /api/unsubscribe?company=URL&email=EMAIL
     Zobrazí potvrzovací stránku — GDPR vyžaduje jednoduchost.
     """
+    # Sanitize inputs against XSS
+    company = html_mod.escape(company)
+    email = html_mod.escape(email)
     return HTMLResponse(f"""
     <!DOCTYPE html>
     <html lang="cs">

@@ -179,22 +179,12 @@ def _decode_token(token: str) -> dict:
                 detail="Neplatný nebo expirovaný token",
             )
 
-    # 4. Fallback — decode without signature, validate structure
-    try:
-        payload = jwt.decode(
-            token,
-            options={
-                "verify_signature": False,
-                "verify_exp": True,
-                "verify_aud": False,
-            },
-        )
-    except JWTError as e:
-        logger.warning(f"[Auth] JWT decode failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Neplatný nebo expirovaný token",
-        )
+    # 4. No valid verification path found — REJECT
+    logger.warning(f"[Auth] No valid verification path for alg={alg}, kid={kid}")
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Neplatný nebo expirovaný token",
+    )
 
     # Validate issuer
     iss = payload.get("iss", "")

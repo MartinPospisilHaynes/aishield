@@ -39,18 +39,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # ═══════════════════════════════════════════
 #  KONFIGURACE
 # ═══════════════════════════════════════════
-API = "https://api.aishield.cz"
-WEB = "https://aishield.cz"
-SUPABASE_URL = "https://rsxwqcrkttlfnqbjgpgc.supabase.co"
-SUPABASE_ANON_KEY = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-    "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdxY3JrdHRsZm5xYmpncGdjIiwi"
-    "cm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NzEzMTcsImV4cCI6MjA4NjE0NzMxN30."
-    "dOWAju8BwIcFTJaMe04eG5LVac4nkpiwdIz46-mQPTs"
-)
-TEST_EMAIL = "info@desperados-design.cz"
-TEST_PASSWORD = "Rc_732716141"
-TEST_WEB = "https://www.desperados-design.cz"
+API = os.environ.get("TEST_API_URL", "https://api.aishield.cz")
+WEB = os.environ.get("TEST_WEB_URL", "https://aishield.cz")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://rsxwqcrkttlfnqbjgpgc.supabase.co")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+TEST_EMAIL = os.environ.get("TEST_EMAIL", "")
+TEST_PASSWORD = os.environ.get("TEST_PASSWORD", "")
+TEST_WEB = os.environ.get("TEST_WEB", "https://www.desperados-design.cz")
+
+if not SUPABASE_ANON_KEY or not TEST_EMAIL or not TEST_PASSWORD:
+    raise RuntimeError(
+        "Chybí env proměnné: SUPABASE_ANON_KEY, TEST_EMAIL, TEST_PASSWORD. "
+        "Nastav je před spuštěním testů."
+    )
 
 # ── User-Agent strings pro simulaci zařízení ──
 UA_DESKTOP_CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"

@@ -26,13 +26,17 @@ from backend.api.send_report import router as send_report_router
 from backend.api.ares_lookup import router as ares_lookup_router
 
 # ── Vytvoření aplikace ──
+from backend.config import get_settings as _get_settings
+_cfg = _get_settings()
+
 app = FastAPI(
     title="AIshield.cz API",
     description="🛡️ AI Act Compliance Scanner — API pro skenování webů, "
                 "klasifikaci AI systémů a generování compliance dokumentů.",
     version="0.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if _cfg.debug else None,
+    redoc_url="/redoc" if _cfg.debug else None,
+    openapi_url="/openapi.json" if _cfg.debug else None,
 )
 
 # ── CORS — povolení volání z frontendu ──
@@ -44,8 +48,8 @@ app.add_middleware(
         "https://www.aishield.cz",      # Produkce s www
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
 # ── Registrace routerů ──

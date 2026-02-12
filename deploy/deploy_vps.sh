@@ -91,12 +91,25 @@ server {
     listen 80;
     server_name api.aishield.cz;
 
+    # Security headers
+    server_tokens off;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Skrýt interní hlavičky
+        proxy_hide_header X-Powered-By;
+        proxy_hide_header Server;
         
         # Dlouhé timeouty pro skeny (až 2 min)
         proxy_read_timeout 180s;

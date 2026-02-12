@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Routy vyžadující přihlášení
-const PROTECTED_ROUTES = ["/dashboard"];
+const PROTECTED_ROUTES = ["/dashboard", "/admin", "/dotaznik"];
 
 export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({ request });
@@ -40,7 +40,11 @@ export async function middleware(request: NextRequest) {
 
     if (isProtected && !user) {
         const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+        // Validate redirect is a safe relative path
+        const redirectPath = request.nextUrl.pathname;
+        if (redirectPath.startsWith("/") && !redirectPath.startsWith("//") && !redirectPath.includes("://")) {
+            loginUrl.searchParams.set("redirect", redirectPath);
+        }
         return NextResponse.redirect(loginUrl);
     }
 
@@ -53,5 +57,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/login", "/registrace"],
+    matcher: ["/dashboard/:path*", "/admin/:path*", "/dotaznik/:path*", "/login", "/registrace"],
 };

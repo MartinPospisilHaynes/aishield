@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     app_name: str = "AIshield.cz"
     app_url: str = "https://aishield.cz"
     api_url: str = "https://api.aishield.cz"
-    environment: str = "development"
-    debug: bool = True
+    environment: str = "production"
+    debug: bool = False
 
     # ── Supabase ──
     supabase_url: str

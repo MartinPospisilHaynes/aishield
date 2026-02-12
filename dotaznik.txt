@@ -1,0 +1,498 @@
+══════════════════════════════════════════════════════════════════
+AISHIELD.CZ — DOTAZNÍK AI ACT COMPLIANCE
+Verze k revizi — únor 2026
+══════════════════════════════════════════════════════════════════
+
+KONTEXT PRO RECENZENTA (AI):
+─────────────────────────────────────────────────────────────────
+Představ si, že jsi odborný auditor na nařízení EU o umělé
+inteligenci (AI Act, Regulation (EU) 2024/1689). Posuzuješ
+dotazník, který je součástí komerčního SaaS produktu AIshield.cz.
+
+Produkt funguje takto:
+1. Zákazník (česká firma, e-shop, web) zadá URL svého webu.
+2. Náš automatický skener analyzuje web — detekuje chatboty,
+   AI nástroje, cookies, trackery, skripty, a klasifikuje
+   nálezy podle rizikových kategorií AI Act.
+3. Po skenu zákazník vyplní TENTO DOTAZNÍK, který pokrývá
+   oblasti, které skener nevidí — interní AI nástroje, HR,
+   finance, ochrana dat, AI gramotnost atd.
+4. Na základě skenu + dotazníku vygenerujeme compliance report
+   s konkrétními doporučeními a rizikovým profilem.
+5. Zákazník si poté vybere cenový balíček (konzultace,
+   dokumentace, plný audit).
+
+Cílová skupina: české firmy, e-shopy, weby — od OSVČ po
+střední podniky. Většina NEMÁ právní oddělení a NEMÁ hlubší
+znalost AI regulace. Dotazník musí být srozumitelný i pro
+majitele malého e-shopu, který o AI Act slyší poprvé.
+
+TVŮJ ÚKOL:
+Buď VELICE KRITICKÝ. Hledej:
+- Chybějící otázky, které by tam MĚLY být dle AI Act
+- Otázky, které jsou špatně formulované nebo matoucí
+- Chybné nebo nepřesné reference na články AI Act
+- Místa, kde by měl být multi-select místo single-select
+- Místa, kde chybí follow-up otázky
+- UX problémy (příliš dlouhé otázky, nejasný jazyk)
+- Právní nepřesnosti
+- Chybějící oblasti AI Act, které dotazník nepokrývá
+- Cokoliv, co by mohlo vést k chybné klasifikaci rizika
+
+Nebuď zdvořilý. Buď přímý. Kde je chyba, řekni to jasně.
+
+═══════════════════════════════════════════════════════════════
+TECHNICKÉ PARAMETRY DOTAZNÍKU
+═══════════════════════════════════════════════════════════════
+
+- 9 sekcí, 26 otázek celkem
+- Odhadovaný čas vyplnění: 5 minut
+- Typy otázek:
+  • single_select — výběr jedné odpovědi z nabídky
+  • yes_no_unknown — tři tlačítka: Ano / Ne / Nevím
+- Follow-up: u některých otázek se po odpovědi "Ano" zobrazí
+  upřesňující pole (select, multi_select, nebo text)
+- Klávesové zkratky: 1=Ano, 2=Ne, 3=Nevím
+- Automatický postup na další otázku po kliknutí na Ne/Nevím
+- Při odpovědi Ano se čeká na vyplnění follow-up polí
+- Risk hint u každé otázky: none / minimal / limited / high
+- Referenční článek AI Act u každé relevantní otázky
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 1: O VAŠÍ FIRMĚ
+═══════════════════════════════════════════════════════════════
+Popis: "Řeknete nám, čím se zabýváte, a my přizpůsobíme otázky."
+
+OTÁZKA 1.1: Čím se vaše firma zabývá?
+  Typ: single_select (vyber jednu)
+  Volby:
+    • E-shop / Online obchod
+    • Účetnictví / Finance
+    • Zdravotnictví
+    • Vzdělávání / Školství
+    • Výroba / Průmysl
+    • IT / Technologie
+    • Stavebnictví
+    • Doprava / Logistika
+    • Restaurace / Gastronomie
+    • Kadeřnictví / Kosmetika
+    • Právní služby
+    • Nemovitosti / Reality
+    • Zemědělství
+    • Jiné
+  Risk hint: none
+  AI Act článek: —
+
+OTÁZKA 1.2: Kolik má vaše firma zaměstnanců?
+  Typ: single_select (vyber jednu)
+  Volby:
+    • Jen já (OSVČ)
+    • 2–9 zaměstnanců
+    • 10–49 zaměstnanců
+    • 50–249 zaměstnanců
+    • 250+ zaměstnanců
+  Nápověda: "Malé a střední podniky mají dle AI Act některé úlevy."
+  Risk hint: none
+  AI Act článek: čl. 62 — povinnosti MSP a start-upů
+
+OTÁZKA 1.3: Vyvíjíte vlastní AI systémy nebo modely?
+  Typ: yes_no_unknown
+  Nápověda: "Trénujete vlastní modely, vyvíjíte AI software pro
+  zákazníky, nebo AI integrujete do svých produktů?"
+  Follow-up (při "Ano"):
+    • Jaká je vaše role? [MULTI-SELECT]
+      - Vyvíjíme AI (provider)
+      - Nasazujeme AI od jiných (deployer)
+      - Importujeme AI do EU (importer)
+      - Distribuujeme AI (distributor)
+  Risk hint: high
+  AI Act článek: čl. 2 + čl. 28 — role v hodnotovém řetězci AI
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 2: ZAKÁZANÉ PRAKTIKY (čl. 5)
+═══════════════════════════════════════════════════════════════
+Popis: "Systémy, které AI Act výslovně zakazuje (čl. 5).
+Pokuta až 35 mil. EUR."
+
+OTÁZKA 2.1: Bodujete zákazníky nebo zaměstnance podle chování?
+  (Například: věrnostní systém, který omezuje služby při
+  špatném skóre)
+  Typ: yes_no_unknown
+  Nápověda: "Nepatří sem klasické věrnostní programy (sbírání
+  bodů za nákupy). Jde o systémy, které omezují přístup ke
+  službám na základě hodnocení chování."
+  Follow-up (při "Ano"):
+    • Název systému [SELECT]: Vlastní systém / Salesforce /
+      HubSpot / Jiný CRM / Nevím název
+    • Kdo je hodnocen? [SELECT]: Zaměstnanci / Zákazníci / Obojí
+  Risk hint: high
+  AI Act článek: čl. 5 odst. 1 písm. c) — zákaz sociálního
+  scoringu
+
+OTÁZKA 2.2: Používáte AI k ovlivňování lidí bez jejich vědomí?
+  (Například: AI, která mění ceny podle nálady zákazníka)
+  Typ: yes_no_unknown
+  Nápověda: "Jde o AI, která záměrně manipuluje rozhodování lidí
+  technikami, které nelze rozumně rozpoznat."
+  Follow-up: žádný
+  Risk hint: high
+  AI Act článek: čl. 5 odst. 1 písm. a) — zákaz podprahové
+  manipulace
+
+OTÁZKA 2.3: Rozpoznáváte lidi kamerou v reálném čase?
+  (Například: kamera na vstupu, která identifikuje obličeje)
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název systému [SELECT]: Kamerový systém / Docházkový
+      systém / Přístupový systém / Nevím název
+    • Účel (vyberte vše, co platí) [MULTI-SELECT]:
+      Docházka zaměstnanců / Kontrola přístupu /
+      Identifikace zákazníků / Bezpečnost
+  Risk hint: high
+  AI Act článek: čl. 5 odst. 1 písm. h) — zákaz biometrické
+  identifikace v reálném čase
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 3: AI NÁSTROJE VE FIRMĚ
+═══════════════════════════════════════════════════════════════
+Popis: "Běžné AI nástroje, které zaměstnanci používají v práci."
+
+OTÁZKA 3.1: Používá někdo ve firmě ChatGPT, Claude nebo
+  podobný AI chat?
+  Typ: yes_no_unknown
+  Nápověda: "Patří sem i bezplatné verze. Pokud si nejste jistí,
+  zeptejte se zaměstnanců."
+  Follow-up (při "Ano"):
+    • Které nástroje používáte? [MULTI-SELECT]:
+      ChatGPT / Claude / Gemini / Copilot / Perplexity / Jiný
+    • K čemu je používáte? [MULTI-SELECT]:
+      Psaní textů / Překlady / Emaily / Analýza dat /
+      Programování / Zákaznický servis / Jiné
+    • Jaká data do něj vkládáte? [MULTI-SELECT]:
+      Pouze veřejná data / Interní dokumenty /
+      Osobní údaje zákazníků / Finanční data
+  Risk hint: limited
+  AI Act článek: čl. 50 odst. 1 — povinnost transparentnosti
+
+OTÁZKA 3.2: Používáte AI pro psaní kódu nebo programování?
+  Typ: yes_no_unknown
+  Nápověda: "GitHub Copilot, Cursor, Codeium, Amazon
+  CodeWhisperer..."
+  Follow-up (při "Ano"):
+    • Které nástroje používáte? [MULTI-SELECT]:
+      GitHub Copilot / Cursor / Codeium /
+      Amazon CodeWhisperer / Jiný
+    • Typ vyvíjeného software [MULTI-SELECT]:
+      Webové aplikace / Mobilní aplikace / Backend/API /
+      Data/ML / Automatizace / Jiné
+  Risk hint: minimal
+  AI Act článek: čl. 50 — transparentnost AI generovaného kódu
+
+OTÁZKA 3.3: Generujete obrázky, videa nebo texty pomocí AI?
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Které nástroje používáte? [MULTI-SELECT]:
+      DALL-E / Midjourney / Stable Diffusion / Canva AI /
+      Jasper / Copy.ai / Jiný
+    • Kde AI obsah používáte? [MULTI-SELECT]:
+      Web / sociální sítě / Interní materiály /
+      E-maily zákazníkům / Reklamní kampaně
+  Risk hint: limited
+  AI Act článek: čl. 50 odst. 4 — označení AI generovaného
+  obsahu
+
+OTÁZKA 3.4: Vytváříte syntetická videa, klonujete hlas nebo
+  používáte AI avatary?
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název nástroje [TEXT]: volné pole
+    • Označujete tento obsah jako AI generovaný? [SELECT]:
+      Ano, vždy / Někdy / Ne
+  Risk hint: limited
+  AI Act článek: čl. 50 odst. 4 — povinnost označit deepfake
+  obsah
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 4: LIDSKÉ ZDROJE A ZAMĚSTNANCI
+═══════════════════════════════════════════════════════════════
+Popis: "AI v personalistice patří mezi vysoce rizikové systémy
+dle Přílohy III."
+
+OTÁZKA 4.1: Používáte AI při náboru zaměstnanců?
+  (třídění životopisů, hodnocení kandidátů)
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název nástroje [SELECT]: LinkedIn Recruiter / Teamio /
+      LMC/Jobs.cz AI / Vlastní systém / Jiný / Nevím název
+    • Rozhoduje AI samostatně o kandidátech? [SELECT]:
+      Ano, automaticky filtruje / Ne, pouze doporučuje /
+      Částečně
+  Risk hint: high
+  AI Act článek: čl. 6 + Příloha III bod 4a — nábor zaměstnanců
+
+OTÁZKA 4.2: Sledujete zaměstnance pomocí AI?
+  (produktivita, pohyb, chování)
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Co sledujete? [MULTI-SELECT]:
+      Sledování obrazovky / Měření produktivity /
+      GPS sledování / Kamerový dohled s AI /
+      Analýza emailů / Jiné
+    • Jsou zaměstnanci informováni? [SELECT]:
+      Ano, písemně / Ano, ústně / Ne
+  Risk hint: high
+  AI Act článek: čl. 6 + Příloha III bod 4b — monitorování
+  zaměstnanců
+
+OTÁZKA 4.3: Rozpoznáváte emoce zaměstnanců nebo zákazníků
+  pomocí AI?
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název systému [SELECT]: Kamerový systém /
+      Call centrum analýza / Vlastní systém / Nevím název
+    • V jakém kontextu? (vyberte vše, co platí) [MULTI-SELECT]:
+      Pracovní prostředí / Zákaznický servis /
+      Vzdělávání / Bezpečnost
+  Risk hint: high
+  AI Act článek: čl. 5 odst. 1 písm. f) — omezení rozpoznávání
+  emocí na pracovišti
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 5: FINANCE A ROZHODOVÁNÍ
+═══════════════════════════════════════════════════════════════
+Popis: "AI ve financích a rozhodovacích procesech s dopadem
+na jednotlivce."
+
+OTÁZKA 5.1: Používáte AI v účetnictví nebo fakturaci?
+  Typ: yes_no_unknown
+  Nápověda: "Například Money S5 s AI, Fakturoid, ABRA..."
+  Follow-up (při "Ano"):
+    • Název nástroje [SELECT]: Fakturoid / Money S5 / ABRA /
+      Pohoda / Vlastní/jiný / Nevím název
+    • Dělá AI autonomní finanční rozhodnutí? [SELECT]:
+      Ne, pouze asistuje / Ano, schvaluje platby /
+      Ano, hodnotí kreditní riziko
+  Risk hint: limited
+  AI Act článek: čl. 50 — transparentnost
+
+OTÁZKA 5.2: Hodnotíte bonitu zákazníků pomocí AI?
+  Typ: yes_no_unknown
+  Nápověda: "Scoring, automatické schvalování úvěrů, hodnocení
+  platební morálky..."
+  Follow-up (při "Ano"):
+    • Název systému [TEXT]: volné pole
+    • Ovlivňuje AI rozhodnutí o úvěrech/smlouvách? [SELECT]:
+      Ano, přímo rozhoduje / Pouze doporučuje / Ne
+  Risk hint: high
+  AI Act článek: čl. 6 + Příloha III bod 5b — kreditní scoring
+
+OTÁZKA 5.3: Používáte AI v pojišťovnictví?
+  (stanovení pojistného, likvidace škod)
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název systému [TEXT]: volné pole
+    • Ovlivňuje AI cenu nebo dostupnost pojištění? [SELECT]:
+      Ano, přímo / Pouze doporučuje / Ne
+  Risk hint: high
+  AI Act článek: čl. 6 + Příloha III bod 5a — pojišťovnictví
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 6: ZÁKAZNÍCI A KOMUNIKACE
+═══════════════════════════════════════════════════════════════
+Popis: "AI systémy v kontaktu se zákazníky vyžadují
+transparentnost."
+
+OTÁZKA 6.1: Máte na webu chatbota nebo virtuálního asistenta?
+  Typ: yes_no_unknown
+  Nápověda: "Tidio, Smartsupp, Intercom, vlastní AI chat na
+  webu..."
+  Follow-up (při "Ano"):
+    • Název nástroje [SELECT]: Smartsupp / Tidio / Intercom /
+      Drift / Vlastní řešení / Nevím název
+    • Ví návštěvník, že komunikuje s AI? [SELECT]:
+      Ano, je to označeno / Ne / Částečně
+  Risk hint: limited
+  AI Act článek: čl. 50 odst. 1 — povinnost informovat
+  o interakci s AI
+
+OTÁZKA 6.2: Automaticky odpovídáte na emaily zákazníků
+  pomocí AI?
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název nástroje [SELECT]: Freshdesk AI / Zendesk AI /
+      Intercom / Vlastní řešení / Nevím název
+    • Ví zákazník, že odpovídá AI? [SELECT]:
+      Ano, je to označeno / Ne / Někdy
+  Risk hint: limited
+  AI Act článek: čl. 50 odst. 1 — povinnost informovat o AI
+
+OTÁZKA 6.3: Rozhoduje AI o reklamacích, slevách nebo přístupu
+  ke službám?
+  Typ: yes_no_unknown
+  Nápověda: "Například: automatické zamítnutí reklamace, AI
+  určuje slevu..."
+  Follow-up (při "Ano"):
+    • O čem AI rozhoduje? [TEXT]: volné pole
+    • Je k dispozici lidský přezkum? [SELECT]:
+      Ano, vždy / Na vyžádání / Ne
+  Risk hint: high
+  AI Act článek: čl. 14 — lidský dohled nad vysoce rizikovými
+  systémy
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 7: BEZPEČNOST A INFRASTRUKTURA
+═══════════════════════════════════════════════════════════════
+Popis: "AI v kritické infrastruktuře spadá do kategorie
+vysokého rizika."
+
+OTÁZKA 7.1: Řídí AI něco kritického ve vaší firmě?
+  (energie, voda, doprava, síť)
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • Název systému [TEXT]: volné pole
+    • Sektor (vyberte vše, co platí) [MULTI-SELECT]:
+      Energetika / Doprava / Vodohospodářství /
+      Telekomunikace / Zdravotnictví / Jiný
+  Risk hint: high
+  AI Act článek: čl. 6 + Příloha III bod 2 — kritická
+  infrastruktura
+
+OTÁZKA 7.2: Je AI součástí bezpečnostní komponenty vašeho
+  produktu?
+  Typ: yes_no_unknown
+  Follow-up (při "Ano"):
+    • O jaký produkt jde? [TEXT]: volné pole
+    • Má produkt CE označení? [SELECT]: Ano / Ne / V procesu
+  Risk hint: high
+  AI Act článek: čl. 6 odst. 1 — AI jako bezpečnostní
+  komponenta
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 8: OCHRANA DAT
+═══════════════════════════════════════════════════════════════
+Popis: "AI Act doplňuje GDPR — obě nařízení platí současně."
+
+OTÁZKA 8.1: Zpracovávají vaše AI systémy osobní údaje?
+  Typ: yes_no_unknown
+  Nápověda: "Jména, emaily, rodná čísla, fotografie, zdravotní
+  údaje..."
+  Follow-up (při "Ano"):
+    • Jaké osobní údaje? [MULTI-SELECT]:
+      Jména a kontakty / Rodná čísla / OP / Zdravotní údaje /
+      Finanční údaje / Fotografie / video / Lokační data /
+      Jiné
+    • Provedli jste DPIA (posouzení vlivu na ochranu dat)?
+      [SELECT]: Ano / Ne / Nevím co to je
+  Risk hint: high
+  AI Act článek: čl. 10 — správa dat pro vysoce rizikové AI
+
+OTÁZKA 8.2: Jsou data vašich AI systémů uložena v EU?
+  Typ: yes_no_unknown
+  Nápověda: "Pokud nevíte, pravděpodobně jsou na serverech
+  v USA (ChatGPT, Google)."
+  Follow-up: žádný
+  Risk hint: limited
+  AI Act článek: Nařízení GDPR čl. 44+ — přenos dat do třetích
+  zemí
+
+OTÁZKA 8.3: Máte přehled o tom, jaké AI ve firmě používáte?
+  Typ: yes_no_unknown
+  Nápověda: "Nemusí být nic formálního — stačí seznam nástrojů."
+  Follow-up: žádný
+  Risk hint: limited
+  AI Act článek: čl. 49 — registrace vysoce rizikových AI
+  systémů v EU databázi
+
+
+═══════════════════════════════════════════════════════════════
+SEKCE 9: AI GRAMOTNOST (čl. 4)
+═══════════════════════════════════════════════════════════════
+Popis: "Od února 2025 musí firmy zajistit ‚dostatečnou úroveň
+AI gramotnosti' svých zaměstnanců."
+
+OTÁZKA 9.1: Proškolili jste zaměstnance o tom, jak bezpečně
+  používat AI nástroje?
+  Typ: yes_no_unknown
+  Nápověda: "AI Act vyžaduje, aby zaměstnanci rozuměli AI
+  nástrojům, které používají."
+  Follow-up: žádný
+  Risk hint: limited
+  AI Act článek: čl. 4
+
+OTÁZKA 9.2: Máte ve firmě pravidla pro používání AI?
+  Typ: yes_no_unknown
+  Nápověda: "Například: co se smí do ChatGPT psát, jaká data
+  se nesmí sdílet..."
+  Follow-up: žádný
+  Risk hint: limited
+  AI Act článek: čl. 4
+
+
+═══════════════════════════════════════════════════════════════
+CO SE STANE PO VYPLNĚNÍ
+═══════════════════════════════════════════════════════════════
+
+Backend na základě odpovědí vygeneruje:
+
+1. RIZIKOVÝ PROFIL:
+   - Počet vysoce rizikových systémů (high)
+   - Počet systémů s omezeným rizikem (limited)
+   - Počet systémů s minimálním rizikem (minimal)
+
+2. PRIORITIZOVANÁ DOPORUČENÍ:
+   Každé doporučení obsahuje:
+   - Odkaz na konkrétní článek AI Act
+   - Úroveň priority (vysoká / střední / nízká)
+   - Konkrétní krok, co má firma udělat
+
+3. COMBINED REPORT (sken + dotazník):
+   - Celkový risk rating (🔴 / 🟡 / 🟢)
+   - Nálezy ze skenu webu
+   - Nálezy z dotazníku
+   - Sjednocený seznam action items
+
+Uživatel poté vidí výsledky v dashboardu a je vyzván
+k objednání compliance balíčku (cenové třídy).
+
+
+═══════════════════════════════════════════════════════════════
+OTÁZKY PRO RECENZENTA
+═══════════════════════════════════════════════════════════════
+
+1. Pokrývá dotazník VŠECHNY relevantní oblasti AI Act pro
+   běžnou českou firmu / e-shop? Co chybí?
+
+2. Jsou reference na články AI Act SPRÁVNÉ a PŘESNÉ?
+
+3. Jsou risk hinty (none / minimal / limited / high) správně
+   přiřazeny ke každé otázce?
+
+4. Je formulace otázek dostatečně SROZUMITELNÁ pro majitele
+   malého e-shopu bez právního vzdělání?
+
+5. Jsou follow-up otázky KOMPLETNÍ? Neptáme se na něco zbytečně?
+   Nechybí nám něco důležitého?
+
+6. Je logické pořadí sekcí a otázek optimální?
+
+7. Měly by být některé SELECT pole raději MULTI-SELECT
+   (nebo naopak)?
+
+8. Je 26 otázek za 5 minut realistický odhad?
+
+9. Jsou nápovědy (help_text) užitečné, nebo spíše matoucí?
+
+10. Vidíš nějaký zásadní problém, který by mohl vést k CHYBNÉ
+    klasifikaci rizika firmy?
+
+══════════════════════════════════════════════════════════════════
+KONEC DOKUMENTU
+══════════════════════════════════════════════════════════════════

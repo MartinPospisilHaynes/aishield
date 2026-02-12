@@ -13,9 +13,49 @@ from backend.scanner.report import generate_html_report, ReportData
 from backend.api.auth import get_optional_user, AuthUser, ADMIN_EMAILS
 from backend.api.rate_limit import scan_limiter
 from datetime import datetime, timezone
+import ipaddress
 import re
+import socket
+from urllib.parse import urlparse
 
 router = APIRouter()
+
+# ── SSRF ochrana ──
+
+_BLOCKED_NETWORKS = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("169.254.0.0/16"),
+    ipaddress.ip_network("0.0.0.0/8"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+    ipaddress.ip_network("fe80::/10"),
+]
+
+_BLOCKED_HOSTNAMES = {"localhost", "localhost.localdomain", "metadata.google.internal"}
+
+
+def _is_url_safe(url: str) -> bool:
+    """Kontrola, že URL nesměřuje na interní/privátní IP (SSRF ochrana)."""
+    parsed = urlparse(url)
+    hostname = parsed.hostname
+    if not hostname:
+        return False
+    if hostname.lower() in _BLOCKED_HOSTNAMES:
+        return False
+    try:
+        # Resolve DNS a ověř všechny výsledné IP adresy
+        for info in socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM):
+            addr = info[4][0]
+            ip = ipaddress.ip_address(addr)
+            for net in _BLOCKED_NETWORKS:
+                if ip in net:
+                    return False
+    except (socket.gaierror, ValueError):
+        return False
+    return True
 
 
 # ── Modely ──
@@ -33,6 +73,9 @@ class ScanRequest(BaseModel):
         pattern = r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$"
         if not re.match(pattern, v):
             raise ValueError("Neplatná URL adresa")
+        # SSRF ochrana — blokovat interní/privátní adresy
+        if not _is_url_safe(v):
+            raise ValueError("Zadaná URL směřuje na interní adresu a nemůže být skenována")
         return v
 
 
