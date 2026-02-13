@@ -110,11 +110,11 @@ function countUniqueSystems(findings: DashboardData["findings"]): number {
 }
 
 /* ── Group findings by unique name ── */
-function groupFindings(findings: DashboardData["findings"]): Array<{name: string; risk_level: string; category: string; action_required: string; ai_act_article: string; count: number}> {
-    const map = new Map<string, typeof findings[0] & {count: number}>();
+function groupFindings(findings: DashboardData["findings"]): Array<{ name: string; risk_level: string; category: string; action_required: string; ai_act_article: string; count: number }> {
+    const map = new Map<string, typeof findings[0] & { count: number }>();
     for (const f of findings) {
         if (!map.has(f.name)) {
-            map.set(f.name, {...f, count: 1});
+            map.set(f.name, { ...f, count: 1 });
         } else {
             map.get(f.name)!.count++;
         }
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-2xl font-extrabold">Dashboard</h1>
-                        <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {data?.company?.url || ""}</p>
+                        <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
                     </div>
                     <div className="flex gap-2 sm:gap-3 flex-wrap">
                         <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
@@ -426,24 +426,40 @@ export default function DashboardPage() {
 
                 {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    {/* Card 1: Výsledek testu */}
-                    <StatCard
-                        label="Výsledek testu"
-                        value={hasScans ? (score != null ? `${score}%` : `${uniqueSystemsCount} nálezů`) : "—"}
-                        sub={hasScans
-                            ? (score != null
-                                ? (score >= 80 ? "Dobrý stav" : score >= 50 ? "Vyžaduje pozornost" : "Kritický stav")
-                                : (highRisk > 0 ? `${highRisk} vysoké riziko` : "Sken dokončen"))
-                            : "Sken zatím nebyl proveden"
-                        }
-                        color={hasScans
-                            ? (score != null
-                                ? (score >= 80 ? "text-green-400" : score >= 50 ? "text-amber-400" : "text-red-400")
-                                : (highRisk > 0 ? "text-red-400" : "text-cyan-400"))
-                            : "text-slate-500"
-                        }
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
-                    />
+                    {/* Card 1: Výsledek testu – slovní hodnocení */}
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs text-slate-500 uppercase tracking-wider">Výsledek testu</p>
+                            <span className="text-slate-600">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                            </span>
+                        </div>
+                        {!hasScans ? (
+                            <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden. Spusťte sken pro zjištění AI systémů na vašem webu.</p>
+                        ) : uniqueSystemsCount > 0 ? (
+                            <>
+                                <p className="text-sm font-semibold text-red-400 leading-relaxed">
+                                    ⚠️ POZOR — Na vašem webu {uniqueSystemsCount === 1 ? "byl nalezen" : "byly nalezeny"} {uniqueSystemsCount} AI {uniqueSystemsCount === 1 ? "systém" : uniqueSystemsCount < 5 ? "systémy" : "systémů"}, {uniqueSystemsCount === 1 ? "který spadá" : "které spadají"} pod povinnosti dle EU AI Act.
+                                </p>
+                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                    {hasQuest
+                                        ? "Dotazník vyplněn — kompletní analýza je k dispozici."
+                                        : "Kompletní analýzu s jistotou potvrdíme až po vyplnění dotazníku."}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm font-semibold text-green-400 leading-relaxed">
+                                    ✅ Na vašem webu nebyly nalezeny žádné AI systémy spadající pod novou legislativu EU AI Act.
+                                </p>
+                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                    {hasQuest
+                                        ? "Dotazník vyplněn — analýza potvrzena."
+                                        : "Kompletní analýzu s jistotou potvrdíme až po vyplnění dotazníku."}
+                                </p>
+                            </>
+                        )}
+                    </div>
 
                     {/* Card 2: Systémy umělé inteligence nalezeny */}
                     <StatCard
@@ -485,12 +501,12 @@ export default function DashboardPage() {
                             {hasScans && (
                                 hasQuest ? (
                                     <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
-                                       className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
                                         Opravit odpovědi
                                     </a>
                                 ) : (
                                     <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
-                                       className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
+                                        className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
                                         {questStatus === "rozpracovano" ? "Pokračovat" : "Vyplnit"}
                                     </a>
                                 )
@@ -815,7 +831,7 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                 return (
                     <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
                         <button
-                            onClick={() => setExpanded(prev => ({...prev, [f.name]: !prev[f.name]}))}
+                            onClick={() => setExpanded(prev => ({ ...prev, [f.name]: !prev[f.name] }))}
                             className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3 sm:gap-4"
                         >
                             <div className="flex-1 min-w-0">
