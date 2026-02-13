@@ -518,7 +518,7 @@ export default function HomePage() {
                                         "Týká se všech — i asistentky, která používá ChatGPT",
                                         "Zákon nevyžaduje certifikát, ale musíte gramotnost prokázat",
                                     ],
-                                    solution: "Dodáme osnovu školení + vzor záznamu o proškolení",
+                                    solution: "Připravíme prezentaci na míru v PowerPointu pro vaše zaměstnance + záznamový list o proškolení",
                                 },
                                 {
                                     icon: (
@@ -547,7 +547,7 @@ export default function HomePage() {
                                                 </li>
                                             ))}
                                         </ul>
-                                        <p className="text-[11px] text-fuchsia-400/70 mt-2 font-medium">✦ {item.solution}</p>
+                                        <p className="text-xs text-fuchsia-400/70 mt-2 font-medium">✦ {item.solution}</p>
                                     </div>
                                 </div>
                             ))}
