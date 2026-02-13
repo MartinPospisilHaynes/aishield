@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # ── Ceny balíčků (CZK) ──
     price_basic: int = 4999
     price_pro: int = 14999
+    price_enterprise: int = 39999
 
     # ── Resend ──
     resend_api_key: str = ""

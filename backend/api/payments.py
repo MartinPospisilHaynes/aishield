@@ -30,6 +30,11 @@ PLANS = {
         "description": "Compliance Kit + implementace na klíč + 30 dní podpora",
         "price_field": "price_pro",
     },
+    "enterprise": {
+        "name": "ENTERPRISE",
+        "description": "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
+        "price_field": "price_enterprise",
+    },
 }
 
 # ── Subscription balíčky (měsíční) ──

@@ -63,8 +63,8 @@ const plans = [
     {
         key: "enterprise",
         name: "ENTERPRISE",
-        price: "39 999+",
-        priceNote: "individuální",
+        price: "39 999",
+        priceNote: "jednorázově",
         description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Vše z PRO",
@@ -77,7 +77,7 @@ const plans = [
             "SLA 4h odezva v pracovní době",
         ],
         notIncluded: [],
-        cta: "Kontaktovat nás",
+        cta: "Objednat ENTERPRISE",
         highlighted: false,
         icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,11 +95,6 @@ export default function PricingPage() {
     const router = useRouter();
 
     async function handleCheckout(planKey: string) {
-        if (planKey === "enterprise") {
-            router.push("/enterprise");
-            return;
-        }
-
         // Pokud není přihlášen, přesměrovat na registraci
         if (!user) {
             router.push(`/registrace?redirect=/pricing&plan=${planKey}`);
@@ -375,7 +370,7 @@ export default function PricingPage() {
                                         </th>
                                         <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
                                             ENTERPRISE
-                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999+ Kč</div>
+                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999 Kč</div>
                                         </th>
                                     </tr>
                                 </thead>
@@ -439,7 +434,7 @@ export default function PricingPage() {
                                 {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
                             </button>
                             <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                                Kontaktovat ENTERPRISE
+                                {loading === "enterprise" ? "Přesměrování…" : "Objednat ENTERPRISE"}
                             </button>
                         </div>
                     </div>

@@ -1305,8 +1305,8 @@ const DASHBOARD_PLANS = [
     {
         key: "enterprise",
         name: "ENTERPRISE",
-        price: "39 999+",
-        priceNote: "individuální",
+        price: "39 999",
+        priceNote: "jednorázově",
         description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Vše z PRO",
@@ -1319,7 +1319,7 @@ const DASHBOARD_PLANS = [
             "SLA 4h odezva v pracovní době",
         ],
         notIncluded: [],
-        cta: "Kontaktovat nás",
+        cta: "Objednat ENTERPRISE",
         highlighted: false,
         icon: (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1358,10 +1358,6 @@ function PricingComparisonTable() {
     const [loading, setLoading] = useState<string | null>(null);
 
     async function handleCheckout(planKey: string) {
-        if (planKey === "enterprise") {
-            window.location.href = "/enterprise";
-            return;
-        }
         if (!user) {
             window.location.href = `/registrace?redirect=/dashboard&plan=${planKey}`;
             return;
@@ -1370,7 +1366,8 @@ function PricingComparisonTable() {
         try {
             const data = await createCheckout(planKey, user.email || "");
             window.location.href = data.gateway_url;
-        } catch {
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
             setLoading(null);
         }
     }
@@ -1496,7 +1493,7 @@ function PricingComparisonTable() {
                                 </th>
                                 <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     ENTERPRISE
-                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999+ Kč</div>
+                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999 Kč</div>
                                 </th>
                             </tr>
                         </thead>
@@ -1520,8 +1517,8 @@ function PricingComparisonTable() {
                     <button onClick={() => handleCheckout("pro")} disabled={loading === "pro"} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all disabled:opacity-50">
                         {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
                     </button>
-                    <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                        Kontaktovat ENTERPRISE
+                    <button onClick={() => handleCheckout("enterprise")} disabled={loading === "enterprise"} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all disabled:opacity-50">
+                        {loading === "enterprise" ? "Přesměrování…" : "Objednat ENTERPRISE"}
                     </button>
                 </div>
             </div>
