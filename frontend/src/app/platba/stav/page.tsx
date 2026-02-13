@@ -16,6 +16,7 @@ type PaymentStatus = {
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
     const paymentId = searchParams.get("id");
+    const isSubscription = searchParams.get("type") === "subscription";
     const [status, setStatus] = useState<PaymentStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -114,20 +115,35 @@ function PaymentStatusContent() {
                         <p className="text-slate-400 text-sm mb-2">
                             Objednávka: <span className="text-slate-300 font-mono">{status.order_number}</span>
                         </p>
-                        <p className="text-slate-400 text-sm mb-8">
-                            Faktura vám přijde na email. Nyní vyplňte dotazník,
-                            abychom vám připravili dokumenty na míru.
-                        </p>
+                        {isSubscription ? (
+                            <p className="text-slate-400 text-sm mb-8">
+                                Monitoring byl úspěšně aktivován. Platba bude strhávána automaticky každý měsíc.
+                                Stav monitoringu najdete v dashboardu.
+                            </p>
+                        ) : (
+                            <p className="text-slate-400 text-sm mb-8">
+                                Faktura vám přijde na email. Nyní vyplňte dotazník,
+                                abychom vám připravili dokumenty na míru.
+                            </p>
+                        )}
 
                         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
 
                         <div className="space-y-3">
-                            <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
-                                Vyplnit dotazník
-                            </a>
-                            <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
-                                Přejít na Dashboard
-                            </a>
+                            {isSubscription ? (
+                                <a href="/dashboard#monitoring" className="btn-primary w-full py-3.5 block text-center">
+                                    Přejít na Dashboard
+                                </a>
+                            ) : (
+                                <>
+                                    <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                        Vyplnit dotazník
+                                    </a>
+                                    <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
+                                        Přejít na Dashboard
+                                    </a>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

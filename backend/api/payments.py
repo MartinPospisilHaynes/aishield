@@ -628,7 +628,8 @@ async def get_payment_status(payment_id: int):
 async def gopay_webhook(request: Request):
     """
     GoPay webhook — notifikace o změně stavu platby.
-    Zpracovává jednorázové platby i subscriptions.
+    Zpracovává jednorázové platby, první subscription platby
+    i automatické opakované platby (recurrence).
     """
     body = await request.body()
     params = dict(x.split("=") for x in body.decode().split("&") if "=" in x)
@@ -648,34 +649,103 @@ async def gopay_webhook(request: Request):
     is_paid = gopay.is_paid(state)
 
     supabase = get_supabase()
-    update_data = {"status": state}
-    if is_paid:
-        update_data["paid_at"] = datetime.utcnow().isoformat()
 
-    supabase.table("orders").update(update_data).eq(
+    # Zkusíme najít existující order
+    existing_order = supabase.table("orders").select("*").eq(
         "gopay_payment_id", int(payment_id)
     ).execute()
 
-    # Pokud zaplaceno → aktivovat klienta + subscription
-    if is_paid:
-        order = supabase.table("orders").select("*").eq(
-            "gopay_payment_id", int(payment_id)
-        ).single().execute()
+    if existing_order.data:
+        # ── Známý payment — update existující order ──
+        update_data = {"status": state}
+        if is_paid:
+            update_data["paid_at"] = datetime.utcnow().isoformat()
 
-        if order.data:
+        supabase.table("orders").update(update_data).eq(
+            "gopay_payment_id", int(payment_id)
+        ).execute()
+
+        order = existing_order.data[0]
+
+        if is_paid:
             supabase.table("orders").update({
                 "activated": True,
             }).eq("gopay_payment_id", int(payment_id)).execute()
 
-            # Aktivace subscription
-            if order.data.get("order_type") == "subscription":
+            # Aktivace první subscription platby
+            if order.get("order_type") == "subscription":
+                now = datetime.utcnow()
+                next_charge = (now + timedelta(days=30)).isoformat()
                 supabase.table("subscriptions").update({
                     "status": "active",
-                    "activated_at": datetime.utcnow().isoformat(),
-                    "last_charged_at": datetime.utcnow().isoformat(),
-                    "total_charged": order.data.get("amount", 0),
+                    "activated_at": now.isoformat(),
+                    "last_charged_at": now.isoformat(),
+                    "next_charge_at": next_charge,
+                    "total_charged": order.get("amount", 0),
                 }).eq("gopay_parent_payment_id", int(payment_id)).execute()
 
                 logger.info(f"[Payments] Subscription aktivována (payment={payment_id})")
+
+    else:
+        # ── Neznámý payment_id — pravděpodobně automatická recurrence od GoPay ──
+        # GoPay při MONTH cyklu vytvoří nový payment_id pro každou opakovanou platbu
+        # Najdeme subscription podle parent_payment_id v GoPay response
+        parent_id = status.get("parent_id") or status.get("preauthorization", {}).get("parent_id")
+
+        # Fallback: zkus najít subscription podle GoPay recurrence info
+        if not parent_id:
+            # GoPay /payments/payment/{id} vrací i parent info u recurrence
+            # Zkusíme najít subscription podle order_number prefixu
+            order_number = status.get("order_number", "")
+            logger.info(
+                f"[Payments] Webhook pro neznámý payment {payment_id}, "
+                f"order={order_number}, state={state}"
+            )
+
+        # Najdi subscription podle parent payment
+        sub = None
+        if parent_id:
+            sub_res = supabase.table("subscriptions").select("*").eq(
+                "gopay_parent_payment_id", int(parent_id)
+            ).limit(1).execute()
+            sub = sub_res.data[0] if sub_res.data else None
+
+        if sub and is_paid:
+            # Zalogovat opakovanou platbu jako nový order
+            rec_order_number = f"AS-REC-{uuid.uuid4().hex[:8].upper()}"
+            supabase.table("orders").insert({
+                "order_number": rec_order_number,
+                "gopay_payment_id": int(payment_id),
+                "plan": sub["plan"],
+                "amount": sub["amount"],
+                "email": sub["email"],
+                "user_email": sub["email"],
+                "status": state,
+                "order_type": "subscription_recurrence",
+                "subscription_id": sub["id"],
+                "activated": True,
+                "paid_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.utcnow().isoformat(),
+            }).execute()
+
+            # Aktualizovat subscription
+            now = datetime.utcnow()
+            next_charge = (now + timedelta(days=30)).isoformat()
+            supabase.table("subscriptions").update({
+                "last_charged_at": now.isoformat(),
+                "next_charge_at": next_charge,
+                "total_charged": (sub.get("total_charged") or 0) + sub["amount"],
+            }).eq("id", sub["id"]).execute()
+
+            logger.info(
+                f"[Payments] Recurrence platba zaznamenána: sub={sub['id']}, "
+                f"payment={payment_id}, amount={sub['amount']} CZK"
+            )
+        elif not sub:
+            # Neznámý payment, žádná subscription — zalogovat pro debug
+            logger.warning(
+                f"[Payments] Webhook: neznámý payment {payment_id} "
+                f"bez mapování na order/subscription (state={state})"
+            )
 
     return {"status": "ok"}
