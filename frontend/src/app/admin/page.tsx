@@ -21,6 +21,8 @@ import {
     getAgencyClients,
     startAgencyBatchScan,
     generateAgencyEmail,
+    getClientManagement,
+    triggerClientRescan,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -30,6 +32,9 @@ import type {
     AdminStats,
     EmailHealth,
     AgencyClient,
+    ClientManagementData,
+    ManagedClient,
+    RescanResult,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -102,11 +107,13 @@ type Tab =
     | "emaily"
     | "ulohy"
     | "monitoring"
+    | "klienti"
     | "agentura"
     | "nastroje";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
+    { id: "klienti", icon: "💼", label: "Klienti & Platby" },
     { id: "firmy", icon: "🏭", label: "Firmy" },
     { id: "pipeline", icon: "📈", label: "Pipeline" },
     { id: "emaily", icon: "📧", label: "Emaily" },
@@ -312,6 +319,14 @@ export default function AdminPage() {
     const [batchResult, setBatchResult] = useState<string | null>(null);
     const [emailPreview, setEmailPreview] = useState<{ subject: string; body: string } | null>(null);
 
+    // Client management
+    const [clientData, setClientData] = useState<ClientManagementData | null>(null);
+    const [clientSearch, setClientSearch] = useState("");
+    const [clientFilter, setClientFilter] = useState<"all" | "subscription" | "one_time" | "needs_rescan" | "overdue">("all");
+    const [rescanning, setRescanning] = useState<string | null>(null);
+    const [rescanResult, setRescanResult] = useState<RescanResult | null>(null);
+    const [expandedClient, setExpandedClient] = useState<string | null>(null);
+
     // Tools
     const [toolResult, setToolResult] = useState<string | null>(null);
 
@@ -392,6 +407,15 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadClientManagement = useCallback(async () => {
+        try {
+            const d = await getClientManagement();
+            setClientData(d);
+        } catch {
+            // silent
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -407,7 +431,8 @@ export default function AdminPage() {
         if (tab === "emaily") loadEmails();
         if (tab === "monitoring") loadMonitoring();
         if (tab === "agentura") loadAgency();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency]);
+        if (tab === "klienti") loadClientManagement();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -613,6 +638,7 @@ export default function AdminPage() {
                                 if (tab === "emaily") loadEmails();
                                 if (tab === "monitoring") loadMonitoring();
                                 if (tab === "agentura") loadAgency();
+                                if (tab === "klienti") loadClientManagement();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -1708,6 +1734,429 @@ export default function AdminPage() {
                                         </tbody>
                                     </table>
                                 </div>
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {/*  TAB: Klienti & Platby                    */}
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "klienti" && (
+                        <>
+                            {/* Summary KPI cards */}
+                            {clientData && (
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <StatCard
+                                        icon="👥"
+                                        label="Klienti celkem"
+                                        value={fmtNum(clientData.summary.total_clients)}
+                                        accent="cyan"
+                                    />
+                                    <StatCard
+                                        icon="💰"
+                                        label="Celkový příjem"
+                                        value={fmtMoney(clientData.summary.total_revenue)}
+                                        accent="green"
+                                    />
+                                    <StatCard
+                                        icon="🔄"
+                                        label="Aktivní předplatné"
+                                        value={fmtNum(clientData.summary.active_subscriptions)}
+                                        accent="fuchsia"
+                                    />
+                                    <StatCard
+                                        icon="🚨"
+                                        label="Nezaplacené"
+                                        value={fmtNum(clientData.summary.overdue_subscriptions)}
+                                        accent="red"
+                                    />
+                                    <StatCard
+                                        icon="🔍"
+                                        label="Potřebuje rescan"
+                                        value={fmtNum(clientData.summary.needs_rescan)}
+                                        accent="orange"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Filters */}
+                            <Panel className="p-4">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Hledat klienta (email, firma)…"
+                                        value={clientSearch}
+                                        onChange={(e) => setClientSearch(e.target.value)}
+                                        className="flex-1 min-w-[200px] px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50"
+                                    />
+                                    {(["all", "subscription", "one_time", "needs_rescan", "overdue"] as const).map((f) => {
+                                        const labels: Record<string, string> = {
+                                            all: "Všichni",
+                                            subscription: "📆 Předplatné",
+                                            one_time: "💳 Jednorázové",
+                                            needs_rescan: "🔍 Potřeba rescanu",
+                                            overdue: "🚨 Nezaplacené",
+                                        };
+                                        return (
+                                            <button
+                                                key={f}
+                                                onClick={() => setClientFilter(f)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    clientFilter === f
+                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                }`}
+                                            >
+                                                {labels[f]}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </Panel>
+
+                            {/* Rescan result toast */}
+                            {rescanResult && (
+                                <Panel className={`p-4 border ${rescanResult.changes_detected ? "border-yellow-500/30 bg-yellow-500/5" : "border-green-500/30 bg-green-500/5"}`}>
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-lg">{rescanResult.changes_detected ? "⚠️" : "✅"}</span>
+                                                <span className="font-semibold text-white">
+                                                    Rescan {rescanResult.company_name}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm text-gray-300">
+                                                {rescanResult.changes_detected ? (
+                                                    <>
+                                                        <span className="text-yellow-400 font-medium">Změny detekovány:</span>{" "}
+                                                        +{rescanResult.added_count} nové, −{rescanResult.removed_count} odstraněné.
+                                                        {rescanResult.documents_regenerated && " 📄 Dokumenty přegenerovány."}
+                                                        {rescanResult.email_sent && " 📧 Email odeslán."}
+                                                    </>
+                                                ) : (
+                                                    <span className="text-green-400">Beze změn — vše je aktuální.</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setRescanResult(null)}
+                                            className="text-gray-500 hover:text-white text-sm"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* Client list */}
+                            <Panel className="overflow-hidden">
+                                {!clientData ? (
+                                    <div className="p-8 text-center text-gray-500 animate-pulse">Načítám klienty…</div>
+                                ) : (
+                                    <div className="divide-y divide-white/5">
+                                        {(() => {
+                                            const q = clientSearch.toLowerCase();
+                                            const filtered = (clientData.clients || []).filter((c) => {
+                                                const matchSearch = !q
+                                                    || c.email.toLowerCase().includes(q)
+                                                    || c.company_name.toLowerCase().includes(q)
+                                                    || (c.company_url || "").toLowerCase().includes(q);
+                                                if (!matchSearch) return false;
+                                                if (clientFilter === "subscription") return !!c.subscription;
+                                                if (clientFilter === "one_time") return !c.subscription;
+                                                if (clientFilter === "needs_rescan") return c.needs_rescan;
+                                                if (clientFilter === "overdue") return c.subscription && !c.subscription.payment_ok;
+                                                return true;
+                                            });
+
+                                            if (filtered.length === 0) {
+                                                return (
+                                                    <div className="p-8 text-center text-gray-500">
+                                                        Žádní klienti nenalezeni.
+                                                    </div>
+                                                );
+                                            }
+
+                                            return filtered.map((client) => {
+                                                const isExpanded = expandedClient === client.email;
+                                                const paidOrders = client.orders.filter((o) => o.status === "PAID" || o.status === "paid");
+                                                const totalPaid = paidOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
+
+                                                return (
+                                                    <div key={client.email} className="hover:bg-white/[0.02] transition-colors">
+                                                        {/* Main row */}
+                                                        <div
+                                                            className="p-4 flex items-center gap-4 cursor-pointer"
+                                                            onClick={() => setExpandedClient(isExpanded ? null : client.email)}
+                                                        >
+                                                            {/* Expand arrow */}
+                                                            <span className={`text-gray-500 text-xs transition-transform ${isExpanded ? "rotate-90" : ""}`}>▶</span>
+
+                                                            {/* Company info */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <span className="font-medium text-white truncate">{client.company_name}</span>
+                                                                    {client.plan && (
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                                            client.plan === "enterprise" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
+                                                                            client.plan === "pro" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
+                                                                            "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                                        }`}>
+                                                                            {client.plan}
+                                                                        </span>
+                                                                    )}
+                                                                    {client.subscription && (
+                                                                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                                                            📆 {client.subscription.plan === "monitoring_plus" ? "Monitoring+" : "Monitoring"}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">{client.email}</div>
+                                                            </div>
+
+                                                            {/* Revenue */}
+                                                            <div className="text-right">
+                                                                <div className="text-sm font-bold text-green-400">{fmtMoney(totalPaid)}</div>
+                                                                <div className="text-[10px] text-gray-500">{paidOrders.length} plateb</div>
+                                                            </div>
+
+                                                            {/* Subscription payment status */}
+                                                            <div className="w-24 text-center">
+                                                                {client.subscription ? (
+                                                                    client.subscription.payment_ok ? (
+                                                                        <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                                                                            ✅ Placeno
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
+                                                                            🚨 Dluh
+                                                                        </span>
+                                                                    )
+                                                                ) : (
+                                                                    <span className="text-xs text-gray-600">—</span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Fulfillment status */}
+                                                            <div className="w-32 text-center">
+                                                                {client.fulfillment === "ok" && (
+                                                                    <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+                                                                        ✅ Aktuální
+                                                                    </span>
+                                                                )}
+                                                                {client.fulfillment === "needs_rescan" && (
+                                                                    <span className="px-2 py-1 rounded-full text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                                                        🔍 Rescan
+                                                                    </span>
+                                                                )}
+                                                                {client.fulfillment === "needs_documents" && (
+                                                                    <span className="px-2 py-1 rounded-full text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                                                        📄 Dokumenty
+                                                                    </span>
+                                                                )}
+                                                                {client.fulfillment === "no_scan" && (
+                                                                    <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400 border border-red-500/30">
+                                                                        ❌ Bez skenu
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Last scan age */}
+                                                            <div className="w-20 text-right">
+                                                                {client.scan_age_days != null ? (
+                                                                    <div className={`text-xs font-mono ${client.scan_age_days > 30 ? "text-orange-400" : "text-gray-400"}`}>
+                                                                        {client.scan_age_days}d ago
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="text-xs text-gray-600">—</div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Rescan button */}
+                                                            <button
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    setRescanning(client.email);
+                                                                    setRescanResult(null);
+                                                                    try {
+                                                                        const result = await triggerClientRescan(client.email);
+                                                                        setRescanResult(result);
+                                                                        await loadClientManagement();
+                                                                    } catch (err) {
+                                                                        setRescanResult({
+                                                                            status: "error",
+                                                                            email: client.email,
+                                                                            company_name: client.company_name,
+                                                                            scan_id: "",
+                                                                            changes_detected: false,
+                                                                            added_count: 0,
+                                                                            removed_count: 0,
+                                                                            documents_regenerated: false,
+                                                                            email_sent: false,
+                                                                        });
+                                                                    } finally {
+                                                                        setRescanning(null);
+                                                                    }
+                                                                }}
+                                                                disabled={rescanning === client.email || !client.company_url}
+                                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                                                                    rescanning === client.email
+                                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 animate-pulse cursor-wait"
+                                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/10"
+                                                                }`}
+                                                            >
+                                                                {rescanning === client.email ? "⏳ Skenuji…" : "🔄 Rescan"}
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Expanded detail */}
+                                                        {isExpanded && (
+                                                            <div className="px-4 pb-4 pl-10 space-y-4">
+                                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                    {/* Orders history */}
+                                                                    <Panel className="p-4">
+                                                                        <h4 className="text-xs font-semibold text-cyan-400 mb-3 uppercase tracking-wider">📋 Objednávky</h4>
+                                                                        {client.orders.length === 0 ? (
+                                                                            <div className="text-xs text-gray-500">Žádné objednávky</div>
+                                                                        ) : (
+                                                                            <div className="space-y-2">
+                                                                                {client.orders.map((o) => (
+                                                                                    <div key={o.id} className="flex items-center justify-between text-xs bg-black/20 rounded-lg p-2">
+                                                                                        <div>
+                                                                                            <div className="text-white font-medium">{o.order_number}</div>
+                                                                                            <div className="text-gray-500">
+                                                                                                {o.plan?.toUpperCase()} • {o.order_type === "subscription_recurrence" ? "Opakovaná" : o.order_type === "subscription" ? "Předplatné" : "Jednorázová"}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div className="text-right">
+                                                                                            <div className={`font-bold ${o.status === "PAID" || o.status === "paid" ? "text-green-400" : "text-yellow-400"}`}>
+                                                                                                {fmtMoney(o.amount)}
+                                                                                            </div>
+                                                                                            <div className="text-gray-500">{fmtDate(o.paid_at || o.created_at)}</div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </Panel>
+
+                                                                    {/* Subscription detail */}
+                                                                    <Panel className="p-4">
+                                                                        <h4 className="text-xs font-semibold text-fuchsia-400 mb-3 uppercase tracking-wider">📆 Předplatné</h4>
+                                                                        {!client.subscription ? (
+                                                                            <div className="text-xs text-gray-500">Žádné aktivní předplatné</div>
+                                                                        ) : (
+                                                                            <div className="space-y-2 text-xs">
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Plán</span>
+                                                                                    <span className="text-white font-medium">
+                                                                                        {client.subscription.plan === "monitoring_plus" ? "Monitoring Plus" : "Monitoring"}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Částka</span>
+                                                                                    <span className="text-white">{fmtMoney(client.subscription.amount)}/měs</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Stav</span>
+                                                                                    <span className={client.subscription.payment_ok ? "text-green-400" : "text-red-400"}>
+                                                                                        {client.subscription.payment_ok ? "✅ OK" : "🚨 Nezaplaceno"}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Aktivováno</span>
+                                                                                    <span className="text-gray-300">{fmtDate(client.subscription.activated_at)}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Poslední platba</span>
+                                                                                    <span className="text-gray-300">{fmtDate(client.subscription.last_charged_at)}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Další platba</span>
+                                                                                    <span className={`font-medium ${
+                                                                                        client.subscription.payment_ok ? "text-cyan-400" : "text-red-400"
+                                                                                    }`}>
+                                                                                        {fmtDate(client.subscription.next_charge_at)}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex justify-between border-t border-white/5 pt-2">
+                                                                                    <span className="text-gray-400">Celkem strženo</span>
+                                                                                    <span className="text-green-400 font-bold">
+                                                                                        {fmtMoney(client.subscription.total_charged)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </Panel>
+
+                                                                    {/* Scan + Fulfillment */}
+                                                                    <Panel className="p-4">
+                                                                        <h4 className="text-xs font-semibold text-green-400 mb-3 uppercase tracking-wider">🛡️ Plnění povinností</h4>
+                                                                        <div className="space-y-2 text-xs">
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-400">Poslední sken</span>
+                                                                                <span className="text-gray-300">
+                                                                                    {client.last_scan
+                                                                                        ? `${fmtDate(client.last_scan.created_at)} (${client.scan_age_days ?? "?"}d)`
+                                                                                        : "—"
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-400">Nálezy</span>
+                                                                                <span className="text-white">{client.last_scan?.total_findings ?? "—"}</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-400">Dokumenty</span>
+                                                                                <span className="text-white">{client.documents_count} ks</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-400">Dokumenty vygenerovány</span>
+                                                                                <span className="text-gray-300">{fmtDate(client.documents_last_at)}</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-400">Dotazník</span>
+                                                                                <span className={client.questionnaire_done ? "text-green-400" : "text-gray-500"}>
+                                                                                    {client.questionnaire_done ? "✅ Vyplněn" : "❌ Nevyplněn"}
+                                                                                </span>
+                                                                            </div>
+                                                                            {client.last_diff && (
+                                                                                <div className="border-t border-white/5 pt-2 mt-2">
+                                                                                    <div className="text-gray-400 mb-1">Poslední porovnání:</div>
+                                                                                    <div className={`rounded-lg p-2 ${client.last_diff.has_changes ? "bg-yellow-500/10" : "bg-green-500/10"}`}>
+                                                                                        {client.last_diff.has_changes ? (
+                                                                                            <span className="text-yellow-400">
+                                                                                                ⚠️ +{client.last_diff.added} / −{client.last_diff.removed}
+                                                                                            </span>
+                                                                                        ) : (
+                                                                                            <span className="text-green-400">✅ Beze změn</span>
+                                                                                        )}
+                                                                                        <div className="text-gray-500 text-[10px] mt-0.5">
+                                                                                            {fmtDate(client.last_diff.created_at)}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                            <div className="border-t border-white/5 pt-2 mt-2">
+                                                                                <div className="flex justify-between items-center">
+                                                                                    <span className="text-gray-400">Stav plnění</span>
+                                                                                    {client.fulfillment === "ok" && <span className="text-green-400 font-medium">✅ Vše splněno</span>}
+                                                                                    {client.fulfillment === "needs_rescan" && <span className="text-orange-400 font-medium">🔍 Potřeba sken</span>}
+                                                                                    {client.fulfillment === "needs_documents" && <span className="text-yellow-400 font-medium">📄 Chybí dokumenty</span>}
+                                                                                    {client.fulfillment === "no_scan" && <span className="text-red-400 font-medium">❌ Bez skenu</span>}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </Panel>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            });
+                                        })()}
+                                    </div>
+                                )}
                             </Panel>
                         </>
                     )}

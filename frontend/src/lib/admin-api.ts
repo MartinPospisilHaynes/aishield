@@ -283,3 +283,109 @@ export async function getCompanyTimeline(companyId: string): Promise<{ activitie
 // Re-export existing admin functions that we still need
 export { getAdminStats, runAdminTask, getAdminEmailLog, getAdminCompanies, getEmailHealth, getAdminAlerts, getAdminDiffs, sendLegislativeAlert, getAgencyClients, startAgencyBatchScan, generateAgencyEmail } from "@/lib/api";
 export type { AdminStats, EmailHealth, AgencyClient } from "@/lib/api";
+
+// ── Client Management types ──
+
+export interface ClientOrder {
+    id: string;
+    order_number: string;
+    plan: string;
+    amount: number;
+    status: string;
+    order_type: string;
+    paid_at: string | null;
+    created_at: string;
+}
+
+export interface ClientSubscription {
+    id: string;
+    plan: string;
+    amount: number;
+    status: string;
+    cycle: string;
+    last_charged_at: string | null;
+    next_charge_at: string | null;
+    total_charged: number;
+    activated_at: string | null;
+    payment_ok: boolean;
+}
+
+export interface ClientScanDiff {
+    has_changes: boolean;
+    added: number;
+    removed: number;
+    changed: number;
+    summary: string;
+    created_at: string;
+}
+
+export interface ClientScanInfo {
+    id: string;
+    status: string;
+    total_findings: number;
+    created_at: string;
+    finished_at: string | null;
+    url_scanned: string;
+}
+
+export interface ManagedClient {
+    email: string;
+    company_name: string;
+    company_id: string | null;
+    company_url: string;
+    plan: string | null;
+    orders: ClientOrder[];
+    subscription: ClientSubscription | null;
+    last_scan: ClientScanInfo | null;
+    scan_age_days: number | null;
+    documents_count: number;
+    documents_last_at: string | null;
+    questionnaire_done: boolean;
+    last_diff: ClientScanDiff | null;
+    fulfillment: "ok" | "no_scan" | "needs_rescan" | "needs_documents";
+    needs_rescan: boolean;
+}
+
+export interface ClientManagementSummary {
+    total_clients: number;
+    total_revenue: number;
+    active_subscriptions: number;
+    overdue_subscriptions: number;
+    needs_rescan: number;
+}
+
+export interface ClientManagementData {
+    clients: ManagedClient[];
+    summary: ClientManagementSummary;
+}
+
+export interface RescanResult {
+    status: string;
+    email: string;
+    company_name: string;
+    scan_id: string;
+    changes_detected: boolean;
+    added_count: number;
+    removed_count: number;
+    documents_regenerated: boolean;
+    email_sent: boolean;
+}
+
+// ── Client Management API ──
+
+export async function getClientManagement(): Promise<ClientManagementData> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/client-management`);
+    if (!res.ok) throw new Error("Nepodařilo se načíst správu klientů");
+    return res.json();
+}
+
+export async function triggerClientRescan(email: string): Promise<RescanResult> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/client/${encodeURIComponent(email)}/rescan`, {
+        method: "POST",
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Chyba při rescanu" }));
+        throw new Error(err.detail || "Chyba při rescanu");
+    }
+    return res.json();
+}

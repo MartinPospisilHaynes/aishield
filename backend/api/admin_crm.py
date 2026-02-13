@@ -577,3 +577,527 @@ async def crm_dashboard_stats(
         stats["recent_activity"] = []
 
     return stats
+
+
+# ─────────────────────────────────────────────
+# 8. GET /crm/client-management — All paying clients + fulfillment overview
+# ─────────────────────────────────────────────
+
+@router.get("/crm/client-management")
+async def crm_client_management(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
+    """
+    Vrátí kompletní přehled platících klientů:
+    - Objednané služby, zaplacené platby
+    - Stav předplatného (monitoring) + kontrola přijetí platby
+    - Stav plnění (poslední scan, dokumenty, potřeba re-scanu)
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    clients_list = []
+    summary = {
+        "total_clients": 0,
+        "total_revenue": 0,
+        "active_subscriptions": 0,
+        "overdue_subscriptions": 0,
+        "needs_rescan": 0,
+    }
+
+    try:
+        # ── 1. All orders (paid or subscription) ──
+        orders_res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
+        all_orders = orders_res.data or []
+
+        # Group orders by email
+        orders_by_email: dict[str, list] = {}
+        for o in all_orders:
+            email = (o.get("email") or o.get("user_email") or "").lower().strip()
+            if email:
+                orders_by_email.setdefault(email, []).append(o)
+
+        # ── 2. All subscriptions ──
+        subs_res = supabase.table("subscriptions").select("*").order("created_at", desc=True).execute()
+        all_subs = subs_res.data or []
+        subs_by_email: dict[str, list] = {}
+        for s in all_subs:
+            email = (s.get("email") or "").lower().strip()
+            if email:
+                subs_by_email.setdefault(email, []).append(s)
+
+        # ── 3. All unique client emails (from orders + subscriptions) ──
+        all_emails = set(orders_by_email.keys()) | set(subs_by_email.keys())
+
+        # ── 4. Prefetch companies, scans, documents, clients ──
+        companies_res = supabase.table("companies").select("*").execute()
+        companies_by_email: dict[str, dict] = {}
+        companies_by_id: dict[str, dict] = {}
+        for c in (companies_res.data or []):
+            email = (c.get("email") or "").lower().strip()
+            if email:
+                companies_by_email[email] = c
+            companies_by_id[c["id"]] = c
+
+        clients_res = supabase.table("clients").select("*").execute()
+        clients_by_email: dict[str, dict] = {}
+        for cl in (clients_res.data or []):
+            email = (cl.get("email") or "").lower().strip()
+            if email:
+                clients_by_email[email] = cl
+
+        # ── 5. Build client records ──
+        now = datetime.now(timezone.utc)
+
+        for email in sorted(all_emails):
+            client_orders = orders_by_email.get(email, [])
+            client_subs = subs_by_email.get(email, [])
+
+            # Find company
+            company = companies_by_email.get(email)
+            client = clients_by_email.get(email)
+            company_id = None
+            company_name = email
+            company_url = ""
+
+            if company:
+                company_id = company["id"]
+                company_name = company.get("name") or email
+                company_url = company.get("url") or ""
+            elif client and client.get("company_id"):
+                company_id = client["company_id"]
+                comp = companies_by_id.get(company_id)
+                if comp:
+                    company_name = comp.get("name") or email
+                    company_url = comp.get("url") or ""
+
+            # Orders summary
+            paid_orders = [o for o in client_orders if o.get("status") in ("PAID", "paid")]
+            total_paid = sum(o.get("amount", 0) for o in paid_orders)
+
+            # Latest plan from paid orders (non-subscription)
+            one_time_orders = [
+                o for o in paid_orders
+                if o.get("order_type", "one_time") in ("one_time", None)
+            ]
+            latest_plan = one_time_orders[0].get("plan") if one_time_orders else None
+
+            # Active subscription
+            active_sub = None
+            sub_payment_ok = True
+            for s in client_subs:
+                if s.get("status") == "active":
+                    active_sub = s
+                    # Check if payment is overdue (next_charge_at is past)
+                    next_charge = s.get("next_charge_at")
+                    if next_charge:
+                        try:
+                            nca = datetime.fromisoformat(next_charge.replace("Z", "+00:00"))
+                            # Allow 5-day grace period
+                            if now > nca + __import__("datetime").timedelta(days=5):
+                                sub_payment_ok = False
+                        except Exception:
+                            pass
+                    break
+
+            # Last scan for this company
+            last_scan = None
+            scan_age_days = None
+            if company_id:
+                try:
+                    scan_res = (
+                        supabase.table("scans")
+                        .select("id, status, total_findings, created_at, finished_at, url_scanned")
+                        .eq("company_id", company_id)
+                        .eq("status", "done")
+                        .order("created_at", desc=True)
+                        .limit(1)
+                        .execute()
+                    )
+                    if scan_res.data:
+                        last_scan = scan_res.data[0]
+                        try:
+                            scan_dt = datetime.fromisoformat(
+                                last_scan["created_at"].replace("Z", "+00:00")
+                            )
+                            scan_age_days = (now - scan_dt).days
+                        except Exception:
+                            pass
+                except Exception as e:
+                    logger.warning(f"[ClientMgmt] Scan fetch error for {email}: {e}")
+
+            # Documents count + last generated
+            documents_count = 0
+            documents_last_at = None
+            if company_id:
+                try:
+                    docs_res = (
+                        supabase.table("documents")
+                        .select("id, created_at")
+                        .eq("company_id", company_id)
+                        .order("created_at", desc=True)
+                        .execute()
+                    )
+                    documents_count = len(docs_res.data or [])
+                    if docs_res.data:
+                        documents_last_at = docs_res.data[0].get("created_at")
+                except Exception as e:
+                    logger.warning(f"[ClientMgmt] Docs fetch error for {email}: {e}")
+
+            # Questionnaire completed?
+            questionnaire_done = False
+            if company_id:
+                try:
+                    qr_res = (
+                        supabase.table("questionnaire_responses")
+                        .select("id", count="exact")
+                        .eq("company_id", company_id)
+                        .execute()
+                    )
+                    questionnaire_done = (qr_res.count or len(qr_res.data or [])) > 0
+                except Exception:
+                    pass
+
+            # Scan diffs (last comparison)
+            last_diff = None
+            if company_id:
+                try:
+                    diff_res = (
+                        supabase.table("scan_diffs")
+                        .select("*")
+                        .eq("company_id", company_id)
+                        .order("created_at", desc=True)
+                        .limit(1)
+                        .execute()
+                    )
+                    if diff_res.data:
+                        last_diff = diff_res.data[0]
+                except Exception:
+                    pass
+
+            # Determine fulfillment status
+            # For subscription clients: need periodic rescan (every 30 days)
+            client_plan_info = clients_by_email.get(email)
+            scan_frequency = 30  # default days
+            if client_plan_info:
+                scan_frequency = client_plan_info.get("scan_frequency") or 30
+
+            needs_rescan = False
+            if active_sub and last_scan and scan_age_days is not None:
+                needs_rescan = scan_age_days >= scan_frequency
+            elif active_sub and not last_scan:
+                needs_rescan = True
+
+            fulfillment = "ok"  # up to date
+            if not last_scan:
+                fulfillment = "no_scan"
+            elif needs_rescan:
+                fulfillment = "needs_rescan"
+            elif documents_count == 0:
+                fulfillment = "needs_documents"
+
+            # Summary accumulators
+            summary["total_revenue"] += total_paid
+            if active_sub:
+                summary["active_subscriptions"] += 1
+                if not sub_payment_ok:
+                    summary["overdue_subscriptions"] += 1
+            if needs_rescan:
+                summary["needs_rescan"] += 1
+
+            clients_list.append({
+                "email": email,
+                "company_name": company_name,
+                "company_id": company_id,
+                "company_url": company_url,
+                "plan": latest_plan,
+                "orders": [
+                    {
+                        "id": o.get("id"),
+                        "order_number": o.get("order_number"),
+                        "plan": o.get("plan"),
+                        "amount": o.get("amount"),
+                        "status": o.get("status"),
+                        "order_type": o.get("order_type", "one_time"),
+                        "paid_at": o.get("paid_at"),
+                        "created_at": o.get("created_at"),
+                    }
+                    for o in client_orders
+                ],
+                "subscription": {
+                    "id": active_sub.get("id"),
+                    "plan": active_sub.get("plan"),
+                    "amount": active_sub.get("amount"),
+                    "status": active_sub.get("status"),
+                    "cycle": active_sub.get("cycle"),
+                    "last_charged_at": active_sub.get("last_charged_at"),
+                    "next_charge_at": active_sub.get("next_charge_at"),
+                    "total_charged": active_sub.get("total_charged", 0),
+                    "activated_at": active_sub.get("activated_at"),
+                    "payment_ok": sub_payment_ok,
+                } if active_sub else None,
+                "last_scan": last_scan,
+                "scan_age_days": scan_age_days,
+                "documents_count": documents_count,
+                "documents_last_at": documents_last_at,
+                "questionnaire_done": questionnaire_done,
+                "last_diff": {
+                    "has_changes": last_diff.get("has_changes"),
+                    "added": last_diff.get("added_count", 0),
+                    "removed": last_diff.get("removed_count", 0),
+                    "changed": last_diff.get("changed_count", 0),
+                    "summary": last_diff.get("summary", ""),
+                    "created_at": last_diff.get("created_at"),
+                } if last_diff else None,
+                "fulfillment": fulfillment,
+                "needs_rescan": needs_rescan,
+            })
+
+        summary["total_clients"] = len(clients_list)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[ClientMgmt] Error loading client management data: {e}")
+        raise HTTPException(status_code=500, detail=f"Chyba: {str(e)}")
+
+    return {"clients": clients_list, "summary": summary}
+
+
+# ─────────────────────────────────────────────
+# 9. POST /crm/client/{email}/rescan — Trigger monitoring rescan
+# ─────────────────────────────────────────────
+
+@router.post("/crm/client/{email}/rescan")
+async def crm_client_rescan(
+    email: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Admin-triggered rescan for a client:
+    1. Find the client's company + URL
+    2. Run a new scan
+    3. Compare with previous scan (scan_diffs)
+    4. If changes detected → regenerate documents → send email
+    """
+    from backend.database import get_supabase
+    from backend.scanner.pipeline import run_scan_pipeline
+    from backend.documents.pipeline import generate_compliance_kit
+    from backend.outbound.email_engine import send_email
+
+    supabase = get_supabase()
+
+    # ── Find company ──
+    company = None
+    company_res = supabase.table("companies").select("*").ilike("email", email).limit(1).execute()
+    if company_res.data:
+        company = company_res.data[0]
+    else:
+        # Try via clients table
+        client_res = supabase.table("clients").select("company_id").ilike("email", email).limit(1).execute()
+        if client_res.data and client_res.data[0].get("company_id"):
+            cid = client_res.data[0]["company_id"]
+            comp_res = supabase.table("companies").select("*").eq("id", cid).limit(1).execute()
+            if comp_res.data:
+                company = comp_res.data[0]
+
+    if not company:
+        raise HTTPException(status_code=404, detail=f"Firma pro {email} nenalezena")
+
+    company_id = company["id"]
+    url = company.get("url")
+    if not url:
+        raise HTTPException(status_code=400, detail="Firma nemá nastavenou URL pro scanování")
+
+    # ── Get previous scan's findings for comparison ──
+    prev_findings_set = set()
+    try:
+        prev_scan_res = (
+            supabase.table("scans")
+            .select("id, total_findings")
+            .eq("company_id", company_id)
+            .eq("status", "done")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if prev_scan_res.data:
+            prev_scan_id = prev_scan_res.data[0]["id"]
+            prev_f_res = (
+                supabase.table("findings")
+                .select("name, category, risk_level")
+                .eq("scan_id", prev_scan_id)
+                .execute()
+            )
+            for f in (prev_f_res.data or []):
+                prev_findings_set.add(
+                    f"{f.get('name','')}__{f.get('category','')}__{f.get('risk_level','')}"
+                )
+    except Exception as e:
+        logger.warning(f"[Rescan] Previous findings fetch error: {e}")
+
+    # ── Run new scan ──
+    now = datetime.now(timezone.utc).isoformat()
+    new_scan = supabase.table("scans").insert({
+        "company_id": company_id,
+        "url_scanned": url,
+        "status": "queued",
+        "triggered_by": "monitoring",
+        "started_at": now,
+    }).execute()
+
+    scan_id = new_scan.data[0]["id"]
+
+    try:
+        await run_scan_pipeline(scan_id)
+    except Exception as e:
+        logger.error(f"[Rescan] Scan pipeline failed for {email}: {e}")
+        raise HTTPException(status_code=500, detail=f"Sken selhal: {str(e)}")
+
+    # ── Compare findings ──
+    new_findings_set = set()
+    try:
+        new_f_res = (
+            supabase.table("findings")
+            .select("name, category, risk_level")
+            .eq("scan_id", scan_id)
+            .execute()
+        )
+        for f in (new_f_res.data or []):
+            new_findings_set.add(
+                f"{f.get('name','')}__{f.get('category','')}__{f.get('risk_level','')}"
+            )
+    except Exception:
+        pass
+
+    added = new_findings_set - prev_findings_set
+    removed = prev_findings_set - new_findings_set
+    changes_detected = len(added) > 0 or len(removed) > 0
+
+    # ── Save diff record ──
+    try:
+        prev_scan_id_val = prev_scan_res.data[0]["id"] if prev_scan_res.data else None
+        supabase.table("scan_diffs").insert({
+            "company_id": company_id,
+            "previous_scan_id": prev_scan_id_val,
+            "current_scan_id": scan_id,
+            "has_changes": changes_detected,
+            "added_count": len(added),
+            "removed_count": len(removed),
+            "changed_count": 0,
+            "unchanged_count": len(new_findings_set & prev_findings_set),
+            "summary": f"Přidáno: {len(added)}, Odebráno: {len(removed)}"
+                       + (" — beze změn" if not changes_detected else " — ZMĚNY DETEKOVÁNY"),
+        }).execute()
+    except Exception as e:
+        logger.warning(f"[Rescan] Diff insert error: {e}")
+
+    # ── If changes → regenerate docs + send email ──
+    docs_regenerated = False
+    email_sent = False
+
+    if changes_detected:
+        # Find client_id for document generation (can be company_id)
+        doc_target_id = company_id
+        try:
+            client_rec = supabase.table("clients").select("id").ilike("email", email).limit(1).execute()
+            if client_rec.data:
+                doc_target_id = client_rec.data[0]["id"]
+        except Exception:
+            pass
+
+        # Regenerate documents
+        try:
+            kit_result = await generate_compliance_kit(doc_target_id)
+            docs_regenerated = kit_result.success_count > 0
+            logger.info(f"[Rescan] Documents regenerated for {email}: {kit_result.success_count} docs")
+        except Exception as e:
+            logger.error(f"[Rescan] Document generation failed for {email}: {e}")
+
+        # Send notification email
+        try:
+            company_name = company.get("name", "Vaše firma")
+            html_body = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 16px; padding: 32px; color: white;">
+                    <h1 style="color: #22d3ee; margin-bottom: 8px;">🛡️ AIshield.cz</h1>
+                    <h2 style="color: white; margin-top: 0;">Aktualizace AI Act compliance</h2>
+
+                    <p style="color: #94a3b8;">Dobrý den,</p>
+
+                    <p style="color: #e2e8f0;">
+                        Při pravidelném monitoringu webu <strong>{url}</strong> jsme zaznamenali
+                        <strong style="color: #fbbf24;">změny v používaných AI systémech</strong>.
+                    </p>
+
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <p style="color: #22d3ee; font-weight: bold; margin-top: 0;">📊 Výsledky srovnání:</p>
+                        <ul style="color: #e2e8f0; list-style: none; padding: 0;">
+                            <li style="padding: 4px 0;">➕ Nově detekováno: <strong>{len(added)}</strong> AI systémů</li>
+                            <li style="padding: 4px 0;">➖ Odebráno: <strong>{len(removed)}</strong> AI systémů</li>
+                        </ul>
+                    </div>
+
+                    {"<p style='color: #e2e8f0;'>Na základě těchto změn jsme vám <strong>vygenerovali aktualizované compliance dokumenty</strong>, které naleznete ve svém dashboardu.</p>" if docs_regenerated else ""}
+
+                    <a href="https://aishield.cz/dashboard"
+                       style="display: inline-block; background: linear-gradient(135deg, #06b6d4, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: bold; margin-top: 16px;">
+                        Zobrazit dashboard →
+                    </a>
+
+                    <p style="color: #64748b; font-size: 12px; margin-top: 32px;">
+                        Toto je automatická zpráva z monitorovacího systému AIshield.cz.
+                    </p>
+                </div>
+            </div>
+            """
+
+            await send_email(
+                to=email,
+                subject=f"AIshield — Změny AI systémů na webu {company_name}",
+                html=html_body,
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz",
+            )
+            email_sent = True
+            logger.info(f"[Rescan] Notification email sent to {email}")
+        except Exception as e:
+            logger.error(f"[Rescan] Email send error for {email}: {e}")
+
+    # ── Log activity ──
+    try:
+        supabase.table("company_activities").insert({
+            "company_id": company_id,
+            "activity_type": "monitoring_rescan",
+            "title": f"Admin rescan — {'změny' if changes_detected else 'beze změn'}",
+            "description": (
+                f"Rescan dokončen. Přidáno: {len(added)}, Odebráno: {len(removed)}."
+                + (f" Dokumenty přegenerovány." if docs_regenerated else "")
+                + (f" Email odeslán." if email_sent else "")
+            ),
+            "actor": user.email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        pass
+
+    # Update company last_scanned_at
+    try:
+        supabase.table("companies").update({
+            "last_scanned_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", company_id).execute()
+    except Exception:
+        pass
+
+    return {
+        "status": "completed",
+        "email": email,
+        "company_name": company.get("name"),
+        "scan_id": scan_id,
+        "changes_detected": changes_detected,
+        "added_count": len(added),
+        "removed_count": len(removed),
+        "documents_regenerated": docs_regenerated,
+        "email_sent": email_sent,
+    }
