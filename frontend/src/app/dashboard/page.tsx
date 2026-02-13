@@ -409,10 +409,10 @@ export default function DashboardPage() {
 
                         {scanDone && !scanError && (
                             <div className="text-center py-4">
-                                <svg className="w-10 h-10 text-green-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-10 h-10 text-cyan-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <h3 className="font-semibold text-green-400 mb-1">Sken dokončen!</h3>
+                                <h3 className="font-semibold text-white mb-1">Sken dokončen</h3>
                                 <p className="text-sm text-slate-400 mb-1">
                                     Nalezeno {scanFindings.length} AI {scanFindings.length === 1 ? 'systém' : scanFindings.length < 5 ? 'systémy' : 'systémů'}
                                 </p>
@@ -459,13 +459,13 @@ export default function DashboardPage() {
                             </>
                         ) : (
                             <>
-                                <p className="text-sm text-green-400 leading-relaxed">
-                                    ✅ Žádné AI systémy spadající pod AI Act nebyly nalezeny.
+                                <p className="text-sm text-amber-400 leading-relaxed">
+                                    ⚠ Automatický sken nezjistil AI systémy — to však neznamená, že žádné nepoužíváte.
                                 </p>
                                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                                     {hasQuest
-                                        ? "Dotazník vyplněn — analýza potvrzena."
-                                        : "Pro úplnou analýzu vyplňte dotazník."}
+                                        ? "Dotazník vyplněn — pro jistotu doporučujeme pravidelný monitoring."
+                                        : "Vyplňte dotazník — odhalí interní AI nástroje, které sken nevidí."}
                                 </p>
                             </>
                         )}
@@ -524,7 +524,7 @@ export default function DashboardPage() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                             </span>
                         </div>
-                        <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-green-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
+                        <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-cyan-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
                             {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
                         </p>
                         {/* Progress bar */}
@@ -759,12 +759,12 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                 )}
 
                 {!currentStep && (
-                    <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5 text-center">
-                        <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-5 text-center">
+                        <svg className="w-8 h-8 text-cyan-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <h4 className="font-semibold text-green-400">Všechny kroky dokončeny!</h4>
-                        <p className="text-sm text-slate-400 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení.</p>
+                        <h4 className="font-semibold text-cyan-400">Všechny kroky dokončeny</h4>
+                        <p className="text-sm text-slate-400 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení. Pro udržení souladu doporučujeme pravidelný monitoring.</p>
                     </div>
                 )}
             </div>
@@ -837,8 +837,8 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
     if (findings.length === 0) {
         return (
             <EmptyState
-                title="Zatím žádné AI systémy"
-                description="Spusťte sken webu pro automatickou detekci AI systémů na vašem webu."
+                title="Sken ještě nebyl spuštěn"
+                description="Každý web používající AI systémy má povinnosti dle AI Actu — spusťte sken a zjistěte, které."
                 onAction={onStartScan}
                 cta="Spustit sken"
                 illustration={
@@ -1097,7 +1097,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                 <div key={scan.id} className="flex items-center gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4 hover:border-white/[0.12] transition-all">
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
-                            ? "bg-green-500"
+                            ? "bg-cyan-500"
                             : scan.status === "running"
                                 ? "bg-amber-500 animate-pulse"
                                 : "bg-red-500"
@@ -1108,7 +1108,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                             <p className="text-sm font-medium text-slate-200 truncate">{scan.url}</p>
                             <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${scan.status === "completed"
-                                ? "bg-green-500/10 text-green-400"
+                                ? "bg-cyan-500/10 text-cyan-400"
                                 : scan.status === "running"
                                     ? "bg-amber-500/10 text-amber-400"
                                     : "bg-red-500/10 text-red-400"

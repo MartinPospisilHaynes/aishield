@@ -278,24 +278,24 @@ function ScanPageInner() {
     const riskBadge = (level: string) => {
         switch (level) {
             case "high": return "bg-red-500/12 text-red-400 border-red-500/30";
-            case "limited": return "bg-yellow-500/12 text-yellow-400 border-yellow-500/30";
-            case "minimal": return "bg-green-500/12 text-green-400 border-green-500/30";
+            case "limited": return "bg-amber-500/12 text-amber-400 border-amber-500/30";
+            case "minimal": return "bg-amber-500/10 text-amber-300 border-amber-400/25";
             default: return "bg-white/10 text-slate-400 border-white/[0.08]";
         }
     };
     const riskLabel = (level: string) => {
         switch (level) {
-            case "high": return "Vysoké riziko";
-            case "limited": return "Omezené riziko";
-            case "minimal": return "Minimální riziko";
+            case "high": return "Čl. 6 + 9 — plná regulace";
+            case "limited": return "Čl. 50 + 9 — dokumentace";
+            case "minimal": return "Čl. 50 — povinná transparence";
             default: return level;
         }
     };
     const riskDotColor = (level: string) => {
         switch (level) {
             case "high": return "bg-red-500";
-            case "limited": return "bg-yellow-500";
-            case "minimal": return "bg-green-500";
+            case "limited": return "bg-amber-500";
+            case "minimal": return "bg-amber-400";
             default: return "bg-slate-500";
         }
     };
@@ -336,7 +336,7 @@ function ScanPageInner() {
                     </h1>
                     <p className="mt-4 text-slate-400">
                         Zadejte URL vašeho webu a zjistěte, jaké AI systémy na něm
-                        běží a jestli splňujete EU AI Act.
+                        běží a jaké povinnosti z EU AI Actu vám z toho plynou.
                     </p>
                 </div>
 
@@ -490,8 +490,8 @@ function ScanPageInner() {
                         <div className="card">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold text-white">Přehled výsledků</h2>
-                                <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-green-500/20 text-green-400">
-                                    <IconCheckCircle className="w-4 h-4 mr-1" /> Dokončeno
+                                <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-slate-500/20 text-slate-300">
+                                    <IconCheckCircle className="w-4 h-4 mr-1" /> Sken dokončen
                                 </span>
                             </div>
                             <div className="space-y-3 text-sm">
@@ -537,23 +537,23 @@ function ScanPageInner() {
                                             <div className="rounded-xl bg-red-500/8 border border-red-500/20 p-3 text-center">
                                                 <div className="text-2xl font-bold text-red-400">{highCount}</div>
                                                 <RiskTooltip level="high">
-                                                    <span className="text-xs text-red-400/70">Vysoké riziko</span>
+                                                    <span className="text-xs text-red-400/70">Plná regulace</span>
                                                 </RiskTooltip>
                                             </div>
                                         )}
                                         {limitedCount > 0 && (
-                                            <div className="rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
-                                                <div className="text-2xl font-bold text-yellow-400">{limitedCount}</div>
+                                            <div className="rounded-xl bg-amber-500/8 border border-amber-500/20 p-3 text-center">
+                                                <div className="text-2xl font-bold text-amber-400">{limitedCount}</div>
                                                 <RiskTooltip level="limited">
-                                                    <span className="text-xs text-yellow-400/70">Omezené riziko</span>
+                                                    <span className="text-xs text-amber-400/70">Dokumentace</span>
                                                 </RiskTooltip>
                                             </div>
                                         )}
                                         {minimalCount > 0 && (
-                                            <div className="rounded-xl bg-green-500/8 border border-green-500/20 p-3 text-center">
-                                                <div className="text-2xl font-bold text-green-400">{minimalCount}</div>
+                                            <div className="rounded-xl bg-amber-500/8 border border-amber-400/20 p-3 text-center">
+                                                <div className="text-2xl font-bold text-amber-300">{minimalCount}</div>
                                                 <RiskTooltip level="minimal">
-                                                    <span className="text-xs text-green-400/70">Minimální riziko</span>
+                                                    <span className="text-xs text-amber-300/70">Povinná transparence</span>
                                                 </RiskTooltip>
                                             </div>
                                         )}
@@ -616,12 +616,38 @@ function ScanPageInner() {
                         ) : (
                             <div className="card text-center">
                                 <div className="flex justify-center mb-2">
-                                    <IconCheckBadge className="w-10 h-10 text-green-400" />
+                                    <IconCheckBadge className="w-10 h-10 text-amber-400" />
                                 </div>
-                                <h3 className="font-semibold text-white">Žádné AI systémy nenalezeny</h3>
+                                <h3 className="font-semibold text-white">Sken nedokázal identifikovat AI systémy</h3>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    Na tomto webu jsme nezjistili žádné AI systémy spadající pod EU AI Act.
+                                    Automatický sken prověřuje pouze veřejně viditelné skripty. Interní AI nástroje, 
+                                    API integrace a backendové systémy sken neodhalí.
                                 </p>
+                                <p className="text-sm text-amber-400/80 mt-2 font-medium">
+                                    ⚠ I jeden AI systém na webu vyžaduje dokumentaci a informování návštěvníků (čl. 50 AI Actu).
+                                </p>
+                            </div>
+                        )}
+
+                        {/* ── Info: 3 úrovně rizika EU AI Actu ── */}
+                        {hasFindings && (
+                            <div className="rounded-xl bg-amber-500/5 border border-amber-500/15 p-4">
+                                <div className="flex items-start gap-3">
+                                    <IconInfo className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
+                                        <p>
+                                            <strong className="text-amber-300">EU AI Act rozlišuje 3 úrovně povinností — všechny vyžadují akci:</strong>
+                                        </p>
+                                        <ul className="space-y-1 ml-1">
+                                            <li><span className="text-red-400 font-medium">Čl. 6 + 9 — plná regulace:</span> Systémy s vysokým rizikem vyžadují kompletní dokumentaci, registraci a průběžný audit.</li>
+                                            <li><span className="text-amber-400 font-medium">Čl. 50 + 9 — dokumentace:</span> Systémy s omezeným rizikem vyžadují transparenční povinnosti a technickou dokumentaci.</li>
+                                            <li><span className="text-amber-300 font-medium">Čl. 50 — povinná transparence:</span> I chatboty, analytika a doporučovací systémy vyžadují informování návštěvníků a dokumentaci.</li>
+                                        </ul>
+                                        <p className="text-amber-200/70 font-medium">
+                                            ⚠ Byť i jeden AI systém na vašem webu znamená povinnosti. Nesplnění hrozí pokutou až 35 mil. € nebo 7 % obratu.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 

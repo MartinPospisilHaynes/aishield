@@ -57,7 +57,7 @@ const DELIVERABLES = [
         detail: null,
         bullets: [
             "Přehled všech AI systémů nalezených na vašem webu (chatboty, analytika, doporučovací systémy)",
-            "U každého systému jasně napsáno, jestli je v pořádku nebo jestli porušuje zákon",
+            "U každého systému konkrétní povinnosti dle AI Actu — včetně článku zákona",
             "Odkaz na konkrétní článek AI Actu, který se vás týká — v srozumitelné češtině",
             "Celkové hodnocení: jak na tom váš web je a co musíte udělat jako první",
             "Žádný právnický žargon — dokument pochopí i naprostý laik",
@@ -439,7 +439,7 @@ export default function HomePage() {
                     {/* Subheadline */}
                     <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-slate-400 leading-relaxed">
                         Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
-                        Nestačí jen cookie lišta — zákon vyžaduje mnohem víc.
+                        Nestačí jen přidat zmínku o AI na cookie lištu — zákon vyžaduje mnohem víc.
                     </p>
 
                     {/* Povinnosti — odrážky */}
@@ -620,7 +620,7 @@ export default function HomePage() {
                             přes kompletní dokumentaci, až po průběžný monitoring.
                             Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
                             My Vám pomůžeme splnit zákon jednoduše a bez stresu.
-                            Nemusíte se tak o nic starat a můžete se věnovat dál důležitějším věcem,
+                            Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
                             než je byrokracie z Bruselu. Jako je například Vaše podnikání.
                         </p>
                     </div>
