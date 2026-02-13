@@ -51,7 +51,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     },
     {
         key: "plan",
-        label: "Akční plán",
+        label: "Kroky ke splnění",
         icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>),
     },
     {
@@ -70,7 +70,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 const TEMPLATE_NAMES: Record<string, string> = {
     compliance_report: "Compliance Report",
     transparency_page: "Transparenční stránka",
-    action_plan: "Akční plán",
+    action_plan: "Kroky ke splnění",
     ai_register: "Registr AI systémů",
     chatbot_notices: "Chatbot oznámení",
     ai_policy: "Interní AI Policy",
@@ -563,12 +563,12 @@ export default function DashboardPage() {
                                 </svg>
                             </div>
                             <div>
-                                <h3 className="font-semibold text-slate-200">Váš akční plán je připraven</h3>
-                                <p className="text-xs text-slate-400">Na základě skenu i dotazníku — {findingsCount} úkolů k vyřešení</p>
+                                <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
+                                <p className="text-xs text-slate-400">Na základě skenu — {findingsCount} kroků, vše vyřídíme za vás</p>
                             </div>
                         </div>
                         <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
-                            Zobrazit akční plán
+                            Zobrazit kroky
                         </button>
                     </div>
                 )}
@@ -817,7 +817,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             )}
 
             {/* ═══ PRICING TABLE ═══ */}
-            <PricingTable />
+            <PricingComparisonTable />
         </div>
     );
 }
@@ -952,15 +952,15 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 }
 
 
-/* ── Tab: Akční plán ── */
+/* ── Tab: Kroky ke splnění ── */
 function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
     const [localResolved, setLocalResolved] = useState<Record<string, boolean>>({});
 
     if (findings.length === 0) {
         return (
             <EmptyState
-                title="Akční plán je prázdný"
-                description="Nejdříve proveďte sken webu — akční plán se vygeneruje z nálezů."
+                title="Zatím žádné kroky"
+                description="Nejdříve proveďte sken webu — kroky ke splnění se vygenerují z nálezů."
                 onAction={onStartScan}
                 cta="Spustit sken"
                 illustration={
@@ -1000,12 +1000,11 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Co je tento akční plán?</h4>
+                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Kroky ke splnění AI Act</h4>
                         <p className="text-xs text-slate-400 leading-relaxed">
-                            Toto jsou kroky, které <strong className="text-slate-300">vy jako provozovatel webu</strong> musíte splnit,
-                            abyste byli v souladu s EU AI Act. Každý bod představuje konkrétní opatření — klikněte na zaškrtávací políčko,
-                            jakmile daný krok vyřešíte. Zkratka <strong className="text-slate-300">ÚOOÚ</strong> = Úřad pro ochranu osobních údajů
-                            (český dozorový orgán pro AI Act).
+                            Níže jsou kroky, které je potřeba splnit pro soulad s EU AI Act.
+                            <strong className="text-cyan-300"> Nemusíte řešit nic sami — vše za vás připravíme a vyřídíme my.</strong>{" "}
+                            Stačí si vybrat balíček a o zbytek se postaráme.
                         </p>
                     </div>
                 </div>
@@ -1013,7 +1012,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
 
             <div className="glass">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-300">Váš postup</span>
+                    <span className="text-sm font-medium text-slate-300">Přehled kroků</span>
                     <span className="text-sm text-slate-400">{resolved}/{total} splněno</span>
                 </div>
                 <div className="h-2 rounded-full bg-white/5 overflow-hidden">
@@ -1046,17 +1045,22 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                             <p className={`text-sm font-medium ${isResolved ? "line-through text-slate-500" : "text-slate-200"}`}>
                                 {f.action_required || f.name}
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">{f.name}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{f.name} · {f.ai_act_article}</p>
                             <div className="flex items-center gap-3 mt-1.5">
                                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                     {f.risk_level === "high" ? "Vysoká priorita" : f.risk_level === "medium" ? "Střední" : "Nízká"}
                                 </span>
-                                <span className="text-[10px] text-slate-500">{f.ai_act_article}</span>
+                                <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
                             </div>
                         </div>
                     </div>
                 );
             })}
+
+            {/* ══ Cenové balíčky — srovnávací tabulka ══ */}
+            <div className="mt-8">
+                <PricingComparisonTable />
+            </div>
         </div>
     );
 }
@@ -1237,117 +1241,88 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
 }
 
 
-/* ── Pricing Table ── */
-function PricingTable() {
-    const plans = [
-        {
-            name: "Starter",
-            price: "4 990",
-            desc: "Pro malé firmy do 50 zaměstnanců",
-            features: [
-                { label: "Sken webu", included: true },
-                { label: "Dotazník AI systémů", included: true },
-                { label: "Compliance report", included: true },
-                { label: "Registr AI systémů", included: true },
-                { label: "Akční plán", included: false },
-                { label: "Transparenční stránka", included: false },
-                { label: "Interní AI Policy", included: false },
-                { label: "Osnova školení", included: false },
-                { label: "Chatbot oznámení", included: false },
-                { label: "E-mail podpora", included: true },
-                { label: "Telefonická konzultace", included: false },
-            ],
-            cta: "Vybrat Starter",
-            highlight: false,
-        },
-        {
-            name: "Professional",
-            price: "9 990",
-            desc: "Pro střední firmy — nejpopulárnější",
-            features: [
-                { label: "Sken webu", included: true },
-                { label: "Dotazník AI systémů", included: true },
-                { label: "Compliance report", included: true },
-                { label: "Registr AI systémů", included: true },
-                { label: "Akční plán", included: true },
-                { label: "Transparenční stránka", included: true },
-                { label: "Interní AI Policy", included: true },
-                { label: "Osnova školení", included: false },
-                { label: "Chatbot oznámení", included: false },
-                { label: "E-mail podpora", included: true },
-                { label: "Telefonická konzultace", included: true },
-            ],
-            cta: "Vybrat Professional",
-            highlight: true,
-        },
-        {
-            name: "Enterprise",
-            price: "24 990",
-            desc: "Pro velké organizace a korporáty",
-            features: [
-                { label: "Sken webu", included: true },
-                { label: "Dotazník AI systémů", included: true },
-                { label: "Compliance report", included: true },
-                { label: "Registr AI systémů", included: true },
-                { label: "Akční plán", included: true },
-                { label: "Transparenční stránka", included: true },
-                { label: "Interní AI Policy", included: true },
-                { label: "Osnova školení", included: true },
-                { label: "Chatbot oznámení", included: true },
-                { label: "E-mail podpora", included: true },
-                { label: "Telefonická konzultace", included: true },
-            ],
-            cta: "Vybrat Enterprise",
-            highlight: false,
-        },
-    ];
+/* ── Pricing Comparison Table (row-based with ✓/✗) ── */
+const COMPARISON_FEATURES = [
+    { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
+    { label: "Compliance Kit (7 dokumentů PDF)", basic: true, pro: true, enterprise: true },
+    { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
+    { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
+    { label: "Kroky ke splnění s checkboxy", basic: true, pro: true, enterprise: true },
+    { label: "Interní AI Policy", basic: true, pro: true, enterprise: true },
+    { label: "Osnova školení zaměstnanců (čl. 4)", basic: true, pro: true, enterprise: true },
+    { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
+    { label: "Nastavení chatbot oznámení", basic: false, pro: true, enterprise: true },
+    { label: "Podpora po dodání (30 dní)", basic: false, pro: true, enterprise: true },
+    { label: "WordPress, Shoptet i custom řešení", basic: false, pro: true, enterprise: true },
+    { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
+    { label: "Konzultace s compliance specialistou", basic: false, pro: false, enterprise: true },
+    { label: "Metodická kontrola dokumentace", basic: false, pro: false, enterprise: true },
+    { label: "Měsíční monitoring webu", basic: false, pro: false, enterprise: true },
+    { label: "Školení AI literacy na míru", basic: false, pro: false, enterprise: true },
+    { label: "SLA s garantovanou dobou odezvy", basic: false, pro: false, enterprise: true },
+];
+
+function PricingComparisonTable() {
+    const Check = () => (
+        <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+    );
+    const Cross = () => (
+        <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    );
 
     return (
-        <div className="glass">
-            <h3 className="font-semibold mb-2">Cenové balíčky</h3>
-            <p className="text-xs text-slate-400 mb-6">Vyberte si balíček, který odpovídá velikosti vaší firmy. Všechny ceny jsou bez DPH.</p>
+        <div className="glass p-0 overflow-hidden">
+            <div className="p-5 pb-3">
+                <h3 className="font-semibold text-slate-200 mb-1">Vyberte si balíček — vše vyřídíme za vás</h3>
+                <p className="text-xs text-slate-400">Veškerou dokumentaci a implementaci zajistíme kompletně my. Vy se nemusíte o nic starat.</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {plans.map((plan) => (
-                    <div key={plan.name} className={`rounded-xl border p-5 transition-all ${plan.highlight
-                        ? "border-fuchsia-500/40 bg-fuchsia-500/[0.06] shadow-[0_0_30px_rgba(217,70,239,0.08)]"
-                        : "border-white/[0.06] bg-white/[0.02]"
-                        }`}>
-                        {plan.highlight && (
-                            <span className="inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 mb-3">
-                                Nejpopulárnější
-                            </span>
-                        )}
-                        <h4 className="font-bold text-lg text-slate-200">{plan.name}</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 mb-3">{plan.desc}</p>
-                        <div className="flex items-baseline gap-1 mb-5">
-                            <span className="text-3xl font-extrabold text-white">{plan.price}</span>
-                            <span className="text-sm text-slate-500">Kč</span>
-                        </div>
-                        <div className="space-y-2.5 mb-6">
-                            {plan.features.map((feat) => (
-                                <div key={feat.label} className="flex items-center gap-2.5 text-sm">
-                                    {feat.included ? (
-                                        <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-4 h-4 text-red-400/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    )}
-                                    <span className={feat.included ? "text-slate-300" : "text-slate-500"}>{feat.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <a href="/pricing" className={`block text-center text-sm font-medium py-2.5 rounded-xl transition-all ${plan.highlight
-                            ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
-                            : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
-                            }`}>
-                            {plan.cta}
-                        </a>
-                    </div>
-                ))}
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[500px]">
+                    <thead>
+                        <tr className="border-t border-b border-white/[0.06]">
+                            <th className="text-left px-5 py-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Služba</th>
+                            <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                BASIC
+                                <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">4 999 Kč</div>
+                            </th>
+                            <th className="text-center px-3 py-3 text-xs font-bold text-fuchsia-400 uppercase tracking-wider bg-fuchsia-500/[0.04]">
+                                PRO
+                                <div className="text-fuchsia-300 text-[10px] font-normal mt-0.5">14 999 Kč</div>
+                            </th>
+                            <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                ENTERPRISE
+                                <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">49 999+ Kč</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {COMPARISON_FEATURES.map((feat, i) => (
+                            <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
+                                <td className="px-5 py-2.5 text-sm text-slate-300">{feat.label}</td>
+                                <td className="px-3 py-2.5 text-center">{feat.basic ? <Check /> : <Cross />}</td>
+                                <td className="px-3 py-2.5 text-center bg-fuchsia-500/[0.02]">{feat.pro ? <Check /> : <Cross />}</td>
+                                <td className="px-3 py-2.5 text-center">{feat.enterprise ? <Check /> : <Cross />}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4">
+                <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                    Objednat BASIC
+                </a>
+                <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
+                    Objednat PRO ★
+                </a>
+                <a href="/enterprise" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                    Kontaktovat ENTERPRISE
+                </a>
             </div>
         </div>
     );
