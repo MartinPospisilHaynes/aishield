@@ -337,313 +337,313 @@ export default function DashboardPage() {
 
     return (
         <>
-        <section className="py-8 relative">
-            {/* BG glow */}
-            <div className="absolute inset-0 -z-10">
-                <div className="absolute top-[5%] right-[25%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/5 blur-[130px]" />
-            </div>
-
-            <div className="mx-auto max-w-7xl px-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-2xl font-extrabold">Dashboard</h1>
-                        <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
-                    </div>
-                    <div className="flex gap-2 sm:gap-3 flex-wrap">
-                        <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
-                            {scanLoading ? "Skenuji..." : "Nový sken"}
-                        </button>
-                        {hasScans ? (
-                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
-                            </a>
-                        ) : (
-                            <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
-                                🔒 Dotazník
-                            </button>
-                        )}
-                    </div>
+            <section className="py-8 relative">
+                {/* BG glow */}
+                <div className="absolute inset-0 -z-10">
+                    <div className="absolute top-[5%] right-[25%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/5 blur-[130px]" />
                 </div>
 
-                {/* ═══ INLINE SCAN PANEL ═══ */}
-                {scanActive && (
-                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-4 sm:p-6 relative">
-                        {!scanLoading && (
-                            <button onClick={closeScanPanel} className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                <div className="mx-auto max-w-7xl px-6">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-2xl font-extrabold">Dashboard</h1>
+                            <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
+                        </div>
+                        <div className="flex gap-2 sm:gap-3 flex-wrap">
+                            <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
+                                {scanLoading ? "Skenuji..." : "Nový sken"}
                             </button>
-                        )}
+                            {hasScans ? (
+                                <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                    {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
+                                </a>
+                            ) : (
+                                <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
+                                    🔒 Dotazník
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
-                        {scanError && !scanLoading && (
-                            <div className="text-center py-4">
-                                <div className="inline-flex items-center gap-2 text-red-400 mb-2">
+                    {/* ═══ INLINE SCAN PANEL ═══ */}
+                    {scanActive && (
+                        <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-4 sm:p-6 relative">
+                            {!scanLoading && (
+                                <button onClick={closeScanPanel} className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
-                                    <span className="font-medium">{scanError}</span>
-                                </div>
-                                <button onClick={handleStartScan} className="btn-secondary text-sm px-4 py-2 mt-2">Zkusit znovu</button>
-                            </div>
-                        )}
+                                </button>
+                            )}
 
-                        {scanLoading && (
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="relative h-12 w-12 flex-shrink-0">
-                                        <svg className="w-12 h-12 animate-spin" style={{ animationDuration: "2.5s" }} viewBox="0 0 48 48" fill="none">
-                                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" className="text-white/[0.06]" />
-                                            <circle cx="24" cy="24" r="20" stroke="url(#scan-grad)" strokeWidth="2" strokeLinecap="round" strokeDasharray="60 66" />
-                                            <defs><linearGradient id="scan-grad" x1="0" y1="0" x2="48" y2="48"><stop offset="0%" stopColor="#d946ef" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                            {scanError && !scanLoading && (
+                                <div className="text-center py-4">
+                                    <div className="inline-flex items-center gap-2 text-red-400 mb-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span className="font-medium">{scanError}</span>
+                                    </div>
+                                    <button onClick={handleStartScan} className="btn-secondary text-sm px-4 py-2 mt-2">Zkusit znovu</button>
+                                </div>
+                            )}
+
+                            {scanLoading && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative h-12 w-12 flex-shrink-0">
+                                            <svg className="w-12 h-12 animate-spin" style={{ animationDuration: "2.5s" }} viewBox="0 0 48 48" fill="none">
+                                                <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" className="text-white/[0.06]" />
+                                                <circle cx="24" cy="24" r="20" stroke="url(#scan-grad)" strokeWidth="2" strokeLinecap="round" strokeDasharray="60 66" />
+                                                <defs><linearGradient id="scan-grad" x1="0" y1="0" x2="48" y2="48"><stop offset="0%" stopColor="#d946ef" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-sm">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</h3>
+                                            <p className="text-xs text-slate-400">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.desc}</p>
+                                        </div>
+                                    </div>
+                                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                        <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-1000" style={{ width: `${((scanStage + 1) / SCAN_STAGES.length) * 100}%` }} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {scanDone && !scanError && (
+                                <div className="text-center py-4">
+                                    <svg className="w-10 h-10 text-cyan-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h3 className="font-semibold text-white mb-1">Sken dokončen</h3>
+                                    <p className="text-sm text-slate-400 mb-1">
+                                        Nalezeno {scanFindings.length} AI {scanFindings.length === 1 ? 'systém' : scanFindings.length < 5 ? 'systémy' : 'systémů'}
+                                    </p>
+                                    {scanResult?.company_id && (
+                                        <p className="text-xs text-slate-500 mb-3">Výsledky byly uloženy do vašeho profilu</p>
+                                    )}
+                                    <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
+                                        <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
+                                            Zobrazit nálezy
+                                        </button>
+                                        {hasScans && (
+                                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                                {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 items-start">
+                        {/* Card 1: Výsledek testu – heslovité hodnocení */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Výsledek testu</p>
+                                <span className="text-slate-600">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                </span>
+                            </div>
+                            {!hasScans ? (
+                                <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden.</p>
+                            ) : uniqueSystemsCount > 0 ? (
+                                <>
+                                    <p className="text-sm text-red-400 leading-relaxed">
+                                        ⚠️ Počet nalezených AI systémů spadajících pod AI Act: <span className="font-extrabold text-lg">{uniqueSystemsCount}</span>
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                        {hasQuest
+                                            ? "Dotazník vyplněn — kompletní analýza k dispozici."
+                                            : "Pro úplnou analýzu vyplňte dotazník."}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-sm text-amber-400 leading-relaxed">
+                                        ⚠ Automatický sken nezjistil AI systémy — to však neznamená, že žádné nepoužíváte.
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                        {hasQuest
+                                            ? "Dotazník vyplněn — pro jistotu doporučujeme pravidelný monitoring."
+                                            : "Vyplňte dotazník — odhalí interní AI nástroje, které sken nevidí."}
+                                    </p>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Card 2: AI systémy – rozbalovací registr */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all">
+                            <button
+                                onClick={() => setAiCardOpen(!aiCardOpen)}
+                                className="w-full p-5 text-left"
+                            >
+                                <div className="flex items-center justify-between mb-1">
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider">AI systémy nalezeny</p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-slate-600">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        </span>
+                                        <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </div>
-                                    <div className="flex-1">
-                                        <h3 className="font-semibold text-sm">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</h3>
-                                        <p className="text-xs text-slate-400">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.desc}</p>
+                                </div>
+                                <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                                    {uniqueSystemsCount}
+                                </p>
+                                <p className="text-xs text-amber-400/80 mt-1 font-medium">
+                                    {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} nesplněných povinností dle AI Actu` : 'Sken zatím nebyl proveden'}
+                                </p>
+                            </button>
+                            {aiCardOpen && uniqueSystemsCount > 0 && (
+                                <div className="border-t border-white/[0.06] px-5 pb-5">
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Registr nalezených AI systémů</p>
+                                    <div className="space-y-2">
+                                        {groupFindings(data?.findings || []).map((f) => (
+                                            <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-medium text-white truncate">{f.name}</p>
+                                                    <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
+                                                </div>
+                                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                    {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
+                                    <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>
                                 </div>
-                                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-1000" style={{ width: `${((scanStage + 1) / SCAN_STAGES.length) * 100}%` }} />
-                                </div>
-                            </div>
-                        )}
-
-                        {scanDone && !scanError && (
-                            <div className="text-center py-4">
-                                <svg className="w-10 h-10 text-cyan-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <h3 className="font-semibold text-white mb-1">Sken dokončen</h3>
-                                <p className="text-sm text-slate-400 mb-1">
-                                    Nalezeno {scanFindings.length} AI {scanFindings.length === 1 ? 'systém' : scanFindings.length < 5 ? 'systémy' : 'systémů'}
-                                </p>
-                                {scanResult?.company_id && (
-                                    <p className="text-xs text-slate-500 mb-3">Výsledky byly uloženy do vašeho profilu</p>
-                                )}
-                                <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
-                                    <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
-                                        Zobrazit nálezy
-                                    </button>
-                                    {hasScans && (
-                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                            {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 items-start">
-                    {/* Card 1: Výsledek testu – heslovité hodnocení */}
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider">Výsledek testu</p>
-                            <span className="text-slate-600">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                            </span>
+                            )}
                         </div>
-                        {!hasScans ? (
-                            <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden.</p>
-                        ) : uniqueSystemsCount > 0 ? (
-                            <>
-                                <p className="text-sm text-red-400 leading-relaxed">
-                                    ⚠️ Počet nalezených AI systémů spadajících pod AI Act: <span className="font-extrabold text-lg">{uniqueSystemsCount}</span>
-                                </p>
-                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                                    {hasQuest
-                                        ? "Dotazník vyplněn — kompletní analýza k dispozici."
-                                        : "Pro úplnou analýzu vyplňte dotazník."}
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <p className="text-sm text-amber-400 leading-relaxed">
-                                    ⚠ Automatický sken nezjistil AI systémy — to však neznamená, že žádné nepoužíváte.
-                                </p>
-                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                                    {hasQuest
-                                        ? "Dotazník vyplněn — pro jistotu doporučujeme pravidelný monitoring."
-                                        : "Vyplňte dotazník — odhalí interní AI nástroje, které sken nevidí."}
-                                </p>
-                            </>
-                        )}
+
+                        {/* Card 3: Dotazník with progress */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+                            <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">Dotazník</p>
+                                <span className="text-slate-600">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                </span>
+                            </div>
+                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-cyan-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
+                                {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
+                            </p>
+                            {/* Progress bar */}
+                            {!hasQuest && questStatus === "rozpracovano" && (
+                                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-2 mb-1">
+                                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-500" style={{ width: `${questPercentage}%` }} />
+                                </div>
+                            )}
+                            <p className="text-xs text-slate-500 mt-1">
+                                {hasQuest
+                                    ? "Vyplněn — můžete upravit odpovědi"
+                                    : questStatus === "rozpracovano"
+                                        ? `${questProgress?.answered || 0}/${questProgress?.total_questions || 27} otázek zodpovězeno`
+                                        : "Vyplňte pro přesnější analýzu"
+                                }
+                            </p>
+                            {/* Action buttons */}
+                            <div className="flex gap-2 mt-3">
+                                {hasScans && (
+                                    hasQuest ? (
+                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
+                                            className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+                                            Opravit odpovědi
+                                        </a>
+                                    ) : (
+                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
+                                            {questStatus === "rozpracovano" ? "Pokračovat" : "Vyplnit"}
+                                        </a>
+                                    )
+                                )}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Card 2: AI systémy – rozbalovací registr */}
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all">
-                        <button
-                            onClick={() => setAiCardOpen(!aiCardOpen)}
-                            className="w-full p-5 text-left"
-                        >
-                            <div className="flex items-center justify-between mb-1">
-                                <p className="text-xs text-slate-500 uppercase tracking-wider">AI systémy nalezeny</p>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-slate-600">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                    </span>
-                                    <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
+                    {hasScans && hasQuest && findingsCount > 0 && (
+                        <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-4 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                 </div>
-                            </div>
-                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                                {uniqueSystemsCount}
-                            </p>
-                            <p className="text-xs text-amber-400/80 mt-1 font-medium">
-                                {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} nesplněných povinností dle AI Actu` : 'Sken zatím nebyl proveden'}
-                            </p>
-                        </button>
-                        {aiCardOpen && uniqueSystemsCount > 0 && (
-                            <div className="border-t border-white/[0.06] px-5 pb-5">
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Registr nalezených AI systémů</p>
-                                <div className="space-y-2">
-                                    {groupFindings(data?.findings || []).map((f) => (
-                                        <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
-                                            </div>
-                                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                            </span>
-                                        </div>
-                                    ))}
+                                <div>
+                                    <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
+                                    <p className="text-xs text-slate-400">Na základě skenu — {findingsCount} kroků, vše vyřídíme za vás</p>
                                 </div>
-                                <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>
                             </div>
-                        )}
+                            <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
+                                Zobrazit kroky
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Tabs */}
+                    <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 scrollbar-hide">
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
+                                    ? "text-fuchsia-400"
+                                    : "text-slate-500 hover:text-slate-300"
+                                    }`}
+                            >
+                                {tab.icon}
+                                {tab.label}
+                                {activeTab === tab.key && (
+                                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 rounded-full" />
+                                )}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* Card 3: Dotazník with progress */}
-                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                        <div className="flex items-center justify-between mb-1">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider">Dotazník</p>
-                            <span className="text-slate-600">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                            </span>
-                        </div>
-                        <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-cyan-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
-                            {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
-                        </p>
-                        {/* Progress bar */}
-                        {!hasQuest && questStatus === "rozpracovano" && (
-                            <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-2 mb-1">
-                                <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-500" style={{ width: `${questPercentage}%` }} />
-                            </div>
-                        )}
-                        <p className="text-xs text-slate-500 mt-1">
-                            {hasQuest
-                                ? "Vyplněn — můžete upravit odpovědi"
-                                : questStatus === "rozpracovano"
-                                    ? `${questProgress?.answered || 0}/${questProgress?.total_questions || 27} otázek zodpovězeno`
-                                    : "Vyplňte pro přesnější analýzu"
-                            }
-                        </p>
-                        {/* Action buttons */}
-                        <div className="flex gap-2 mt-3">
-                            {hasScans && (
-                                hasQuest ? (
-                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
-                                        className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
-                                        Opravit odpovědi
-                                    </a>
-                                ) : (
-                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
-                                        className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
-                                        {questStatus === "rozpracovano" ? "Pokračovat" : "Vyplnit"}
-                                    </a>
-                                )
-                            )}
-                        </div>
+                    {/* Tab content */}
+                    <div className="min-h-[400px]">
+                        {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
+                        {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
+                        {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
+                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
+                        {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
+                        {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
                 </div>
+            </section>
 
-                {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
-                {hasScans && hasQuest && findingsCount > 0 && (
-                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-4 sm:p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
-                                <p className="text-xs text-slate-400">Na základě skenu — {findingsCount} kroků, vše vyřídíme za vás</p>
-                            </div>
+            {/* ── Kontakt + Helplinka ── */}
+            <section className="mx-auto max-w-7xl px-6 pb-20">
+                {/* HELPLINKA */}
+                <div className="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-cyan-500/10 p-6">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30">
+                            <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                            </svg>
                         </div>
-                        <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
-                            Zobrazit kroky
-                        </button>
+                        <div>
+                            <p className="text-sm text-slate-400">Potřebujete poradit? Zavolejte nám</p>
+                            <p className="text-lg font-bold text-white">HELPLINKA</p>
+                        </div>
                     </div>
-                )}
-
-                {/* Tabs */}
-                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 scrollbar-hide">
-                    {TABS.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setActiveTab(tab.key)}
-                            className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
-                                ? "text-fuchsia-400"
-                                : "text-slate-500 hover:text-slate-300"
-                                }`}
-                        >
-                            {tab.icon}
-                            {tab.label}
-                            {activeTab === tab.key && (
-                                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 rounded-full" />
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Tab content */}
-                <div className="min-h-[400px]">
-                    {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
-                    {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
-                    {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
-                    {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
-                    {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
-                    {activeTab === "ucet" && <TabUcet user={user} data={data} />}
-                </div>
-            </div>
-        </section>
-
-        {/* ── Kontakt + Helplinka ── */}
-        <section className="mx-auto max-w-7xl px-6 pb-20">
-            {/* HELPLINKA */}
-            <div className="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-cyan-500/10 p-6">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30">
-                        <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <a
+                        href="tel:+420732716141"
+                        className="inline-flex items-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-3 text-base font-bold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                         </svg>
-                    </div>
-                    <div>
-                        <p className="text-sm text-slate-400">Potřebujete poradit? Zavolejte nám</p>
-                        <p className="text-lg font-bold text-white">HELPLINKA</p>
-                    </div>
+                        +420 732 716 141
+                    </a>
                 </div>
-                <a
-                    href="tel:+420732716141"
-                    className="inline-flex items-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-3 text-base font-bold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                    </svg>
-                    +420 732 716 141
-                </a>
-            </div>
 
-            {/* Kontaktní formulář */}
-            <ContactForm />
-        </section>
+                {/* Kontaktní formulář */}
+                <ContactForm />
+            </section>
         </>
     );
 }

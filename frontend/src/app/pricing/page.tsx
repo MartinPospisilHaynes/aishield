@@ -290,8 +290,7 @@ export default function PricingPage() {
                                 <span className="text-2xl font-extrabold text-white">299</span>
                                 <span className="text-slate-500 ml-1">Kč/měsíc</span>
                             </div>
-                            <p className="text-xs text-slate-500 mb-4">nebo 2 990 Kč/rok (ušetříte 17&nbsp;%)</p>
-                            <ul className="space-y-2 text-sm mb-6">
+                            <ul className="space-y-2 text-sm mb-6 mt-4">
                                 {[
                                     "1× měsíčně automatický sken webu",
                                     "Srovnání s předchozím skenem (diff)",
@@ -325,8 +324,7 @@ export default function PricingPage() {
                                 <span className="text-2xl font-extrabold neon-text">599</span>
                                 <span className="text-slate-500 ml-1">Kč/měsíc</span>
                             </div>
-                            <p className="text-xs text-slate-500 mb-4">nebo 5 990 Kč/rok (ušetříte 17&nbsp;%)</p>
-                            <ul className="space-y-2 text-sm mb-6">
+                            <ul className="space-y-2 text-sm mb-6 mt-4">
                                 {[
                                     "2× měsíčně automatický sken webu",
                                     "Vše z Monitoring",
