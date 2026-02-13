@@ -680,7 +680,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasPaidOrder,
             label: "Objednávka",
             desc: "Odemkněte compliance dokumenty a školení",
-            href: "/pricing",
+            href: "#pricing",
             cta: "Vybrat balíček",
             onClick: undefined as (() => void) | undefined,
         },
@@ -824,7 +824,9 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             )}
 
             {/* ═══ PRICING TABLE ═══ */}
-            <PricingComparisonTable />
+            <div id="pricing">
+                <PricingComparisonTable />
+            </div>
         </div>
     );
 }
@@ -925,7 +927,7 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
             <EmptyState
                 title="Zatím žádné dokumenty"
                 description="Dokumenty se generují po zaplacení balíčku."
-                href="/pricing"
+                href="#pricing"
                 cta="Vybrat balíček"
                 illustration={
                     <svg className="w-10 h-10 text-cyan-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
