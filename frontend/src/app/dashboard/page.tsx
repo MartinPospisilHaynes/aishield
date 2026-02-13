@@ -686,8 +686,8 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         },
         {
             done: hasDocs,
-            label: "Dokumenty",
-            desc: "7 PDF dokumentů pro splnění AI Act",
+            label: "Dodání dokumentace",
+            desc: "7 dokumentů pro splnění AI Act (může trvat až 14 dní)",
             href: "#",
             cta: "Viz tab Dokumenty",
             onClick: undefined as (() => void) | undefined,
