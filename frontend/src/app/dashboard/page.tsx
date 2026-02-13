@@ -902,10 +902,12 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                                     <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
                                     <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
-                                    <span>Kategorie: {f.category}</span>
-                                    <span>AI Act: {f.ai_act_article}</span>
-                                </div>
+                                {(f.category || f.ai_act_article) && (
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
+                                        {f.category && <span>Kategorie: {f.category}</span>}
+                                        {f.ai_act_article && f.ai_act_article !== "—" && <span>Článek AI Act: {f.ai_act_article}</span>}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -959,10 +961,21 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 }
 
 
+/* ── Standard compliance steps we always deliver ── */
+const STANDARD_STEPS = [
+    { label: "Compliance Report", desc: "Kompletní přehled stavu vašeho webu — hodnocení AI systémů, odkazy na konkrétní články AI Actu" },
+    { label: "Registr AI systémů", desc: "Seznam všech nalezených AI nástrojů na webu s klasifikací rizik" },
+    { label: "Transparenční stránka", desc: "Veřejná podstránka informující návštěvníky, že web používá AI — hotová ke vložení na web" },
+    { label: "Texty oznámení pro AI nástroje", desc: "Texty pro chatboty, cookie lišty a další AI systémy — aby návštěvník věděl, že komunikuje s AI" },
+    { label: "AI politika firmy", desc: "Interní dokument popisující pravidla používání AI ve vaší firmě" },
+    { label: "Školení zaměstnanců", desc: "PowerPoint prezentace na míru pro vaše zaměstnance o povinnostech dle AI Actu" },
+    { label: "Záznamový list o proškolení", desc: "Formulář pro evidenci, že zaměstnanci byli proškoleni — kdyby přišla kontrola" },
+    { label: "Úprava cookie lišty", desc: "Návrh textu cookie lišty zohledňující AI systémy na webu" },
+    { label: "Doporučení pro GDPR a AI", desc: "Propojení povinností AI Actu s existující GDPR dokumentací" },
+];
+
 /* ── Tab: Kroky ke splnění ── */
 function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
-    const [localResolved, setLocalResolved] = useState<Record<string, boolean>>({});
-
     if (findings.length === 0) {
         return (
             <EmptyState
@@ -979,25 +992,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
         );
     }
 
-    const toggleResolved = (id: string) => {
-        setLocalResolved((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const sorted = [...findings].sort((a, b) => {
-        const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-        const rA = riskOrder[a.risk_level] ?? 3;
-        const rB = riskOrder[b.risk_level] ?? 3;
-        if (rA !== rB) return rA - rB;
-        const aRes = a.confirmed_by_client === "false_positive" || a.status === "resolved" || localResolved[a.id];
-        const bRes = b.confirmed_by_client === "false_positive" || b.status === "resolved" || localResolved[b.id];
-        if (aRes !== bRes) return aRes ? 1 : -1;
-        return 0;
-    });
-
-    const total = sorted.length;
-    const resolved = sorted.filter(
-        (f) => f.confirmed_by_client === "false_positive" || f.status === "resolved" || localResolved[f.id]
-    ).length;
+    const grouped = groupFindings(findings);
 
     return (
         <div className="space-y-4">
@@ -1009,7 +1004,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                     <div>
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Kroky ke splnění AI Act</h4>
                         <p className="text-xs text-slate-400 leading-relaxed">
-                            Níže jsou kroky, které je potřeba splnit pro soulad s EU AI Act.
+                            Níže je přehled všeho, co pro vás připravíme v rámci compliance balíčku.
                             <strong className="text-cyan-300"> Nemusíte řešit nic sami — vše za vás připravíme a vyřídíme my.</strong>{" "}
                             Stačí si vybrat balíček a o zbytek se postaráme.
                         </p>
@@ -1017,52 +1012,52 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                 </div>
             </div>
 
-            <div className="glass">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-300">Přehled kroků</span>
-                    <span className="text-sm text-slate-400">{resolved}/{total} splněno</span>
-                </div>
-                <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-500" style={{ width: `${total > 0 ? (resolved / total) * 100 : 0}%` }} />
-                </div>
-            </div>
-
-            {sorted.map((f) => {
-                const isResolved = f.confirmed_by_client === "false_positive" || f.status === "resolved" || localResolved[f.id];
-                return (
-                    <div
-                        key={f.id}
-                        onClick={() => toggleResolved(f.id)}
-                        className={`flex items-start gap-3 sm:gap-4 rounded-xl border px-3 sm:px-5 py-3 sm:py-4 cursor-pointer transition-all hover:border-white/[0.15] ${isResolved
-                            ? "border-green-500/10 bg-green-500/[0.03] opacity-60"
-                            : "border-white/[0.06] bg-white/[0.02]"
-                            }`}
-                    >
-                        <div className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border transition-all ${isResolved
-                            ? "border-green-500/30 bg-green-500/20"
-                            : "border-white/20 bg-white/5 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/10"
-                            } flex items-center justify-center`}>
-                            {isResolved && (
-                                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-medium ${isResolved ? "line-through text-slate-500" : "text-slate-200"}`}>
-                                {f.action_required || f.name}
-                            </p>
-                            <p className="text-xs text-slate-500 mt-0.5">{f.name} · {f.ai_act_article}</p>
-                            <div className="flex items-center gap-3 mt-1.5">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                    {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                </span>
-                                <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
-                            </div>
+            {/* ── Kroky vyplývající ze skenu ── */}
+            <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě skenu vašeho webu</h3>
+            {grouped.map((f) => (
+                <div
+                    key={f.name}
+                    className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
+                >
+                    <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-200">
+                            {f.action_required || f.name}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">{f.name}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                            </span>
+                            <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
                         </div>
                     </div>
-                );
-            })}
+                </div>
+            ))}
+
+            {/* ── Dokumenty a výstupy, které pro vás vyrobíme ── */}
+            <h3 className="text-sm font-semibold text-slate-300 mt-8 mb-2">Dokumenty a výstupy, které pro vás připravíme</h3>
+            {STANDARD_STEPS.map((step) => (
+                <div
+                    key={step.label}
+                    className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
+                >
+                    <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-200">{step.label}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{step.desc}</p>
+                        <span className="text-[10px] text-fuchsia-400/70 font-medium mt-1 inline-block">✦ Vyřídíme za vás</span>
+                    </div>
+                </div>
+            ))}
 
             {/* ══ Cenové balíčky — srovnávací tabulka ══ */}
             <div className="mt-8">
