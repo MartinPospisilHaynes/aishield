@@ -103,7 +103,7 @@ export default function RootLayout({
                                 {/* Produkt */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Produkt</h3>
-                                    <ul className="space-y-3 text-base text-slate-400">
+                                    <ul className="space-y-3 text-sm text-slate-500">
                                         <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors">Skenovat web</a></li>
                                         <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors">AI dotazník</a></li>
                                         <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors">Ceník</a></li>
@@ -114,7 +114,7 @@ export default function RootLayout({
                                 {/* Právní */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Právní</h3>
-                                    <ul className="space-y-3 text-base text-slate-400">
+                                    <ul className="space-y-3 text-sm text-slate-500">
                                         <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors">Ochrana soukromí</a></li>
                                         <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors">Obchodní podmínky</a></li>
                                         <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors">GDPR</a></li>
@@ -131,7 +131,7 @@ export default function RootLayout({
                                             Legislativa EU
                                         </span>
                                     </h3>
-                                    <ul className="space-y-3 text-base">
+                                    <ul className="space-y-3 text-sm">
                                         <li>
                                             <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium inline-flex items-center gap-1">
                                                 Nařízení EU 2024/1689 (AI Act)
@@ -162,7 +162,7 @@ export default function RootLayout({
                                 {/* Kontakt */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Kontakt</h3>
-                                    <ul className="space-y-3 text-base text-slate-400">
+                                    <ul className="space-y-3 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
                                         <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors">+420 732 716 141</a></li>

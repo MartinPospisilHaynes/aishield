@@ -45,13 +45,13 @@ export default function Header() {
 
                 {/* Desktop nav */}
                 <div className="hidden md:flex items-center gap-8">
-                    <a href="/scan" className={`text-sm transition-colors ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/scan" className={`text-base transition-colors ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Skenovat web
                     </a>
-                    <a href="/pricing" className={`text-sm transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/pricing" className={`text-base transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
-                    <a href="/about" className={`text-sm transition-colors ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/about" className={`text-base transition-colors ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Jak to funguje
                     </a>
 
@@ -62,7 +62,7 @@ export default function Header() {
                         <div className="flex items-center gap-4">
                             <a
                                 href="/dashboard"
-                                className="text-sm text-slate-400 hover:text-neon-cyan transition-colors font-medium"
+                                className="text-base text-slate-300 hover:text-neon-cyan transition-colors font-medium"
                             >
                                 Dashboard
                             </a>
@@ -119,31 +119,31 @@ export default function Header() {
             {/* Mobile menu */}
             {mobileOpen && (
                 <div className="md:hidden border-t border-white/[0.06] bg-dark-900/95 backdrop-blur-xl px-6 py-4 space-y-3">
-                    <a href="/scan" className={`block text-sm transition-colors py-2 ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/scan" className={`block text-base transition-colors py-2 ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Skenovat web
                     </a>
-                    <a href="/pricing" className={`block text-sm transition-colors py-2 ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/pricing" className={`block text-base transition-colors py-2 ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
-                    <a href="/about" className={`block text-sm transition-colors py-2 ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-400 hover:text-neon-fuchsia"}`}>
+                    <a href="/about" className={`block text-base transition-colors py-2 ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Jak to funguje
                     </a>
 
                     {user ? (
                         <>
-                            <a href="/dashboard" className="block text-sm text-neon-cyan font-medium py-2">
+                            <a href="/dashboard" className="block text-base text-neon-cyan font-medium py-2">
                                 Dashboard
                             </a>
-                            <button onClick={handleSignOut} className="block text-sm text-red-400 py-2">
+                            <button onClick={handleSignOut} className="block text-base text-red-400 py-2">
                                 Odhlásit se
                             </button>
                         </>
                     ) : (
                         <>
-                            <a href="/login" className="block text-sm text-slate-300 font-medium py-2">
+                            <a href="/login" className="block text-base text-slate-300 font-medium py-2">
                                 Přihlásit se
                             </a>
-                            <a href="/scan" className="btn-primary text-sm px-4 py-2 text-center block mt-2">
+                            <a href="/scan" className="btn-primary text-base px-4 py-2 text-center block mt-2">
                                 Skenovat ZDARMA
                             </a>
                         </>
