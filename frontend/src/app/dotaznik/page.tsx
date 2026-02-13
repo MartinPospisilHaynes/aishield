@@ -225,7 +225,30 @@ function QuestionnaireInner() {
                         setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
                     }
                 })
-                .catch(() => { /* No existing answers — that's fine */ });
+                .catch(() => {
+                    // No server answers — try localStorage
+                    try {
+                        const saved = localStorage.getItem(`aishield_quest_${cid}`);
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            if (parsed.answers) {
+                                setAnswers((prev) => {
+                                    const updated = { ...prev };
+                                    for (const [k, v] of Object.entries(parsed.answers) as [string, any][]) {
+                                        if (updated[k]) {
+                                            updated[k] = { ...updated[k], answer: v.answer || "", details: v.details || {}, tool_name: v.tool_name || "" };
+                                        }
+                                    }
+                                    return updated;
+                                });
+                            }
+                            if (typeof parsed.currentQuestion === "number") {
+                                setCurrentQuestion(parsed.currentQuestion);
+                            }
+                            console.log("[Dotazník] Obnoveno z localStorage");
+                        }
+                    } catch { /* ignore localStorage errors */ }
+                });
         }
     }, [searchParams]);
 
@@ -892,6 +915,33 @@ function QuestionnaireInner() {
                                 Další →
                             </button>
                         ) : null}
+                    </div>
+
+                    {/* Save & Continue Later */}
+                    <div className="flex justify-center mt-4">
+                        <button
+                            onClick={() => {
+                                // Save current answers to localStorage
+                                const saveData = {
+                                    answers: Object.fromEntries(
+                                        Object.entries(answers).map(([k, v]) => [k, v])
+                                    ),
+                                    currentQuestion,
+                                    companyId,
+                                    timestamp: new Date().toISOString(),
+                                };
+                                localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
+                                // Show confirmation and redirect
+                                alert("Odpovědi byly uloženy. Můžete se vrátit kdykoliv a pokračovat.");
+                                window.location.href = "/dashboard";
+                            }}
+                            className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Uložit a pokračovat později
+                        </button>
                     </div>
                 </div>
             </div>

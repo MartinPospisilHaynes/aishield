@@ -7,15 +7,18 @@ import {
     startScan,
     getScanStatus,
     getScanFindings,
+    getQuestionnaireProgress,
     type DashboardData,
     type ScanStatus,
     type Finding,
+    type QuestionnaireProgress,
 } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 
 type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "ucet";
 
-/* ── Scan progress stages (reused from /scan) ── */
+
+/* ── Scan progress stages ── */
 const SCAN_STAGES = [
     { label: "Připojování k webu", desc: "Otevíráme váš web v bezpečném prohlížeči" },
     { label: "Načítání stránky", desc: "Čekáme, až se web kompletně načte" },
@@ -29,62 +32,40 @@ const SCAN_STAGES = [
     { label: "Příprava vašeho reportu", desc: "Generujeme kompletní compliance report" },
 ];
 
+
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     {
         key: "prehled",
         label: "Přehled",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>),
     },
     {
         key: "findings",
         label: "AI systémy",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>),
     },
     {
         key: "dokumenty",
         label: "Dokumenty",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>),
     },
     {
         key: "plan",
         label: "Akční plán",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>),
     },
     {
         key: "skeny",
         label: "Historie skenů",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>),
     },
     {
         key: "ucet",
         label: "Můj účet",
-        icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-        ),
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>),
     },
 ];
+
 
 const TEMPLATE_NAMES: Record<string, string> = {
     compliance_report: "Compliance Report",
@@ -102,12 +83,55 @@ const RISK_COLORS: Record<string, string> = {
     low: "bg-green-500/20 text-green-400 border border-green-500/30",
 };
 
+/* ── Layman-friendly AI system explanations ── */
+const AI_SYSTEM_EXPLANATIONS: Record<string, string> = {
+    "Google Analytics": "Sleduje n\u00e1vštěvnost webu \u2013 Google ho může používat k trénování AI modelů pro cílení reklam.",
+    "Google Tag Manager": "Správce měřicích skriptů \u2013 s\u00e1m o sobě AI není, ale může nač\u00edtat AI n\u00e1stroje třetích stran.",
+    "Google Ads": "Reklamní systém Google s AI optimalizací \u2013 automaticky cílí reklamy na z\u00e1kladě chov\u00e1ní uživatelů.",
+    "Google reCAPTCHA": "Ochrana proti botům pomocí AI \u2013 analyzuje chov\u00e1ní uživatele a rozhoduje, zda je člověk.",
+    "Facebook Pixel": "Sledovací k\u00f3d Facebooku/Meta \u2013 AI vyhodnocuje chov\u00e1ní n\u00e1vštěvníků pro cílenou reklamu.",
+    "Meta Pixel": "Sledovací k\u00f3d Meta \u2013 AI vyhodnocuje chov\u00e1ní n\u00e1vštěvníků pro cílenou reklamu.",
+    "Hotjar": "N\u00e1stroj pro analýzu chov\u00e1ní na webu \u2013 zaznamen\u00e1v\u00e1 pohyb myši a klik\u00e1ní, AI vytv\u00e1ří heatmapy.",
+    "ChatGPT": "AI chatbot od OpenAI \u2013 generuje odpovědi na dotazy uživatelů.",
+    "Intercom": "Z\u00e1kaznický chat s AI asistencí \u2013 AI navrhuje odpovědi a automatizuje konverzace.",
+    "Tidio": "Chatbot s AI \u2013 odpov\u00edd\u00e1 na dotazy z\u00e1kazníků a pom\u00e1h\u00e1 s prodejem.",
+    "HubSpot": "Marketingov\u00e1 platforma s AI \u2013 personalizuje obsah a automatizuje kampaně.",
+    "Cloudflare": "CDN a bezpečnost \u2013 AI detekce botů a DDoS \u00fatolů.",
+    "YouTube": "Video platforma Google \u2013 AI doporučuje videa, pokud m\u00e1te embed.",
+    "Stripe": "Platební br\u00e1na \u2013 AI detekuje podvodn\u00e9 transakce.",
+    "Clarity": "Microsoft Clarity \u2013 AI heatmapy a nahr\u00e1v\u00e1ní sessions.",
+    "LinkedIn Insight Tag": "Sledovací k\u00f3d LinkedIn \u2013 AI cílení B2B reklam.",
+};
+
+/* ── Count unique AI systems (group by name) ── */
+function countUniqueSystems(findings: DashboardData["findings"]): number {
+    const names = new Set(findings.map(f => f.name));
+    return names.size;
+}
+
+/* ── Group findings by unique name ── */
+function groupFindings(findings: DashboardData["findings"]): Array<{name: string; risk_level: string; category: string; action_required: string; ai_act_article: string; count: number}> {
+    const map = new Map<string, typeof findings[0] & {count: number}>();
+    for (const f of findings) {
+        if (!map.has(f.name)) {
+            map.set(f.name, {...f, count: 1});
+        } else {
+            map.get(f.name)!.count++;
+        }
+    }
+    return Array.from(map.values());
+}
+
+
 export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState<Tab>("prehled");
+
+    // ── Questionnaire progress ──
+    const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
 
     // ── Inline scan state ──
     const [scanActive, setScanActive] = useState(false);
@@ -172,7 +196,6 @@ export default function DashboardPage() {
                         setScanDone(true);
                         if (status.status === "done") {
                             await fetchScanFindings(id);
-                            // Reload dashboard data after scan completes
                             reloadDashboard();
                         }
                     }
@@ -239,6 +262,14 @@ export default function DashboardPage() {
             .finally(() => setLoading(false));
     }, [user?.email]);
 
+    // Fetch questionnaire progress when we have company_id
+    useEffect(() => {
+        if (!data?.company?.id) return;
+        getQuestionnaireProgress(data.company.id)
+            .then(setQuestProgress)
+            .catch(() => { /* silent */ });
+    }, [data?.company?.id]);
+
     if (authLoading || loading) {
         return (
             <section className="py-20">
@@ -253,7 +284,6 @@ export default function DashboardPage() {
     }
 
     if (error) {
-        // Token errors → instruct user to re-login
         const isTokenError = error.includes("token") || error.includes("401") || error.includes("Neplatný");
         return (
             <section className="py-20">
@@ -268,16 +298,12 @@ export default function DashboardPage() {
                                 </div>
                                 <p className="text-amber-300 font-medium mb-2">Platnost přihlášení vypršela</p>
                                 <p className="text-slate-400 text-sm mb-6">Přihlaste se prosím znovu.</p>
-                                <a href="/login" className="btn-primary text-sm px-6 py-2">
-                                    Přihlásit se
-                                </a>
+                                <a href="/login" className="btn-primary text-sm px-6 py-2">Přihlásit se</a>
                             </>
                         ) : (
                             <>
                                 <p className="text-red-400 mb-4">{error}</p>
-                                <button onClick={handleStartScan} className="btn-primary text-sm px-6 py-2">
-                                    Spustit první sken
-                                </button>
+                                <button onClick={handleStartScan} className="btn-primary text-sm px-6 py-2">Spustit první sken</button>
                             </>
                         )}
                     </div>
@@ -289,8 +315,13 @@ export default function DashboardPage() {
     const companyName = data?.company?.name || user?.user_metadata?.company_name || "Vaše firma";
     const score = data?.compliance_score;
     const findingsCount = data?.findings.length || 0;
+    const uniqueSystemsCount = countUniqueSystems(data?.findings || []);
     const highRisk = data?.findings.filter((f) => f.risk_level === "high").length || 0;
     const docsCount = data?.documents.length || 0;
+    const hasScans = (data?.scans.length || 0) > 0;
+    const hasQuest = data?.questionnaire_status === "dokončen";
+    const questPercentage = questProgress?.percentage ?? 0;
+    const questStatus = questProgress?.status ?? "nezahajeno";
 
     return (
         <section className="py-8 relative">
@@ -303,20 +334,16 @@ export default function DashboardPage() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-extrabold">
-                            Dashboard
-                        </h1>
-                        <p className="text-sm text-slate-400 mt-1">
-                            {companyName} — {data?.company?.url || ""}
-                        </p>
+                        <h1 className="text-2xl font-extrabold">Dashboard</h1>
+                        <p className="text-sm text-slate-400 mt-1">{companyName} — {data?.company?.url || ""}</p>
                     </div>
                     <div className="flex gap-3">
                         <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-4 py-2 disabled:opacity-50">
                             {scanLoading ? "Skenuji..." : "Nový sken"}
                         </button>
-                        {(data?.scans.length || 0) > 0 ? (
-                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${data?.questionnaire_status === 'dokončen' ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                {data?.questionnaire_status === 'dokončen' ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
+                        {hasScans ? (
+                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
                             </a>
                         ) : (
                             <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
@@ -329,7 +356,6 @@ export default function DashboardPage() {
                 {/* ═══ INLINE SCAN PANEL ═══ */}
                 {scanActive && (
                     <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-6 relative">
-                        {/* Close button (only when not loading) */}
                         {!scanLoading && (
                             <button onClick={closeScanPanel} className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +364,6 @@ export default function DashboardPage() {
                             </button>
                         )}
 
-                        {/* Error state */}
                         {scanError && !scanLoading && (
                             <div className="text-center py-4">
                                 <div className="inline-flex items-center gap-2 text-red-400 mb-2">
@@ -347,96 +372,50 @@ export default function DashboardPage() {
                                     </svg>
                                     <span className="font-medium">{scanError}</span>
                                 </div>
-                                <button onClick={handleStartScan} className="btn-secondary text-sm px-4 py-2 mt-2">
-                                    Zkusit znovu
-                                </button>
+                                <button onClick={handleStartScan} className="btn-secondary text-sm px-4 py-2 mt-2">Zkusit znovu</button>
                             </div>
                         )}
 
-                        {/* Scanning progress */}
                         {scanLoading && (
-                            <>
-                                <div className="flex items-center gap-3 mb-5">
-                                    <svg className="w-7 h-7 text-fuchsia-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                                    </svg>
-                                    <div>
-                                        <h3 className="font-semibold text-white">Skenování probíhá...</h3>
-                                        <p className="text-sm text-slate-400">Analyzujeme {scanResult?.url || data?.company?.url || ""}</p>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="relative h-12 w-12 flex-shrink-0">
+                                        <svg className="w-12 h-12 animate-spin" style={{ animationDuration: "2.5s" }} viewBox="0 0 48 48" fill="none">
+                                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" className="text-white/[0.06]" />
+                                            <circle cx="24" cy="24" r="20" stroke="url(#scan-grad)" strokeWidth="2" strokeLinecap="round" strokeDasharray="60 66" />
+                                            <defs><linearGradient id="scan-grad" x1="0" y1="0" x2="48" y2="48"><stop offset="0%" stopColor="#d946ef" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-sm">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</h3>
+                                        <p className="text-xs text-slate-400">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.desc}</p>
                                     </div>
                                 </div>
-
-                                {/* Progress bar */}
-                                <div className="mb-4">
-                                    <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-                                        <span>{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</span>
-                                        <span>{Math.round(((scanStage + 1) / SCAN_STAGES.length) * 100)} %</span>
-                                    </div>
-                                    <div className="h-2.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-fuchsia-600 via-purple-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
-                                            style={{ width: ((scanStage + 1) / SCAN_STAGES.length) * 100 + "%" }}
-                                        />
-                                    </div>
+                                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-1000" style={{ width: `${((scanStage + 1) / SCAN_STAGES.length) * 100}%` }} />
                                 </div>
-
-                                {/* Stage list */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                                    {SCAN_STAGES.map((stage, i) => {
-                                        const done = i < scanStage;
-                                        const active = i === scanStage;
-                                        return (
-                                            <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-all ${done ? "text-green-400/70" : active ? "text-fuchsia-300 bg-fuchsia-500/10" : "text-slate-600"}`}>
-                                                {done ? (
-                                                    <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                                ) : active ? (
-                                                    <div className="w-3.5 h-3.5 flex-shrink-0"><div className="h-2 w-2 rounded-full bg-fuchsia-400 animate-pulse mx-auto mt-[3px]" /></div>
-                                                ) : (
-                                                    <div className="w-3.5 h-3.5 flex-shrink-0"><div className="h-1.5 w-1.5 rounded-full bg-slate-700 mx-auto mt-1" /></div>
-                                                )}
-                                                {stage.label}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Waiting message when animation finishes but scan still running */}
-                                {scanStage >= SCAN_STAGES.length - 1 && (
-                                    <div className="mt-4 flex items-center gap-3 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/25 px-4 py-3">
-                                        <div className="w-4 h-4 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin flex-shrink-0" />
-                                        <div>
-                                            <p className="text-sm font-medium text-fuchsia-300">Finalizujeme report, vyčkejte prosím…</p>
-                                            <p className="text-xs text-fuchsia-400/60 mt-0.5">
-                                                Výsledky se zobrazí automaticky. Analýza AI systémů může trvat až 60 sekund.
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
+                            </div>
                         )}
 
-                        {/* Scan complete */}
-                        {scanDone && !scanLoading && !scanError && (
+                        {scanDone && !scanError && (
                             <div className="text-center py-4">
-                                <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-green-500/10 border border-green-500/20 mb-4">
-                                    <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <h3 className="font-semibold text-green-400 text-lg mb-1">Sken dokončen!</h3>
+                                <svg className="w-10 h-10 text-green-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h3 className="font-semibold text-green-400 mb-1">Sken dokončen!</h3>
                                 <p className="text-sm text-slate-400 mb-1">
-                                    Nalezeno <span className="text-white font-bold">{scanFindings.length}</span> AI {scanFindings.length === 1 ? "systém" : scanFindings.length < 5 ? "systémy" : "systémů"}
+                                    Nalezeno {scanFindings.length} AI {scanFindings.length === 1 ? 'systém' : scanFindings.length < 5 ? 'systémy' : 'systémů'}
                                 </p>
-                                {scanResult?.total_findings != null && scanResult.total_findings > 0 && (
-                                    <p className="text-xs text-slate-500 mb-4">Výsledky byly uloženy do vašeho profilu</p>
+                                {scanResult?.company_id && (
+                                    <p className="text-xs text-slate-500 mb-3">Výsledky byly uloženy do vašeho profilu</p>
                                 )}
                                 <div className="flex gap-3 justify-center">
                                     <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
                                         Zobrazit nálezy
                                     </button>
-                                    {(data?.scans.length || 0) > 0 && (
-                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}${data?.questionnaire_status === 'dokončen' ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                            {data?.questionnaire_status === 'dokončen' ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
+                                    {hasScans && (
+                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
+                                            {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
                                         </a>
                                     )}
                                 </div>
@@ -445,38 +424,100 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                {/* Stats cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    {/* Card 1: Výsledek testu */}
                     <StatCard
-                        label="Compliance skóre"
-                        value={score != null ? `${score}%` : "—"}
-                        sub={score != null ? (score >= 80 ? "Dobrý stav" : score >= 50 ? "Vyžaduje pozornost" : "Kritický stav") : "Sken zatím nebyl proveden"}
-                        color={score != null ? (score >= 80 ? "text-green-400" : score >= 50 ? "text-amber-400" : "text-red-400") : "text-slate-500"}
+                        label="Výsledek testu"
+                        value={hasScans ? (score != null ? `${score}%` : `${uniqueSystemsCount} nálezů`) : "—"}
+                        sub={hasScans
+                            ? (score != null
+                                ? (score >= 80 ? "Dobrý stav" : score >= 50 ? "Vyžaduje pozornost" : "Kritický stav")
+                                : (highRisk > 0 ? `${highRisk} vysoké riziko` : "Sken dokončen"))
+                            : "Sken zatím nebyl proveden"
+                        }
+                        color={hasScans
+                            ? (score != null
+                                ? (score >= 80 ? "text-green-400" : score >= 50 ? "text-amber-400" : "text-red-400")
+                                : (highRisk > 0 ? "text-red-400" : "text-cyan-400"))
+                            : "text-slate-500"
+                        }
                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
                     />
+
+                    {/* Card 2: Systémy umělé inteligence nalezeny */}
                     <StatCard
                         label="AI systémy nalezeny"
-                        value={String(findingsCount)}
-                        sub={highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : findingsCount > 0 ? "Pouze ze skenu webu" : "Sken zatím nebyl proveden"}
-                        color={highRisk > 0 ? "text-red-400" : "text-green-400"}
+                        value={String(uniqueSystemsCount)}
+                        sub={highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : uniqueSystemsCount > 0 ? "Pouze ze skenu webu" : "Sken zatím nebyl proveden"}
+                        color={highRisk > 0 ? "text-red-400" : uniqueSystemsCount > 0 ? "text-cyan-400" : "text-slate-500"}
                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
-                        tooltip="Toto číslo zahrnuje pouze AI systémy nalezené skenem webu. Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů."
+                        tooltip="Počet unikátních AI systémů nalezených skenem webu. Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů."
                     />
-                    <StatCard
-                        label="Dokumenty"
-                        value={`${docsCount}/7`}
-                        sub={docsCount === 7 ? "Kompletní kit" : "Ke stažení"}
-                        color={docsCount === 7 ? "text-green-400" : "text-cyan-400"}
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>}
-                    />
-                    <StatCard
-                        label="Dotazník"
-                        value={data?.questionnaire_status === "dokončen" ? "Hotovo" : "Čeká"}
-                        sub={data?.questionnaire_status === "dokončen" ? "Vyplněn — klikněte pro úpravu" : "Vyplňte pro přesnější analýzu"}
-                        color={data?.questionnaire_status === "dokončen" ? "text-green-400" : "text-amber-400"}
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
-                    />
+
+                    {/* Card 3: Dotazník with progress */}
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+                        <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-slate-500 uppercase tracking-wider">Dotazník</p>
+                            <span className="text-slate-600">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                            </span>
+                        </div>
+                        <p className={`text-3xl font-extrabold mt-1 ${hasQuest ? "text-green-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
+                            {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
+                        </p>
+                        {/* Progress bar */}
+                        {!hasQuest && questStatus === "rozpracovano" && (
+                            <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-2 mb-1">
+                                <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-500" style={{ width: `${questPercentage}%` }} />
+                            </div>
+                        )}
+                        <p className="text-xs text-slate-500 mt-1">
+                            {hasQuest
+                                ? "Vyplněn — můžete upravit odpovědi"
+                                : questStatus === "rozpracovano"
+                                    ? `${questProgress?.answered || 0}/${questProgress?.total_questions || 27} otázek zodpovězeno`
+                                    : "Vyplňte pro přesnější analýzu"
+                            }
+                        </p>
+                        {/* Action buttons */}
+                        <div className="flex gap-2 mt-3">
+                            {hasScans && (
+                                hasQuest ? (
+                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
+                                       className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+                                        Opravit odpovědi
+                                    </a>
+                                ) : (
+                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                       className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
+                                        {questStatus === "rozpracovano" ? "Pokračovat" : "Vyplnit"}
+                                    </a>
+                                )
+                            )}
+                        </div>
+                    </div>
                 </div>
+
+                {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
+                {hasScans && hasQuest && findingsCount > 0 && (
+                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-slate-200">Váš akční plán je připraven</h3>
+                                <p className="text-xs text-slate-400">Na základě skenu i dotazníku — {findingsCount} úkolů k vyřešení</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
+                            Zobrazit akční plán
+                        </button>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6">
@@ -500,7 +541,7 @@ export default function DashboardPage() {
 
                 {/* Tab content */}
                 <div className="min-h-[400px]">
-                    {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={(data?.scans.length || 0) > 0} />}
+                    {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
                     {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
                     {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
                     {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
@@ -511,6 +552,7 @@ export default function DashboardPage() {
         </section>
     );
 }
+
 
 /* ── Stat Card ── */
 function StatCard({ label, value, sub, color, icon, tooltip }: {
@@ -548,6 +590,7 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
     );
 }
 
+
 /* ── Tab: Přehled ── */
 function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean }) {
     const hasPaidOrder = data?.orders.some((o) => o.status === "PAID") || false;
@@ -560,7 +603,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasScans,
             label: "Sken webu",
             desc: "Automatická detekce AI systémů na vašem webu",
-            href: null as string | null, // handled by button
+            href: null as string | null,
             cta: scanLoading ? "Skenuji..." : "Spustit sken",
             onClick: onStartScan,
         },
@@ -595,7 +638,6 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
     const completedCount = steps.filter((s) => s.done).length;
     const lineWidthPercent = completedCount <= 1 ? 0 : ((completedCount - 1) / (steps.length - 1)) * 75;
 
-    // Processing timer: order paid but documents not yet generated
     const isProcessing = hasPaidOrder && !hasDocs;
     const currentHour = new Date().getHours();
     const isBusinessHours = currentHour >= 8 && currentHour < 16;
@@ -605,47 +647,28 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             {/* Progress Timeline */}
             <div className="glass">
                 <h3 className="font-semibold mb-8">Postup k compliance</h3>
-
-                {/* Horizontal step progress bar */}
                 <div className="grid grid-cols-4 relative mb-8">
-                    {/* Background connecting line */}
                     <div className="absolute top-5 left-[12.5%] right-[12.5%] h-0.5 bg-white/[0.06]" />
-                    {/* Completed portion of line */}
                     {lineWidthPercent > 0 && (
-                        <div
-                            className="absolute top-5 left-[12.5%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full"
-                            style={{ width: `${lineWidthPercent}%` }}
-                        />
+                        <div className="absolute top-5 left-[12.5%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full" style={{ width: `${lineWidthPercent}%` }} />
                     )}
-
                     {steps.map((step, i) => {
                         const isCurrent = i === currentStepIndex;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
-                                <div
-                                    className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${step.done
-                                        ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
-                                        : isCurrent
-                                            ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
-                                            : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
-                                        }`}
-                                >
+                                <div className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${step.done
+                                    ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
+                                    : isCurrent
+                                        ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
+                                        : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
+                                    }`}>
                                     {step.done ? (
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                         </svg>
-                                    ) : (
-                                        i + 1
-                                    )}
+                                    ) : (i + 1)}
                                 </div>
-                                <span
-                                    className={`text-xs mt-2.5 font-medium text-center ${step.done
-                                        ? "text-green-400/80"
-                                        : isCurrent
-                                            ? "text-fuchsia-400"
-                                            : "text-slate-600"
-                                        }`}
-                                >
+                                <span className={`text-xs mt-2.5 font-medium text-center ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
                                     {step.label}
                                 </span>
                             </div>
@@ -653,7 +676,6 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                     })}
                 </div>
 
-                {/* Current step detail card */}
                 {currentStep && (
                     <div className="rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/[0.04] p-5">
                         <div className="flex items-center gap-3 mb-2">
@@ -668,18 +690,13 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                 {currentStep.cta}
                             </button>
                         ) : currentStep.href && currentStep.href !== "#" ? (
-                            <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-9 inline-block">
-                                {currentStep.cta}
-                            </a>
+                            <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-9 inline-block">{currentStep.cta}</a>
                         ) : !currentStep.href ? (
-                            <span className="text-sm text-slate-500 ml-9 inline-block opacity-60">
-                                {currentStep.cta}
-                            </span>
+                            <span className="text-sm text-slate-500 ml-9 inline-block opacity-60">{currentStep.cta}</span>
                         ) : null}
                     </div>
                 )}
 
-                {/* All steps done */}
                 {!currentStep && (
                     <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5 text-center">
                         <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -691,27 +708,15 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                 )}
             </div>
 
-            {/* Processing timer — shown when paid but docs not ready */}
+            {/* Processing timer */}
             {isProcessing && (
                 <div className="glass border-fuchsia-500/20">
                     <div className="flex items-center gap-5">
-                        {/* Animated circular progress */}
                         <div className="relative flex-shrink-0 h-16 w-16">
                             <svg className="w-16 h-16 animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 64 64" fill="none">
                                 <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="3" className="text-white/[0.06]" />
-                                <circle
-                                    cx="32" cy="32" r="28"
-                                    stroke="url(#proc-grad)"
-                                    strokeWidth="3"
-                                    strokeLinecap="round"
-                                    strokeDasharray="80 96"
-                                />
-                                <defs>
-                                    <linearGradient id="proc-grad" x1="0" y1="0" x2="64" y2="64">
-                                        <stop offset="0%" stopColor="#d946ef" />
-                                        <stop offset="100%" stopColor="#06b6d4" />
-                                    </linearGradient>
-                                </defs>
+                                <circle cx="32" cy="32" r="28" stroke="url(#proc-grad)" strokeWidth="3" strokeLinecap="round" strokeDasharray="80 96" />
+                                <defs><linearGradient id="proc-grad" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stopColor="#d946ef" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -722,16 +727,14 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                         <div>
                             <h3 className="font-semibold text-slate-200">Zpracováváme vaši objednávku</h3>
                             <p className="text-sm text-slate-400 mt-1">
-                                {isBusinessHours
-                                    ? "Obvykle do 4 hodin (doručujeme 8:00\u201316:00)"
-                                    : "Výsledky budou doručeny zítra ráno v 8:00"}
+                                {isBusinessHours ? "Obvykle do 4 hodin (doručujeme 8:00\u201316:00)" : "Výsledky budou doručeny zítra ráno v 8:00"}
                             </p>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Poslední objednávky */}
+            {/* Objednávky */}
             {data?.orders && data.orders.length > 0 && (
                 <div className="glass">
                     <h3 className="font-semibold mb-4">Objednávky</h3>
@@ -743,9 +746,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                     <span className="text-slate-500 ml-2">({order.plan.toUpperCase()})</span>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-slate-400">
-                                        {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
-                                    </span>
+                                    <span className="text-slate-400">{new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč</span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
                                         ? "bg-green-500/10 text-green-400"
                                         : order.status === "CREATED"
@@ -760,12 +761,18 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                     </div>
                 </div>
             )}
+
+            {/* ═══ PRICING TABLE ═══ */}
+            <PricingTable />
         </div>
     );
 }
 
-/* ── Tab: AI systémy (Findings) ── */
+
+/* ── Tab: AI systémy (Findings) with expandable detail ── */
 function TabFindings({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
     if (findings.length === 0) {
         return (
             <EmptyState
@@ -782,40 +789,71 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
         );
     }
 
+    const grouped = groupFindings(findings);
+
     return (
         <div className="space-y-3">
-            {findings.map((f) => (
-                <div key={f.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-semibold text-slate-200">{f.name}</h4>
-                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
-                                    }`}>
-                                    {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
-                                </span>
-                            </div>
-                            <p className="text-sm text-slate-400 mb-2">{f.action_required}</p>
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
-                                <span>Kategorie: {f.category}</span>
-                                <span>AI Act: {f.ai_act_article}</span>
-                                {f.confirmed_by_client && (
-                                    <span className={
-                                        f.confirmed_by_client === "false_positive"
-                                            ? "text-slate-500"
-                                            : "text-amber-400"
-                                    }>
-                                        {f.confirmed_by_client === "false_positive" ? "Falešný poplach" : "Potvrzeno"}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4 mb-4">
+                <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Systémy umělé inteligence nalezeny</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                            Nalezeno <strong className="text-slate-300">{grouped.length} unikátních AI systémů</strong> na vašem webu.
+                            Klikněte na systém pro zobrazení detailu a vysvětlení srozumitelným jazykem.
+                        </p>
                     </div>
                 </div>
-            ))}
+            </div>
+
+            {grouped.map((f) => {
+                const isExpanded = expanded[f.name] || false;
+                const explanation = AI_SYSTEM_EXPLANATIONS[f.name] || `AI systém nalezený na vašem webu \u2013 může vyžadovat posouzení dle EU AI Act.`;
+
+                return (
+                    <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
+                        <button
+                            onClick={() => setExpanded(prev => ({...prev, [f.name]: !prev[f.name]}))}
+                            className="w-full p-5 text-left flex items-start justify-between gap-4"
+                        >
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <h4 className="font-semibold text-slate-200">{f.name}</h4>
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                        {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
+                                    </span>
+                                    {f.count > 1 && (
+                                        <span className="text-xs text-slate-500">{f.count}x nalezeno</span>
+                                    )}
+                                </div>
+                                <p className="text-sm text-slate-400">{f.action_required}</p>
+                            </div>
+                            <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {isExpanded && (
+                            <div className="px-5 pb-5 pt-0 border-t border-white/[0.04]">
+                                <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
+                                    <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
+                                    <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
+                                </div>
+                                <div className="flex items-center gap-4 text-xs text-slate-500 mt-3">
+                                    <span>Kategorie: {f.category}</span>
+                                    <span>AI Act: {f.ai_act_article}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
+
 
 /* ── Tab: Dokumenty ── */
 function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) {
@@ -845,20 +883,11 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
                         </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-slate-200 text-sm">
-                            {TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                            {new Date(doc.created_at).toLocaleDateString("cs-CZ")}
-                        </p>
+                        <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
                     </div>
                     {doc.file_url && (
-                        <a
-                            href={doc.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0"
-                        >
+                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
                             Stáhnout PDF
                         </a>
                     )}
@@ -867,6 +896,7 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
         </div>
     );
 }
+
 
 /* ── Tab: Akční plán ── */
 function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
@@ -892,7 +922,6 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
         setLocalResolved((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    // Seřadit: high → medium → low, nepotvrzené první
     const sorted = [...findings].sort((a, b) => {
         const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
         const rA = riskOrder[a.risk_level] ?? 3;
@@ -911,7 +940,6 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
 
     return (
         <div className="space-y-4">
-            {/* Explanation header */}
             <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
                 <div className="flex items-start gap-3">
                     <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -929,21 +957,16 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                 </div>
             </div>
 
-            {/* Progress bar */}
             <div className="glass">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-slate-300">Váš postup</span>
                     <span className="text-sm text-slate-400">{resolved}/{total} splněno</span>
                 </div>
                 <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                        className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-500"
-                        style={{ width: `${total > 0 ? (resolved / total) * 100 : 0}%` }}
-                    />
+                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-500" style={{ width: `${total > 0 ? (resolved / total) * 100 : 0}%` }} />
                 </div>
             </div>
 
-            {/* Action items */}
             {sorted.map((f) => {
                 const isResolved = f.confirmed_by_client === "false_positive" || f.status === "resolved" || localResolved[f.id];
                 return (
@@ -971,8 +994,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                             </p>
                             <p className="text-xs text-slate-500 mt-1">{f.name}</p>
                             <div className="flex items-center gap-3 mt-1.5">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low
-                                    }`}>
+                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                     {f.risk_level === "high" ? "Vysoká priorita" : f.risk_level === "medium" ? "Střední" : "Nízká"}
                                 </span>
                                 <span className="text-[10px] text-slate-500">{f.ai_act_article}</span>
@@ -984,6 +1006,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
         </div>
     );
 }
+
 
 /* ── Tab: Historie skenů ── */
 function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onStartScan: () => void }) {
@@ -1007,7 +1030,6 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
         <div className="space-y-3">
             {scans.map((scan, i) => (
                 <div key={scan.id} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 hover:border-white/[0.12] transition-all">
-                    {/* Timeline dot */}
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
                             ? "bg-green-500"
@@ -1017,7 +1039,6 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                             }`} />
                         {i < scans.length - 1 && <div className="w-px h-8 bg-white/[0.06]" />}
                     </div>
-
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3">
                             <p className="text-sm font-medium text-slate-200 truncate">{scan.url}</p>
@@ -1043,6 +1064,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
     );
 }
 
+
 /* ── Tab: Můj účet ── */
 function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
     const [passwordLoading, setPasswordLoading] = useState(false);
@@ -1055,21 +1077,13 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
     const ico = meta.ico || "—";
     const webUrl = meta.web_url || data?.company?.url || "—";
     const registeredAt = user?.created_at
-        ? new Date(user.created_at).toLocaleDateString("cs-CZ", {
-            day: "numeric", month: "long", year: "numeric"
-        })
+        ? new Date(user.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric" })
         : "—";
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            setPasswordMsg("Hesla se neshodují");
-            return;
-        }
-        if (newPassword.length < 6) {
-            setPasswordMsg("Heslo musí mít alespoň 6 znaků");
-            return;
-        }
+        if (newPassword !== confirmPassword) { setPasswordMsg("Hesla se neshodují"); return; }
+        if (newPassword.length < 6) { setPasswordMsg("Heslo musí mít alespoň 6 znaků"); return; }
         setPasswordLoading(true);
         setPasswordMsg("");
         try {
@@ -1088,7 +1102,6 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
 
     return (
         <div className="space-y-6 max-w-2xl">
-            {/* Údaje o firmě */}
             <div className="glass">
                 <h3 className="font-semibold mb-5 flex items-center gap-2">
                     <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1106,7 +1119,6 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                 </div>
             </div>
 
-            {/* Objednávky */}
             {data?.orders && data.orders.length > 0 && (
                 <div className="glass">
                     <h3 className="font-semibold mb-5 flex items-center gap-2">
@@ -1123,12 +1135,8 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                                     <span className="text-slate-500 text-xs">{order.plan.toUpperCase()}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-slate-400 text-xs">
-                                        {new Date(order.created_at).toLocaleDateString("cs-CZ")}
-                                    </span>
-                                    <span className="text-slate-300 font-medium">
-                                        {new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč
-                                    </span>
+                                    <span className="text-slate-400 text-xs">{new Date(order.created_at).toLocaleDateString("cs-CZ")}</span>
+                                    <span className="text-slate-300 font-medium">{new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč</span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
                                         ? "bg-green-500/10 text-green-400"
                                         : order.status === "CREATED"
@@ -1144,7 +1152,6 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                 </div>
             )}
 
-            {/* Změna hesla */}
             <div className="glass">
                 <h3 className="font-semibold mb-5 flex items-center gap-2">
                     <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1155,44 +1162,18 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-sm">
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Nové heslo</label>
-                        <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="Minimálně 6 znaků"
-                            minLength={6}
-                            required
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5
-                                text-white placeholder:text-slate-500 text-sm
-                                focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
-                                transition-all"
-                        />
+                        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimálně 6 znaků" minLength={6} required
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30 transition-all" />
                     </div>
                     <div>
                         <label className="block text-sm text-slate-400 mb-1">Potvrdit nové heslo</label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="Zadejte heslo znovu"
-                            minLength={6}
-                            required
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5
-                                text-white placeholder:text-slate-500 text-sm
-                                focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
-                                transition-all"
-                        />
+                        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Zadejte heslo znovu" minLength={6} required
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30 transition-all" />
                     </div>
                     {passwordMsg && (
-                        <p className={`text-sm ${passwordMsg.startsWith("✅") ? "text-green-400" : "text-red-400"}`}>
-                            {passwordMsg}
-                        </p>
+                        <p className={`text-sm ${passwordMsg.startsWith("✅") ? "text-green-400" : "text-red-400"}`}>{passwordMsg}</p>
                     )}
-                    <button
-                        type="submit"
-                        disabled={passwordLoading}
-                        className="btn-secondary text-sm px-5 py-2 disabled:opacity-50"
-                    >
+                    <button type="submit" disabled={passwordLoading} className="btn-secondary text-sm px-5 py-2 disabled:opacity-50">
                         {passwordLoading ? "Ukládám..." : "Změnit heslo"}
                     </button>
                 </form>
@@ -1200,6 +1181,124 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
         </div>
     );
 }
+
+
+/* ── Pricing Table ── */
+function PricingTable() {
+    const plans = [
+        {
+            name: "Starter",
+            price: "4 990",
+            desc: "Pro malé firmy do 50 zaměstnanců",
+            features: [
+                { label: "Sken webu", included: true },
+                { label: "Dotazník AI systémů", included: true },
+                { label: "Compliance report", included: true },
+                { label: "Registr AI systémů", included: true },
+                { label: "Akční plán", included: false },
+                { label: "Transparenční stránka", included: false },
+                { label: "Interní AI Policy", included: false },
+                { label: "Osnova školení", included: false },
+                { label: "Chatbot oznámení", included: false },
+                { label: "E-mail podpora", included: true },
+                { label: "Telefonická konzultace", included: false },
+            ],
+            cta: "Vybrat Starter",
+            highlight: false,
+        },
+        {
+            name: "Professional",
+            price: "9 990",
+            desc: "Pro střední firmy — nejpopulárnější",
+            features: [
+                { label: "Sken webu", included: true },
+                { label: "Dotazník AI systémů", included: true },
+                { label: "Compliance report", included: true },
+                { label: "Registr AI systémů", included: true },
+                { label: "Akční plán", included: true },
+                { label: "Transparenční stránka", included: true },
+                { label: "Interní AI Policy", included: true },
+                { label: "Osnova školení", included: false },
+                { label: "Chatbot oznámení", included: false },
+                { label: "E-mail podpora", included: true },
+                { label: "Telefonická konzultace", included: true },
+            ],
+            cta: "Vybrat Professional",
+            highlight: true,
+        },
+        {
+            name: "Enterprise",
+            price: "24 990",
+            desc: "Pro velké organizace a korporáty",
+            features: [
+                { label: "Sken webu", included: true },
+                { label: "Dotazník AI systémů", included: true },
+                { label: "Compliance report", included: true },
+                { label: "Registr AI systémů", included: true },
+                { label: "Akční plán", included: true },
+                { label: "Transparenční stránka", included: true },
+                { label: "Interní AI Policy", included: true },
+                { label: "Osnova školení", included: true },
+                { label: "Chatbot oznámení", included: true },
+                { label: "E-mail podpora", included: true },
+                { label: "Telefonická konzultace", included: true },
+            ],
+            cta: "Vybrat Enterprise",
+            highlight: false,
+        },
+    ];
+
+    return (
+        <div className="glass">
+            <h3 className="font-semibold mb-2">Cenové balíčky</h3>
+            <p className="text-xs text-slate-400 mb-6">Vyberte si balíček, který odpovídá velikosti vaší firmy. Všechny ceny jsou bez DPH.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {plans.map((plan) => (
+                    <div key={plan.name} className={`rounded-xl border p-5 transition-all ${plan.highlight
+                        ? "border-fuchsia-500/40 bg-fuchsia-500/[0.06] shadow-[0_0_30px_rgba(217,70,239,0.08)]"
+                        : "border-white/[0.06] bg-white/[0.02]"
+                        }`}>
+                        {plan.highlight && (
+                            <span className="inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 mb-3">
+                                Nejpopulárnější
+                            </span>
+                        )}
+                        <h4 className="font-bold text-lg text-slate-200">{plan.name}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5 mb-3">{plan.desc}</p>
+                        <div className="flex items-baseline gap-1 mb-5">
+                            <span className="text-3xl font-extrabold text-white">{plan.price}</span>
+                            <span className="text-sm text-slate-500">Kč</span>
+                        </div>
+                        <div className="space-y-2.5 mb-6">
+                            {plan.features.map((feat) => (
+                                <div key={feat.label} className="flex items-center gap-2.5 text-sm">
+                                    {feat.included ? (
+                                        <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4 text-red-400/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                    <span className={feat.included ? "text-slate-300" : "text-slate-500"}>{feat.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <a href="/pricing" className={`block text-center text-sm font-medium py-2.5 rounded-xl transition-all ${plan.highlight
+                            ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
+                            : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                            }`}>
+                            {plan.cta}
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 
 /* ── Info Row ── */
 function InfoRow({ label, value, isUrl }: { label: string; value: string; isUrl?: boolean }) {
@@ -1235,13 +1334,9 @@ function EmptyState({ title, description, href, cta, onAction, illustration }: {
             <h3 className="font-semibold text-slate-300 mb-1">{title}</h3>
             <p className="text-sm text-slate-500 max-w-sm mb-6">{description}</p>
             {onAction ? (
-                <button onClick={onAction} className="btn-primary text-sm px-6 py-2.5">
-                    {cta}
-                </button>
+                <button onClick={onAction} className="btn-primary text-sm px-6 py-2.5">{cta}</button>
             ) : href ? (
-                <a href={href} className="btn-primary text-sm px-6 py-2.5">
-                    {cta}
-                </a>
+                <a href={href} className="btn-primary text-sm px-6 py-2.5">{cta}</a>
             ) : null}
         </div>
     );

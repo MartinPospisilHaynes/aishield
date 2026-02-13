@@ -611,3 +611,25 @@ export async function generateAgencyEmail(data: {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
+
+// ── Questionnaire Progress ──
+
+export interface QuestionnaireProgress {
+    company_id: string;
+    total_questions: number;
+    answered: number;
+    unknown_count: number;
+    percentage: number;
+    status: "nezahajeno" | "rozpracovano" | "dokonceno";
+}
+
+export async function getQuestionnaireProgress(companyId: string): Promise<QuestionnaireProgress> {
+    apiLog("info", "getQuestionnaireProgress", companyId);
+    const res = await authFetch(`${API_URL}/api/questionnaire/${companyId}/progress`);
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        apiLog("error", `getQuestionnaireProgress failed: ${res.status}`, text);
+        throw new Error(`HTTP ${res.status}`);
+    }
+    return res.json();
+}
