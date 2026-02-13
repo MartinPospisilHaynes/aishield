@@ -284,14 +284,14 @@ export default function PricingPage() {
 
                     <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                         {/* Monitoring BASIC */}
-                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 flex flex-col">
                             <h3 className="text-lg font-bold text-white mb-1">Monitoring</h3>
                             <div className="mb-3">
                                 <span className="text-2xl font-extrabold text-white">299</span>
                                 <span className="text-slate-500 ml-1">Kč/měsíc</span>
                             </div>
                             <p className="text-xs text-slate-500 mb-4">nebo 2 990 Kč/rok (ušetříte 17&nbsp;%)</p>
-                            <ul className="space-y-2 text-sm">
+                            <ul className="space-y-2 text-sm mb-6">
                                 {[
                                     "1× měsíčně automatický sken webu",
                                     "Srovnání s předchozím skenem (diff)",
@@ -308,17 +308,25 @@ export default function PricingPage() {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="mt-auto text-center">
+                                <a
+                                    href="/dashboard"
+                                    className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
+                                >
+                                    Sjednat Monitoring
+                                </a>
+                            </div>
                         </div>
 
                         {/* Monitoring PRO */}
-                        <div className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-6">
+                        <div className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-6 flex flex-col">
                             <h3 className="text-lg font-bold text-white mb-1">Monitoring Plus</h3>
                             <div className="mb-3">
                                 <span className="text-2xl font-extrabold neon-text">599</span>
                                 <span className="text-slate-500 ml-1">Kč/měsíc</span>
                             </div>
                             <p className="text-xs text-slate-500 mb-4">nebo 5 990 Kč/rok (ušetříte 17&nbsp;%)</p>
-                            <ul className="space-y-2 text-sm">
+                            <ul className="space-y-2 text-sm mb-6">
                                 {[
                                     "2× měsíčně automatický sken webu",
                                     "Vše z Monitoring",
@@ -335,12 +343,25 @@ export default function PricingPage() {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="mt-auto text-center">
+                                <a
+                                    href="/dashboard"
+                                    className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
+                                >
+                                    Sjednat Monitoring Plus
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <p className="text-center text-xs text-slate-500 mt-6">
-                        Monitoring je volitelný doplněk ke všem balíčkům. Minimální doba: 3 měsíce. Výpověď: 1 měsíc.
-                    </p>
+                    <div className="mt-6 text-center space-y-1">
+                        <p className="text-xs text-slate-500">
+                            Monitoring je volitelný doplněk — lze aktivovat pouze po zakoupení balíčku BASIC, PRO nebo ENTERPRISE.
+                        </p>
+                        <p className="text-xs text-slate-500">
+                            Minimální doba: 3 měsíce. Výpověď: 1 měsíc. U balíčku ENTERPRISE je 2 roky monitoringu již v ceně.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Comparison Table */}
