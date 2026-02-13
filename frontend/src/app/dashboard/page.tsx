@@ -1306,14 +1306,14 @@ const DASHBOARD_PLANS = [
         name: "ENTERPRISE",
         price: "39 999+",
         priceNote: "individuální",
-        description: "Komplexní řešení pro větší firmy + 2 roky aktualizací",
+        description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Vše z PRO",
             "10 hodin konzultací s compliance specialistou",
             "Metodická kontrola veškeré dokumentace",
             "Rozšířený audit interních AI systémů",
             "Multi-domain (více webů / e-shopů)",
-            "2 roky aktualizací dokumentace",
+            "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Dedikovaný specialista",
             "SLA 4h odezva v pracovní době",
         ],
@@ -1347,7 +1347,7 @@ const COMPARISON_FEATURES = [
     { label: "Metodická kontrola veškeré dokumentace", basic: false, pro: false, enterprise: true },
     { label: "Rozšířený audit interních AI systémů", basic: false, pro: false, enterprise: true },
     { label: "Multi-domain (více webů / e-shopů)", basic: false, pro: false, enterprise: true },
-    { label: "2 roky aktualizací dokumentace", basic: false, pro: false, enterprise: true },
+    { label: "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace", basic: false, pro: false, enterprise: true },
     { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
     { label: "SLA 4h odezva v pracovní době", basic: false, pro: false, enterprise: true },
 ];
@@ -1369,7 +1369,7 @@ function PricingComparisonTable() {
             {/* ── Pricing Cards (same design as /pricing page) ── */}
             <div>
                 <h3 className="font-semibold text-slate-200 mb-1">Cenové balíčky</h3>
-                <p className="text-xs text-slate-400 mb-5">Vyberte si balíček — veškerou dokumentaci i implementaci zajistíme kompletně my.</p>
+                <p className="text-xs text-slate-400 mb-5">Vyberte si balíček — rozsah služeb závisí na zvoleném plánu.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {DASHBOARD_PLANS.map((plan) => (
