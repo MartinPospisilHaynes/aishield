@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
 
                 {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 items-start">
                     {/* Card 1: Výsledek testu – heslovité hodnocení */}
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
                         <div className="flex items-center justify-between mb-2">
@@ -1370,7 +1370,7 @@ function PricingComparisonTable() {
                             className={`relative rounded-2xl border p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
                                 ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
                                 : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
-                            }`}
+                                }`}
                         >
                             {/* Badge */}
                             {"badge" in plan && plan.badge && (
@@ -1389,7 +1389,7 @@ function PricingComparisonTable() {
                                 <div className={`p-2 rounded-xl ${plan.highlighted
                                     ? "bg-fuchsia-500/10 text-fuchsia-400"
                                     : "bg-white/5 text-slate-400"
-                                }`}>
+                                    }`}>
                                     {plan.icon}
                                 </div>
                                 <h4 className="text-base font-bold tracking-wide">{plan.name}</h4>
@@ -1434,7 +1434,7 @@ function PricingComparisonTable() {
                                 className={`block text-center text-sm font-semibold py-2.5 rounded-xl transition-all ${plan.highlighted
                                     ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
                                     : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
-                                }`}
+                                    }`}
                             >
                                 {plan.cta}
                             </a>
