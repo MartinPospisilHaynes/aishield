@@ -63,15 +63,18 @@ const plans = [
     {
         key: "enterprise",
         name: "ENTERPRISE",
-        price: "49 999+",
+        price: "39 999+",
         priceNote: "individuální",
-        description: "Rozšířené řešení + odborná kontrola",
+        description: "Komplexní řešení pro větší firmy + 2 roky aktualizací",
         features: [
             "Vše z PRO",
-            "Konzultace s compliance specialistou",
-            "Metodická kontrola úplnosti dokumentace",
-            "Rozšířený dotazník interních AI systémů",
-            "SLA s cílovou dobou odezvy",
+            "10 hodin konzultací s compliance specialistou",
+            "Metodická kontrola veškeré dokumentace",
+            "Rozšířený audit interních AI systémů",
+            "Multi-domain (více webů / e-shopů)",
+            "2 roky aktualizací dokumentace",
+            "Dedikovaný specialista",
+            "SLA 4h odezva v pracovní době",
         ],
         notIncluded: [],
         cta: "Kontaktovat nás",
@@ -343,6 +346,103 @@ export default function PricingPage() {
                     <p className="text-center text-xs text-slate-500 mt-6">
                         Monitoring je volitelný doplněk ke všem balíčkům. Minimální doba: 3 měsíce. Výpověď: 1 měsíc.
                     </p>
+                </div>
+
+                {/* Comparison Table */}
+                <div className="mt-20">
+                    <div className="text-center mb-10">
+                        <h2 className="text-2xl font-bold">
+                            Podrobné <span className="neon-text">srovnání</span> balíčků
+                        </h2>
+                        <p className="mt-3 text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
+                            Co přesně obsahuje každý balíček — na jednom místě.
+                        </p>
+                    </div>
+
+                    <div className="mx-auto max-w-4xl rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[540px]">
+                                <thead>
+                                    <tr className="border-b border-white/[0.06]">
+                                        <th className="text-left px-5 py-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Služba</th>
+                                        <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                            BASIC
+                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">4 999 Kč</div>
+                                        </th>
+                                        <th className="text-center px-3 py-3 text-xs font-bold text-fuchsia-400 uppercase tracking-wider bg-fuchsia-500/[0.04]">
+                                            PRO
+                                            <div className="text-fuchsia-300 text-[10px] font-normal mt-0.5">14 999 Kč</div>
+                                        </th>
+                                        <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                            ENTERPRISE
+                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999+ Kč</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {[
+                                        { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
+                                        { label: "Compliance Kit (7 dokumentů)", basic: true, pro: true, enterprise: true },
+                                        { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
+                                        { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
+                                        { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
+                                        { label: "Interní AI politika firmy", basic: true, pro: true, enterprise: true },
+                                        { label: "Školení — prezentace v PowerPointu", basic: true, pro: true, enterprise: true },
+                                        { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
+                                        { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
+                                        { label: "Nastavení transparenční stránky na webu", basic: false, pro: true, enterprise: true },
+                                        { label: "Úprava cookie lišty a chatbot oznámení", basic: false, pro: true, enterprise: true },
+                                        { label: "Podpora po dodání (30 dní)", basic: false, pro: true, enterprise: true },
+                                        { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
+                                        { label: "10 hodin konzultací se specialistou", basic: false, pro: false, enterprise: true },
+                                        { label: "Metodická kontrola veškeré dokumentace", basic: false, pro: false, enterprise: true },
+                                        { label: "Rozšířený audit interních AI systémů", basic: false, pro: false, enterprise: true },
+                                        { label: "Multi-domain (více webů / e-shopů)", basic: false, pro: false, enterprise: true },
+                                        { label: "2 roky aktualizací dokumentace", basic: false, pro: false, enterprise: true },
+                                        { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
+                                        { label: "SLA 4h odezva v pracovní době", basic: false, pro: false, enterprise: true },
+                                    ].map((feat, i) => (
+                                        <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
+                                            <td className="px-5 py-2.5 text-sm text-slate-300">{feat.label}</td>
+                                            <td className="px-3 py-2.5 text-center">
+                                                {feat.basic ? (
+                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                ) : (
+                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-center bg-fuchsia-500/[0.02]">
+                                                {feat.pro ? (
+                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                ) : (
+                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-center">
+                                                {feat.enterprise ? (
+                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                ) : (
+                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4 border-t border-white/[0.06]">
+                            <button onClick={() => handleCheckout("basic")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                                {loading === "basic" ? "Přesměrování…" : "Objednat BASIC"}
+                            </button>
+                            <button onClick={() => handleCheckout("pro")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
+                                {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
+                            </button>
+                            <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                                Kontaktovat ENTERPRISE
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* FAQ */}

@@ -620,7 +620,7 @@ function ScanPageInner() {
                                 </div>
                                 <h3 className="font-semibold text-white">Sken nedokázal identifikovat AI systémy</h3>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    Automatický sken prověřuje pouze veřejně viditelné skripty. Interní AI nástroje, 
+                                    Automatický sken prověřuje pouze veřejně viditelné skripty. Interní AI nástroje,
                                     API integrace a backendové systémy sken neodhalí.
                                 </p>
                                 <p className="text-sm text-amber-400/80 mt-2 font-medium">

@@ -1302,15 +1302,18 @@ const DASHBOARD_PLANS = [
     {
         key: "enterprise",
         name: "ENTERPRISE",
-        price: "49 999+",
+        price: "39 999+",
         priceNote: "individuální",
-        description: "Rozšířené řešení + odborná kontrola",
+        description: "Komplexní řešení pro větší firmy + 2 roky aktualizací",
         features: [
             "Vše z PRO",
-            "Konzultace s compliance specialistou",
-            "Metodická kontrola úplnosti dokumentace",
-            "Rozšířený dotazník interních AI systémů",
-            "SLA s cílovou dobou odezvy",
+            "10 hodin konzultací s compliance specialistou",
+            "Metodická kontrola veškeré dokumentace",
+            "Rozšířený audit interních AI systémů",
+            "Multi-domain (více webů / e-shopů)",
+            "2 roky aktualizací dokumentace",
+            "Dedikovaný specialista",
+            "SLA 4h odezva v pracovní době",
         ],
         notIncluded: [],
         cta: "Kontaktovat nás",
@@ -1338,10 +1341,13 @@ const COMPARISON_FEATURES = [
     { label: "Úprava cookie lišty a chatbot oznámení", basic: false, pro: true, enterprise: true },
     { label: "Podpora po dodání (30 dní)", basic: false, pro: true, enterprise: true },
     { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
-    { label: "Konzultace s compliance specialistou", basic: false, pro: false, enterprise: true },
-    { label: "Metodická kontrola dokumentace", basic: false, pro: false, enterprise: true },
-    { label: "Rozšířený dotazník interních AI systémů", basic: false, pro: false, enterprise: true },
-    { label: "SLA s garantovanou dobou odezvy", basic: false, pro: false, enterprise: true },
+    { label: "10 hodin konzultací se specialistou", basic: false, pro: false, enterprise: true },
+    { label: "Metodická kontrola veškeré dokumentace", basic: false, pro: false, enterprise: true },
+    { label: "Rozšířený audit interních AI systémů", basic: false, pro: false, enterprise: true },
+    { label: "Multi-domain (více webů / e-shopů)", basic: false, pro: false, enterprise: true },
+    { label: "2 roky aktualizací dokumentace", basic: false, pro: false, enterprise: true },
+    { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
+    { label: "SLA 4h odezva v pracovní době", basic: false, pro: false, enterprise: true },
 ];
 
 function PricingComparisonTable() {
@@ -1465,7 +1471,7 @@ function PricingComparisonTable() {
                                 </th>
                                 <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     ENTERPRISE
-                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">49 999+ Kč</div>
+                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999+ Kč</div>
                                 </th>
                             </tr>
                         </thead>
