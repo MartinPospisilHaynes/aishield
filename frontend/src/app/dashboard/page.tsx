@@ -133,6 +133,9 @@ export default function DashboardPage() {
     // ── Questionnaire progress ──
     const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
 
+    // ── AI systems card expand ──
+    const [aiCardOpen, setAiCardOpen] = useState(false);
+
     // ── Inline scan state ──
     const [scanActive, setScanActive] = useState(false);
     const [scanLoading, setScanLoading] = useState(false);
@@ -426,7 +429,7 @@ export default function DashboardPage() {
 
                 {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    {/* Card 1: Výsledek testu – slovní hodnocení */}
+                    {/* Card 1: Výsledek testu – heslovité hodnocení */}
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-xs text-slate-500 uppercase tracking-wider">Výsledek testu</p>
@@ -435,41 +438,76 @@ export default function DashboardPage() {
                             </span>
                         </div>
                         {!hasScans ? (
-                            <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden. Spusťte sken pro zjištění AI systémů na vašem webu.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden.</p>
                         ) : uniqueSystemsCount > 0 ? (
                             <>
-                                <p className="text-sm font-semibold text-red-400 leading-relaxed">
-                                    ⚠️ POZOR — Na vašem webu {uniqueSystemsCount === 1 ? "byl nalezen" : "byly nalezeny"} {uniqueSystemsCount} AI {uniqueSystemsCount === 1 ? "systém" : uniqueSystemsCount < 5 ? "systémy" : "systémů"}, {uniqueSystemsCount === 1 ? "který spadá" : "které spadají"} pod povinnosti dle EU AI Act.
+                                <p className="text-sm text-red-400 leading-relaxed">
+                                    ⚠️ Počet nalezených AI systémů spadajících pod AI Act: <span className="font-extrabold text-lg">{uniqueSystemsCount}</span>
                                 </p>
                                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                                     {hasQuest
-                                        ? "Dotazník vyplněn — kompletní analýza je k dispozici."
-                                        : "Kompletní analýzu s jistotou potvrdíme až po vyplnění dotazníku."}
+                                        ? "Dotazník vyplněn — kompletní analýza k dispozici."
+                                        : "Pro úplnou analýzu vyplňte dotazník."}
                                 </p>
                             </>
                         ) : (
                             <>
-                                <p className="text-sm font-semibold text-green-400 leading-relaxed">
-                                    ✅ Na vašem webu nebyly nalezeny žádné AI systémy spadající pod novou legislativu EU AI Act.
+                                <p className="text-sm text-green-400 leading-relaxed">
+                                    ✅ Žádné AI systémy spadající pod AI Act nebyly nalezeny.
                                 </p>
                                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                                     {hasQuest
                                         ? "Dotazník vyplněn — analýza potvrzena."
-                                        : "Kompletní analýzu s jistotou potvrdíme až po vyplnění dotazníku."}
+                                        : "Pro úplnou analýzu vyplňte dotazník."}
                                 </p>
                             </>
                         )}
                     </div>
 
-                    {/* Card 2: Systémy umělé inteligence nalezeny */}
-                    <StatCard
-                        label="AI systémy nalezeny"
-                        value={String(uniqueSystemsCount)}
-                        sub={highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : uniqueSystemsCount > 0 ? "Pouze ze skenu webu" : "Sken zatím nebyl proveden"}
-                        color={highRisk > 0 ? "text-red-400" : uniqueSystemsCount > 0 ? "text-cyan-400" : "text-slate-500"}
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
-                        tooltip="Počet unikátních AI systémů nalezených skenem webu. Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů."
-                    />
+                    {/* Card 2: AI systémy – rozbalovací registr */}
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all">
+                        <button
+                            onClick={() => setAiCardOpen(!aiCardOpen)}
+                            className="w-full p-5 text-left"
+                        >
+                            <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider">AI systémy nalezeny</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-slate-600">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    </span>
+                                    <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-cyan-400' : 'text-slate-500'}`}>
+                                {uniqueSystemsCount}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                                {highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : uniqueSystemsCount > 0 ? 'Klikněte pro zobrazení registru' : 'Sken zatím nebyl proveden'}
+                            </p>
+                        </button>
+                        {aiCardOpen && uniqueSystemsCount > 0 && (
+                            <div className="border-t border-white/[0.06] px-5 pb-5">
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Registr nalezených AI systémů</p>
+                                <div className="space-y-2">
+                                    {groupFindings(data?.findings || []).map((f) => (
+                                        <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-medium text-white truncate">{f.name}</p>
+                                                <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
+                                            </div>
+                                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                {f.risk_level === 'high' ? 'Vysoké' : f.risk_level === 'medium' ? 'Střední' : 'Nízké'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Card 3: Dotazník with progress */}
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">

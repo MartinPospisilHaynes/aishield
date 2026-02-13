@@ -707,6 +707,9 @@ function QuestionnaireInner() {
                                 </button>
                             )}
                         </div>
+
+                        {/* Save & Continue Later */}
+                        <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
                     </div>
                 </div>
             </div>
@@ -918,31 +921,7 @@ function QuestionnaireInner() {
                     </div>
 
                     {/* Save & Continue Later */}
-                    <div className="flex justify-center mt-4">
-                        <button
-                            onClick={() => {
-                                // Save current answers to localStorage
-                                const saveData = {
-                                    answers: Object.fromEntries(
-                                        Object.entries(answers).map(([k, v]) => [k, v])
-                                    ),
-                                    currentQuestion,
-                                    companyId,
-                                    timestamp: new Date().toISOString(),
-                                };
-                                localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
-                                // Show confirmation and redirect
-                                alert("Odpovědi byly uloženy. Můžete se vrátit kdykoliv a pokračovat.");
-                                window.location.href = "/dashboard";
-                            }}
-                            className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-2"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                            </svg>
-                            Uložit a pokračovat později
-                        </button>
-                    </div>
+                    <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
                 </div>
             </div>
 
@@ -982,6 +961,42 @@ function QuestionnaireInner() {
 }
 
 /* ═══════════════════════════════════════════
+   SAVE LATER BUTTON
+   ═══════════════════════════════════════════ */
+
+function SaveLaterButton({ answers, currentQuestion, companyId }: {
+    answers: Record<string, { answer: string; details: Record<string, unknown> }>;
+    currentQuestion: number;
+    companyId: string | null;
+}) {
+    return (
+        <div className="flex justify-center mt-6">
+            <button
+                onClick={() => {
+                    const saveData = {
+                        answers: Object.fromEntries(
+                            Object.entries(answers).map(([k, v]) => [k, v])
+                        ),
+                        currentQuestion,
+                        companyId,
+                        timestamp: new Date().toISOString(),
+                    };
+                    localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
+                    alert("Odpovědi byly uloženy. Můžete se vrátit kdykoliv a pokračovat.");
+                    window.location.href = "/dashboard";
+                }}
+                className="px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 hover:text-white hover:bg-white/[0.1] transition-all flex items-center gap-2 text-sm font-medium"
+            >
+                <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                Uložit a pokračovat později
+            </button>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════
    PROGRESS BAR COMPONENT
    ═══════════════════════════════════════════ */
 
@@ -989,19 +1004,19 @@ function ProgressBarUI({ current, total }: { current: number; total: number }) {
     const pct = Math.min(100, Math.round(((current + 1) / total) * 100));
     return (
         <div className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-md">
-            <div className="max-w-2xl mx-auto px-4 py-2.5">
-                <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs text-slate-400 font-medium">
+            <div className="max-w-2xl mx-auto px-4 py-4">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-300 font-medium">
                         Otázka {current + 1} z {total}
                     </span>
-                    <span className="text-xs text-fuchsia-400 font-bold">
+                    <span className="text-sm text-fuchsia-400 font-bold">
                         {pct} %
                     </span>
                 </div>
-                <div className="w-full h-1 bg-white/[0.08] rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-white/[0.08] rounded-full overflow-hidden">
                     <div
                         className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 transition-all duration-500 ease-out"
-                        style={{ width: `${pct}%`, boxShadow: "0 0 12px rgba(217, 70, 239, 0.5)" }}
+                        style={{ width: `${pct}%`, boxShadow: "0 0 16px rgba(217, 70, 239, 0.5)" }}
                     />
                 </div>
             </div>
