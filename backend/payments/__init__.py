@@ -131,7 +131,11 @@ class GoPayClient:
             else:
                 raise ValueError(f"Neznámá HTTP metoda: {method}")
 
-            response.raise_for_status()
+            if not response.is_success:
+                body = response.text
+                logger.error(f"[GoPay] API error {response.status_code}: {body}")
+                logger.error(f"[GoPay] Request payload: {json_data}")
+                response.raise_for_status()
             return response.json()
 
     # ────────────────────────────────────────────────────────────
@@ -165,7 +169,7 @@ class GoPayClient:
                     "PAYMENT_CARD",
                     "BANK_ACCOUNT",
                     "APPLE_PAY",
-                    "GOOGLE_PAY",
+                    "GPAY",
                 ],
                 "contact": {"email": email},
             },
@@ -242,6 +246,8 @@ class GoPayClient:
                 "allowed_payment_instruments": [
                     "PAYMENT_CARD",
                     "BANK_ACCOUNT",
+                    "APPLE_PAY",
+                    "GPAY",
                 ],
                 "contact": {"email": email},
             },
