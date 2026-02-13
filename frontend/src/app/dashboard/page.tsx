@@ -1241,7 +1241,89 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
 }
 
 
-/* ── Pricing Comparison Table (row-based with ✓/✗) ── */
+/* ── Dashboard Pricing Cards + Comparison Table ── */
+const DASHBOARD_PLANS = [
+    {
+        key: "basic",
+        name: "BASIC",
+        price: "4 999",
+        priceNote: "jednorázově",
+        description: "Compliance Kit — dokumenty ke stažení",
+        features: [
+            "Sken webu + AI Act report",
+            "AI Act Compliance Kit (7 PDF)",
+            "Transparenční stránka (HTML)",
+            "Kroky ke splnění s checkboxy",
+            "Registr AI systémů",
+            "Interní AI Policy",
+            "Osnova školení (čl. 4)",
+        ],
+        notIncluded: [
+            "Implementace na klíč",
+            "Podpora po dodání",
+        ],
+        cta: "Objednat BASIC",
+        highlighted: false,
+        icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+            </svg>
+        ),
+    },
+    {
+        key: "pro",
+        name: "PRO",
+        price: "14 999",
+        priceNote: "jednorázově",
+        description: "Vše z BASIC + implementace na klíč",
+        badge: "Nejoblíbenější",
+        features: [
+            "Vše z BASIC",
+            "Instalace widgetu na váš web",
+            "Nastavení transparenční stránky",
+            "Úprava chatbot oznámení",
+            "Podpora po dobu 30 dní",
+            "WordPress, Shoptet i custom",
+            "Prioritní zpracování",
+        ],
+        notIncluded: [],
+        cta: "Objednat PRO",
+        highlighted: true,
+        icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+            </svg>
+        ),
+    },
+    {
+        key: "enterprise",
+        name: "ENTERPRISE",
+        price: "49 999+",
+        priceNote: "individuální",
+        description: "Rozšířené řešení + odborná kontrola + monitoring",
+        features: [
+            "Vše z PRO",
+            "Konzultace s compliance specialistou",
+            "Metodická kontrola úplnosti dokumentace",
+            "Měsíční monitoring webu (volitelný doplněk)",
+            "Dotazník interních AI systémů",
+            "Školení AI literacy (čl. 4)",
+            "SLA s cílovou dobou odezvy",
+        ],
+        notIncluded: [],
+        cta: "Kontaktovat nás",
+        highlighted: false,
+        icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+            </svg>
+        ),
+    },
+];
+
 const COMPARISON_FEATURES = [
     { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
     { label: "Compliance Kit (7 dokumentů PDF)", basic: true, pro: true, enterprise: true },
@@ -1275,54 +1357,142 @@ function PricingComparisonTable() {
     );
 
     return (
-        <div className="glass p-0 overflow-hidden">
-            <div className="p-5 pb-3">
-                <h3 className="font-semibold text-slate-200 mb-1">Vyberte si balíček — vše vyřídíme za vás</h3>
-                <p className="text-xs text-slate-400">Veškerou dokumentaci a implementaci zajistíme kompletně my. Vy se nemusíte o nic starat.</p>
+        <div className="space-y-6">
+            {/* ── Pricing Cards (same design as /pricing page) ── */}
+            <div>
+                <h3 className="font-semibold text-slate-200 mb-1">Cenové balíčky</h3>
+                <p className="text-xs text-slate-400 mb-5">Vyberte si balíček — veškerou dokumentaci i implementaci zajistíme kompletně my.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {DASHBOARD_PLANS.map((plan) => (
+                        <div
+                            key={plan.key}
+                            className={`relative rounded-2xl border p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
+                                ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
+                                : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
+                            }`}
+                        >
+                            {/* Badge */}
+                            {"badge" in plan && plan.badge && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-4 py-1 text-xs font-semibold text-white shadow-lg">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                        </svg>
+                                        {plan.badge}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Icon + Name */}
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className={`p-2 rounded-xl ${plan.highlighted
+                                    ? "bg-fuchsia-500/10 text-fuchsia-400"
+                                    : "bg-white/5 text-slate-400"
+                                }`}>
+                                    {plan.icon}
+                                </div>
+                                <h4 className="text-base font-bold tracking-wide">{plan.name}</h4>
+                            </div>
+
+                            {/* Price */}
+                            <div className="mb-1">
+                                <span className={`text-3xl font-extrabold ${plan.highlighted ? "neon-text" : "text-white"}`}>
+                                    {plan.price}
+                                </span>
+                                <span className="text-slate-500 ml-1 text-sm">Kč</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mb-2">{plan.priceNote}</p>
+                            <p className="text-xs text-slate-400 mb-4">{plan.description}</p>
+
+                            {/* Divider */}
+                            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+
+                            {/* Features */}
+                            <ul className="flex-1 space-y-2 mb-5">
+                                {plan.features.map((feature) => (
+                                    <li key={feature} className="flex items-start gap-2 text-xs">
+                                        <svg className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${plan.highlighted ? "text-fuchsia-400" : "text-cyan-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-slate-300">{feature}</span>
+                                    </li>
+                                ))}
+                                {plan.notIncluded.map((feature) => (
+                                    <li key={feature} className="flex items-start gap-2 text-xs">
+                                        <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        <span className="text-slate-600">{feature}</span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {/* CTA */}
+                            <a
+                                href={plan.key === "enterprise" ? "/enterprise" : "/pricing"}
+                                className={`block text-center text-sm font-semibold py-2.5 rounded-xl transition-all ${plan.highlighted
+                                    ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
+                                    : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
+                                }`}
+                            >
+                                {plan.cta}
+                            </a>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[500px]">
-                    <thead>
-                        <tr className="border-t border-b border-white/[0.06]">
-                            <th className="text-left px-5 py-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Služba</th>
-                            <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                BASIC
-                                <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">4 999 Kč</div>
-                            </th>
-                            <th className="text-center px-3 py-3 text-xs font-bold text-fuchsia-400 uppercase tracking-wider bg-fuchsia-500/[0.04]">
-                                PRO
-                                <div className="text-fuchsia-300 text-[10px] font-normal mt-0.5">14 999 Kč</div>
-                            </th>
-                            <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                ENTERPRISE
-                                <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">49 999+ Kč</div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {COMPARISON_FEATURES.map((feat, i) => (
-                            <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
-                                <td className="px-5 py-2.5 text-sm text-slate-300">{feat.label}</td>
-                                <td className="px-3 py-2.5 text-center">{feat.basic ? <Check /> : <Cross />}</td>
-                                <td className="px-3 py-2.5 text-center bg-fuchsia-500/[0.02]">{feat.pro ? <Check /> : <Cross />}</td>
-                                <td className="px-3 py-2.5 text-center">{feat.enterprise ? <Check /> : <Cross />}</td>
+            {/* ── Comparison Table with ✓/✗ ── */}
+            <div className="glass p-0 overflow-hidden">
+                <div className="p-5 pb-3">
+                    <h3 className="font-semibold text-slate-200 mb-1">Podrobné srovnání balíčků</h3>
+                    <p className="text-xs text-slate-400">Co přesně obsahuje každý balíček — na jednom místě.</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[500px]">
+                        <thead>
+                            <tr className="border-t border-b border-white/[0.06]">
+                                <th className="text-left px-5 py-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Služba</th>
+                                <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                    BASIC
+                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">4 999 Kč</div>
+                                </th>
+                                <th className="text-center px-3 py-3 text-xs font-bold text-fuchsia-400 uppercase tracking-wider bg-fuchsia-500/[0.04]">
+                                    PRO
+                                    <div className="text-fuchsia-300 text-[10px] font-normal mt-0.5">14 999 Kč</div>
+                                </th>
+                                <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                    ENTERPRISE
+                                    <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">49 999+ Kč</div>
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {COMPARISON_FEATURES.map((feat, i) => (
+                                <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
+                                    <td className="px-5 py-2.5 text-sm text-slate-300">{feat.label}</td>
+                                    <td className="px-3 py-2.5 text-center">{feat.basic ? <Check /> : <Cross />}</td>
+                                    <td className="px-3 py-2.5 text-center bg-fuchsia-500/[0.02]">{feat.pro ? <Check /> : <Cross />}</td>
+                                    <td className="px-3 py-2.5 text-center">{feat.enterprise ? <Check /> : <Cross />}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4">
-                <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                    Objednat BASIC
-                </a>
-                <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
-                    Objednat PRO ★
-                </a>
-                <a href="/enterprise" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                    Kontaktovat ENTERPRISE
-                </a>
+                <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4">
+                    <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                        Objednat BASIC
+                    </a>
+                    <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
+                        Objednat PRO ★
+                    </a>
+                    <a href="/enterprise" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                        Kontaktovat ENTERPRISE
+                    </a>
+                </div>
             </div>
         </div>
     );
