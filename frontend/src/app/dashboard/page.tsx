@@ -8,6 +8,7 @@ import {
     getScanStatus,
     getScanFindings,
     getQuestionnaireProgress,
+    createCheckout,
     type DashboardData,
     type ScanStatus,
     type Finding,
@@ -1353,6 +1354,27 @@ const COMPARISON_FEATURES = [
 ];
 
 function PricingComparisonTable() {
+    const { user } = useAuth();
+    const [loading, setLoading] = useState<string | null>(null);
+
+    async function handleCheckout(planKey: string) {
+        if (planKey === "enterprise") {
+            window.location.href = "/enterprise";
+            return;
+        }
+        if (!user) {
+            window.location.href = `/registrace?redirect=/dashboard&plan=${planKey}`;
+            return;
+        }
+        setLoading(planKey);
+        try {
+            const data = await createCheckout(planKey, user.email || "");
+            window.location.href = data.gateway_url;
+        } catch {
+            setLoading(null);
+        }
+    }
+
     const Check = () => (
         <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -1437,15 +1459,16 @@ function PricingComparisonTable() {
                             </ul>
 
                             {/* CTA */}
-                            <a
-                                href={plan.key === "enterprise" ? "/enterprise" : "/pricing"}
-                                className={`block text-center text-sm font-semibold py-2.5 rounded-xl transition-all ${plan.highlighted
+                            <button
+                                onClick={() => handleCheckout(plan.key)}
+                                disabled={loading === plan.key}
+                                className={`block w-full text-center text-sm font-semibold py-2.5 rounded-xl transition-all disabled:opacity-50 ${plan.highlighted
                                     ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
                                     : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20"
                                     }`}
                             >
-                                {plan.cta}
-                            </a>
+                                {loading === plan.key ? "Přesměrování…" : plan.cta}
+                            </button>
                         </div>
                     ))}
                 </div>
@@ -1491,15 +1514,15 @@ function PricingComparisonTable() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4">
-                    <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                        Objednat BASIC
-                    </a>
-                    <a href="/pricing" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
-                        Objednat PRO ★
-                    </a>
-                    <a href="/enterprise" className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                    <button onClick={() => handleCheckout("basic")} disabled={loading === "basic"} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all disabled:opacity-50">
+                        {loading === "basic" ? "Přesměrování…" : "Objednat BASIC"}
+                    </button>
+                    <button onClick={() => handleCheckout("pro")} disabled={loading === "pro"} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all disabled:opacity-50">
+                        {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
+                    </button>
+                    <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
                         Kontaktovat ENTERPRISE
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
