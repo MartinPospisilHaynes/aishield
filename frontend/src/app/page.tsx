@@ -147,62 +147,75 @@ const DELIVERABLES = [
 const FAQ_ITEMS = [
     {
         q: "Co je AI Act a proč se mě týká?",
-        a: "AI Act je nový zákon Evropské unie, který řeší pravidla pro umělou inteligenci. " +
-            "Pokud máte na webu chatbot, Google Analytics, doporučovací systém, reklamní pixel nebo jakýkoliv jiný AI nástroj, " +
-            "zákon se vás týká. A to i když jste malá firma — třeba kadeřnictví, e-shop nebo řemeslník. " +
-            "Představte si to jako GDPR, ale pro umělou inteligenci.",
+        a: "AI Act (Nařízení EU 2024/1689) je první zákon na světě, který komplexně reguluje umělou inteligenci. " +
+            "Platí pro každého, kdo v EU provozuje nebo nasazuje AI systémy — a to bez ohledu na velikost firmy. " +
+            "Pokud máte na webu chatbot, používáte Google Analytics, máte doporučovací systém produktů, reklamní pixel nebo jakýkoliv jiný nástroj s prvky AI, zákon se vás přímo týká. " +
+            "Představte si to jako GDPR, ale pro umělou inteligenci — s tím rozdílem, že pokuty jsou ještě vyšší. " +
+            "Mnoho firem si neuvědomuje, že AI systémy na jejich webu vůbec mají — proto nabízíme bezplatný sken, který vám to odhalí za minutu.",
     },
     {
         q: "Jaké pokuty hrozí?",
-        a: "Zákon stanoví tři úrovně pokut. Za nejzávažnější porušení (zakázané AI systémy) až 35 milionů EUR nebo 7 % obratu. " +
-            "Za nedodržení povinností (chybějící dokumentace, neoznačený chatbot) až 15 milionů EUR nebo 3 % obratu. " +
-            "Za poskytnutí nepravdivých informací úřadům až 7,5 milionu EUR nebo 1 % obratu. " +
-            "Pro malé a střední firmy platí nižší hranice, ale i tak jde o statisíce korun.",
+        a: "Zákon stanoví tři úrovně pokut podle závažnosti porušení. " +
+            "Za nejzávažnější porušení (používání zakázaných AI systémů, například skryté manipulace nebo sociální skórování) hrozí pokuta až 35 milionů EUR nebo 7 % celosvětového ročního obratu — podle toho, co je vyšší. " +
+            "Za nedodržení běžných povinností, jako je chybějící dokumentace, neoznačený chatbot nebo chybějící transparenční stránka, hrozí až 15 milionů EUR nebo 3 % obratu. " +
+            "Za poskytnutí nepravdivých nebo zavádějících informací kontrolním úřadům až 7,5 milionu EUR nebo 1 % obratu. " +
+            "Pro malé a střední firmy (do 250 zaměstnanců) platí nižší stropy, ale i tak se bavíme o statisících až milionech korun. " +
+            "Důležité je, že pokuty se počítají za každé jednotlivé porušení — pokud máte na webu 3 neoznačené AI systémy, může jít o 3 samostatné sankce.",
     },
     {
         q: "Mám jen malou firmu / e-shop. Opravdu se mě to týká?",
-        a: "Ano. Zákon platí pro všechny, kdo v EU provozují AI systémy — bez ohledu na velikost firmy. " +
-            "Pokud váš e-shop používá Smartsupp chatbot, Google Analytics nebo doporučování produktů, " +
-            "jste povinni to označit a zdokumentovat. My vám s tím pomůžeme jednoduše a bez složitostí.",
+        a: "Ano, bohužel ano. Zákon platí pro všechny, kdo v EU provozují AI systémy — ať jste kadeřnictví s jedním zaměstnancem, nebo e-shop s tisíci produkty. " +
+            "Používáte Smartsupp chatbot? Google Analytics? Doporučování produktů na Shoptetu? Reklamní pixel od Facebooku nebo Google? Automatické odpovědi na e-maily? " +
+            "To všechno jsou AI systémy ve smyslu zákona a všechny vyžadují minimálně označení a dokumentaci. " +
+            "Dobrá zpráva je, že pro většinu malých firem spadají jejich AI systémy do kategorie s minimálními povinnostmi — hlavně transparentnost (čl. 50) a AI gramotnost zaměstnanců (čl. 4). " +
+            "My vám s tím pomůžeme jednoduše a za rozumnou cenu — nemusíte platit desítky tisíc za advokáta.",
     },
     {
         q: "Co když nevím, jestli mám AI na webu?",
-        a: "Přesně proto je tu náš scanner. Zadáte adresu webu a za minutu víte, jaké AI nástroje na něm běží. " +
-            "Šetří vám čas a peníze za konzultace. Skenování je zcela zdarma.",
+        a: "To je naprosto normální — většina majitelů webů nemá přehled o tom, jaké AI nástroje na jejich stránkách běží. " +
+            "Mnoho AI systémů se na web dostane nepřímo: přes e-shopovou platformu (Shoptet, WooCommerce), přes chatbot plugin (Smartsupp, Tidio, Crisp), přes analytiku (Google Analytics) nebo přes reklamní systémy (Meta Pixel, Google Ads). " +
+            "Přesně proto jsme vytvořili náš bezplatný scanner. Zadáte adresu webu a za minutu dostanete kompletní přehled — jaké AI nástroje na něm běží, do které kategorie dle AI Actu spadají a co s tím musíte udělat. " +
+            "Žádná registrace, žádné platební údaje, žádný háček.",
     },
     {
         q: "Jak to celé funguje?",
-        a: "1) Zadáte adresu svého webu — náš robot ho proskenuje. " +
-            "2) Dostanete přehled nalezených AI systémů. " +
-            "3) Vyberete si balíček služeb a zaregistrujete se. " +
-            "4) Vyplníte krátký dotazník o vaší firmě (jen klikáním, žádné složité psaní). " +
-            "5) Během několika hodin obdržíte veškerou dokumentaci.",
+        a: "Celý proces má 5 jednoduchých kroků a zvládnete ho za jedno odpoledne. " +
+            "1) Zadáte adresu svého webu — náš robot ho automaticky proskenuje a během minuty identifikuje všechny AI systémy. " +
+            "2) Dostanete přehledný report s výsledky — jaké AI nástroje máte, jaké povinnosti z nich plynou a do jaké kategorie spadáte. " +
+            "3) Vyberete si balíček služeb podle vašich potřeb — od základního BASIC po kompletní ENTERPRISE s konzultací. " +
+            "4) Vyplníte krátký dotazník o vaší firmě (zabere asi 5 minut, většinou jen klikáte) — díky tomu připravíme dokumenty přesně na míru. " +
+            "5) Během několika hodin obdržíte kompletní sadu 7 dokumentů v PDF — report, registr, transparenční stránku, oznámení, AI politiku, školení v PowerPointu a záznamový list.",
     },
     {
         q: "Co musím vyplnit v dotazníku?",
-        a: "Dotazník je jednoduchý — většinou jen klikáte na odpovědi. Ptáme se vás na základní věci: " +
-            "kolik máte zaměstnanců, jakou činnost provozujete, jestli používáte AI i interně (třeba ChatGPT). " +
-            "Bez těchto informací vám nemůžeme připravit dokumenty přesně na míru vaší firmě. " +
-            "Vyplnění trvá asi 5 minut.",
+        a: "Dotazník je navržený tak, aby byl co nejjednodušší — většinou jen klikáte na odpovědi, žádné dlouhé psaní. " +
+            "Ptáme se na základní informace: velikost firmy, obor podnikání, jaké AI nástroje používáte interně (ChatGPT, Copilot, AI v účetním softwaru...) a jak je používají vaši zaměstnanci. " +
+            "Tyto informace potřebujeme, abychom vám mohli připravit dokumenty přesně na míru — generická dokumentace by vám k ničemu nebyla. " +
+            "Vyplnění trvá asi 5 minut. Odpovědi můžete kdykoliv upravit a dokumenty se automaticky přegenerují podle nových údajů.",
     },
     {
         q: "Jaký je deadline?",
-        a: "2. srpna 2026 — od tohoto data se AI Act plně vztahuje na všechny AI systémy. " +
-            "Zákaz nepřijatelných AI praktik (čl. 5) platí už od února 2025. " +
-            "Příprava dokumentace zabere cca 2–4 týdny, nenechávejte to na poslední chvíli.",
+        a: "Klíčové datum je 2. srpen 2026 — od tohoto dne se AI Act plně vztahuje na všechny AI systémy bez výjimky. " +
+            "Ale pozor: některé povinnosti platí už dříve. Zákaz nepřijatelných AI praktik (čl. 5) je v platnosti od února 2025. " +
+            "Povinnost AI gramotnosti zaměstnanců (čl. 4) platí rovněž od února 2025 — pokud vaši zaměstnanci používají AI nástroje a nemáte doklad o jejich proškolení, už teď jste v prodlení. " +
+            "Příprava kompletní dokumentace zabere cca 2–4 týdny, proto doporučujeme nenechávat to na poslední chvíli. " +
+            "Kontrolní orgány budou po 2. srpnu 2026 aktivně prověřovat weby pomocí automatizovaných nástrojů — stejných, jaké používá náš scanner.",
     },
     {
         q: "Nahradíte advokáta?",
-        a: "Ne — jsme technický nástroj, ne právní poradna. Identifikujeme AI systémy, připravíme dokumentační podklady a akční plány. " +
-            "Dokumenty, které od nás dostanete, slouží jako kvalitní základ pro vaši compliance. " +
-            "Klidně s nimi můžete navštívit právníka dle vašeho výběru — " +
-            "naše dokumenty jsou připravené k odborné revizi.",
+        a: "Ne — a ani to není náš cíl. Jsme technický nástroj, ne právní poradna. " +
+            "Co ale uděláme: automaticky identifikujeme AI systémy na vašem webu, připravíme kompletní dokumentační podklady, vygenerujeme transparenční stránku, texty oznámení, interní AI politiku a materiály pro školení zaměstnanců. " +
+            "Dokumenty, které od nás dostanete, jsou kvalitním základem pro vaši compliance — většina malých a středních firem s nimi vystačí. " +
+            "Pokud ale chcete stoprocentní jistotu nebo máte specifickou situaci (high-risk AI systémy, zpracování citlivých dat), doporučujeme dokumenty vzít k advokátovi k odborné revizi. " +
+            "Naše dokumenty jsou na to připravené — strukturované, srozumitelné a s odkazy na konkrétní články zákona.",
     },
     {
         q: "Je skenování webu opravdu zdarma?",
-        a: "Ano, skenování je zcela zdarma a nezávazné. " +
-            "Nemusíte se nikam registrovat ani zadávat platební údaje. " +
-            "Platíte pouze v případě, že se rozhodnete objednat balíček dokumentů.",
+        a: "Ano, skenování je zcela zdarma, nezávazné a bez jakýchkoliv skrytých podmínek. " +
+            "Nemusíte se nikam registrovat, nemusíte zadávat e-mail ani platební údaje. Prostě zadáte URL a za minutu máte výsledky. " +
+            "Platíte pouze v případě, že se rozhodnete objednat balíček dokumentů — to je čistě na vašem rozhodnutí. " +
+            "Sken si můžete spustit opakovaně, třeba po každé změně na webu, a vždy bude zdarma. " +
+            "Proč to děláme zadarmo? Protože věříme, že když uvidíte, kolik AI systémů na vašem webu běží, pochopíte, proč je dokumentace důležitá.",
     },
 ];
 
