@@ -103,7 +103,7 @@ Compliance Kit obsahuje 7 dokumentů:
 CENÍK:
 - BASIC (4 999 Kč jednorázově): Sken webu + AI Act report + Compliance Kit (7 PDF dokumentů) + transparenční stránka + registr AI + AI policy + školení v PowerPointu + záznamový list o proškolení
 - PRO (14 999 Kč jednorázově): Vše z BASIC + implementace na klíč (instalace widgetu na web, nastavení transparenční stránky, úprava chatbot oznámení) + podpora 30 dní, WordPress/Shoptet/custom weby, prioritní zpracování
-- ENTERPRISE (od 49 999 Kč): Vše z PRO + konzultace s compliance specialistou + kontrola úplnosti dokumentace + volitelný měsíční monitoring + školení AI literacy + SLA
+- ENTERPRISE (od 49 999 Kč): Vše z PRO + konzultace s compliance specialistou + metodická kontrola úplnosti dokumentace + rozšířený dotazník interních AI systémů + SLA
 
 DEADLINE:
 2. srpna 2026 — od tohoto data se AI Act plně vztahuje na všechny AI systémy. Zákaz nepřijatelných AI praktik (čl. 5) platí už od února 2025.

@@ -14,12 +14,12 @@ const plans = [
         description: "Compliance Kit — dokumenty ke stažení",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (7 PDF)",
+            "AI Act Compliance Kit (7 dokumentů)",
             "Transparenční stránka (HTML)",
-            "Kroky ke splnění s checkboxy",
             "Registr AI systémů",
-            "Interní AI Policy",
-            "Osnova školení (čl. 4)",
+            "Interní AI politika firmy",
+            "Školení — prezentace v PowerPointu",
+            "Záznamový list o proškolení",
         ],
         notIncluded: [
             "Implementace na klíč",
@@ -65,14 +65,12 @@ const plans = [
         name: "ENTERPRISE",
         price: "49 999+",
         priceNote: "individuální",
-        description: "Rozšířené řešení + odborná kontrola + monitoring",
+        description: "Rozšířené řešení + odborná kontrola",
         features: [
             "Vše z PRO",
             "Konzultace s compliance specialistou",
             "Metodická kontrola úplnosti dokumentace",
-            "Měsíční monitoring webu (volitelný doplněk)",
-            "Dotazník interních AI systémů",
-            "Školení AI literacy (čl. 4)",
+            "Rozšířený dotazník interních AI systémů",
             "SLA s cílovou dobou odezvy",
         ],
         notIncluded: [],
@@ -140,7 +138,7 @@ export default function PricingPage() {
                         <span className="neon-text">compliance balíček</span>
                     </h1>
                     <p className="mt-4 text-slate-400 text-lg leading-relaxed">
-                        Jednorázové balíčky + volitelný měsíční monitoring. Platba kartou,
+                        Jednorázové balíčky — dokumentace, implementace i odborná kontrola. Platba kartou,
                         bankovním převodem, Apple Pay nebo Google Pay.
                     </p>
                 </div>
