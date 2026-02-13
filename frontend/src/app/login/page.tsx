@@ -69,7 +69,7 @@ function LoginForm() {
                 <div className="absolute top-[20%] left-[40%] h-[400px] w-[400px] rounded-full bg-fuchsia-600/8 blur-[120px]" />
             </div>
 
-            <div className="mx-auto max-w-md px-6">
+            <div className="mx-auto max-w-md px-4 sm:px-6">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-extrabold">
                         Přihlášení

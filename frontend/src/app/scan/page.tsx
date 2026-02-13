@@ -327,7 +327,7 @@ function ScanPageInner() {
 
     return (
         <section className="py-20">
-            <div className="mx-auto max-w-4xl px-6">
+            <div className="mx-auto max-w-4xl px-4 sm:px-6">
                 {/* Nadpis */}
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-white inline-flex items-center gap-3 justify-center">

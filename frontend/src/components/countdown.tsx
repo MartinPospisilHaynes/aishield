@@ -36,12 +36,12 @@ function calcTimeLeft(): TimeLeft {
 function CountdownUnit({ value, label }: { value: number; label: string }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm flex items-center justify-center">
-                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-white">
+            <div className="relative w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm flex items-center justify-center">
+                <span className="text-lg xs:text-xl sm:text-3xl font-bold tabular-nums text-white">
                     {String(value).padStart(2, "0")}
                 </span>
             </div>
-            <span className="mt-2 text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mt-1.5 sm:mt-2 text-[9px] xs:text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-500">
                 {label}
             </span>
         </div>
@@ -50,8 +50,8 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 
 function Separator() {
     return (
-        <div className="flex flex-col items-center justify-center pb-6">
-            <span className="text-xl sm:text-2xl font-bold text-slate-600">:</span>
+        <div className="flex flex-col items-center justify-center pb-5 sm:pb-6">
+            <span className="text-base sm:text-2xl font-bold text-slate-600">:</span>
         </div>
     );
 }
@@ -69,7 +69,7 @@ export default function Countdown({ className = "" }: { className?: string }) {
     if (!mounted) {
         // SSR placeholder — avoid hydration mismatch
         return (
-            <div className={`flex items-center justify-center gap-2 sm:gap-3 ${className}`}>
+            <div className={`flex flex-wrap items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 ${className}`}>
                 {["Měsíce", "Týdny", "Dny", "Hodiny", "Minuty", "Sekundy"].map((label) => (
                     <CountdownUnit key={label} value={0} label={label} />
                 ))}
@@ -78,7 +78,7 @@ export default function Countdown({ className = "" }: { className?: string }) {
     }
 
     return (
-        <div className={`flex items-center justify-center gap-1.5 sm:gap-2 ${className}`}>
+        <div className={`flex flex-wrap items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 ${className}`}>
             <CountdownUnit value={time.months} label="Měsíce" />
             <Separator />
             <CountdownUnit value={time.weeks} label="Týdny" />

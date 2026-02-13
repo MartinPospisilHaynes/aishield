@@ -420,7 +420,7 @@ export default function HomePage() {
                     <div className="absolute bottom-[-10%] right-[10%] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
                 </div>
 
-                <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28 text-center">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-20 lg:py-28 text-center">
                     {/* Countdown */}
                     <div className="mb-6">
                         <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-4">
@@ -430,14 +430,14 @@ export default function HomePage() {
                     </div>
 
                     {/* Headline */}
-                    <h1 className="mx-auto max-w-5xl text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-10">
+                    <h1 className="mx-auto max-w-5xl text-2xl xs:text-3xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-8 sm:mt-10">
                         Porušuje Váš web{" "}
                         <span className="neon-text">nový zákon EU</span>
                         {" "}o umělé inteligenci?
                     </h1>
 
                     {/* Subheadline */}
-                    <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
+                    <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-slate-400 leading-relaxed">
                         Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
                         Nestačí jen cookie lišta — zákon vyžaduje mnohem víc.
                     </p>
@@ -518,7 +518,7 @@ export default function HomePage() {
 
                     {/* CTA — Scanner Input */}
                     <div className="mx-auto mt-10 max-w-xl">
-                        <form className="flex gap-3" action="/scan" onSubmit={(e) => {
+                        <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
                             const form = e.currentTarget;
                             const input = form.querySelector('input[name="url"]') as HTMLInputElement;
                             let val = input.value.trim();
@@ -536,14 +536,14 @@ export default function HomePage() {
                                     placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
                                     focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
                             />
-                            <button type="submit" className="btn-primary whitespace-nowrap text-base px-8">
+                            <button type="submit" className="btn-primary whitespace-nowrap text-base px-8 w-full sm:w-auto">
                                 Skenovat ZDARMA
                             </button>
                         </form>
                         <p className="text-xs text-slate-500 mt-3 text-center">
                             Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
                         </p>
-                        <div className="mt-4 bg-white/[0.05] border border-white/[0.08] rounded-xl px-6 py-5">
+                        <div className="mt-4 bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5">
                             <div className="flex items-start gap-3">
                                 <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
@@ -566,8 +566,8 @@ export default function HomePage() {
             </section>
 
             {/* ══════ SOCIAL PROOF ══════ */}
-            <section className="border-t border-white/[0.06] py-16 sm:py-20">
-                <div className="mx-auto max-w-7xl px-6">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
                     {/* ── Stats counter row ── */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
@@ -595,10 +595,9 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ══════ PROČ BY VÁS TO MĚLO ZAJÍMAT ══════ */}
-            <section className="border-t border-white/[0.06] py-20">
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="text-center mb-12">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <div className="text-center mb-10 sm:mb-12">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
                             Proč by vás to mělo <span className="neon-text">zajímat</span>?
@@ -610,10 +609,10 @@ export default function HomePage() {
                     </div>
 
                     {/* First in CZ panel */}
-                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-8 text-center">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-4 py-1.5 mb-4">
-                            <svg className="w-4 h-4 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="text-sm font-semibold text-neon-fuchsia">My jsme průkopníci a lídři AI Act compliance v ČR</span>
+                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center">
+                        <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
+                            <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                            <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
                         </div>
                         <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
                         <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
@@ -629,9 +628,9 @@ export default function HomePage() {
             </section>
 
             {/* ══════ JAK TO FUNGUJE ══════ */}
-            <section className="border-t border-white/[0.06] py-20">
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="text-center mb-16">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <div className="text-center mb-12 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
                             Jak to <span className="neon-text">funguje</span>?
@@ -641,54 +640,54 @@ export default function HomePage() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                         {/* Krok 1 */}
-                        <div className="glass p-8 text-center relative">
+                        <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-sm font-bold">1</div>
-                            <div className="mt-4 mb-4 mx-auto w-16 h-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Sken vašeho webu</h3>
-                            <p className="text-sm text-slate-400">
+                            <h3 className="text-base sm:text-lg font-semibold mb-2">Sken vašeho webu</h3>
+                            <p className="text-xs sm:text-sm text-slate-400">
                                 Zadáte adresu webu. Náš robot ho proskenuje
                                 a najde všechny AI systémy — zcela zdarma.
                             </p>
                         </div>
 
                         {/* Krok 2 */}
-                        <div className="glass p-8 text-center relative">
+                        <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold">2</div>
-                            <div className="mt-4 mb-4 mx-auto w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-neon-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Vyberete si služby</h3>
-                            <p className="text-sm text-slate-400">
+                            <h3 className="text-base sm:text-lg font-semibold mb-2">Vyberete si služby</h3>
+                            <p className="text-xs sm:text-sm text-slate-400">
                                 Na základě výsledků si zvolíte, co potřebujete.
                                 Celý balíček nebo jen vybrané dokumenty.
                             </p>
                         </div>
 
                         {/* Krok 3 */}
-                        <div className="glass p-8 text-center relative">
+                        <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-sm font-bold">3</div>
-                            <div className="mt-4 mb-4 mx-auto w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Vyplníte dotazník</h3>
-                            <p className="text-sm text-slate-400">
+                            <h3 className="text-base sm:text-lg font-semibold mb-2">Vyplníte dotazník</h3>
+                            <p className="text-xs sm:text-sm text-slate-400">
                                 Krátký dotazník o vaší firmě — většinou jen klikáte.
                                 Díky tomu přípravu dokumentů přesně na míru.
                             </p>
                         </div>
 
                         {/* Krok 4 */}
-                        <div className="glass p-8 text-center relative">
+                        <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-sm font-bold">4</div>
-                            <div className="mt-4 mb-4 mx-auto w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Dostanete dokumenty</h3>
-                            <p className="text-sm text-slate-400">
+                            <h3 className="text-base sm:text-lg font-semibold mb-2">Dostanete dokumenty</h3>
+                            <p className="text-xs sm:text-sm text-slate-400">
                                 Během pár hodin obdržíte veškerou dokumentaci.
                                 Máte solidní základ pro soulad se zákonem.
                             </p>
@@ -697,10 +696,9 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ══════ CO DOSTANETE ══════ */}
-            <section className="border-t border-white/[0.06] py-20">
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="text-center mb-16">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
                             7 dokumentů v jednom <span className="neon-text">balíčku</span>
@@ -719,10 +717,9 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ══════ FAQ ══════ */}
-            <section className="border-t border-white/[0.06] py-20">
-                <div className="mx-auto max-w-3xl px-6">
-                    <div className="text-center mb-16">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-3xl px-4 sm:px-6">
+                    <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold">Časté otázky</h2>
                     </div>
@@ -741,9 +738,8 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ══════ KONTAKTNÍ FORMULÁŘ ══════ */}
-            <section className="border-t border-white/[0.06] py-20">
-                <div className="mx-auto max-w-3xl px-6">
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-3xl px-4 sm:px-6">
                     <div className="text-center mb-10">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -773,15 +769,14 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* ══════ FINAL CTA ══════ */}
-            <section className="border-t border-white/[0.06] py-24 relative overflow-hidden">
+            <section className="border-t border-white/[0.06] py-16 sm:py-24 relative overflow-hidden">
                 <div className="absolute inset-0 -z-10">
                     <div className="absolute top-[20%] left-[30%] h-[400px] w-[400px] rounded-full bg-fuchsia-600/8 blur-[100px]" />
                     <div className="absolute bottom-[20%] right-[30%] h-[300px] w-[300px] rounded-full bg-cyan-500/8 blur-[100px]" />
                 </div>
 
-                <div className="mx-auto max-w-3xl px-6 text-center">
-                    <h2 className="text-3xl font-extrabold sm:text-4xl">
+                <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold sm:text-4xl">
                         Nečekejte na pokutu.
                     </h2>
                     <p className="mt-4 text-lg text-slate-400">

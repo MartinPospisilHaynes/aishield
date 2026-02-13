@@ -126,7 +126,7 @@ export default function PricingPage() {
                 <div className="absolute bottom-[10%] right-[20%] h-[400px] w-[400px] rounded-full bg-cyan-500/5 blur-[120px]" />
             </div>
 
-            <div className="mx-auto max-w-7xl px-6">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 {/* Header */}
                 <div className="text-center max-w-2xl mx-auto">
                     <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 px-4 py-1.5 text-xs font-medium text-fuchsia-300 mb-6">
@@ -135,7 +135,7 @@ export default function PricingPage() {
                         </svg>
                         Transparentní ceny
                     </div>
-                    <h1 className="text-4xl font-extrabold tracking-tight">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                         Vyberte si svůj{" "}
                         <span className="neon-text">compliance balíček</span>
                     </h1>
@@ -157,7 +157,7 @@ export default function PricingPage() {
                     {plans.map((plan) => (
                         <div
                             key={plan.key}
-                            className={`relative rounded-2xl border p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
+                            className={`relative rounded-2xl border p-5 sm:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
                                 ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
                                 : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
                                 }`}

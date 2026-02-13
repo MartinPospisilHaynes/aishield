@@ -894,7 +894,7 @@ function QuestionnaireInner() {
                     <div className="flex justify-between items-center mt-6">
                         <button
                             onClick={goBack}
-                            className="px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1]"
+                            className="px-4 sm:px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1] text-sm sm:text-base"
                         >
                             ← Zpět
                         </button>
@@ -903,9 +903,9 @@ function QuestionnaireInner() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || !ans?.answer}
-                                className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse shadow-lg shadow-cyan-500/20"
+                                className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse shadow-lg shadow-cyan-500/20"
                             >
-                                {submitting ? "Odesílám…" : "🚀 Odeslat a zobrazit výsledky"}
+                                {submitting ? "Odesílám…" : "Odeslat"}
                             </button>
                         ) : ans?.answer ? (
                             <button

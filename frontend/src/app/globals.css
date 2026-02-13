@@ -129,4 +129,13 @@
         @apply mx-auto h-1 w-16 rounded-full;
         background: linear-gradient(90deg, #e879f9, #22d3ee);
     }
+
+    /* ── Scrollbar hide (for horizontal tab bars etc.) ── */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }

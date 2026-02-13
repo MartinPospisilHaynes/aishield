@@ -335,10 +335,10 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-2xl font-extrabold">Dashboard</h1>
-                        <p className="text-sm text-slate-400 mt-1">{companyName} — {data?.company?.url || ""}</p>
+                        <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {data?.company?.url || ""}</p>
                     </div>
-                    <div className="flex gap-3">
-                        <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-4 py-2 disabled:opacity-50">
+                    <div className="flex gap-2 sm:gap-3 flex-wrap">
+                        <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
                             {scanLoading ? "Skenuji..." : "Nový sken"}
                         </button>
                         {hasScans ? (
@@ -355,7 +355,7 @@ export default function DashboardPage() {
 
                 {/* ═══ INLINE SCAN PANEL ═══ */}
                 {scanActive && (
-                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-6 relative">
+                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.03] p-4 sm:p-6 relative">
                         {!scanLoading && (
                             <button onClick={closeScanPanel} className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -409,7 +409,7 @@ export default function DashboardPage() {
                                 {scanResult?.company_id && (
                                     <p className="text-xs text-slate-500 mb-3">Výsledky byly uloženy do vašeho profilu</p>
                                 )}
-                                <div className="flex gap-3 justify-center">
+                                <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
                                     <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
                                         Zobrazit nálezy
                                     </button>
@@ -463,7 +463,7 @@ export default function DashboardPage() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                             </span>
                         </div>
-                        <p className={`text-3xl font-extrabold mt-1 ${hasQuest ? "text-green-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
+                        <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-green-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
                             {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
                         </p>
                         {/* Progress bar */}
@@ -501,7 +501,7 @@ export default function DashboardPage() {
 
                 {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
                 {hasScans && hasQuest && findingsCount > 0 && (
-                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-6">
+                    <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-4 sm:p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
                                 <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -520,12 +520,12 @@ export default function DashboardPage() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6">
+                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 scrollbar-hide">
                     {TABS.map((tab) => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
-                            className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
+                            className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
                                 ? "text-fuchsia-400"
                                 : "text-slate-500 hover:text-slate-300"
                                 }`}
@@ -579,7 +579,7 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
                     {icon && <span className="text-slate-600">{icon}</span>}
                 </div>
             </div>
-            <p className={`text-3xl font-extrabold mt-1 ${color}`}>{value}</p>
+            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${color}`}>{value}</p>
             <p className="text-xs text-slate-500 mt-1">{sub}</p>
             {tooltip && showTip && (
                 <div className="absolute z-20 top-full left-0 right-0 mt-2 p-3 rounded-xl bg-slate-800 border border-white/[0.1] shadow-xl text-xs text-slate-300 leading-relaxed">
@@ -656,7 +656,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                         const isCurrent = i === currentStepIndex;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
-                                <div className={`flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold transition-all duration-300 ${step.done
+                                <div className={`flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 ${step.done
                                     ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
                                     : isCurrent
                                         ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
@@ -668,7 +668,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                         </svg>
                                     ) : (i + 1)}
                                 </div>
-                                <span className={`text-xs mt-2.5 font-medium text-center ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
+                                <span className={`text-[10px] sm:text-xs mt-1.5 sm:mt-2.5 font-medium text-center leading-tight ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
                                     {step.label}
                                 </span>
                             </div>
@@ -684,15 +684,15 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                             </span>
                             <h4 className="font-semibold text-fuchsia-300">{currentStep.label}</h4>
                         </div>
-                        <p className="text-sm text-slate-400 mb-4 ml-9">{currentStep.desc}</p>
+                        <p className="text-sm text-slate-400 mb-4 ml-0 sm:ml-9">{currentStep.desc}</p>
                         {currentStep.onClick ? (
-                            <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-9 inline-block disabled:opacity-50">
+                            <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-0 sm:ml-9 inline-block disabled:opacity-50">
                                 {currentStep.cta}
                             </button>
                         ) : currentStep.href && currentStep.href !== "#" ? (
-                            <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-9 inline-block">{currentStep.cta}</a>
+                            <a href={currentStep.href} className="btn-primary text-sm px-5 py-2 ml-0 sm:ml-9 inline-block">{currentStep.cta}</a>
                         ) : !currentStep.href ? (
-                            <span className="text-sm text-slate-500 ml-9 inline-block opacity-60">{currentStep.cta}</span>
+                            <span className="text-sm text-slate-500 ml-0 sm:ml-9 inline-block opacity-60">{currentStep.cta}</span>
                         ) : null}
                     </div>
                 )}
@@ -711,9 +711,9 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             {/* Processing timer */}
             {isProcessing && (
                 <div className="glass border-fuchsia-500/20">
-                    <div className="flex items-center gap-5">
-                        <div className="relative flex-shrink-0 h-16 w-16">
-                            <svg className="w-16 h-16 animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 64 64" fill="none">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
+                        <div className="relative flex-shrink-0 h-12 w-12 sm:h-16 sm:w-16">
+                            <svg className="w-12 h-12 sm:w-16 sm:h-16 animate-spin" style={{ animationDuration: "3s" }} viewBox="0 0 64 64" fill="none">
                                 <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="3" className="text-white/[0.06]" />
                                 <circle cx="32" cy="32" r="28" stroke="url(#proc-grad)" strokeWidth="3" strokeLinecap="round" strokeDasharray="80 96" />
                                 <defs><linearGradient id="proc-grad" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stopColor="#d946ef" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
@@ -740,12 +740,12 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                     <h3 className="font-semibold mb-4">Objednávky</h3>
                     <div className="space-y-2">
                         {data.orders.map((order) => (
-                            <div key={order.order_number} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm hover:border-white/[0.12] transition-all">
+                            <div key={order.order_number} className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm hover:border-white/[0.12] transition-all gap-2">
                                 <div>
                                     <span className="text-slate-300 font-medium">{order.order_number}</span>
                                     <span className="text-slate-500 ml-2">({order.plan.toUpperCase()})</span>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                                     <span className="text-slate-400">{new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč</span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
                                         ? "bg-green-500/10 text-green-400"
@@ -816,10 +816,10 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                     <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
                         <button
                             onClick={() => setExpanded(prev => ({...prev, [f.name]: !prev[f.name]}))}
-                            className="w-full p-5 text-left flex items-start justify-between gap-4"
+                            className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3 sm:gap-4"
                         >
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-1">
+                                <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
                                     <h4 className="font-semibold text-slate-200">{f.name}</h4>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                         {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
@@ -841,7 +841,7 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                                     <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
                                     <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
                                 </div>
-                                <div className="flex items-center gap-4 text-xs text-slate-500 mt-3">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
                                     <span>Kategorie: {f.category}</span>
                                     <span>AI Act: {f.ai_act_article}</span>
                                 </div>
@@ -876,8 +876,8 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {documents.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-center gap-4 hover:border-white/[0.12] transition-all">
-                    <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
+                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-white/[0.12] transition-all">
+                    <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
                         <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
@@ -973,7 +973,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                     <div
                         key={f.id}
                         onClick={() => toggleResolved(f.id)}
-                        className={`flex items-start gap-4 rounded-xl border px-5 py-4 cursor-pointer transition-all hover:border-white/[0.15] ${isResolved
+                        className={`flex items-start gap-3 sm:gap-4 rounded-xl border px-3 sm:px-5 py-3 sm:py-4 cursor-pointer transition-all hover:border-white/[0.15] ${isResolved
                             ? "border-green-500/10 bg-green-500/[0.03] opacity-60"
                             : "border-white/[0.06] bg-white/[0.02]"
                             }`}
@@ -1029,7 +1029,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
     return (
         <div className="space-y-3">
             {scans.map((scan, i) => (
-                <div key={scan.id} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 hover:border-white/[0.12] transition-all">
+                <div key={scan.id} className="flex items-center gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4 hover:border-white/[0.12] transition-all">
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
                             ? "bg-green-500"
@@ -1040,7 +1040,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                         {i < scans.length - 1 && <div className="w-px h-8 bg-white/[0.06]" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                             <p className="text-sm font-medium text-slate-200 truncate">{scan.url}</p>
                             <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${scan.status === "completed"
                                 ? "bg-green-500/10 text-green-400"
@@ -1051,7 +1051,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                                 {scan.status === "completed" ? "Dokončen" : scan.status === "running" ? "Probíhá" : scan.status}
                             </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
+                        <div className="flex items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-1 flex-wrap">
                             <span>{new Date(scan.created_at).toLocaleDateString("cs-CZ", {
                                 day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
                             })}</span>
