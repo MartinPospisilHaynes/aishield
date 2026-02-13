@@ -207,7 +207,7 @@ const FAQ_ITEMS = [
 ];
 
 /* ─── Expandable panel component ─── */
-function DeliverableCard({ item, index }: { item: (typeof DELIVERABLES)[0]; index: number }) {
+function DeliverableCard({ item }: { item: (typeof DELIVERABLES)[0] }) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -216,13 +216,12 @@ function DeliverableCard({ item, index }: { item: (typeof DELIVERABLES)[0]; inde
             onClick={() => setOpen(!open)}
         >
             <div className="flex items-center gap-4 px-5 py-4">
-                <span className="text-xs font-bold text-slate-600 tabular-nums w-5 text-right flex-shrink-0">{index + 1}.</span>
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                     {item.icon}
                 </div>
                 <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-slate-200">{item.name}</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+                    <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
                 </div>
                 <svg
                     className={`w-4 h-4 text-slate-500 transition-transform duration-300 flex-shrink-0 ${open ? "rotate-180" : ""}`}
@@ -526,7 +525,7 @@ export default function HomePage() {
                                         <p className="text-sm font-semibold text-slate-200">{item.title}</p>
                                         <ul className="mt-1.5 space-y-1">
                                             {item.bullets.map((b, j) => (
-                                                <li key={j} className="flex items-start gap-1.5 text-xs text-slate-500 leading-relaxed">
+                                                <li key={j} className="flex items-start gap-1.5 text-xs text-slate-400 leading-relaxed">
                                                     <span className="text-slate-600 mt-1 flex-shrink-0">•</span>
                                                     {b}
                                                 </li>
@@ -612,7 +611,7 @@ export default function HomePage() {
                     {/* ── Testimonials carousel ── */}
                     <div className="text-center mb-8">
                         <div className="neon-divider mb-6" />
-                        <h3 className="text-2xl font-bold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h3>
+                        <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
                     </div>
                     <TestimonialCarousel />
                 </div>
@@ -734,7 +733,7 @@ export default function HomePage() {
 
                     <div className="mx-auto max-w-2xl space-y-2">
                         {DELIVERABLES.map((item, i) => (
-                            <DeliverableCard key={i} item={item} index={i} />
+                            <DeliverableCard key={i} item={item} />
                         ))}
                     </div>
                 </div>
@@ -744,7 +743,7 @@ export default function HomePage() {
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
                     <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold">Časté otázky</h2>
+                        <h2 className="text-3xl font-extrabold sm:text-4xl">Časté otázky</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -799,10 +798,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold sm:text-4xl">
+                    <h2 className="text-3xl font-extrabold sm:text-4xl">
                         Nečekejte na pokutu.
                     </h2>
-                    <p className="mt-4 text-lg text-slate-400">
+                    <p className="mt-4 text-slate-400">
                         Zjistěte stav vašeho webu teď — skenování je <strong className="text-white">zdarma</strong> a trvá méně než minutu.
                     </p>
                     <div className="mt-8 flex justify-center">
@@ -813,7 +812,7 @@ export default function HomePage() {
 
                     {/* Bottom countdown */}
                     <div className="mt-12">
-                        <p className="text-xs font-medium uppercase tracking-wider text-red-400/70 mb-3">
+                        <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-3">
                             Do plné účinnosti AI Act zbývá
                         </p>
                         <Countdown className="" />
