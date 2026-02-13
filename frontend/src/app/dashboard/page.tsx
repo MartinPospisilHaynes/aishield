@@ -15,6 +15,9 @@ import {
 } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 
+type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "ucet";
+
+
 /* ── Scan progress stages ── */
 const SCAN_STAGES = [
     { label: "Připojování k webu", desc: "Otevíráme váš web v bezpečném prohlížeči" },
@@ -27,6 +30,40 @@ const SCAN_STAGES = [
     { label: "AI klasifikace nálezů", desc: "Umělá inteligence vyhodnocuje a ověřuje každý nález" },
     { label: "Vyhodnocení rizik dle AI Act", desc: "Klasifikujeme rizika podle kategorií EU AI Act" },
     { label: "Příprava vašeho reportu", desc: "Generujeme kompletní compliance report" },
+];
+
+
+const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    {
+        key: "prehled",
+        label: "Přehled",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>),
+    },
+    {
+        key: "findings",
+        label: "AI systémy",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>),
+    },
+    {
+        key: "dokumenty",
+        label: "Dokumenty",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>),
+    },
+    {
+        key: "plan",
+        label: "Kroky ke splnění",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>),
+    },
+    {
+        key: "skeny",
+        label: "Historie skenů",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>),
+    },
+    {
+        key: "ucet",
+        label: "Můj účet",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>),
+    },
 ];
 
 
@@ -98,7 +135,7 @@ export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    const [activeTab, setActiveTab] = useState<Tab>("prehled");
 
     // ── Questionnaire progress ──
     const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
@@ -383,7 +420,7 @@ export default function DashboardPage() {
                                     <p className="text-xs text-slate-500 mb-3">Výsledky byly uloženy do vašeho profilu</p>
                                 )}
                                 <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
-                                    <button onClick={() => { closeScanPanel(); document.getElementById('sec-findings')?.scrollIntoView({behavior:'smooth'}); }} className="btn-secondary text-sm px-4 py-2">
+                                    <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
                                         Zobrazit nálezy
                                     </button>
                                     {hasScans && (
@@ -537,20 +574,40 @@ export default function DashboardPage() {
                                 <p className="text-xs text-slate-400">Na základě skenu — {findingsCount} kroků, vše vyřídíme za vás</p>
                             </div>
                         </div>
-                        <button onClick={() => document.getElementById('sec-plan')?.scrollIntoView({behavior:'smooth'})} className="btn-primary text-sm px-5 py-2">
+                        <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
                             Zobrazit kroky
                         </button>
                     </div>
                 )}
 
-                {/* ═══ ALL SECTIONS ═══ */}
-                <div className="space-y-10">
-                    <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />
-                    <div id="sec-findings"><TabFindings findings={data?.findings || []} onStartScan={handleStartScan} /></div>
-                    <TabDokumenty documents={data?.documents || []} />
-                    <div id="sec-plan"><TabPlan findings={data?.findings || []} onStartScan={handleStartScan} /></div>
-                    <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />
-                    <TabUcet user={user} data={data} />
+                {/* Tabs */}
+                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 scrollbar-hide">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
+                                ? "text-fuchsia-400"
+                                : "text-slate-500 hover:text-slate-300"
+                                }`}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                            {activeTab === tab.key && (
+                                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 rounded-full" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab content */}
+                <div className="min-h-[400px]">
+                    {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
+                    {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
+                    {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
+                    {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
+                    {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
+                    {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                 </div>
             </div>
         </section>
