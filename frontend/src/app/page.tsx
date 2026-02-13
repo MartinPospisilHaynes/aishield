@@ -793,7 +793,7 @@ export default function HomePage() {
                         <p className="text-xs font-medium uppercase tracking-wider text-red-400/70 mb-3">
                             Do plné účinnosti AI Act zbývá
                         </p>
-                        <Countdown className="scale-[0.85] sm:scale-100" />
+                        <Countdown className="" />
                     </div>
                 </div>
             </section>

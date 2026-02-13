@@ -36,12 +36,12 @@ function calcTimeLeft(): TimeLeft {
 function CountdownUnit({ value, label }: { value: number; label: string }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="relative w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm flex items-center justify-center">
-                <span className="text-lg xs:text-xl sm:text-3xl font-bold tabular-nums text-white">
+            <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm flex items-center justify-center">
+                <span className="text-xl sm:text-3xl font-bold tabular-nums text-white">
                     {String(value).padStart(2, "0")}
                 </span>
             </div>
-            <span className="mt-1.5 sm:mt-2 text-[9px] xs:text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-500">
                 {label}
             </span>
         </div>
@@ -50,9 +50,46 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 
 function Separator() {
     return (
-        <div className="flex flex-col items-center justify-center pb-5 sm:pb-6">
-            <span className="text-base sm:text-2xl font-bold text-slate-600">:</span>
+        <div className="hidden sm:flex flex-col items-center justify-center pb-6">
+            <span className="text-2xl font-bold text-slate-600">:</span>
         </div>
+    );
+}
+
+const labels: (keyof TimeLeft)[] = ["months", "weeks", "days", "hours", "minutes", "seconds"];
+const labelsCz: Record<keyof TimeLeft, string> = {
+    months: "Měsíce",
+    weeks: "Týdny",
+    days: "Dny",
+    hours: "Hodiny",
+    minutes: "Minuty",
+    seconds: "Sekundy",
+};
+
+function CountdownInner({ time, className }: { time: TimeLeft; className: string }) {
+    return (
+        <>
+            {/* Mobile: 3-column grid, no separators */}
+            <div className={`grid grid-cols-3 gap-3 sm:hidden ${className}`}>
+                {labels.map((key) => (
+                    <CountdownUnit key={key} value={time[key]} label={labelsCz[key]} />
+                ))}
+            </div>
+            {/* Desktop: row with separators */}
+            <div className={`hidden sm:flex items-center justify-center gap-2 ${className}`}>
+                <CountdownUnit value={time.months} label="Měsíce" />
+                <Separator />
+                <CountdownUnit value={time.weeks} label="Týdny" />
+                <Separator />
+                <CountdownUnit value={time.days} label="Dny" />
+                <Separator />
+                <CountdownUnit value={time.hours} label="Hodiny" />
+                <Separator />
+                <CountdownUnit value={time.minutes} label="Minuty" />
+                <Separator />
+                <CountdownUnit value={time.seconds} label="Sekundy" />
+            </div>
+        </>
     );
 }
 
@@ -66,30 +103,7 @@ export default function Countdown({ className = "" }: { className?: string }) {
         return () => clearInterval(id);
     }, []);
 
-    if (!mounted) {
-        // SSR placeholder — avoid hydration mismatch
-        return (
-            <div className={`flex flex-wrap items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 ${className}`}>
-                {["Měsíce", "Týdny", "Dny", "Hodiny", "Minuty", "Sekundy"].map((label) => (
-                    <CountdownUnit key={label} value={0} label={label} />
-                ))}
-            </div>
-        );
-    }
+    const zeroTime: TimeLeft = { months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-    return (
-        <div className={`flex flex-wrap items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 ${className}`}>
-            <CountdownUnit value={time.months} label="Měsíce" />
-            <Separator />
-            <CountdownUnit value={time.weeks} label="Týdny" />
-            <Separator />
-            <CountdownUnit value={time.days} label="Dny" />
-            <Separator />
-            <CountdownUnit value={time.hours} label="Hodiny" />
-            <Separator />
-            <CountdownUnit value={time.minutes} label="Minuty" />
-            <Separator />
-            <CountdownUnit value={time.seconds} label="Sekundy" />
-        </div>
-    );
+    return <CountdownInner time={mounted ? time : zeroTime} className={className} />;
 }
