@@ -23,6 +23,7 @@ import {
     generateAgencyEmail,
     getClientManagement,
     triggerClientRescan,
+    getBusinessOverview,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -35,6 +36,8 @@ import type {
     ClientManagementData,
     ManagedClient,
     RescanResult,
+    BusinessOverview,
+    DetailedOrder,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -319,6 +322,9 @@ export default function AdminPage() {
     const [batchResult, setBatchResult] = useState<string | null>(null);
     const [emailPreview, setEmailPreview] = useState<{ subject: string; body: string } | null>(null);
 
+    // Business overview
+    const [bizOverview, setBizOverview] = useState<BusinessOverview | null>(null);
+
     // Client management
     const [clientData, setClientData] = useState<ClientManagementData | null>(null);
     const [clientSearch, setClientSearch] = useState("");
@@ -347,14 +353,16 @@ export default function AdminPage() {
 
     const loadDashboard = useCallback(async () => {
         try {
-            const [crm, admin, h] = await Promise.all([
+            const [crm, admin, h, biz] = await Promise.all([
                 getCrmDashboardStats().catch(() => null),
                 getAdminStats().catch(() => null),
                 getEmailHealth().catch(() => null),
+                getBusinessOverview().catch(() => null),
             ]);
             if (crm) setCrmStats(crm);
             if (admin) setAdminStats(admin);
             if (h) setHealth(h);
+            if (biz) setBizOverview(biz);
         } catch {
             // silent
         }
@@ -563,8 +571,8 @@ export default function AdminPage() {
                             key={item.id}
                             onClick={() => setTab(item.id)}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === item.id
-                                    ? "bg-gradient-to-r from-cyan-500/20 to-fuchsia-500/20 text-white border border-cyan-500/30"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                ? "bg-gradient-to-r from-cyan-500/20 to-fuchsia-500/20 text-white border border-cyan-500/30"
+                                : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }`}
                         >
                             <span className="text-lg">{item.icon}</span>
@@ -653,60 +661,288 @@ export default function AdminPage() {
                     {/* ══════════════════════════════════════════ */}
                     {tab === "prehled" && (
                         <>
-                            {/* KPI Cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-                                <StatCard
-                                    icon="🏭"
-                                    label="Firmy celkem"
-                                    value={fmtNum(crmStats?.companies?.total ?? adminStats?.companies_total ?? 0)}
-                                    accent="cyan"
-                                />
-                                <StatCard
-                                    icon="✅"
-                                    label="Naskenováno"
-                                    value={fmtNum(adminStats?.companies_scanned ?? crmStats?.scans?.total ?? 0)}
-                                    accent="green"
-                                />
-                                <StatCard
-                                    icon="📧"
-                                    label="Emaily dnes"
-                                    value={fmtNum(crmStats?.emails?.today ?? adminStats?.emails_today ?? 0)}
-                                    accent="fuchsia"
-                                />
-                                <StatCard
-                                    icon="📬"
-                                    label="Emaily celkem"
-                                    value={fmtNum(crmStats?.emails?.total ?? adminStats?.emails_total ?? 0)}
-                                    accent="cyan"
-                                />
-                                <StatCard
-                                    icon="👁️"
-                                    label="Open rate"
-                                    value={fmtPct(crmStats?.emails?.open_rate ?? health?.open_rate ?? 0)}
-                                    accent="green"
-                                />
-                                <StatCard
-                                    icon="🔍"
-                                    label="Skeny tento týden"
-                                    value={fmtNum(crmStats?.scans?.this_week ?? 0)}
-                                    accent="yellow"
-                                />
-                                <StatCard
-                                    icon="💰"
-                                    label="Objednávky / Revenue"
-                                    value={fmtMoney(crmStats?.orders?.paid_amount ?? 0)}
-                                    sub={`${crmStats?.orders?.total ?? adminStats?.orders_paid ?? 0} objednávek`}
-                                    accent="green"
-                                />
-                                <StatCard
-                                    icon="📝"
-                                    label="Dotazníky"
-                                    value={fmtNum(crmStats?.questionnaires?.total ?? 0)}
-                                    accent="fuchsia"
-                                />
+                            {/* ═══ SEKCE 1: HLAVNÍ KPI ═══ */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
+                                <StatCard icon="💰" label="Revenue celkem" value={fmtMoney(bizOverview?.revenue?.total ?? crmStats?.orders?.paid_amount ?? 0)} accent="green" />
+                                <StatCard icon="📈" label="Revenue tento měsíc" value={fmtMoney(bizOverview?.revenue?.this_month ?? 0)} accent="green" />
+                                <StatCard icon="🛒" label="Objednávky" value={`${bizOverview?.orders?.breakdown?.paid ?? 0} / ${bizOverview?.orders?.breakdown?.total ?? crmStats?.orders?.total ?? 0}`} sub="zaplaceno / celkem" accent="cyan" />
+                                <StatCard icon="🔁" label="Předplatné (MRR)" value={fmtMoney(bizOverview?.subscriptions?.monthly_recurring_revenue ?? 0)} sub={`${bizOverview?.subscriptions?.active ?? 0} aktivních`} accent="fuchsia" />
+                                <StatCard icon="✅" label="Doručeno" value={fmtNum(bizOverview?.fulfillment?.delivered ?? 0)} accent="green" />
+                                <StatCard icon="🚨" label="Po deadline" value={fmtNum(bizOverview?.fulfillment?.overdue ?? 0)} accent="red" />
                             </div>
 
-                            {/* Needing attention */}
+                            {/* ═══ SEKCE 2: REVENUE GRAF ═══ */}
+                            {bizOverview?.revenue?.chart && bizOverview.revenue.chart.length > 0 && (
+                                <Panel className="p-6">
+                                    <h2 className="text-lg font-semibold text-green-400 mb-4">📊 Revenue (časový graf)</h2>
+                                    <div className="h-48 flex items-end gap-1">
+                                        {(() => {
+                                            const chart = bizOverview.revenue.chart;
+                                            const maxVal = Math.max(...chart.map(c => c.amount), 1);
+                                            return chart.map((point, i) => (
+                                                <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                                        {fmtMoney(point.amount)} — {point.date}
+                                                    </div>
+                                                    <div
+                                                        className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:from-green-500 hover:to-green-300"
+                                                        style={{ height: `${Math.max((point.amount / maxVal) * 100, 4)}%`, minHeight: "4px" }}
+                                                    />
+                                                    {i % Math.max(1, Math.floor(chart.length / 8)) === 0 && (
+                                                        <span className="text-[9px] text-gray-500 -rotate-45 origin-top-left mt-1">{point.date.slice(5)}</span>
+                                                    )}
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                    <div className="flex justify-between mt-4 text-sm">
+                                        <span className="text-gray-400">🟢 Zaplaceno: <strong className="text-green-400">{fmtMoney(bizOverview.revenue.total)}</strong></span>
+                                        <span className="text-gray-400">🟡 Čeká na platbu: <strong className="text-yellow-400">{fmtMoney(bizOverview.revenue.pending)}</strong></span>
+                                        <span className="text-gray-400">🔴 Refundováno: <strong className="text-red-400">{fmtMoney(bizOverview.revenue.refunded)}</strong></span>
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* ═══ SEKCE 3: KONVERZNÍ FUNNEL ═══ */}
+                            {bizOverview?.funnel && (
+                                <Panel className="p-6">
+                                    <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🎯 Konverzní funnel</h2>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: "🏭 Firmy v databázi", count: bizOverview.funnel.total_companies, color: "gray" },
+                                            { label: "🔍 Naskenovano", count: bizOverview.funnel.scanned, color: "blue" },
+                                            { label: "📝 Dotazník vyplněn", count: bizOverview.funnel.questionnaire_filled, color: "purple" },
+                                            { label: "🛒 Objednáno", count: bizOverview.funnel.ordered, color: "yellow" },
+                                            { label: "💳 Zaplaceno", count: bizOverview.funnel.paid, color: "green" },
+                                            { label: "📦 Doku. doručeny", count: bizOverview.funnel.documents_delivered, color: "cyan" },
+                                        ].map(step => (
+                                            <FunnelBar key={step.label} label={step.label} count={step.count} total={bizOverview.funnel.total_companies || 1} color={step.color} />
+                                        ))}
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* ═══ SEKCE 4: FULFILLMENT & DEADLINE TRACKER ═══ */}
+                            {bizOverview?.orders?.detailed && (() => {
+                                const paidOrders = bizOverview.orders.detailed.filter((o: DetailedOrder) => o.fulfillment !== "not_paid");
+                                const overdue = paidOrders.filter((o: DetailedOrder) => o.deadline_status === "overdue");
+                                const warning = paidOrders.filter((o: DetailedOrder) => o.deadline_status === "warning");
+                                const pending = paidOrders.filter((o: DetailedOrder) => o.fulfillment === "pending" && o.deadline_status === "ok");
+                                const urgentOrders = [...overdue, ...warning, ...pending].slice(0, 20);
+                                return urgentOrders.length > 0 ? (
+                                    <Panel className="p-6">
+                                        <h2 className="text-lg font-semibold text-orange-400 mb-2">⏰ Plnění & Deadliny</h2>
+                                        <p className="text-xs text-gray-500 mb-4">Objednávky, které ještě nebyly plně doručeny (SLA: 7 pracovních dnů od platby)</p>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="text-left text-gray-500 border-b border-white/10">
+                                                        <th className="pb-2">Zákazník</th>
+                                                        <th className="pb-2">Balíček</th>
+                                                        <th className="pb-2">Částka</th>
+                                                        <th className="pb-2">Zaplaceno</th>
+                                                        <th className="pb-2">Dnů od platby</th>
+                                                        <th className="pb-2">Zbývá</th>
+                                                        <th className="pb-2">Stav</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {urgentOrders.map((o: DetailedOrder) => (
+                                                        <tr key={o.id} className={`${o.deadline_status === "overdue" ? "bg-red-500/5" : o.deadline_status === "warning" ? "bg-yellow-500/5" : ""}`}>
+                                                            <td className="py-2">
+                                                                <div className="text-white font-medium">{o.company_name || o.email}</div>
+                                                                <div className="text-xs text-gray-500">{o.email}</div>
+                                                            </td>
+                                                            <td className="py-2">
+                                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${o.plan === "enterprise" ? "bg-purple-500/20 text-purple-400" : o.plan === "pro" ? "bg-cyan-500/20 text-cyan-400" : "bg-blue-500/20 text-blue-400"}`}>
+                                                                    {(o.plan || "").toUpperCase()}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-2 text-green-400 font-medium">{fmtMoney(o.amount)}</td>
+                                                            <td className="py-2 text-gray-300">{o.paid_at ? fmtDate(o.paid_at) : "—"}</td>
+                                                            <td className="py-2 text-gray-300">{o.days_since_payment}d</td>
+                                                            <td className="py-2">
+                                                                {o.days_remaining !== null ? (
+                                                                    <span className={`font-bold ${o.deadline_status === "overdue" ? "text-red-400" : o.deadline_status === "warning" ? "text-yellow-400" : "text-green-400"}`}>
+                                                                        {o.deadline_status === "overdue" ? `❗ ${Math.abs(o.days_remaining || 0)}d po DL` : `${o.days_remaining}d`}
+                                                                    </span>
+                                                                ) : <span className="text-gray-500">—</span>}
+                                                            </td>
+                                                            <td className="py-2">
+                                                                {o.fulfillment === "delivered" ? <span className="text-green-400">✅ Doručeno</span>
+                                                                    : o.fulfillment === "subscription" ? <span className="text-cyan-400">🔁 Předplatné</span>
+                                                                    : <span className="text-yellow-400">⏳ Čeká ({o.docs_count}/7 doc{o.has_scan ? ", sken ✅" : ", sken ❌"})</span>}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </Panel>
+                                ) : null;
+                            })()}
+
+                            {/* ═══ SEKCE 5: OBJEDNÁVKY PO BALÍČCÍCH (donut) ═══ */}
+                            {bizOverview?.orders?.by_plan && (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <Panel className="p-6">
+                                        <h2 className="text-lg font-semibold text-cyan-400 mb-4">📦 Objednávky podle balíčků</h2>
+                                        <div className="space-y-3">
+                                            {Object.entries(bizOverview.orders.by_plan).map(([plan, data]) => (
+                                                <div key={plan} className="flex items-center justify-between p-3 bg-black/20 rounded-xl">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${plan === "enterprise" ? "bg-purple-500/20 text-purple-400" : plan === "pro" ? "bg-cyan-500/20 text-cyan-400" : plan.includes("monitoring") ? "bg-orange-500/20 text-orange-400" : "bg-blue-500/20 text-blue-400"}`}>
+                                                            {plan.toUpperCase()}
+                                                        </span>
+                                                        <span className="text-gray-400 text-sm">{data.count}x objednáno, {data.paid}x zaplaceno</span>
+                                                    </div>
+                                                    <span className="text-green-400 font-bold">{fmtMoney(data.revenue)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Panel>
+
+                                    <Panel className="p-6">
+                                        <h2 className="text-lg font-semibold text-cyan-400 mb-4">💳 Podle typu platby</h2>
+                                        <div className="space-y-3">
+                                            {Object.entries(bizOverview.orders.by_type).map(([type, data]) => (
+                                                <div key={type} className="flex items-center justify-between p-3 bg-black/20 rounded-xl">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-lg">{type === "one_time" ? "🛒" : type === "subscription" ? "🔁" : "💵"}</span>
+                                                        <span className="text-white font-medium">{type === "one_time" ? "Jednorázové" : type === "subscription" ? "Předplatné" : type === "subscription_recurrence" ? "Opakovaná platba" : type}</span>
+                                                        <span className="text-gray-500 text-sm">{data.count}x, {data.paid}x paid</span>
+                                                    </div>
+                                                    <span className="text-green-400 font-bold">{fmtMoney(data.revenue)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Panel>
+                                </div>
+                            )}
+
+                            {/* ═══ SEKCE 6: OUTREACH STATISTIKY ═══ */}
+                            {bizOverview?.outreach && (
+                                <Panel className="p-6">
+                                    <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">📡 Outreach (email kampaně)</h2>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 mb-4">
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-white">{fmtNum(bizOverview.outreach.total_in_database)}</div>
+                                            <div className="text-xs text-gray-500">Firem v DB</div>
+                                        </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-fuchsia-400">{fmtNum(bizOverview.outreach.emailed)}</div>
+                                            <div className="text-xs text-gray-500">Osloveno</div>
+                                        </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-cyan-400">{fmtNum(bizOverview.outreach.emails_sent_total)}</div>
+                                            <div className="text-xs text-gray-500">Emailů odesláno</div>
+                                        </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-green-400">{fmtNum(bizOverview.outreach.emails_delivered)}</div>
+                                            <div className="text-xs text-gray-500">Doručeno</div>
+                                        </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-yellow-400">{fmtNum(bizOverview.outreach.emails_opened)}</div>
+                                            <div className="text-xs text-gray-500">Otevřeno ({(bizOverview.outreach.open_rate * 100).toFixed(1)}%)</div>
+                                        </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-orange-400">{fmtNum(bizOverview.outreach.emails_clicked)}</div>
+                                            <div className="text-xs text-gray-500">Proklik ({(bizOverview.outreach.click_rate * 100).toFixed(1)}%)</div>
+                                        </div>
+                                    </div>
+                                    {/* Outreach funnel bar */}
+                                    <div className="space-y-2">
+                                        {[
+                                            { label: "Osloveno emailem", val: bizOverview.outreach.emailed, color: "fuchsia" },
+                                            { label: "Email doručen", val: bizOverview.outreach.emails_delivered, color: "cyan" },
+                                            { label: "Email otevřen", val: bizOverview.outreach.emails_opened, color: "yellow" },
+                                            { label: "Proklik na web", val: bizOverview.outreach.emails_clicked, color: "orange" },
+                                        ].map(s => (
+                                            <FunnelBar key={s.label} label={s.label} count={s.val} total={bizOverview.outreach.emailed || 1} color={s.color} />
+                                        ))}
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* ═══ SEKCE 7: SKENY ═══ */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {bizOverview?.scans && (
+                                    <Panel className="p-6">
+                                        <h2 className="text-lg font-semibold text-yellow-400 mb-4">🔍 Skeny</h2>
+                                        <div className="grid grid-cols-3 gap-4 mb-4">
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-white">{fmtNum(bizOverview.scans.total)}</div>
+                                                <div className="text-xs text-gray-500">Celkem</div>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-green-400">{fmtNum(bizOverview.scans.done)}</div>
+                                                <div className="text-xs text-gray-500">Hotovo</div>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-red-400">{fmtNum(bizOverview.scans.error)}</div>
+                                                <div className="text-xs text-gray-500">Chyby</div>
+                                            </div>
+                                        </div>
+                                        {Object.entries(bizOverview.scans.by_trigger).length > 0 && (
+                                            <div className="space-y-2">
+                                                <div className="text-xs text-gray-500 uppercase tracking-wider">Podle zdroje</div>
+                                                {Object.entries(bizOverview.scans.by_trigger).map(([trigger, count]) => (
+                                                    <div key={trigger} className="flex justify-between text-sm">
+                                                        <span className="text-gray-300">{trigger}</span>
+                                                        <span className="text-white font-medium">{count}x</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </Panel>
+                                )}
+
+                                {/* Subscription detail */}
+                                {bizOverview?.subscriptions && (
+                                    <Panel className="p-6">
+                                        <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🔁 Předplatné (Monitoring)</h2>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-green-400">{bizOverview.subscriptions.active}</div>
+                                                <div className="text-xs text-gray-500">Aktivní</div>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-red-400">{bizOverview.subscriptions.cancelled}</div>
+                                                <div className="text-xs text-gray-500">Zrušeno</div>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-cyan-400">{fmtMoney(bizOverview.subscriptions.monthly_recurring_revenue)}</div>
+                                                <div className="text-xs text-gray-500">MRR (měsíční příjem)</div>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-3 text-center">
+                                                <div className="text-2xl font-bold text-green-400">{fmtMoney(bizOverview.subscriptions.total_charged)}</div>
+                                                <div className="text-xs text-gray-500">Celkem inkasováno</div>
+                                            </div>
+                                        </div>
+                                    </Panel>
+                                )}
+                            </div>
+
+                            {/* ═══ SEKCE 8: POSLEDNÍ UDÁLOSTI ═══ */}
+                            {bizOverview?.recent_events && bizOverview.recent_events.length > 0 && (
+                                <Panel className="p-6">
+                                    <h2 className="text-lg font-semibold text-cyan-400 mb-4">📝 Poslední události</h2>
+                                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                                        {bizOverview.recent_events.map((ev, i) => (
+                                            <div key={i} className={`flex items-center gap-3 p-3 rounded-xl ${ev.status === "PAID" ? "bg-green-500/5 border border-green-500/10" : ev.status === "active" ? "bg-cyan-500/5 border border-cyan-500/10" : "bg-black/20"}`}>
+                                                <span className="text-lg">{ev.type === "order" ? "🛒" : "🔁"}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-sm text-white font-medium">{ev.email}</span>
+                                                    <span className="text-xs text-gray-400 ml-2">{ev.detail}</span>
+                                                </div>
+                                                <span className="text-xs text-gray-500 whitespace-nowrap">{fmtDateTime(ev.date)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* ═══ SEKCE 9: POTŘEBUJE POZORNOST ═══ */}
                             {crmStats?.needing_attention && crmStats.needing_attention.length > 0 && (
                                 <Panel className="p-6">
                                     <h2 className="text-lg font-semibold text-red-400 mb-4">
@@ -716,8 +952,7 @@ export default function AdminPage() {
                                         {crmStats.needing_attention.map((c: CompanyBrief) => (
                                             <div
                                                 key={c.id}
-                                                onClick={() => (window.location.href = `/admin/company/${c.id}`)}
-                                                className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/10 rounded-xl cursor-pointer hover:bg-red-500/10 transition-all"
+                                                className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/10 rounded-xl hover:bg-red-500/10 transition-all"
                                             >
                                                 <div>
                                                     <span className="font-medium text-white">{c.name}</span>
@@ -725,52 +960,8 @@ export default function AdminPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <StatusBadge status={c.workflow_status} map={WORKFLOW_STATUSES} />
-                                                    {c.next_action && (
-                                                        <span className="text-xs text-yellow-400">📌 {c.next_action}</span>
-                                                    )}
-                                                    {c.next_action_at && (
-                                                        <span className="text-xs text-red-400">
-                                                            ⏰ {fmtDate(c.next_action_at)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </Panel>
-                            )}
-
-                            {/* Recent activity */}
-                            {crmStats?.recent_activity && crmStats.recent_activity.length > 0 && (
-                                <Panel className="p-6">
-                                    <h2 className="text-lg font-semibold text-cyan-400 mb-4">📋 Poslední aktivita</h2>
-                                    <div className="space-y-3">
-                                        {crmStats.recent_activity.slice(0, 15).map((a: Activity) => (
-                                            <div
-                                                key={a.id}
-                                                className="flex items-start gap-3 p-3 bg-black/20 rounded-xl"
-                                            >
-                                                <div className="text-lg mt-0.5">
-                                                    {a.activity_type === "email_sent"
-                                                        ? "📧"
-                                                        : a.activity_type === "scan"
-                                                            ? "🔍"
-                                                            : a.activity_type === "status_change"
-                                                                ? "🔄"
-                                                                : a.activity_type === "note"
-                                                                    ? "📝"
-                                                                    : "•"}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-medium text-white truncate">{a.title}</div>
-                                                    {a.description && (
-                                                        <div className="text-xs text-gray-400 mt-0.5 truncate">
-                                                            {a.description}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="text-xs text-gray-500 whitespace-nowrap">
-                                                    {fmtDateTime(a.created_at)}
+                                                    {c.next_action && <span className="text-xs text-yellow-400">📌 {c.next_action}</span>}
+                                                    {c.next_action_at && <span className="text-xs text-red-400">⏰ {fmtDate(c.next_action_at)}</span>}
                                                 </div>
                                             </div>
                                         ))}
@@ -936,10 +1127,10 @@ export default function AdminPage() {
                                                                 {(c as any).lead_score != null ? (
                                                                     <span
                                                                         className={`font-mono text-sm font-bold ${(c as any).lead_score >= 80
-                                                                                ? "text-green-400"
-                                                                                : (c as any).lead_score >= 50
-                                                                                    ? "text-yellow-400"
-                                                                                    : "text-gray-400"
+                                                                            ? "text-green-400"
+                                                                            : (c as any).lead_score >= 50
+                                                                                ? "text-yellow-400"
+                                                                                : "text-gray-400"
                                                                             }`}
                                                                     >
                                                                         {(c as any).lead_score}
@@ -1073,14 +1264,14 @@ export default function AdminPage() {
                                         </h2>
                                         <span
                                             className={`px-3 py-1 rounded-full text-xs font-medium border ${health.mode === "stopped"
-                                                    ? "bg-red-500/20 text-red-400 border-red-500/30"
-                                                    : health.mode === "braking"
-                                                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                                                        : health.mode === "accelerating"
-                                                            ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                                            : health.mode === "startup"
-                                                                ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
-                                                                : "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                                ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                                : health.mode === "braking"
+                                                    ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                                    : health.mode === "accelerating"
+                                                        ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                                        : health.mode === "startup"
+                                                            ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
+                                                            : "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
                                                 }`}
                                         >
                                             {health.mode === "stopped"
@@ -1105,8 +1296,8 @@ export default function AdminPage() {
                                                     className="bg-cyan-500 h-1.5 rounded-full"
                                                     style={{
                                                         width: `${health.daily_limit > 0
-                                                                ? Math.min(100, (health.sent_today / health.daily_limit) * 100)
-                                                                : 0
+                                                            ? Math.min(100, (health.sent_today / health.daily_limit) * 100)
+                                                            : 0
                                                             }%`,
                                                     }}
                                                 />
@@ -1116,10 +1307,10 @@ export default function AdminPage() {
                                             <div className="text-xs text-gray-400">Bounce rate (7d)</div>
                                             <div
                                                 className={`text-xl font-bold ${health.bounce_rate * 100 > 5
-                                                        ? "text-red-400"
-                                                        : health.bounce_rate * 100 > 2
-                                                            ? "text-yellow-400"
-                                                            : "text-green-400"
+                                                    ? "text-red-400"
+                                                    : health.bounce_rate * 100 > 2
+                                                        ? "text-yellow-400"
+                                                        : "text-green-400"
                                                     }`}
                                             >
                                                 {(health.bounce_rate * 100).toFixed(1)}%
@@ -1132,10 +1323,10 @@ export default function AdminPage() {
                                             <div className="text-xs text-gray-400">Spam rate (7d)</div>
                                             <div
                                                 className={`text-xl font-bold ${health.complaint_rate * 100 > 0.1
-                                                        ? "text-red-400"
-                                                        : health.complaint_rate * 100 > 0.05
-                                                            ? "text-yellow-400"
-                                                            : "text-green-400"
+                                                    ? "text-red-400"
+                                                    : health.complaint_rate * 100 > 0.05
+                                                        ? "text-yellow-400"
+                                                        : "text-green-400"
                                                     }`}
                                             >
                                                 {(health.complaint_rate * 100).toFixed(2)}%
@@ -1146,10 +1337,10 @@ export default function AdminPage() {
                                             <div className="text-xs text-gray-400">Open rate (7d)</div>
                                             <div
                                                 className={`text-xl font-bold ${health.open_rate * 100 > 20
-                                                        ? "text-green-400"
-                                                        : health.open_rate * 100 > 10
-                                                            ? "text-cyan-400"
-                                                            : "text-gray-400"
+                                                    ? "text-green-400"
+                                                    : health.open_rate * 100 > 10
+                                                        ? "text-cyan-400"
+                                                        : "text-gray-400"
                                                     }`}
                                             >
                                                 {(health.open_rate * 100).toFixed(0)}%
@@ -1184,12 +1375,12 @@ export default function AdminPage() {
                                                 <div
                                                     key={i}
                                                     className={`text-xs rounded-lg px-3 py-2 ${w.includes("STOP") || w.includes("KRITICKÉ")
-                                                            ? "text-red-400 bg-red-500/10 border border-red-500/20"
-                                                            : w.includes("⚠️")
-                                                                ? "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20"
-                                                                : w.includes("🚀")
-                                                                    ? "text-green-400 bg-green-500/10 border border-green-500/20"
-                                                                    : "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20"
+                                                        ? "text-red-400 bg-red-500/10 border border-red-500/20"
+                                                        : w.includes("⚠️")
+                                                            ? "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20"
+                                                            : w.includes("🚀")
+                                                                ? "text-green-400 bg-green-500/10 border border-green-500/20"
+                                                                : "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20"
                                                         }`}
                                                 >
                                                     {w}
@@ -1246,16 +1437,16 @@ export default function AdminPage() {
                                                         <td className="p-3">
                                                             <span
                                                                 className={`px-2 py-0.5 rounded text-xs ${e.status === "sent"
-                                                                        ? "bg-green-500/20 text-green-400"
-                                                                        : e.status === "opened"
-                                                                            ? "bg-cyan-500/20 text-cyan-400"
-                                                                            : e.status === "clicked"
-                                                                                ? "bg-fuchsia-500/20 text-fuchsia-400"
-                                                                                : e.status === "bounced"
-                                                                                    ? "bg-red-500/20 text-red-400"
-                                                                                    : e.status === "dry_run"
-                                                                                        ? "bg-yellow-500/20 text-yellow-400"
-                                                                                        : "bg-gray-500/20 text-gray-400"
+                                                                    ? "bg-green-500/20 text-green-400"
+                                                                    : e.status === "opened"
+                                                                        ? "bg-cyan-500/20 text-cyan-400"
+                                                                        : e.status === "clicked"
+                                                                            ? "bg-fuchsia-500/20 text-fuchsia-400"
+                                                                            : e.status === "bounced"
+                                                                                ? "bg-red-500/20 text-red-400"
+                                                                                : e.status === "dry_run"
+                                                                                    ? "bg-yellow-500/20 text-yellow-400"
+                                                                                    : "bg-gray-500/20 text-gray-400"
                                                                     }`}
                                                             >
                                                                 {e.status}
@@ -1287,8 +1478,8 @@ export default function AdminPage() {
                                             onClick={() => handleRunTask(task.name)}
                                             disabled={runningTask !== null}
                                             className={`p-4 rounded-xl border text-left transition-all ${runningTask === task.name
-                                                    ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
-                                                    : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
+                                                ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
+                                                : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
                                                 }`}
                                         >
                                             <div className="font-medium text-white">{task.label}</div>
@@ -1331,10 +1522,10 @@ export default function AdminPage() {
                                                     <td className="p-3">
                                                         <span
                                                             className={`px-2 py-0.5 rounded text-xs ${log.status === "completed"
-                                                                    ? "bg-green-500/20 text-green-400"
-                                                                    : log.status === "running"
-                                                                        ? "bg-cyan-500/20 text-cyan-400"
-                                                                        : "bg-red-500/20 text-red-400"
+                                                                ? "bg-green-500/20 text-green-400"
+                                                                : log.status === "running"
+                                                                    ? "bg-cyan-500/20 text-cyan-400"
+                                                                    : "bg-red-500/20 text-red-400"
                                                                 }`}
                                                         >
                                                             {log.status}
@@ -1462,12 +1653,12 @@ export default function AdminPage() {
                                                         <td className="p-3">
                                                             <span
                                                                 className={`px-2 py-0.5 rounded text-xs ${a.severity === "critical"
-                                                                        ? "bg-red-500/20 text-red-400"
-                                                                        : a.severity === "high"
-                                                                            ? "bg-orange-500/20 text-orange-400"
-                                                                            : a.severity === "medium"
-                                                                                ? "bg-yellow-500/20 text-yellow-400"
-                                                                                : "bg-cyan-500/20 text-cyan-400"
+                                                                    ? "bg-red-500/20 text-red-400"
+                                                                    : a.severity === "high"
+                                                                        ? "bg-orange-500/20 text-orange-400"
+                                                                        : a.severity === "medium"
+                                                                            ? "bg-yellow-500/20 text-yellow-400"
+                                                                            : "bg-cyan-500/20 text-cyan-400"
                                                                     }`}
                                                             >
                                                                 {a.severity}
@@ -1801,11 +1992,10 @@ export default function AdminPage() {
                                             <button
                                                 key={f}
                                                 onClick={() => setClientFilter(f)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                    clientFilter === f
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${clientFilter === f
                                                         ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                                                         : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
                                                 {labels[f]}
                                             </button>
@@ -1897,11 +2087,10 @@ export default function AdminPage() {
                                                                 <div className="flex items-center gap-2 mb-0.5">
                                                                     <span className="font-medium text-white truncate">{client.company_name}</span>
                                                                     {client.plan && (
-                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                                                            client.plan === "enterprise" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
-                                                                            client.plan === "pro" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
-                                                                            "bg-green-500/20 text-green-400 border border-green-500/30"
-                                                                        }`}>
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${client.plan === "enterprise" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
+                                                                                client.plan === "pro" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
+                                                                                    "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                                            }`}>
                                                                             {client.plan}
                                                                         </span>
                                                                     )}
@@ -1999,11 +2188,10 @@ export default function AdminPage() {
                                                                     }
                                                                 }}
                                                                 disabled={rescanning === client.email || !client.company_url}
-                                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                                                                    rescanning === client.email
+                                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${rescanning === client.email
                                                                         ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 animate-pulse cursor-wait"
                                                                         : "bg-white/5 text-gray-400 border border-white/10 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/10"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {rescanning === client.email ? "⏳ Skenuji…" : "🔄 Rescan"}
                                                             </button>
@@ -2073,9 +2261,8 @@ export default function AdminPage() {
                                                                                 </div>
                                                                                 <div className="flex justify-between">
                                                                                     <span className="text-gray-400">Další platba</span>
-                                                                                    <span className={`font-medium ${
-                                                                                        client.subscription.payment_ok ? "text-cyan-400" : "text-red-400"
-                                                                                    }`}>
+                                                                                    <span className={`font-medium ${client.subscription.payment_ok ? "text-cyan-400" : "text-red-400"
+                                                                                        }`}>
                                                                                         {fmtDate(client.subscription.next_charge_at)}
                                                                                     </span>
                                                                                 </div>

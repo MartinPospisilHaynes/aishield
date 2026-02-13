@@ -215,7 +215,7 @@ export default function TermsPage() {
                             <p>
                                 5.1. Po zaplacení a vyplnění dotazníku Poskytovatel zpracuje
                                 a zpřístupní compliance dokumentaci v uživatelském dashboardu,
-                                zpravidla do 48 hodin.
+                                zpravidla do 7 pracovních dnů.
                             </p>
                             <p>
                                 5.2. Dokumentace je generována na základě informací

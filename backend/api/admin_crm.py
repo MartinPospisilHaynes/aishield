@@ -1101,3 +1101,369 @@ async def crm_client_rescan(
         "documents_regenerated": docs_regenerated,
         "email_sent": email_sent,
     }
+
+
+# ─────────────────────────────────────────────
+# 10. GET /crm/business-overview — Complete business overview for admin dashboard
+# ─────────────────────────────────────────────
+
+@router.get("/crm/business-overview")
+async def crm_business_overview(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Kompletní obchodní přehled — VŠECHNO co admin potřebuje vědět na jednom místě:
+    - Revenue timeline (denní) pro graf
+    - Konverzní funnel (sken → dotazník → objednávka → platba → dokumenty)
+    - Všechny objednávky s detaily (platební metoda, stav, stáří)
+    - Fulfillment tracking s deadliny
+    - Outreach statistiky (osloveno, reagovalo, koupilo)
+    - Subscription přehled
+    """
+    await _check_admin_rate_limit(request)
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    now = datetime.now(timezone.utc)
+
+    # ── 1. All orders ──
+    orders = []
+    try:
+        res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
+        orders = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview orders: {e}")
+
+    # ── 2. All subscriptions ──
+    subscriptions = []
+    try:
+        res = supabase.table("subscriptions").select("*").order("created_at", desc=True).execute()
+        subscriptions = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview subscriptions: {e}")
+
+    # ── 3. All scans ──
+    scans = []
+    try:
+        res = supabase.table("scans").select("id,company_id,url_scanned,status,triggered_by,started_at,finished_at,total_findings,created_at").order("created_at", desc=True).limit(500).execute()
+        scans = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview scans: {e}")
+
+    # ── 4. All companies ──
+    companies = []
+    try:
+        res = supabase.table("companies").select("id,name,url,email,scan_status,workflow_status,payment_status,emails_sent,last_email_at,last_scanned_at,created_at,source").order("created_at", desc=True).execute()
+        companies = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview companies: {e}")
+
+    # ── 5. All documents ──
+    documents = []
+    try:
+        res = supabase.table("documents").select("id,company_id,created_at").execute()
+        documents = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview documents: {e}")
+
+    # ── 6. Questionnaire responses ──
+    questionnaires = []
+    try:
+        res = supabase.table("questionnaire_responses").select("id,client_id,company_id,created_at").execute()
+        questionnaires = res.data or []
+    except Exception as e:
+        logger.error(f"business-overview questionnaires: {e}")
+
+    # ── 7. Email log for outreach stats ──
+    email_stats = {"total": 0, "delivered": 0, "opened": 0, "clicked": 0, "bounced": 0}
+    try:
+        res = supabase.table("email_log").select("id,status,to_email,sent_at").execute()
+        email_log = res.data or []
+        email_stats["total"] = len(email_log)
+        unique_emails = set()
+        for e_entry in email_log:
+            st = e_entry.get("status", "")
+            unique_emails.add(e_entry.get("to_email"))
+            if st == "delivered":
+                email_stats["delivered"] += 1
+            elif st == "opened":
+                email_stats["opened"] += 1
+            elif st == "clicked":
+                email_stats["clicked"] += 1
+            elif st == "bounced":
+                email_stats["bounced"] += 1
+        email_stats["unique_recipients"] = len(unique_emails)
+    except Exception as e:
+        logger.error(f"business-overview email_log: {e}")
+
+    # ── COMPUTED METRICS ──
+
+    # Revenue timeline (daily, last 90 days)
+    revenue_timeline = {}
+    for o in orders:
+        if o.get("status") == "PAID" and o.get("paid_at"):
+            try:
+                day = o["paid_at"][:10]  # YYYY-MM-DD
+                revenue_timeline[day] = revenue_timeline.get(day, 0) + (o.get("amount") or 0)
+            except Exception:
+                pass
+
+    # Sort timeline
+    sorted_timeline = sorted(revenue_timeline.items(), key=lambda x: x[0])
+    revenue_chart = [{"date": d, "amount": a} for d, a in sorted_timeline[-90:]]
+
+    # Revenue summary
+    total_revenue = sum(o.get("amount", 0) for o in orders if o.get("status") == "PAID")
+    pending_revenue = sum(o.get("amount", 0) for o in orders if o.get("status") in ("CREATED", "PAYMENT_METHOD_CHOSEN", "AUTHORIZED"))
+    refunded_revenue = sum(o.get("refund_amount", 0) or o.get("amount", 0) for o in orders if o.get("status") in ("REFUNDED", "PARTIALLY_REFUNDED"))
+
+    # Revenue this month
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    revenue_this_month = sum(
+        o.get("amount", 0) for o in orders
+        if o.get("status") == "PAID" and (o.get("paid_at") or "") >= month_start
+    )
+
+    # Orders breakdown
+    order_breakdown = {
+        "total": len(orders),
+        "paid": len([o for o in orders if o.get("status") == "PAID"]),
+        "pending": len([o for o in orders if o.get("status") in ("CREATED", "PAYMENT_METHOD_CHOSEN", "AUTHORIZED")]),
+        "canceled": len([o for o in orders if o.get("status") in ("CANCELED", "TIMEOUTED")]),
+        "refunded": len([o for o in orders if o.get("status") in ("REFUNDED", "PARTIALLY_REFUNDED")]),
+    }
+
+    # Orders by plan
+    plan_breakdown = {}
+    for o in orders:
+        plan = o.get("plan", "unknown")
+        if plan not in plan_breakdown:
+            plan_breakdown[plan] = {"count": 0, "paid": 0, "revenue": 0}
+        plan_breakdown[plan]["count"] += 1
+        if o.get("status") == "PAID":
+            plan_breakdown[plan]["paid"] += 1
+            plan_breakdown[plan]["revenue"] += o.get("amount", 0)
+
+    # Orders by type (one_time vs subscription)
+    type_breakdown = {}
+    for o in orders:
+        ot = o.get("order_type", "one_time")
+        if ot not in type_breakdown:
+            type_breakdown[ot] = {"count": 0, "paid": 0, "revenue": 0}
+        type_breakdown[ot]["count"] += 1
+        if o.get("status") == "PAID":
+            type_breakdown[ot]["paid"] += 1
+            type_breakdown[ot]["revenue"] += o.get("amount", 0)
+
+    # Subscription summary
+    active_subs = [s for s in subscriptions if s.get("status") == "active"]
+    sub_summary = {
+        "total": len(subscriptions),
+        "active": len(active_subs),
+        "cancelled": len([s for s in subscriptions if s.get("status") == "cancelled"]),
+        "monthly_recurring_revenue": sum(s.get("amount", 0) for s in active_subs),
+        "total_charged": sum(s.get("total_charged", 0) for s in subscriptions),
+    }
+
+    # Conversion funnel
+    total_companies = len(companies)
+    scanned_companies = len([c for c in companies if c.get("scan_status") == "scanned"])
+    companies_with_questionnaire = len(set(q.get("company_id") for q in questionnaires if q.get("company_id")))
+    companies_with_orders = len(set(o.get("email") for o in orders))
+    companies_paid = len(set(o.get("email") for o in orders if o.get("status") == "PAID"))
+    companies_with_docs = len(set(d.get("company_id") for d in documents if d.get("company_id")))
+
+    funnel = {
+        "total_companies": total_companies,
+        "scanned": scanned_companies,
+        "questionnaire_filled": companies_with_questionnaire,
+        "ordered": companies_with_orders,
+        "paid": companies_paid,
+        "documents_delivered": companies_with_docs,
+    }
+
+    # Fulfillment tracking — for each paid order, check delivery status
+    # Build company lookup
+    company_by_id = {c["id"]: c for c in companies if c.get("id")}
+    company_by_email = {}
+    for c in companies:
+        if c.get("email"):
+            company_by_email[c["email"].lower()] = c
+
+    doc_by_company = {}
+    for d in documents:
+        cid = d.get("company_id")
+        if cid:
+            if cid not in doc_by_company:
+                doc_by_company[cid] = []
+            doc_by_company[cid].append(d)
+
+    scan_by_company = {}
+    for s in scans:
+        cid = s.get("company_id")
+        if cid and cid not in scan_by_company:
+            scan_by_company[cid] = s  # latest scan (already sorted desc)
+
+    # Detailed orders list with fulfillment
+    DELIVERY_DEADLINE_DAYS = 5  # 5 working days ~ 7 calendar days
+    detailed_orders = []
+    for o in orders:
+        email = (o.get("email") or o.get("user_email") or "").lower()
+        company = company_by_email.get(email)
+        company_id = company["id"] if company else None
+        company_name = company.get("name", "") if company else ""
+
+        # Calculate days since order
+        created = o.get("created_at", "")
+        days_since_order = 0
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                days_since_order = (now - created_dt).days
+            except Exception:
+                pass
+
+        # Paid date
+        paid_at = o.get("paid_at")
+        days_since_payment = 0
+        if paid_at:
+            try:
+                paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
+                days_since_payment = (now - paid_dt).days
+            except Exception:
+                pass
+
+        # Fulfillment status
+        has_scan = company_id in scan_by_company if company_id else False
+        has_docs = company_id in doc_by_company if company_id else False
+        docs_count = len(doc_by_company.get(company_id, [])) if company_id else 0
+
+        if o.get("status") != "PAID":
+            fulfillment = "not_paid"
+            deadline_status = "n/a"
+            days_remaining = None
+        elif has_docs and docs_count >= 7:
+            fulfillment = "delivered"
+            deadline_status = "ok"
+            days_remaining = None
+        elif o.get("order_type") in ("subscription", "subscription_recurrence"):
+            fulfillment = "subscription"
+            deadline_status = "ok"
+            days_remaining = None
+        else:
+            fulfillment = "pending"
+            days_remaining = max(0, DELIVERY_DEADLINE_DAYS - days_since_payment)
+            deadline_status = "ok" if days_remaining > 1 else ("warning" if days_remaining > 0 else "overdue")
+
+        detailed_orders.append({
+            "id": o.get("id"),
+            "order_number": o.get("order_number"),
+            "plan": o.get("plan"),
+            "amount": o.get("amount"),
+            "email": email,
+            "company_name": company_name,
+            "status": o.get("status"),
+            "order_type": o.get("order_type", "one_time"),
+            "gopay_payment_id": o.get("gopay_payment_id"),
+            "created_at": created,
+            "paid_at": paid_at,
+            "days_since_order": days_since_order,
+            "days_since_payment": days_since_payment,
+            "fulfillment": fulfillment,
+            "deadline_status": deadline_status,
+            "days_remaining": days_remaining,
+            "docs_count": docs_count,
+            "has_scan": has_scan,
+            "refund_amount": o.get("refund_amount"),
+            "refunded_at": o.get("refunded_at"),
+        })
+
+    # Fulfillment summary
+    fulfillment_summary = {
+        "delivered": len([o for o in detailed_orders if o["fulfillment"] == "delivered"]),
+        "pending": len([o for o in detailed_orders if o["fulfillment"] == "pending"]),
+        "overdue": len([o for o in detailed_orders if o["deadline_status"] == "overdue"]),
+        "warning": len([o for o in detailed_orders if o["deadline_status"] == "warning"]),
+        "not_paid": len([o for o in detailed_orders if o["fulfillment"] == "not_paid"]),
+    }
+
+    # Outreach funnel (companies from email campaigns)
+    emailed_companies = set()
+    for c in companies:
+        if (c.get("emails_sent") or 0) > 0:
+            emailed_companies.add(c.get("id"))
+
+    outreach = {
+        "total_in_database": total_companies,
+        "emailed": len(emailed_companies),
+        "emails_sent_total": email_stats["total"],
+        "emails_delivered": email_stats["delivered"],
+        "emails_opened": email_stats["opened"],
+        "emails_clicked": email_stats["clicked"],
+        "emails_bounced": email_stats["bounced"],
+        "unique_recipients": email_stats.get("unique_recipients", 0),
+        "registered_from_outreach": 0,  # TODO: track source=outreach on registration
+        "purchased_from_outreach": 0,   # TODO: track conversion source
+        "open_rate": round(email_stats["opened"] / max(email_stats["delivered"], 1), 3),
+        "click_rate": round(email_stats["clicked"] / max(email_stats["opened"], 1), 3),
+    }
+
+    # Scans summary
+    scan_summary = {
+        "total": len(scans),
+        "done": len([s for s in scans if s.get("status") == "done"]),
+        "error": len([s for s in scans if s.get("status") == "error"]),
+        "by_trigger": {},
+    }
+    for s in scans:
+        trigger = s.get("triggered_by", "unknown")
+        scan_summary["by_trigger"][trigger] = scan_summary["by_trigger"].get(trigger, 0) + 1
+
+    # Recent activity (last 20 orders + subscriptions merged, sorted by date)
+    recent_events = []
+    for o in orders[:20]:
+        recent_events.append({
+            "type": "order",
+            "date": o.get("created_at"),
+            "email": o.get("email") or o.get("user_email"),
+            "detail": f"{o.get('plan', '?')} — {o.get('status', '?')} — {fmtAmount(o.get('amount', 0))}",
+            "status": o.get("status"),
+        })
+    for s in subscriptions[:10]:
+        recent_events.append({
+            "type": "subscription",
+            "date": s.get("created_at"),
+            "email": s.get("email"),
+            "detail": f"{s.get('plan', '?')} — {s.get('status', '?')} — {s.get('amount', 0)} Kč/měsíc",
+            "status": s.get("status"),
+        })
+    recent_events.sort(key=lambda x: x.get("date") or "", reverse=True)
+
+    return {
+        "generated_at": now.isoformat(),
+        "revenue": {
+            "total": total_revenue,
+            "pending": pending_revenue,
+            "refunded": refunded_revenue,
+            "this_month": revenue_this_month,
+            "chart": revenue_chart,
+        },
+        "orders": {
+            "breakdown": order_breakdown,
+            "by_plan": plan_breakdown,
+            "by_type": type_breakdown,
+            "detailed": detailed_orders,
+        },
+        "subscriptions": sub_summary,
+        "funnel": funnel,
+        "fulfillment": fulfillment_summary,
+        "outreach": outreach,
+        "scans": scan_summary,
+        "recent_events": recent_events[:30],
+    }
+
+
+def fmtAmount(amount: int | float) -> str:
+    """Format amount for display."""
+    return f"{int(amount):,} Kč".replace(",", " ")

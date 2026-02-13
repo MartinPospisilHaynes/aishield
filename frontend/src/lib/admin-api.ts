@@ -389,3 +389,131 @@ export async function triggerClientRescan(email: string): Promise<RescanResult> 
     }
     return res.json();
 }
+
+// ── Business Overview Types ──
+
+export interface RevenueChart {
+    date: string;
+    amount: number;
+}
+
+export interface OrderBreakdown {
+    total: number;
+    paid: number;
+    pending: number;
+    canceled: number;
+    refunded: number;
+}
+
+export interface PlanBreakdown {
+    [plan: string]: { count: number; paid: number; revenue: number };
+}
+
+export interface DetailedOrder {
+    id: string;
+    order_number: string;
+    plan: string;
+    amount: number;
+    email: string;
+    company_name: string;
+    status: string;
+    order_type: string;
+    gopay_payment_id: string;
+    created_at: string;
+    paid_at: string | null;
+    days_since_order: number;
+    days_since_payment: number;
+    fulfillment: "delivered" | "pending" | "not_paid" | "subscription";
+    deadline_status: "ok" | "warning" | "overdue" | "n/a";
+    days_remaining: number | null;
+    docs_count: number;
+    has_scan: boolean;
+    refund_amount: number | null;
+    refunded_at: string | null;
+}
+
+export interface FulfillmentSummary {
+    delivered: number;
+    pending: number;
+    overdue: number;
+    warning: number;
+    not_paid: number;
+}
+
+export interface ConversionFunnel {
+    total_companies: number;
+    scanned: number;
+    questionnaire_filled: number;
+    ordered: number;
+    paid: number;
+    documents_delivered: number;
+}
+
+export interface OutreachStats {
+    total_in_database: number;
+    emailed: number;
+    emails_sent_total: number;
+    emails_delivered: number;
+    emails_opened: number;
+    emails_clicked: number;
+    emails_bounced: number;
+    unique_recipients: number;
+    registered_from_outreach: number;
+    purchased_from_outreach: number;
+    open_rate: number;
+    click_rate: number;
+}
+
+export interface SubscriptionSummary {
+    total: number;
+    active: number;
+    cancelled: number;
+    monthly_recurring_revenue: number;
+    total_charged: number;
+}
+
+export interface ScanSummary {
+    total: number;
+    done: number;
+    error: number;
+    by_trigger: Record<string, number>;
+}
+
+export interface RecentEvent {
+    type: "order" | "subscription";
+    date: string;
+    email: string;
+    detail: string;
+    status: string;
+}
+
+export interface BusinessOverview {
+    generated_at: string;
+    revenue: {
+        total: number;
+        pending: number;
+        refunded: number;
+        this_month: number;
+        chart: RevenueChart[];
+    };
+    orders: {
+        breakdown: OrderBreakdown;
+        by_plan: PlanBreakdown;
+        by_type: PlanBreakdown;
+        detailed: DetailedOrder[];
+    };
+    subscriptions: SubscriptionSummary;
+    funnel: ConversionFunnel;
+    fulfillment: FulfillmentSummary;
+    outreach: OutreachStats;
+    scans: ScanSummary;
+    recent_events: RecentEvent[];
+}
+
+// ── Business Overview API ──
+
+export async function getBusinessOverview(): Promise<BusinessOverview> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/business-overview`);
+    if (!res.ok) throw new Error("Nepodařilo se načíst obchodní přehled");
+    return res.json();
+}
