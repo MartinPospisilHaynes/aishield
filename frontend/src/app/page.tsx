@@ -743,7 +743,7 @@ export default function HomePage() {
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
                     <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">Časté otázky</h2>
+                        <h2 className="text-3xl font-extrabold sm:text-4xl">Časté <span className="neon-text">otázky</span></h2>
                     </div>
 
                     <div className="space-y-4">
