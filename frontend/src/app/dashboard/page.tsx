@@ -80,7 +80,14 @@ const TEMPLATE_NAMES: Record<string, string> = {
 const RISK_COLORS: Record<string, string> = {
     high: "bg-red-500/20 text-red-400 border border-red-500/30",
     medium: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-    low: "bg-green-500/20 text-green-400 border border-green-500/30",
+    low: "bg-amber-500/15 text-amber-300 border border-amber-400/25",
+};
+
+/* ── Obligation labels per risk level (marketing-oriented, not calming) ── */
+const OBLIGATION_LABEL: Record<string, string> = {
+    high: "Čl. 6 + 9 — plná regulace",
+    medium: "Čl. 50 + 9 — dokumentace",
+    low: "Čl. 50 — povinná transparence",
 };
 
 /* ── Layman-friendly AI system explanations ── */
@@ -481,11 +488,11 @@ export default function DashboardPage() {
                                     </svg>
                                 </div>
                             </div>
-                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-cyan-400' : 'text-slate-500'}`}>
+                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
                                 {uniqueSystemsCount}
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">
-                                {highRisk > 0 ? `${highRisk} vysoké riziko · pouze ze skenu webu` : uniqueSystemsCount > 0 ? 'Klikněte pro zobrazení registru' : 'Sken zatím nebyl proveden'}
+                            <p className="text-xs text-amber-400/80 mt-1 font-medium">
+                                {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} nesplněných povinností dle AI Actu` : 'Sken zatím nebyl proveden'}
                             </p>
                         </button>
                         {aiCardOpen && uniqueSystemsCount > 0 && (
@@ -499,7 +506,7 @@ export default function DashboardPage() {
                                                 <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
                                             </div>
                                             <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                {f.risk_level === 'high' ? 'Vysoké riziko' : f.risk_level === 'medium' ? 'Střední riziko' : 'Nízké riziko'}
+                                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
                                             </span>
                                         </div>
                                     ))}
@@ -876,7 +883,7 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                                 <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
                                     <h4 className="font-semibold text-slate-200">{f.name}</h4>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                        {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
+                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
                                     </span>
                                     {f.count > 1 && (
                                         <span className="text-xs text-slate-500">{f.count}x nalezeno</span>
@@ -1048,7 +1055,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                             <p className="text-xs text-slate-500 mt-0.5">{f.name} · {f.ai_act_article}</p>
                             <div className="flex items-center gap-3 mt-1.5">
                                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                    {f.risk_level === "high" ? "Vysoké riziko" : f.risk_level === "medium" ? "Střední riziko" : "Nízké riziko"}
+                                    {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
                                 </span>
                                 <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
                             </div>
