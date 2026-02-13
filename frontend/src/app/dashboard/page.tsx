@@ -871,7 +871,7 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
 
             {grouped.map((f) => {
                 const isExpanded = expanded[f.name] || false;
-                const explanation = AI_SYSTEM_EXPLANATIONS[f.name] || `AI systém nalezený na vašem webu \u2013 může vyžadovat posouzení dle EU AI Act.`;
+                const explanation = AI_SYSTEM_EXPLANATIONS[f.name] || `AI systém nalezený na vašem webu \u2013 doporučujeme tento nález zahrnout do analýzy a compliance dokumentace, abyste měli jistotu souladu s EU AI Act.`;
 
                 return (
                     <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
