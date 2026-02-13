@@ -499,7 +499,7 @@ export default function DashboardPage() {
                                                 <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
                                             </div>
                                             <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                {f.risk_level === 'high' ? 'Vysoké' : f.risk_level === 'medium' ? 'Střední' : 'Nízké'}
+                                                {f.risk_level === 'high' ? 'Vysoké riziko' : f.risk_level === 'medium' ? 'Střední riziko' : 'Nízké riziko'}
                                             </span>
                                         </div>
                                     ))}
@@ -1048,7 +1048,7 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
                             <p className="text-xs text-slate-500 mt-0.5">{f.name} · {f.ai_act_article}</p>
                             <div className="flex items-center gap-3 mt-1.5">
                                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                    {f.risk_level === "high" ? "Vysoká priorita" : f.risk_level === "medium" ? "Střední" : "Nízká"}
+                                    {f.risk_level === "high" ? "Vysoké riziko" : f.risk_level === "medium" ? "Střední riziko" : "Nízké riziko"}
                                 </span>
                                 <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
                             </div>
