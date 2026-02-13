@@ -16,7 +16,7 @@ const plans = [
             "Sken webu + AI Act report",
             "AI Act Compliance Kit (7 PDF)",
             "Transparenční stránka (HTML)",
-            "Akční plán s checkboxy",
+            "Kroky ke splnění s checkboxy",
             "Registr AI systémů",
             "Interní AI Policy",
             "Osnova školení (čl. 4)",
@@ -362,7 +362,7 @@ export default function PricingPage() {
                             },
                             {
                                 q: "Co dostanu po zaplacení?",
-                                a: "Okamžitě po platbě se vám odemkne Dashboard, kde najdete všech 7 compliance dokumentů v PDF, akční plán a transparenční stránku."
+                                a: "Okamžitě po platbě se vám odemkne Dashboard, kde najdete všech 7 compliance dokumentů v PDF — report, registr, transparenční stránku, oznámení, AI politiku, školení i záznamový list."
                             },
                             {
                                 q: "Proč potřebuji měsíční monitoring?",

@@ -53,40 +53,27 @@ const DELIVERABLES = [
     {
         icon: ICONS.report,
         name: "Compliance Report",
-        desc: "Kompletní přehled stavu vašeho webu",
+        desc: "Přehled stavu webu a vašich povinností",
         detail: null,
         bullets: [
-            "Přehled všech AI systémů nalezených na vašem webu (chatboty, analytika, doporučovací systémy)",
-            "U každého systému konkrétní povinnosti dle AI Actu — včetně článku zákona",
-            "Odkaz na konkrétní článek AI Actu, který se vás týká — v srozumitelné češtině",
-            "Celkové hodnocení: jak na tom váš web je a co musíte udělat jako první",
-            "Žádný právnický žargon — dokument pochopí i naprostý laik",
-        ],
-    },
-    {
-        icon: ICONS.plan,
-        name: "Akční plán",
-        desc: "Co udělat a do kdy — krok za krokem",
-        detail: null,
-        bullets: [
-            "Konkrétní seznam kroků, které musíte udělat — jako nákupní seznam",
-            "U každého kroku jasný termín, do kdy to musí být hotové",
-            "Seřazeno podle priority — co je nejdůležitější, to je nahoře",
-            "Můžete si odškrtávat splněné body — máte přehled o postupu",
-            "Obsahuje i kroky, které za vás může udělat váš webař nebo IT technik",
+            "Přehled všech AI systémů nalezených na vašem webu — chatboty, analytika, doporučovací systémy",
+            "Ke každému systému konkrétní povinnosti dle AI Actu s odkazem na příslušný článek",
+            "Celkové hodnocení stavu a jasné doporučení, co řešit jako první",
+            "Srozumitelná čeština — bez právnického žargonu, pochopí i laik",
+            "V PDF ke stažení i tisku — připraveno k předložení při kontrole",
         ],
     },
     {
         icon: ICONS.registry,
         name: "Registr AI systémů",
-        desc: "Evidence AI nástrojů pro úřady",
+        desc: "Povinná evidence pro případ kontroly",
         detail: null,
         bullets: [
             "Kompletní tabulka všech AI nástrojů, které ve firmě používáte",
-            "U každého nástroje: název, co dělá, kdo ho používá a proč",
-            "Kategorizace podle rizika — jaký typ systému to je dle AI Actu",
+            "U každého: název, účel, kdo ho používá, kategorizace dle AI Actu",
             "Přijde-li kontrola, stačí ukázat tento jeden dokument",
             "Aktualizovatelný — když přidáte nový nástroj, snadno ho dopíšete",
+            "Bez evidence riskujete sankce — registr je základ pro úřady",
         ],
     },
     {
@@ -97,22 +84,22 @@ const DELIVERABLES = [
         bullets: [
             "Hotový HTML kód stránky — stačí jen vložit na váš web",
             "Přehledně napsáno, jaké AI nástroje používáte a k čemu",
-            "Splňuje povinnost transparentnosti dle článku 50 AI Actu",
+            "Splňuje požadavek transparentnosti dle článku 50 AI Actu",
             "Funguje na WordPress, Shoptet, Webnode, WooCommerce i vlastní weby",
             "Design se automaticky přizpůsobí vašemu webu",
         ],
     },
     {
         icon: ICONS.chatbot,
-        name: "Chatbot oznámení",
-        desc: "Povinné texty pro vaše zákazníky",
+        name: "Texty oznámení pro AI nástroje",
+        desc: "Povinné oznámení pro vaše návštěvníky",
         detail: null,
         bullets: [
-            "Přesné texty oznámení pro chatboty (Smartsupp, Tidio, LiveChat, Crisp...)",
-            "Návštěvník musí vědět, že komunikuje s AI — ne s člověkem",
-            "Připravené k okamžitému zkopírování do nastavení chatbotu",
+            "Přesné texty pro chatboty (Smartsupp, Tidio, LiveChat, Crisp...) i další AI nástroje",
+            "Návštěvník musí vědět, že komunikuje s AI — nestačí zmínka v cookies",
+            "Připravené k okamžitému zkopírování do nastavení nástroje",
             "Verze v češtině i angličtině (pro zahraniční návštěvníky)",
-            "Návod krok za krokem, kam přesně text vložit v administraci chatbotu",
+            "Návod krok za krokem, kam přesně text v administraci vložit",
         ],
     },
     {
@@ -131,26 +118,27 @@ const DELIVERABLES = [
     {
         icon: ICONS.training,
         name: "Školení zaměstnanců",
-        desc: "Osnova povinného školení o AI",
+        desc: "Prezentace na míru v PowerPointu",
         detail: null,
         bullets: [
-            "Kompletní osnova školení — co musíte s týmem probrat",
+            "Prezentace na míru ve formátu PowerPoint — stačí promítnout a projít s týmem",
             "Témata: co je AI, jaká jsou rizika, co říká zákon, jak AI bezpečně používat",
-            "Praktické příklady z praxe srozumitelné i pro neodborníky",
-            "Splňuje povinnost dle článku 4 AI Actu (AI gramotnost)",
-            "Můžete použít jako podklad pro interní školení nebo e-learning",
+            "Praktické příklady z praxe — srozumitelné i pro neodborníky",
+            "Splňuje povinnost AI gramotnosti dle článku 4 AI Actu",
+            "Připravena i k zaslání e-mailem zaměstnancům na home office",
         ],
     },
     {
-        icon: ICONS.shield,
-        name: "Podpora souladu se zákonem",
-        desc: "Kompletní balíček — klid na duši",
+        icon: ICONS.plan,
+        name: "Záznamový list o proškolení",
+        desc: "Doklad pro splnění čl. 4 AI Actu",
         detail: null,
         bullets: [
-            "Všech 7 dokumentů dohromady = solidní základ pro soulad s AI Actem",
-            "Připraveni na případnou kontrolu ze strany úřadů",
-            "Dokumenty můžete vzít k právníkovi — jsou připravené k odborné revizi",
-            "Platnost dokumentů se vztahuje na dobu, po kterou používáte dané AI systémy",
+            "Připravený dokument s místem pro jména, data a podpisy zaměstnanců",
+            "Při kontrole musíte prokázat, že zaměstnanci prošli školením",
+            "Zákon nevyžaduje certifikát — ale důkaz o proškolení ano",
+            "Stačí vytisknout, nechat podepsat a archivovat",
+            "Bez záznamu riskujete, že školení nikdo neuzná",
         ],
     },
 ];
@@ -742,8 +730,8 @@ export default function HomePage() {
                             7 dokumentů v jednom <span className="neon-text">balíčku</span>
                         </h2>
                         <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            AI Act Compliance Kit — všechno, co potřebujete na jedno kliknutí.
-                            Klikněte na kteroukoliv položku pro podrobný popis.
+                            Kompletní sada dokumentů pro splnění povinností dle AI Actu.
+                            Klikněte na položku pro podrobný popis.
                         </p>
                     </div>
 

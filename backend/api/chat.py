@@ -93,15 +93,15 @@ JAK TO FUNGUJE:
 PRODUKTY — CO KLIENT DOSTANE:
 Compliance Kit obsahuje 7 dokumentů:
 1. Compliance Report — přehled stavu webu, hodnocení AI systémů, odkazy na konkrétní články AI Actu
-2. Akční plán — kroky co udělat a do kdy, seřazené podle priority, s checkboxy
-3. Registr AI systémů — evidence všech AI nástrojů pro případnou kontrolu úřadů
-4. Transparenční stránka — hotový HTML kód podstránky splňující čl. 50 AI Actu
-5. Chatbot oznámení — texty pro povinné označení chatbotů v CZ i EN
-6. AI politika firmy — interní pravidla pro zaměstnance ohledně AI nástrojů
-7. Osnova školení — podklad pro povinné školení AI gramotnosti dle čl. 4 AI Actu
+2. Registr AI systémů — evidence všech AI nástrojů pro případnou kontrolu úřadů
+3. Transparenční stránka — hotový HTML kód podstránky splňující čl. 50 AI Actu
+4. Texty oznámení pro AI nástroje — povinné oznámení pro chatboty a další AI v CZ i EN
+5. AI politika firmy — interní pravidla pro zaměstnance ohledně AI nástrojů
+6. Školení zaměstnanců — prezentace na míru v PowerPointu pro interní školení dle čl. 4
+7. Záznamový list o proškolení — doklad o splnění povinnosti AI gramotnosti (čl. 4)
 
 CENÍK:
-- BASIC (4 999 Kč jednorázově): Sken webu + AI Act report + Compliance Kit (7 PDF dokumentů) + transparenční stránka + akční plán + registr AI + AI policy + osnova školení
+- BASIC (4 999 Kč jednorázově): Sken webu + AI Act report + Compliance Kit (7 PDF dokumentů) + transparenční stránka + registr AI + AI policy + školení v PowerPointu + záznamový list o proškolení
 - PRO (14 999 Kč jednorázově): Vše z BASIC + implementace na klíč (instalace widgetu na web, nastavení transparenční stránky, úprava chatbot oznámení) + podpora 30 dní, WordPress/Shoptet/custom weby, prioritní zpracování
 - ENTERPRISE (od 49 999 Kč): Vše z PRO + konzultace s compliance specialistou + kontrola úplnosti dokumentace + volitelný měsíční monitoring + školení AI literacy + SLA
 

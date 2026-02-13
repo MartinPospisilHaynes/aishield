@@ -679,7 +679,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         {
             done: hasPaidOrder,
             label: "Objednávka",
-            desc: "Odemkněte compliance dokumenty a akční plán",
+            desc: "Odemkněte compliance dokumenty a školení",
             href: "/pricing",
             cta: "Vybrat balíček",
             onClick: undefined as (() => void) | undefined,
