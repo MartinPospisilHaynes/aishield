@@ -1,9 +1,7 @@
 name: "🔔 Denní monitoring"
 
-# Každý den v 6:00 a 18:00 UTC zkontroluj že web a API běží
+# Pouze ruční spuštění — denní cron vypnutý aby neposílal spam emaily
 on:
-  schedule:
-    - cron: "0 6,18 * * *"
   workflow_dispatch:
 
 jobs:

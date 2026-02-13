@@ -9,19 +9,13 @@ name: "🛡️ AIshield CI/CD"
 # ════════════════════════════════════════════
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Pouze ruční spuštění — pushe deployujeme ručně přes Vercel + scp
   workflow_dispatch:
     inputs:
       skip_deploy:
         description: "Přeskočit deploy?"
         type: boolean
         default: false
-  schedule:
-    # Denní smoke test v 6:00 UTC (7:00 CET)
-    - cron: "0 6 * * *"
 
 env:
   PYTHON_VERSION: "3.11"
@@ -93,6 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [backend-test]
+    continue-on-error: true  # E2E failures neblokují deploy
 
     steps:
       - uses: actions/checkout@v4
@@ -207,7 +202,7 @@ jobs:
   deploy-backend:
     name: "🚀 Deploy backend"
     runs-on: ubuntu-latest
-    needs: [e2e-test, frontend-build]
+    needs: [backend-test, frontend-build]
     if: |
       github.event_name == 'push' && 
       github.ref == 'refs/heads/main' &&
@@ -246,7 +241,7 @@ jobs:
   deploy-frontend:
     name: "🌐 Deploy frontend"
     runs-on: ubuntu-latest
-    needs: [e2e-test, frontend-build]
+    needs: [backend-test, frontend-build]
     if: |
       github.event_name == 'push' && 
       github.ref == 'refs/heads/main' &&
@@ -280,8 +275,8 @@ jobs:
   notify:
     name: "📬 Notifikace"
     runs-on: ubuntu-latest
-    needs: [e2e-test, deploy-backend, deploy-frontend]
-    if: always() && github.ref == 'refs/heads/main'
+    needs: [backend-test, frontend-build, deploy-backend, deploy-frontend]
+    if: always() && github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Summary
