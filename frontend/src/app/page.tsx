@@ -206,48 +206,45 @@ const FAQ_ITEMS = [
     },
 ];
 
-/* ─── Expandable card component ─── */
-function DeliverableCard({ item }: { item: (typeof DELIVERABLES)[0] }) {
+/* ─── Expandable panel component ─── */
+function DeliverableCard({ item, index }: { item: (typeof DELIVERABLES)[0]; index: number }) {
     const [open, setOpen] = useState(false);
 
     return (
         <div
-            className="glass p-5 cursor-pointer transition-all duration-300 hover:border-fuchsia-500/30"
+            className="group cursor-pointer rounded-xl border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-fuchsia-500/20 hover:bg-white/[0.03]"
             onClick={() => setOpen(!open)}
         >
-            <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-0.5 w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+            <div className="flex items-center gap-4 px-5 py-4">
+                <span className="text-xs font-bold text-slate-600 tabular-nums w-5 text-right flex-shrink-0">{index + 1}.</span>
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                     {item.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-slate-200">{item.name}</h4>
-                        <svg
-                            className={`w-4 h-4 text-slate-500 transition-transform duration-300 flex-shrink-0 ml-2 ${open ? "rotate-180" : ""}`}
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">{item.desc}</p>
+                    <h4 className="text-sm font-semibold text-slate-200">{item.name}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
                 </div>
+                <svg
+                    className={`w-4 h-4 text-slate-500 transition-transform duration-300 flex-shrink-0 ${open ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
             </div>
-            {open && (
-                <div className="mt-4 pt-4 border-t border-white/[0.06]">
-                    {item.bullets ? (
-                        <ul className="space-y-2">
+            {open && item.bullets && (
+                <div className="px-5 pb-4 pt-0">
+                    <div className="border-t border-white/[0.06] pt-3 ml-[3.75rem]">
+                        <ul className="space-y-1.5">
                             {item.bullets.map((b, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-400 leading-relaxed">
-                                    <svg className="w-4 h-4 text-fuchsia-400/70 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <svg className="w-3.5 h-3.5 text-fuchsia-400/70 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                     </svg>
                                     {b}
                                 </li>
                             ))}
                         </ul>
-                    ) : (
-                        <p className="text-sm text-slate-400 leading-relaxed">{item.detail}</p>
-                    )}
+                    </div>
                 </div>
             )}
         </div>
@@ -735,9 +732,9 @@ export default function HomePage() {
                         </p>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                    <div className="mx-auto max-w-2xl space-y-2">
                         {DELIVERABLES.map((item, i) => (
-                            <DeliverableCard key={i} item={item} />
+                            <DeliverableCard key={i} item={item} index={i} />
                         ))}
                     </div>
                 </div>
