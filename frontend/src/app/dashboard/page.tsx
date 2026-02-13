@@ -9,10 +9,14 @@ import {
     getScanFindings,
     getQuestionnaireProgress,
     createCheckout,
+    getMonitoringEligibility,
+    createSubscription,
+    cancelSubscription,
     type DashboardData,
     type ScanStatus,
     type Finding,
     type QuestionnaireProgress,
+    type MonitoringEligibility,
 } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 import ContactForm from "@/components/contact-form";
@@ -141,6 +145,10 @@ export default function DashboardPage() {
 
     // ── Questionnaire progress ──
     const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
+
+    // ── Monitoring eligibility ──
+    const [monitoringEligibility, setMonitoringEligibility] = useState<MonitoringEligibility | null>(null);
+    const [monitoringLoading, setMonitoringLoading] = useState<string | null>(null); // "monitoring" | "monitoring_plus" | null
 
     // ── AI systems card expand ──
     const [aiCardOpen, setAiCardOpen] = useState(false);
@@ -281,6 +289,26 @@ export default function DashboardPage() {
             .then(setQuestProgress)
             .catch(() => { /* silent */ });
     }, [data?.company?.id]);
+
+    // Fetch monitoring eligibility
+    useEffect(() => {
+        if (!user?.email) return;
+        getMonitoringEligibility()
+            .then(setMonitoringEligibility)
+            .catch(() => { /* silent */ });
+    }, [user?.email, data]);
+
+    const handleSubscribe = useCallback(async (plan: "monitoring" | "monitoring_plus") => {
+        if (!user?.email) return;
+        setMonitoringLoading(plan);
+        try {
+            const result = await createSubscription(plan, user.email);
+            window.location.href = result.gateway_url;
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Chyba při vytváření předplatného");
+            setMonitoringLoading(null);
+        }
+    }, [user?.email]);
 
     if (authLoading || loading) {
         return (
@@ -612,6 +640,165 @@ export default function DashboardPage() {
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                         {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
+                </div>
+            </section>
+
+            {/* ── Monitoring section ── */}
+            <section id="monitoring" className="mx-auto max-w-7xl px-6 py-8">
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 sm:p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-white">Průběžný monitoring</h2>
+                            <p className="text-sm text-slate-400">Automatický sken webu + aktualizace dokumentů</p>
+                        </div>
+                    </div>
+
+                    {/* Active subscription */}
+                    {monitoringEligibility?.checks.has_active_subscription ? (
+                        <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <h3 className="font-semibold text-green-400">Monitoring aktivní</h3>
+                                    <p className="text-sm text-slate-400">
+                                        Plán: {monitoringEligibility.checks.active_plan === "monitoring_plus" ? "Monitoring Plus (599 Kč/měsíc)" : "Monitoring (299 Kč/měsíc)"}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-500">Váš web je pravidelně skenován a dokumenty jsou automaticky aktualizovány.</p>
+                        </div>
+                    ) : monitoringEligibility?.checks.is_enterprise ? (
+                        /* Enterprise — monitoring included */
+                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <h3 className="font-semibold text-cyan-400">Monitoring v ceně balíčku ENTERPRISE</h3>
+                                    <p className="text-sm text-slate-400">Váš balíček ENTERPRISE zahrnuje 2 roky průběžného monitoringu.</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : monitoringEligibility?.eligible ? (
+                        /* Eligible — show monitoring plans */
+                        <div>
+                            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4 mb-6">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p className="text-sm text-cyan-300">Všechny podmínky splněny — můžete aktivovat monitoring.</p>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {/* Monitoring */}
+                                <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 flex flex-col">
+                                    <h3 className="font-bold text-white mb-1">Monitoring</h3>
+                                    <div className="mb-3">
+                                        <span className="text-2xl font-extrabold text-white">299</span>
+                                        <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                                    </div>
+                                    <ul className="space-y-1.5 text-sm mb-5 flex-1">
+                                        {[
+                                            "1× měsíčně automatický sken webu",
+                                            "Srovnání s předchozím skenem (diff)",
+                                            "Emailové upozornění při nálezu",
+                                            "Aktualizovaný Compliance Report",
+                                            "Aktualizovaný Registr AI systémů",
+                                            "Historie skenů v dashboardu",
+                                        ].map((f) => (
+                                            <li key={f} className="flex items-start gap-2">
+                                                <svg className="w-4 h-4 mt-0.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span className="text-slate-300">{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <button
+                                        onClick={() => handleSubscribe("monitoring")}
+                                        disabled={monitoringLoading !== null}
+                                        className="w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition disabled:opacity-50"
+                                    >
+                                        {monitoringLoading === "monitoring" ? "Přesměrování…" : "Aktivovat Monitoring"}
+                                    </button>
+                                </div>
+
+                                {/* Monitoring Plus */}
+                                <div className="rounded-xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-5 flex flex-col">
+                                    <h3 className="font-bold text-white mb-1">Monitoring Plus</h3>
+                                    <div className="mb-3">
+                                        <span className="text-2xl font-extrabold neon-text">599</span>
+                                        <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                                    </div>
+                                    <ul className="space-y-1.5 text-sm mb-5 flex-1">
+                                        {[
+                                            "2× měsíčně automatický sken webu",
+                                            "Vše z Monitoring",
+                                            "Aktualizace VŠECH 7 dokumentů",
+                                            "Implementace změn na webu klienta",
+                                            "Prioritní emailová podpora",
+                                            "Čtvrtletní souhrnný přehled",
+                                        ].map((f) => (
+                                            <li key={f} className="flex items-start gap-2">
+                                                <svg className="w-4 h-4 mt-0.5 text-fuchsia-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span className="text-slate-300">{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <button
+                                        onClick={() => handleSubscribe("monitoring_plus")}
+                                        disabled={monitoringLoading !== null}
+                                        className="w-full rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 px-6 py-2.5 text-sm font-semibold text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition disabled:opacity-50"
+                                    >
+                                        {monitoringLoading === "monitoring_plus" ? "Přesměrování…" : "Aktivovat Monitoring Plus"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Not eligible — show checklist */
+                        <div>
+                            <p className="text-sm text-slate-400 mb-4">
+                                Monitoring můžete aktivovat po dokončení všech kroků. Průběh:
+                            </p>
+                            <div className="space-y-2">
+                                {[
+                                    { done: monitoringEligibility?.checks.scan_completed, label: "Sken webu dokončen" },
+                                    { done: monitoringEligibility?.checks.questionnaire_done, label: "Dotazník vyplněn" },
+                                    { done: monitoringEligibility?.checks.has_paid_order, label: "Balíček zaplacen (BASIC / PRO / ENTERPRISE)" },
+                                    { done: monitoringEligibility?.checks.documents_generated, label: "Compliance dokumenty vygenerovány" },
+                                ].map((check) => (
+                                    <div key={check.label} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.06] px-4 py-2.5">
+                                        {check.done ? (
+                                            <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        ) : (
+                                            <div className="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0" />
+                                        )}
+                                        <span className={`text-sm ${check.done ? "text-green-400/80" : "text-slate-500"}`}>
+                                            {check.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs text-slate-600 mt-4">
+                                Monitoring je volitelný doplněk od 299 Kč/měsíc. Dostupný po kompletním dokončení základního balíčku.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </section>
 

@@ -37,35 +37,21 @@ PLANS = {
     },
 }
 
-# ── Subscription balíčky (měsíční) ──
+# ── Monitoring předplatné (měsíční) ──
 SUBSCRIPTION_PLANS = {
-    "basic_monthly": {
-        "name": "BASIC měsíční",
-        "description": "AI Act monitoring + průběžné kontroly webu",
-        "price": 999,  # CZK/měsíc
+    "monitoring": {
+        "name": "Monitoring",
+        "description": "1× měsíčně automatický sken webu + compliance report",
+        "price": 299,  # CZK/měsíc
         "cycle": RecurrenceCycle.MONTH,
         "period": 1,
     },
-    "pro_monthly": {
-        "name": "PRO měsíční",
-        "description": "Kompletní AI compliance služba + prioritní podpora",
-        "price": 2999,  # CZK/měsíc
+    "monitoring_plus": {
+        "name": "Monitoring Plus",
+        "description": "2× měsíčně sken + implementace změn + prioritní podpora",
+        "price": 599,  # CZK/měsíc
         "cycle": RecurrenceCycle.MONTH,
         "period": 1,
-    },
-    "basic_yearly": {
-        "name": "BASIC roční",
-        "description": "AI Act monitoring — roční předplatné (2 měsíce zdarma)",
-        "price": 9990,  # CZK/rok (10×999)
-        "cycle": RecurrenceCycle.ON_DEMAND,
-        "period": None,
-    },
-    "pro_yearly": {
-        "name": "PRO roční",
-        "description": "Kompletní AI compliance — roční předplatné (2 měsíce zdarma)",
-        "price": 29990,  # CZK/rok (10×2999)
-        "cycle": RecurrenceCycle.ON_DEMAND,
-        "period": None,
     },
 }
 
@@ -85,7 +71,7 @@ class CheckoutResponse(BaseModel):
 
 class SubscriptionRequest(BaseModel):
     """Request pro vytvoření subscription."""
-    plan: str  # "basic_monthly", "pro_monthly", "basic_yearly", "pro_yearly"
+    plan: str  # "monitoring" nebo "monitoring_plus"
     email: str
 
 
@@ -159,6 +145,132 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
 
 
 # ────────────────────────────────────────────────────────────
+# MONITORING ELIGIBILITY (kontrola, zda klient může aktivovat monitoring)
+# ────────────────────────────────────────────────────────────
+
+async def _check_monitoring_eligibility(email: str) -> dict:
+    """
+    Zkontroluje, zda klient splňuje podmínky pro aktivaci monitoringu.
+    Požadavky:
+    1. Zaplacený jednorázový balíček (BASIC/PRO/ENTERPRISE)
+    2. Proběhlý sken webu (status=done)
+    3. Vyplněný dotazník
+    4. Vygenerované dokumenty (alespoň 1)
+    5. Nemá už aktivní monitoring subscription
+    """
+    supabase = get_supabase()
+
+    # 1. Zaplacená jednorázová objednávka
+    orders = supabase.table("orders").select("plan, status, order_type").eq(
+        "email", email
+    ).execute()
+    has_paid_order = any(
+        o["status"] == "PAID" and o["order_type"] == "one_time"
+        for o in (orders.data or [])
+    )
+    paid_plan = next(
+        (o["plan"] for o in (orders.data or [])
+         if o["status"] == "PAID" and o["order_type"] == "one_time"),
+        None,
+    )
+
+    # 2. Firma + sken
+    company = None
+    company_res = supabase.table("companies").select("id").eq(
+        "email", email
+    ).limit(1).execute()
+    if company_res.data:
+        company = company_res.data[0]
+
+    scan_completed = False
+    if company:
+        scans = supabase.table("scans").select("status").eq(
+            "company_id", company["id"]
+        ).eq("status", "done").limit(1).execute()
+        scan_completed = bool(scans.data)
+
+    # 3. Dotazník
+    questionnaire_done = False
+    if company:
+        client_res = supabase.table("clients").select("id").eq(
+            "company_id", company["id"]
+        ).limit(1).execute()
+        if client_res.data:
+            quest_res = supabase.table("questionnaire_responses").select("id").eq(
+                "client_id", client_res.data[0]["id"]
+            ).limit(1).execute()
+            questionnaire_done = bool(quest_res.data)
+
+    # 4. Dokumenty
+    documents_generated = False
+    if company:
+        docs = supabase.table("documents").select("id").eq(
+            "company_id", company["id"]
+        ).limit(1).execute()
+        documents_generated = bool(docs.data)
+
+    # 5. Aktivní subscription
+    active_subs = supabase.table("subscriptions").select("id, plan, status").eq(
+        "email", email
+    ).eq("status", "active").execute()
+    has_active_subscription = bool(active_subs.data)
+    active_plan = active_subs.data[0]["plan"] if active_subs.data else None
+
+    # Enterprise má 2 roky monitoringu v ceně
+    is_enterprise = paid_plan == "enterprise"
+
+    eligible = (
+        has_paid_order
+        and scan_completed
+        and questionnaire_done
+        and documents_generated
+        and not has_active_subscription
+    )
+
+    checks = {
+        "has_paid_order": has_paid_order,
+        "paid_plan": paid_plan,
+        "scan_completed": scan_completed,
+        "questionnaire_done": questionnaire_done,
+        "documents_generated": documents_generated,
+        "has_active_subscription": has_active_subscription,
+        "active_plan": active_plan,
+        "is_enterprise": is_enterprise,
+    }
+
+    if not eligible:
+        missing = []
+        if not has_paid_order:
+            missing.append("Nejdříve je nutné zakoupit balíček (BASIC, PRO nebo ENTERPRISE)")
+        if not scan_completed:
+            missing.append("Sken webu musí být dokončen")
+        if not questionnaire_done:
+            missing.append("Dotazník musí být vyplněn")
+        if not documents_generated:
+            missing.append("Compliance dokumenty musí být vygenerovány")
+        if has_active_subscription:
+            missing.append(f"Již máte aktivní monitoring ({active_plan})")
+        reason = "; ".join(missing)
+    else:
+        reason = "Splňujete všechny podmínky pro aktivaci monitoringu"
+
+    return {
+        "eligible": eligible,
+        "reason": reason,
+        "checks": checks,
+    }
+
+
+@router.get("/monitoring-eligibility")
+async def check_monitoring_eligibility(user: AuthUser = Depends(get_current_user)):
+    """
+    Zkontroluje, zda přihlášený uživatel splňuje podmínky pro monitoring.
+    Vrátí detailed checks pro frontend.
+    """
+    return await _check_monitoring_eligibility(user.email)
+
+
+# ────────────────────────────────────────────────────────────
 # SUBSCRIPTIONS (OPAKOVANÉ PLATBY)
 # ────────────────────────────────────────────────────────────
 
@@ -171,12 +283,22 @@ async def create_subscription(req: SubscriptionRequest, user: AuthUser = Depends
     Další platby se strhávají automaticky (ON_DEMAND nebo MONTH).
 
     Po zaplacení se vytvoří záznam v tabulce 'subscriptions'.
+
+    GUARD: Vyžaduje splnění všech podmínek (zaplacený balíček, sken, dotazník, dokumenty).
     """
     if req.plan not in SUBSCRIPTION_PLANS:
         raise HTTPException(
             status_code=400,
             detail=f"Neznámý subscription balíček: {req.plan}. "
                    f"Dostupné: {', '.join(SUBSCRIPTION_PLANS.keys())}",
+        )
+
+    # ── Eligibility guard ──
+    eligibility = await _check_monitoring_eligibility(req.email)
+    if not eligibility["eligible"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Monitoring nelze aktivovat: {eligibility['reason']}",
         )
 
     settings = get_settings()

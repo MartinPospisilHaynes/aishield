@@ -309,7 +309,7 @@ export default function PricingPage() {
                             </ul>
                             <div className="mt-auto text-center">
                                 <a
-                                    href="/dashboard"
+                                    href="/dashboard#monitoring"
                                     className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
                                 >
                                     Sjednat Monitoring
@@ -343,7 +343,7 @@ export default function PricingPage() {
                             </ul>
                             <div className="mt-auto text-center">
                                 <a
-                                    href="/dashboard"
+                                    href="/dashboard#monitoring"
                                     className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
                                 >
                                     Sjednat Monitoring Plus

@@ -397,6 +397,69 @@ export async function getPaymentStatus(
     return res.json();
 }
 
+// ── Monitoring Eligibility + Subscription ──
+
+export interface MonitoringEligibility {
+    eligible: boolean;
+    reason: string;
+    checks: {
+        has_paid_order: boolean;
+        paid_plan: string | null;
+        scan_completed: boolean;
+        questionnaire_done: boolean;
+        documents_generated: boolean;
+        has_active_subscription: boolean;
+        active_plan: string | null;
+        is_enterprise: boolean;
+    };
+}
+
+/**
+ * Zkontroluje, zda uživatel splňuje podmínky pro aktivaci monitoringu.
+ */
+export async function getMonitoringEligibility(): Promise<MonitoringEligibility> {
+    const res = await authFetch(`${API_URL}/api/payments/monitoring-eligibility`);
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+/**
+ * Vytvoří monitoring subscription v GoPay a vrátí URL pro přesměrování.
+ */
+export async function createSubscription(
+    plan: string,
+    email: string,
+): Promise<CheckoutResponse> {
+    const res = await authFetch(`${API_URL}/api/payments/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, email }),
+    });
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+/**
+ * Zruší monitoring subscription.
+ */
+export async function cancelSubscription(subscriptionId: string): Promise<void> {
+    const res = await authFetch(`${API_URL}/api/payments/subscribe/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subscriptionId),
+    });
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+}
+
 // ── Dashboard ──
 
 export interface DashboardCompany {
