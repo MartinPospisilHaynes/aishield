@@ -698,15 +698,20 @@ async def get_payment_status(payment_id: int):
 
 
 @router.post("/webhook")
+@router.get("/webhook")
 async def gopay_webhook(request: Request):
     """
     GoPay webhook — notifikace o změně stavu platby.
+    GoPay posílá GET (s ?id=...) i POST (s id=... v body).
     Zpracovává jednorázové platby, první subscription platby
     i automatické opakované platby (recurrence).
     """
-    body = await request.body()
-    params = dict(x.split("=") for x in body.decode().split("&") if "=" in x)
-    payment_id = params.get("id")
+    # GoPay GET: ?id=123  |  POST: id=123 (form-urlencoded)
+    payment_id = request.query_params.get("id")
+    if not payment_id:
+        body = await request.body()
+        params = dict(x.split("=") for x in body.decode().split("&") if "=" in x)
+        payment_id = params.get("id")
 
     if not payment_id:
         raise HTTPException(status_code=400, detail="Chybí id platby")
