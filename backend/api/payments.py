@@ -35,6 +35,11 @@ PLANS = {
         "description": "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         "price_field": "price_enterprise",
     },
+    "coffee": {
+        "name": "Kafé",
+        "description": "Pozvi nás na kafé ☕",
+        "price_field": "price_coffee",
+    },
 }
 
 # ── Monitoring předplatné (měsíční) ──

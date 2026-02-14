@@ -511,6 +511,49 @@ export default function PricingPage() {
                     </div>
                 </div>
 
+                {/* ── Pozvi mě na kafé ── */}
+                <div className="mt-20 max-w-md mx-auto">
+                    <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-amber-500/[0.06] to-transparent p-8 text-center">
+                        <div className="mx-auto w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4">
+                            <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 20h10" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 4v2m3-2v2m3-2v2" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Pozvi nás na kafé</h3>
+                        <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                            Chcete nás podpořit? Kupte nám kafé za 50&nbsp;Kč
+                            a&nbsp;zároveň si odzkoušíte, že platební brána funguje.
+                        </p>
+                        <div className="mb-5">
+                            <span className="text-4xl font-extrabold text-amber-400">50</span>
+                            <span className="text-slate-500 ml-1">Kč</span>
+                        </div>
+                        <button
+                            onClick={() => handleCheckout("coffee")}
+                            disabled={loading === "coffee"}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-3.5 text-sm font-bold text-black hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading === "coffee" ? (
+                                "Přesměrování na platbu…"
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+                                    </svg>
+                                    Kup kafé
+                                </>
+                            )}
+                        </button>
+                        <p className="text-xs text-slate-600 mt-4">
+                            Platba proběhne přes GoPay — stejně jako u běžné objednávky.
+                        </p>
+                    </div>
+                </div>
+
                 {/* Powered by */}
                 <div className="mt-12 text-center">
                     <p className="text-xs text-slate-600">
