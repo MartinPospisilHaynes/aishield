@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # ── GoPay API URLs ──
 GOPAY_SANDBOX_URL = "https://gw.sandbox.gopay.com/api"
-GOPAY_PRODUCTION_URL = "https://gw.gopay.com/api"
+GOPAY_PRODUCTION_URL = "https://gate.gopay.cz/api"
 
 
 class PaymentState(str, Enum):
