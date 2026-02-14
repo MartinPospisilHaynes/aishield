@@ -48,6 +48,11 @@ router = APIRouter()
 # ── Hardcoded admin password (match supabase_db_password) ──
 _ADMIN_PASSWORD = "Rc_732716141"
 
+# ── Brute-force protection ──
+_MAX_LOGIN_ATTEMPTS = 5          # max pokusy v okně
+_LOGIN_LOCKOUT_SECONDS = 900     # 15 minut lockout
+_login_attempts: dict[str, tuple[int, float]] = {}   # {ip: (count, first_attempt_timestamp)}
+
 
 # ─────────────────────────────────────────────
 # 1. POST /login — Admin login
@@ -58,16 +63,70 @@ async def admin_crm_login(request: Request):
     """
     Admin CRM login — vrátí jednoduchý token.
     Hardcoded: username=ADMIN, password=supabase_db_password.
+    Brute-force protection: max 5 pokusů za 15 minut per IP.
+    Honeypot: pokud je vyplněné pole "website", odmítneme (bot).
     """
+    # ── Rate limit per IP ──
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown")
+    ip = ip.split(",")[0].strip()
+
+    # Check brute-force lockout
+    now = time.time()
+    key = f"admin_login_{ip}"
+    if key in _login_attempts:
+        attempts, first_attempt = _login_attempts[key]
+        window = now - first_attempt
+        if window < _LOGIN_LOCKOUT_SECONDS and attempts >= _MAX_LOGIN_ATTEMPTS:
+            remaining = int(_LOGIN_LOCKOUT_SECONDS - window)
+            logger.warning(f"[Auth] Brute-force lockout for IP {ip} — {remaining}s remaining")
+            raise HTTPException(
+                status_code=429,
+                detail=f"Příliš mnoho neúspěšných pokusů. Zkuste znovu za {remaining} sekund.",
+                headers={"Retry-After": str(remaining)},
+            )
+        # Reset window if expired
+        if window >= _LOGIN_LOCKOUT_SECONDS:
+            del _login_attempts[key]
+
     body = await request.json()
+
+    # ── Honeypot check ── (bot detector — toto pole je v UI skryté, člověk ho nevyplní)
+    honeypot = (body.get("website") or "").strip()
+    if honeypot:
+        logger.warning(f"[Auth] Honeypot triggered from IP {ip}: {honeypot}")
+        # Vrátíme fake "success" aby bot nevěděl že byl odhalený
+        raise HTTPException(status_code=401, detail="Neplatné přihlašovací údaje")
+
     username = (body.get("username") or "").strip()
     password = (body.get("password") or "").strip()
 
     if username != "ADMIN" or password != _ADMIN_PASSWORD:
+        # Record failed attempt
+        if key in _login_attempts:
+            attempts, first_attempt = _login_attempts[key]
+            _login_attempts[key] = (attempts + 1, first_attempt)
+        else:
+            _login_attempts[key] = (1, now)
+
+        remaining_attempts = _MAX_LOGIN_ATTEMPTS - _login_attempts[key][0]
+        if remaining_attempts <= 0:
+            logger.warning(f"[Auth] Admin login locked out for IP {ip}")
+            raise HTTPException(
+                status_code=429,
+                detail=f"Příliš mnoho neúspěšných pokusů. Účet uzamčen na {_LOGIN_LOCKOUT_SECONDS // 60} minut.",
+            )
+
+        logger.warning(f"[Auth] Failed admin login from IP {ip} (attempt {_login_attempts[key][0]}/{_MAX_LOGIN_ATTEMPTS})")
         raise HTTPException(status_code=401, detail="Neplatné přihlašovací údaje")
+
+    # ── Success — clear failed attempts ──
+    if key in _login_attempts:
+        del _login_attempts[key]
 
     # Jednoduchý token: admin_ + SHA256 hash (prvních 32 znaků)
     token = "admin_" + hashlib.sha256(password.encode()).hexdigest()[:32]
+
+    logger.info(f"[Auth] Admin login successful from IP {ip}")
 
     return {
         "token": token,

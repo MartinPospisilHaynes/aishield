@@ -1,8 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { adminLogin, isAdminLoggedIn } from "@/lib/admin-api";
+
+// Generate random math captcha
+function generateCaptcha(): { question: string; answer: number } {
+    const ops = ["+", "-", "×"] as const;
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let a: number, b: number, answer: number;
+    if (op === "+") {
+        a = Math.floor(Math.random() * 20) + 1;
+        b = Math.floor(Math.random() * 20) + 1;
+        answer = a + b;
+    } else if (op === "-") {
+        a = Math.floor(Math.random() * 20) + 10;
+        b = Math.floor(Math.random() * a);
+        answer = a - b;
+    } else {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        answer = a * b;
+    }
+    return { question: `${a} ${op} ${b} = ?`, answer };
+}
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -13,12 +34,42 @@ export default function AdminLoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Security: honeypot (hidden field — bots fill it, humans don't)
+    const [honeypot, setHoneypot] = useState("");
+
+    // Security: math captcha
+    const [captcha, setCaptcha] = useState(() => generateCaptcha());
+    const [captchaAnswer, setCaptchaAnswer] = useState("");
+
+    // Security: lockout countdown
+    const [lockoutUntil, setLockoutUntil] = useState<number>(0);
+    const [lockoutRemaining, setLockoutRemaining] = useState(0);
+
+    // Security: attempt counter (visual)
+    const [failedAttempts, setFailedAttempts] = useState(0);
+
     // Already logged in → redirect
     useEffect(() => {
         if (isAdminLoggedIn()) {
             router.replace("/admin");
         }
     }, [router]);
+
+    // Lockout countdown timer
+    useEffect(() => {
+        if (lockoutUntil <= 0) return;
+        const interval = setInterval(() => {
+            const remaining = Math.max(0, Math.ceil((lockoutUntil - Date.now()) / 1000));
+            setLockoutRemaining(remaining);
+            if (remaining <= 0) {
+                setLockoutUntil(0);
+                setLockoutRemaining(0);
+                setFailedAttempts(0);
+                setError("");
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [lockoutUntil]);
 
     // Eye toggle icon component
     function EyeToggle({ show, onToggle }: { show: boolean; onToggle: () => void }) {
@@ -36,16 +87,49 @@ export default function AdminLoginPage() {
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
         setError("");
+
+        // Check lockout
+        if (lockoutUntil > Date.now()) {
+            setError(`Účet uzamčen. Zkuste za ${lockoutRemaining} sekund.`);
+            return;
+        }
+
+        // Check captcha
+        if (parseInt(captchaAnswer, 10) !== captcha.answer) {
+            setError("Nesprávná odpověď na bezpečnostní otázku.");
+            setCaptcha(generateCaptcha());
+            setCaptchaAnswer("");
+            return;
+        }
+
         setLoading(true);
         try {
-            await adminLogin(username, password);
+            await adminLogin(username, password, honeypot);
             router.push("/admin");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Nesprávné přihlašovací údaje");
+            const msg = err instanceof Error ? err.message : "Nesprávné přihlašovací údaje";
+
+            // Check if lockout (429)
+            if (msg.includes("Příliš mnoho") || msg.includes("429")) {
+                // Extract seconds from message or default to 900
+                const match = msg.match(/(\d+)\s*(sekund|minut)/);
+                const seconds = match ? (msg.includes("minut") ? parseInt(match[1]) * 60 : parseInt(match[1])) : 900;
+                setLockoutUntil(Date.now() + seconds * 1000);
+                setLockoutRemaining(seconds);
+            }
+
+            setFailedAttempts(prev => prev + 1);
+            setError(msg);
+
+            // Refresh captcha after failed attempt
+            setCaptcha(generateCaptcha());
+            setCaptchaAnswer("");
         } finally {
             setLoading(false);
         }
     }
+
+    const isLocked = lockoutUntil > Date.now();
 
     const inputCls = "w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all";
 
@@ -59,6 +143,16 @@ export default function AdminLoginPage() {
                 </div>
 
                 <form onSubmit={handleLogin} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 space-y-6">
+
+                    {/* Lockout warning banner */}
+                    {isLocked && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-4 text-center">
+                            <div className="text-red-400 text-lg font-bold mb-1">🔒 Účet dočasně uzamčen</div>
+                            <div className="text-red-300 text-sm">Příliš mnoho neúspěšných pokusů</div>
+                            <div className="text-3xl font-mono text-red-400 mt-2">{Math.floor(lockoutRemaining / 60)}:{String(lockoutRemaining % 60).padStart(2, "0")}</div>
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Uživatel</label>
                         <input
@@ -69,6 +163,8 @@ export default function AdminLoginPage() {
                             placeholder="ADMIN"
                             autoFocus
                             required
+                            disabled={isLocked}
+                            autoComplete="off"
                         />
                     </div>
 
@@ -82,9 +178,41 @@ export default function AdminLoginPage() {
                                 className={inputCls}
                                 placeholder="••••••••"
                                 required
+                                disabled={isLocked}
+                                autoComplete="off"
                             />
                             <EyeToggle show={showPassword} onToggle={() => setShowPassword(!showPassword)} />
                         </div>
+                    </div>
+
+                    {/* Honeypot — hidden field, bots fill it */}
+                    <div className="absolute opacity-0 pointer-events-none h-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+                        <label>Website</label>
+                        <input
+                            type="text"
+                            name="website"
+                            value={honeypot}
+                            onChange={(e) => setHoneypot(e.target.value)}
+                            tabIndex={-1}
+                            autoComplete="off"
+                        />
+                    </div>
+
+                    {/* Math CAPTCHA */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                            🔢 Bezpečnostní otázka: <span className="text-cyan-400 font-mono font-bold">{captcha.question}</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={captchaAnswer}
+                            onChange={(e) => setCaptchaAnswer(e.target.value)}
+                            className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all"
+                            placeholder="Zadejte odpověď"
+                            required
+                            disabled={isLocked}
+                            autoComplete="off"
+                        />
                     </div>
 
                     {error && (
@@ -93,12 +221,19 @@ export default function AdminLoginPage() {
                         </div>
                     )}
 
+                    {/* Failed attempts indicator */}
+                    {failedAttempts > 0 && failedAttempts < 5 && !isLocked && (
+                        <div className="text-xs text-yellow-400/60 text-center">
+                            ⚠️ Neúspěšných pokusů: {failedAttempts}/5
+                        </div>
+                    )}
+
                     <button
                         type="submit"
-                        disabled={loading || !username || !password}
+                        disabled={loading || !username || !password || !captchaAnswer || isLocked}
                         className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-cyan-500/20"
                     >
-                        {loading ? "⏳ Přihlašuji..." : "🔐 Vstoupit do Adminu"}
+                        {isLocked ? `🔒 Uzamčeno (${lockoutRemaining}s)` : loading ? "⏳ Přihlašuji..." : "🔐 Vstoupit do Adminu"}
                     </button>
                 </form>
 

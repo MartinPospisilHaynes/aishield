@@ -202,11 +202,11 @@ export const PRIORITIES: Record<string, { label: string; color: string; icon: st
 
 // ── API functions ──
 
-export async function adminLogin(username: string, password: string): Promise<{ token: string }> {
+export async function adminLogin(username: string, password: string, website?: string): Promise<{ token: string }> {
     const res = await fetch(`${API_URL}/api/admin/crm/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, ...(website ? { website } : {}) }),
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Chyba přihlášení" }));
