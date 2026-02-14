@@ -10,7 +10,7 @@ import hashlib
 import logging
 import re
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.api.auth import AuthUser, require_admin
@@ -1162,6 +1162,46 @@ async def crm_client_rescan(
     }
 
 
+# ── Czech business days helper ──
+_CZECH_HOLIDAYS = {
+    # 2025
+    "2025-01-01", "2025-04-18", "2025-04-21", "2025-05-01", "2025-05-08",
+    "2025-07-05", "2025-07-06", "2025-09-28", "2025-10-28", "2025-11-17",
+    "2025-12-24", "2025-12-25", "2025-12-26",
+    # 2026
+    "2026-01-01", "2026-04-03", "2026-04-06", "2026-05-01", "2026-05-08",
+    "2026-07-05", "2026-07-06", "2026-09-28", "2026-10-28", "2026-11-17",
+    "2026-12-24", "2026-12-25", "2026-12-26",
+}
+
+def _count_business_days(start_dt: datetime, end_dt: datetime) -> int:
+    """Count business days (Mon-Fri, excluding CZ holidays) between two datetimes."""
+    if end_dt <= start_dt:
+        return 0
+    count = 0
+    current = start_dt.date() + timedelta(days=1)
+    end_date = end_dt.date()
+    while current <= end_date:
+        if current.weekday() < 5 and current.isoformat() not in _CZECH_HOLIDAYS:
+            count += 1
+        current += timedelta(days=1)
+    return count
+
+def _add_business_days(start_dt: datetime, days: int) -> datetime:
+    """Add N business days to a datetime."""
+    current = start_dt
+    added = 0
+    while added < days:
+        current += timedelta(days=1)
+        if current.weekday() < 5 and current.date().isoformat() not in _CZECH_HOLIDAYS:
+            added += 1
+    return current
+
+
+# ── Business overview cache (60s TTL) ──
+_biz_overview_cache: dict = {"data": None, "expires": 0}
+_BIZ_CACHE_TTL = 60  # seconds
+
 # ─────────────────────────────────────────────
 # 10. GET /crm/business-overview — Complete business overview for admin dashboard
 # ─────────────────────────────────────────────
@@ -1181,6 +1221,10 @@ async def crm_business_overview(
     - Subscription přehled
     """
     await _check_admin_rate_limit(request)
+    import time as _time
+    cache_now = _time.time()
+    if _biz_overview_cache["data"] and cache_now < _biz_overview_cache["expires"]:
+        return _biz_overview_cache["data"]
     from backend.database import get_supabase
     supabase = get_supabase()
 
@@ -1189,7 +1233,7 @@ async def crm_business_overview(
     # ── 1. All orders ──
     orders = []
     try:
-        res = supabase.table("orders").select("*").order("created_at", desc=True).execute()
+        res = supabase.table("orders").select("*").order("created_at", desc=True).limit(1000).execute()
         orders = res.data or []
     except Exception as e:
         logger.error(f"business-overview orders: {e}")
@@ -1221,7 +1265,7 @@ async def crm_business_overview(
     # ── 5. All documents ──
     documents = []
     try:
-        res = supabase.table("documents").select("id,company_id,created_at").execute()
+        res = supabase.table("documents").select("id,company_id,created_at").limit(5000).execute()
         documents = res.data or []
     except Exception as e:
         logger.error(f"business-overview documents: {e}")
@@ -1237,7 +1281,7 @@ async def crm_business_overview(
     # ── 7. Email log for outreach stats ──
     email_stats = {"total": 0, "delivered": 0, "opened": 0, "clicked": 0, "bounced": 0}
     try:
-        res = supabase.table("email_log").select("id,status,to_email,sent_at").execute()
+        res = supabase.table("email_log").select("id,status,to_email,sent_at").order("sent_at", desc=True).limit(5000).execute()
         email_log = res.data or []
         email_stats["total"] = len(email_log)
         unique_emails = set()
@@ -1325,6 +1369,18 @@ async def crm_business_overview(
         "total_charged": sum(s.get("total_charged", 0) for s in subscriptions),
     }
 
+    # Churn rate (last 30 days)
+    thirty_days_ago = (now - timedelta(days=30)).isoformat()
+    cancelled_last_30 = len([s for s in subscriptions if s.get("status") == "cancelled" and (s.get("cancelled_at") or s.get("updated_at") or "") >= thirty_days_ago])
+    active_at_start = len(active_subs) + cancelled_last_30  # approximate
+    churn_rate = round(cancelled_last_30 / max(active_at_start, 1), 4)
+
+    # Active paying customers
+    active_customers = len(set(
+        o.get("email") for o in orders
+        if o.get("status") == "PAID" and o.get("email")
+    ))
+
     # Conversion funnel
     total_companies = len(companies)
     scanned_companies = len([c for c in companies if c.get("scan_status") == "scanned"])
@@ -1365,7 +1421,7 @@ async def crm_business_overview(
             scan_by_company[cid] = s  # latest scan (already sorted desc)
 
     # Detailed orders list with fulfillment
-    DELIVERY_DEADLINE_DAYS = 5  # 5 working days ~ 7 calendar days
+    DELIVERY_DEADLINE_DAYS = 7  # 7 business days (Czech SLA)
     detailed_orders = []
     for o in orders:
         email = (o.get("email") or o.get("user_email") or "").lower()
@@ -1412,8 +1468,14 @@ async def crm_business_overview(
             days_remaining = None
         else:
             fulfillment = "pending"
-            days_remaining = max(0, DELIVERY_DEADLINE_DAYS - days_since_payment)
-            deadline_status = "ok" if days_remaining > 1 else ("warning" if days_remaining > 0 else "overdue")
+            # Count actual business days elapsed since payment
+            try:
+                _paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
+                biz_days_elapsed = _count_business_days(_paid_dt, now)
+                days_remaining = max(0, DELIVERY_DEADLINE_DAYS - biz_days_elapsed)
+            except Exception:
+                days_remaining = max(0, DELIVERY_DEADLINE_DAYS - days_since_payment)
+            deadline_status = "ok" if days_remaining > 2 else ("warning" if days_remaining > 0 else "overdue")
 
         detailed_orders.append({
             "id": o.get("id"),
@@ -1499,7 +1561,7 @@ async def crm_business_overview(
         })
     recent_events.sort(key=lambda x: x.get("date") or "", reverse=True)
 
-    return {
+    result = {
         "generated_at": now.isoformat(),
         "revenue": {
             "total": total_revenue,
@@ -1515,12 +1577,20 @@ async def crm_business_overview(
             "detailed": detailed_orders,
         },
         "subscriptions": sub_summary,
+        "health": {
+            "active_customers": active_customers,
+            "churn_rate": churn_rate,
+            "cancelled_last_30d": cancelled_last_30,
+        },
         "funnel": funnel,
         "fulfillment": fulfillment_summary,
         "outreach": outreach,
         "scans": scan_summary,
         "recent_events": recent_events[:30],
     }
+    _biz_overview_cache["data"] = result
+    _biz_overview_cache["expires"] = _time.time() + _BIZ_CACHE_TTL
+    return result
 
 
 def fmtAmount(amount: int | float) -> str:

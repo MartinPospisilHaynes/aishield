@@ -477,6 +477,12 @@ export interface RecentEvent {
     status: string;
 }
 
+export interface HealthMetrics {
+    active_customers: number;
+    churn_rate: number;
+    cancelled_last_30d: number;
+}
+
 export interface BusinessOverview {
     generated_at: string;
     revenue: {
@@ -493,6 +499,7 @@ export interface BusinessOverview {
         detailed: DetailedOrder[];
     };
     subscriptions: SubscriptionSummary;
+    health: HealthMetrics;
     funnel: ConversionFunnel;
     fulfillment: FulfillmentSummary;
     outreach: OutreachStats;

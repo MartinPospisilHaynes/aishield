@@ -324,6 +324,8 @@ export default function AdminPage() {
 
     // Business overview
     const [bizOverview, setBizOverview] = useState<BusinessOverview | null>(null);
+    const [revenueMode, setRevenueMode] = useState<"day" | "week" | "month">("day");
+    const [autoRefresh, setAutoRefresh] = useState(false);
 
     // Client management
     const [clientData, setClientData] = useState<ClientManagementData | null>(null);
@@ -430,6 +432,15 @@ export default function AdminPage() {
         setLoading(true);
         loadDashboard().finally(() => setLoading(false));
     }, [authed, loadDashboard]);
+
+    // Auto-refresh every 60s
+    useEffect(() => {
+        if (!autoRefresh || !authed) return;
+        const interval = setInterval(() => {
+            if (tab === "prehled") loadDashboard();
+        }, 60000);
+        return () => clearInterval(interval);
+    }, [autoRefresh, authed, tab, loadDashboard]);
 
     // ── Tab data load ──
     useEffect(() => {
@@ -638,6 +649,14 @@ export default function AdminPage() {
                         >
                             ← Zpět na web
                         </a>
+                        {tab === "prehled" && (
+                            <button
+                                onClick={() => setAutoRefresh(!autoRefresh)}
+                                className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${autoRefresh ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10"}`}
+                            >
+                                {autoRefresh ? "⏸ Auto 60s" : "▶ Auto-refresh"}
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 if (tab === "prehled") loadDashboard();
@@ -662,22 +681,46 @@ export default function AdminPage() {
                     {tab === "prehled" && (
                         <>
                             {/* ═══ SEKCE 1: HLAVNÍ KPI ═══ */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
                                 <StatCard icon="💰" label="Revenue celkem" value={fmtMoney(bizOverview?.revenue?.total ?? crmStats?.orders?.paid_amount ?? 0)} accent="green" />
                                 <StatCard icon="📈" label="Revenue tento měsíc" value={fmtMoney(bizOverview?.revenue?.this_month ?? 0)} accent="green" />
                                 <StatCard icon="🛒" label="Objednávky" value={`${bizOverview?.orders?.breakdown?.paid ?? 0} / ${bizOverview?.orders?.breakdown?.total ?? crmStats?.orders?.total ?? 0}`} sub="zaplaceno / celkem" accent="cyan" />
                                 <StatCard icon="🔁" label="Předplatné (MRR)" value={fmtMoney(bizOverview?.subscriptions?.monthly_recurring_revenue ?? 0)} sub={`${bizOverview?.subscriptions?.active ?? 0} aktivních`} accent="fuchsia" />
                                 <StatCard icon="✅" label="Doručeno" value={fmtNum(bizOverview?.fulfillment?.delivered ?? 0)} accent="green" />
                                 <StatCard icon="🚨" label="Po deadline" value={fmtNum(bizOverview?.fulfillment?.overdue ?? 0)} accent="red" />
+                                <StatCard icon="👥" label="Aktivní zákazníci" value={fmtNum(bizOverview?.health?.active_customers ?? 0)} accent="cyan" />
+                                <StatCard icon="📉" label="Churn (30d)" value={`${((bizOverview?.health?.churn_rate ?? 0) * 100).toFixed(1)}%`} sub={`${bizOverview?.health?.cancelled_last_30d ?? 0} zrušeno`} accent={((bizOverview?.health?.churn_rate ?? 0) > 0.05) ? "red" : "green"} />
                             </div>
 
                             {/* ═══ SEKCE 2: REVENUE GRAF ═══ */}
                             {bizOverview?.revenue?.chart && bizOverview.revenue.chart.length > 0 && (
                                 <Panel className="p-6">
-                                    <h2 className="text-lg font-semibold text-green-400 mb-4">📊 Revenue (časový graf)</h2>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-semibold text-green-400">📊 Revenue (časový graf)</h2>
+                                        <div className="flex gap-1">
+                                            {(["day", "week", "month"] as const).map(m => (
+                                                <button key={m} onClick={() => setRevenueMode(m)} className={`px-3 py-1 rounded text-xs font-medium transition-all ${revenueMode === m ? "bg-green-500/20 text-green-400 border border-green-500/30" : "text-gray-500 hover:text-gray-300"}`}>
+                                                    {m === "day" ? "Den" : m === "week" ? "Týden" : "Měsíc"}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                     <div className="h-48 flex items-end gap-1">
                                         {(() => {
-                                            const chart = bizOverview.revenue.chart;
+                                            const raw = bizOverview.revenue.chart;
+                                            // Aggregate by mode
+                                            let chart = raw;
+                                            if (revenueMode === "week" || revenueMode === "month") {
+                                                const grouped: Record<string, number> = {};
+                                                for (const p of raw) {
+                                                    const d = new Date(p.date);
+                                                    const key = revenueMode === "week"
+                                                        ? (() => { const mon = new Date(d); mon.setDate(d.getDate() - d.getDay() + 1); return mon.toISOString().slice(0, 10); })()
+                                                        : p.date.slice(0, 7);
+                                                    grouped[key] = (grouped[key] || 0) + p.amount;
+                                                }
+                                                chart = Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([date, amount]) => ({ date, amount }));
+                                            }
                                             const maxVal = Math.max(...chart.map(c => c.amount), 1);
                                             return chart.map((point, i) => (
                                                 <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
@@ -689,13 +732,13 @@ export default function AdminPage() {
                                                         style={{ height: `${Math.max((point.amount / maxVal) * 100, 4)}%`, minHeight: "4px" }}
                                                     />
                                                     {i % Math.max(1, Math.floor(chart.length / 8)) === 0 && (
-                                                        <span className="text-[9px] text-gray-500 -rotate-45 origin-top-left mt-1">{point.date.slice(5)}</span>
+                                                        <span className="text-[9px] text-gray-500 -rotate-45 origin-top-left mt-1">{revenueMode === "month" ? point.date : point.date.slice(5)}</span>
                                                     )}
                                                 </div>
                                             ));
                                         })()}
                                     </div>
-                                    <div className="flex justify-between mt-4 text-sm">
+                                    <div className="flex flex-wrap justify-between mt-4 text-sm gap-2">
                                         <span className="text-gray-400">🟢 Zaplaceno: <strong className="text-green-400">{fmtMoney(bizOverview.revenue.total)}</strong></span>
                                         <span className="text-gray-400">🟡 Čeká na platbu: <strong className="text-yellow-400">{fmtMoney(bizOverview.revenue.pending)}</strong></span>
                                         <span className="text-gray-400">🔴 Refundováno: <strong className="text-red-400">{fmtMoney(bizOverview.revenue.refunded)}</strong></span>
@@ -732,7 +775,7 @@ export default function AdminPage() {
                                 return urgentOrders.length > 0 ? (
                                     <Panel className="p-6">
                                         <h2 className="text-lg font-semibold text-orange-400 mb-2">⏰ Plnění & Deadliny</h2>
-                                        <p className="text-xs text-gray-500 mb-4">Objednávky, které ještě nebyly plně doručeny (SLA: 7 pracovních dnů od platby)</p>
+                                        <p className="text-xs text-gray-500 mb-4">Objednávky, které ještě nebyly plně doručeny (SLA: 7 pracovních dnů od platby, bez víkendů a CZ svátků)</p>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm">
                                                 <thead>
@@ -824,7 +867,7 @@ export default function AdminPage() {
                             {bizOverview?.outreach && (
                                 <Panel className="p-6">
                                     <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">📡 Outreach (email kampaně)</h2>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 mb-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-4">
                                         <div className="bg-black/20 rounded-xl p-3 text-center">
                                             <div className="text-2xl font-bold text-white">{fmtNum(bizOverview.outreach.total_in_database)}</div>
                                             <div className="text-xs text-gray-500">Firem v DB</div>
