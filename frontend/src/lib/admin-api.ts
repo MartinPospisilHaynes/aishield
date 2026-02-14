@@ -514,3 +514,53 @@ export async function getBusinessOverview(): Promise<BusinessOverview> {
     if (!res.ok) throw new Error("Nepodařilo se načíst obchodní přehled");
     return res.json();
 }
+
+// ── Admin Orders (all gateways) ──
+
+export interface AdminOrder {
+    id: string;
+    order_number: string;
+    email: string;
+    plan: string;
+    amount: number;
+    currency: string;
+    status: string;
+    payment_gateway: string;
+    variable_symbol?: string;
+    created_at: string;
+    paid_at?: string;
+}
+
+export interface AdminOrderStats {
+    total_orders: number;
+    total_revenue: number;
+    awaiting_payment: AdminOrder[];
+    by_gateway: Record<string, { count: number; revenue: number }>;
+}
+
+export async function getAdminOrders(status?: string, gateway?: string): Promise<AdminOrder[]> {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (gateway) params.set("gateway", gateway);
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders?${params}`);
+    if (!res.ok) throw new Error("Nepodařilo se načíst objednávky");
+    return res.json();
+}
+
+export async function getAdminOrderStats(): Promise<AdminOrderStats> {
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders/stats`);
+    if (!res.ok) throw new Error("Nepodařilo se načíst statistiky objednávek");
+    return res.json();
+}
+
+export async function confirmBankPayment(orderNumber: string): Promise<{ status: string; order_number: string }> {
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders/confirm-payment`, {
+        method: "POST",
+        body: JSON.stringify({ order_number: orderNumber }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Chyba při potvrzení platby" }));
+        throw new Error(err.detail || "Chyba při potvrzení platby");
+    }
+    return res.json();
+}

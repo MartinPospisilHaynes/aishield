@@ -17,6 +17,13 @@ from backend.payments import get_gopay, PaymentState, RecurrenceCycle
 from backend.payments.stripe_client import get_stripe
 from backend.payments.comgate_client import get_comgate
 from backend.api.auth import AuthUser, get_current_user, get_optional_user
+from backend.outbound.payment_emails import (
+    build_bank_transfer_email,
+    build_payment_received_email,
+    build_payment_confirmation_email,
+    generate_variable_symbol,
+)
+from backend.outbound.email_engine import send_email
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +76,7 @@ class CheckoutRequest(BaseModel):
     """Request pro vytvoření platby."""
     plan: str  # "basic" nebo "pro"
     email: str
-    gateway: Literal["gopay", "stripe", "comgate"] = "gopay"
+    gateway: Literal["gopay", "stripe", "comgate", "bank_transfer"] = "stripe"
 
 
 class CheckoutResponse(BaseModel):
@@ -227,13 +234,23 @@ async def list_available_gateways():
         "default": settings.default_payment_gateway == "comgate",
     })
 
+    # Bankovní převod — vždy dostupný
+    gateways.append({
+        "id": "bank_transfer",
+        "name": "Bankovní převod",
+        "description": "Faktura s platebními údaji na email",
+        "available": True,
+        "default": False,
+    })
+
     return {"gateways": gateways}
 
 
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_current_user)):
     """
-    Vytvoří jednorázovou platbu přes zvolenou platební bránu (GoPay/Stripe/Comgate).
+    Vytvoří jednorázovou platbu přes zvolenou platební bránu (GoPay/Stripe/Comgate)
+    nebo objednávku s bankovním převodem.
     Vyžaduje přihlášení.
     """
     if req.plan not in PLANS:
@@ -249,6 +266,55 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
     frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
     api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
 
+    # ── Bankovní převod — speciální flow ──
+    if gateway == "bank_transfer":
+        variable_symbol = generate_variable_symbol(order_number)
+        due_date = (datetime.utcnow() + timedelta(days=7)).strftime("%d. %m. %Y")
+
+        supabase = get_supabase()
+        supabase.table("orders").insert({
+            "order_number": order_number,
+            "gopay_payment_id": f"BT-{variable_symbol}",
+            "plan": req.plan,
+            "amount": amount,
+            "email": req.email,
+            "user_email": req.email,
+            "status": "AWAITING_PAYMENT",
+            "order_type": "one_time",
+            "payment_gateway": "bank_transfer",
+            "created_at": datetime.utcnow().isoformat(),
+        }).execute()
+
+        # Odeslat email s platebními údaji
+        try:
+            html = build_bank_transfer_email(
+                order_number=order_number,
+                plan=req.plan,
+                amount=amount,
+                email=req.email,
+                variable_symbol=variable_symbol,
+                due_date=due_date,
+            )
+            await send_email(
+                to=req.email,
+                subject=f"AIshield.cz — Objednávka {order_number} — platební údaje",
+                html=html,
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz",
+            )
+            logger.info(f"[Payments] Bank transfer email sent to {req.email} for {order_number}")
+        except Exception as e:
+            logger.error(f"[Payments] Failed to send bank transfer email: {e}")
+
+        # Vrátíme URL na success stránku (ne na platební bránu)
+        return CheckoutResponse(
+            payment_id=f"BT-{variable_symbol}",
+            gateway_url=f"{frontend_url}/platba/stav?id=BT-{variable_symbol}&gateway=bank_transfer",
+            order_number=order_number,
+            gateway="bank_transfer",
+        )
+
+    # ── Online platba (Stripe/GoPay/Comgate) ──
     # Return URL - pro každou bránu jiný formát
     if gateway == "stripe":
         return_url = f"{frontend_url}/platba/stav?session_id={{CHECKOUT_SESSION_ID}}&gateway=stripe"
@@ -292,6 +358,8 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
         "payment_gateway": gateway,
         "created_at": datetime.utcnow().isoformat(),
     }).execute()
+
+    # Odeslat potvrzovací email pro online platby (webhook ho pošle po zaplacení)
 
     return CheckoutResponse(
         payment_id=result["payment_id"],
@@ -1161,5 +1229,128 @@ async def comgate_webhook(request: Request):
         logger.info(f"[Comgate Webhook] Platba aktualizována: {trans_id} → {state}")
     else:
         logger.warning(f"[Comgate Webhook] Order nenalezen pro transId {trans_id}")
+
+
+# ────────────────────────────────────────────────────────────
+# ADMIN — správa objednávek a potvrzení plateb
+# ────────────────────────────────────────────────────────────
+
+@router.get("/admin/orders")
+async def admin_list_orders(
+    status: str | None = None,
+    gateway: str | None = None,
+    limit: int = 50,
+):
+    """
+    Seznam všech objednávek pro admin dashboard.
+    Volitelné filtry: status, gateway.
+    """
+    supabase = get_supabase()
+    query = supabase.table("orders").select("*").order("created_at", desc=True).limit(limit)
+
+    if status:
+        query = query.eq("status", status)
+    if gateway:
+        query = query.eq("payment_gateway", gateway)
+
+    result = query.execute()
+    return {"orders": result.data or [], "total": len(result.data or [])}
+
+
+@router.get("/admin/orders/stats")
+async def admin_orders_stats():
+    """
+    Souhrn objednávek pro dashboard — celkové příjmy, počet objednávek, čekající platby.
+    """
+    supabase = get_supabase()
+    all_orders = supabase.table("orders").select("*").execute()
+    orders = all_orders.data or []
+
+    total_revenue = sum(o["amount"] for o in orders if o.get("status") == "PAID")
+    total_orders = len(orders)
+    paid_orders = len([o for o in orders if o.get("status") == "PAID"])
+    awaiting = [o for o in orders if o.get("status") == "AWAITING_PAYMENT"]
+    pending = [o for o in orders if o.get("status") in ("CREATED", "PAYMENT_METHOD_CHOSEN")]
+
+    # Per gateway breakdown
+    gateway_stats = {}
+    for o in orders:
+        gw = o.get("payment_gateway", "unknown")
+        if gw not in gateway_stats:
+            gateway_stats[gw] = {"total": 0, "paid": 0, "revenue": 0}
+        gateway_stats[gw]["total"] += 1
+        if o.get("status") == "PAID":
+            gateway_stats[gw]["paid"] += 1
+            gateway_stats[gw]["revenue"] += o["amount"]
+
+    return {
+        "total_revenue": total_revenue,
+        "total_orders": total_orders,
+        "paid_orders": paid_orders,
+        "awaiting_payment": len(awaiting),
+        "pending_online": len(pending),
+        "awaiting_orders": awaiting,
+        "gateway_stats": gateway_stats,
+    }
+
+
+class ConfirmPaymentRequest(BaseModel):
+    """Request pro potvrzení bankovního převodu."""
+    order_number: str
+    note: str = ""
+
+
+@router.post("/admin/orders/confirm-payment")
+async def admin_confirm_bank_payment(req: ConfirmPaymentRequest):
+    """
+    Admin potvrdí, že bankovní převod dorazil.
+    Změní status na PAID, odešle konfirmační email klientovi.
+    """
+    supabase = get_supabase()
+
+    # Najít objednávku
+    result = supabase.table("orders").select("*").eq(
+        "order_number", req.order_number
+    ).limit(1).execute()
+
+    if not result.data:
+        raise HTTPException(status_code=404, detail=f"Objednávka {req.order_number} nenalezena")
+
+    order = result.data[0]
+
+    if order["status"] == "PAID":
+        raise HTTPException(status_code=400, detail="Objednávka je již zaplacená")
+
+    # Aktualizovat status
+    supabase.table("orders").update({
+        "status": "PAID",
+        "paid_at": datetime.utcnow().isoformat(),
+        "activated": True,
+    }).eq("order_number", req.order_number).execute()
+
+    # Odeslat email klientovi
+    try:
+        html = build_payment_received_email(
+            order_number=order["order_number"],
+            plan=order["plan"],
+            amount=order["amount"],
+        )
+        await send_email(
+            to=order["email"],
+            subject=f"AIshield.cz — Platba přijata — {order['order_number']}",
+            html=html,
+            from_email="info@aishield.cz",
+            from_name="AIshield.cz",
+        )
+        logger.info(f"[Admin] Payment received email sent to {order['email']} for {order['order_number']}")
+    except Exception as e:
+        logger.error(f"[Admin] Failed to send payment received email: {e}")
+
+    return {
+        "status": "confirmed",
+        "order_number": req.order_number,
+        "email_sent": True,
+        "message": f"Objednávka {req.order_number} potvrzena, email odeslán na {order['email']}",
+    }
 
     return {"code": 0, "message": "OK"}

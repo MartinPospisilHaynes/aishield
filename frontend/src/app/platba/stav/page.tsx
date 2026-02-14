@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-type PaymentGateway = "gopay" | "stripe" | "comgate";
+type PaymentGateway = "gopay" | "stripe" | "comgate" | "bank_transfer";
 
 type PaymentStatus = {
     payment_id: string;
@@ -20,13 +20,11 @@ const GATEWAY_NAMES: Record<PaymentGateway, string> = {
     gopay: "GoPay",
     stripe: "Stripe",
     comgate: "Comgate",
+    bank_transfer: "Bankovní převod",
 };
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
-    // GoPay: ?id=123&gateway=gopay
-    // Stripe: ?session_id=cs_...&gateway=stripe
-    // Comgate: ?id=xxx&refId=yyy&gateway=comgate
     const gateway = (searchParams.get("gateway") || "gopay") as PaymentGateway;
     const paymentId = searchParams.get("id") || searchParams.get("session_id");
     const isSubscription = searchParams.get("type") === "subscription";
@@ -35,8 +33,15 @@ function PaymentStatusContent() {
     const [error, setError] = useState("");
 
     const gatewayName = GATEWAY_NAMES[gateway] || gateway;
+    const isBankTransfer = gateway === "bank_transfer";
 
     useEffect(() => {
+        // Bank transfer — no online gateway to check
+        if (isBankTransfer) {
+            setLoading(false);
+            return;
+        }
+
         if (!paymentId) {
             setError("Chybí ID platby");
             setLoading(false);
@@ -59,7 +64,71 @@ function PaymentStatusContent() {
         }
 
         checkStatus();
-    }, [paymentId, gateway]);
+    }, [paymentId, gateway, isBankTransfer]);
+
+    // Bank transfer — show confirmation immediately
+    if (isBankTransfer) {
+        return (
+            <section className="py-20 relative">
+                <div className="absolute inset-0 -z-10">
+                    <div className="absolute top-[20%] left-[30%] h-[500px] w-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
+                    <div className="absolute bottom-[20%] right-[30%] h-[300px] w-[300px] rounded-full bg-fuchsia-500/5 blur-[100px]" />
+                </div>
+                <div className="mx-auto max-w-lg px-6 text-center">
+                    <div className="glass py-12">
+                        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                            <svg className="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.265a2.25 2.25 0 01-2.25 2.25H3.75a2.25 2.25 0 01-2.25-2.25V6.75a2.25 2.25 0 012.25-2.25h16.5a2.25 2.25 0 012.25 2.25v11.5z" />
+                            </svg>
+                        </div>
+
+                        <h1 className="text-2xl font-extrabold mb-2">
+                            Objednávka <span className="text-cyan-400">přijata</span> ✓
+                        </h1>
+
+                        {paymentId && (
+                            <p className="text-slate-400 text-sm mb-2">
+                                Variabilní symbol: <span className="text-white font-mono font-bold">{paymentId.replace("BT-", "")}</span>
+                            </p>
+                        )}
+
+                        <p className="text-slate-400 text-sm mb-4 leading-relaxed max-w-sm mx-auto">
+                            Na váš email jsme odeslali fakturu s platebními údaji pro bankovní převod.
+                        </p>
+
+                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 mb-8 text-left max-w-sm mx-auto">
+                            <h4 className="text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-3">Co bude následovat</h4>
+                            <ul className="space-y-2 text-sm text-slate-300">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-cyan-400 font-bold mt-0.5">1.</span>
+                                    Proveďte převod dle údajů v emailu
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-cyan-400 font-bold mt-0.5">2.</span>
+                                    Po přijetí platby vás budeme kontaktovat
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-cyan-400 font-bold mt-0.5">3.</span>
+                                    Vyplňte dotazník pro přípravu dokumentů
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
+
+                        <div className="space-y-3">
+                            <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                Vyplnit dotazník
+                            </a>
+                            <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
+                                Přejít na Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     if (loading) {
         return (

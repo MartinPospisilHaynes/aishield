@@ -24,6 +24,9 @@ import {
     getClientManagement,
     triggerClientRescan,
     getBusinessOverview,
+    getAdminOrders,
+    getAdminOrderStats,
+    confirmBankPayment,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -38,6 +41,8 @@ import type {
     RescanResult,
     BusinessOverview,
     DetailedOrder,
+    AdminOrder,
+    AdminOrderStats,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -111,12 +116,14 @@ type Tab =
     | "ulohy"
     | "monitoring"
     | "klienti"
+    | "objednavky"
     | "agentura"
     | "nastroje";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
     { id: "klienti", icon: "💼", label: "Klienti & Platby" },
+    { id: "objednavky", icon: "🧾", label: "Objednávky" },
     { id: "firmy", icon: "🏭", label: "Firmy" },
     { id: "pipeline", icon: "📈", label: "Pipeline" },
     { id: "emaily", icon: "📧", label: "Emaily" },
@@ -338,6 +345,13 @@ export default function AdminPage() {
     // Tools
     const [toolResult, setToolResult] = useState<string | null>(null);
 
+    // Orders
+    const [adminOrders, setAdminOrders] = useState<AdminOrder[]>([]);
+    const [orderStats, setOrderStats] = useState<AdminOrderStats | null>(null);
+    const [orderFilter, setOrderFilter] = useState<"all" | "PAID" | "AWAITING_PAYMENT" | "EXPIRED">("all");
+    const [orderGwFilter, setOrderGwFilter] = useState<"all" | "stripe" | "bank_transfer" | "gopay" | "comgate">("all");
+    const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
+
     // Loading
     const [loading, setLoading] = useState(true);
 
@@ -426,6 +440,19 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadOrders = useCallback(async () => {
+        try {
+            const [orders, stats] = await Promise.all([
+                getAdminOrders(),
+                getAdminOrderStats(),
+            ]);
+            setAdminOrders(orders);
+            setOrderStats(stats);
+        } catch {
+            // silent
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -451,7 +478,8 @@ export default function AdminPage() {
         if (tab === "monitoring") loadMonitoring();
         if (tab === "agentura") loadAgency();
         if (tab === "klienti") loadClientManagement();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement]);
+        if (tab === "objednavky") loadOrders();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -666,6 +694,7 @@ export default function AdminPage() {
                                 if (tab === "monitoring") loadMonitoring();
                                 if (tab === "agentura") loadAgency();
                                 if (tab === "klienti") loadClientManagement();
+                                if (tab === "objednavky") loadOrders();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -2385,6 +2414,254 @@ export default function AdminPage() {
                                                 );
                                             });
                                         })()}
+                                    </div>
+                                )}
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {/*  TAB: Objednávky (Orders)                 */}
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "objednavky" && (
+                        <>
+                            {/* KPI cards */}
+                            {orderStats && (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <StatCard
+                                        icon="🧾"
+                                        label="Objednávek celkem"
+                                        value={fmtNum(orderStats.total_orders)}
+                                        accent="cyan"
+                                    />
+                                    <StatCard
+                                        icon="💰"
+                                        label="Tržby celkem"
+                                        value={fmtMoney(orderStats.total_revenue)}
+                                        accent="green"
+                                    />
+                                    <StatCard
+                                        icon="⏳"
+                                        label="Čeká na platbu"
+                                        value={fmtNum(orderStats.awaiting_payment?.length || 0)}
+                                        accent="yellow"
+                                    />
+                                    <StatCard
+                                        icon="🏦"
+                                        label="Bankovní převody"
+                                        value={fmtNum(orderStats.by_gateway?.bank_transfer?.count || 0)}
+                                        accent="orange"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Awaiting bank transfers */}
+                            {orderStats && orderStats.awaiting_payment && orderStats.awaiting_payment.length > 0 && (
+                                <Panel className="p-4">
+                                    <h3 className="text-sm font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+                                        ⏳ Čekající platby — k potvrzení
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {orderStats.awaiting_payment.map((o) => (
+                                            <div
+                                                key={o.order_number}
+                                                className="flex items-center justify-between bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3"
+                                            >
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-white font-mono text-sm font-medium">{o.order_number}</span>
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 uppercase font-bold">
+                                                            {o.payment_gateway}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-0.5">
+                                                        {o.email} • {o.plan?.toUpperCase()} • VS: {o.variable_symbol || "—"}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="text-right">
+                                                        <div className="text-sm font-bold text-yellow-400">{fmtMoney(o.amount)}</div>
+                                                        <div className="text-[10px] text-gray-500">{fmtDate(o.created_at)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm(`Opravdu potvrdit platbu ${o.order_number}?`)) return;
+                                                            setConfirmingOrder(o.order_number);
+                                                            try {
+                                                                await confirmBankPayment(o.order_number);
+                                                                await loadOrders();
+                                                            } catch (err) {
+                                                                alert(err instanceof Error ? err.message : "Chyba");
+                                                            } finally {
+                                                                setConfirmingOrder(null);
+                                                            }
+                                                        }}
+                                                        disabled={confirmingOrder === o.order_number}
+                                                        className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                                                            confirmingOrder === o.order_number
+                                                                ? "bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse cursor-wait"
+                                                                : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                                                        }`}
+                                                    >
+                                                        {confirmingOrder === o.order_number ? "⏳ Potvrzuji…" : "✅ Potvrdit platbu"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Panel>
+                            )}
+
+                            {/* Filters */}
+                            <Panel className="p-4">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="text-xs text-gray-500 font-medium">Stav:</span>
+                                    {(["all", "PAID", "AWAITING_PAYMENT", "EXPIRED"] as const).map((f) => {
+                                        const labels: Record<string, string> = {
+                                            all: "Všechny",
+                                            PAID: "✅ Zaplacené",
+                                            AWAITING_PAYMENT: "⏳ Čekající",
+                                            EXPIRED: "❌ Expirované",
+                                        };
+                                        return (
+                                            <button
+                                                key={f}
+                                                onClick={() => setOrderFilter(f)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    orderFilter === f
+                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                }`}
+                                            >
+                                                {labels[f]}
+                                            </button>
+                                        );
+                                    })}
+                                    <span className="text-xs text-gray-500 font-medium ml-4">Brána:</span>
+                                    {(["all", "stripe", "bank_transfer", "gopay", "comgate"] as const).map((f) => {
+                                        const labels: Record<string, string> = {
+                                            all: "Všechny",
+                                            stripe: "💳 Stripe",
+                                            bank_transfer: "🏦 Převod",
+                                            gopay: "GoPay",
+                                            comgate: "Comgate",
+                                        };
+                                        return (
+                                            <button
+                                                key={f}
+                                                onClick={() => setOrderGwFilter(f)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    orderGwFilter === f
+                                                        ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
+                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                }`}
+                                            >
+                                                {labels[f]}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </Panel>
+
+                            {/* Orders table */}
+                            <Panel className="overflow-hidden">
+                                {adminOrders.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-500 animate-pulse">Načítám objednávky…</div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b border-white/10">
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Objednávka</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Plán</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Brána</th>
+                                                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Částka</th>
+                                                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Stav</th>
+                                                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Datum</th>
+                                                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Akce</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-white/5">
+                                                {adminOrders
+                                                    .filter((o) => orderFilter === "all" || o.status === orderFilter)
+                                                    .filter((o) => orderGwFilter === "all" || o.payment_gateway === orderGwFilter)
+                                                    .map((o) => {
+                                                        const isPaid = o.status === "PAID" || o.status === "paid";
+                                                        const isAwaiting = o.status === "AWAITING_PAYMENT";
+                                                        return (
+                                                            <tr key={o.id} className="hover:bg-white/[0.02] transition-colors">
+                                                                <td className="px-4 py-3">
+                                                                    <span className="text-white font-mono text-xs">{o.order_number}</span>
+                                                                    {o.variable_symbol && (
+                                                                        <div className="text-[10px] text-gray-500">VS: {o.variable_symbol}</div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-xs text-gray-300 max-w-[200px] truncate">{o.email}</td>
+                                                                <td className="px-4 py-3">
+                                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-white/5 border border-white/10 text-gray-300">
+                                                                        {o.plan}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3">
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                                                        o.payment_gateway === "stripe"
+                                                                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                                                            : o.payment_gateway === "bank_transfer"
+                                                                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                                            : "bg-white/5 text-gray-400 border border-white/10"
+                                                                    }`}>
+                                                                        {o.payment_gateway === "stripe" ? "💳 Stripe" :
+                                                                         o.payment_gateway === "bank_transfer" ? "🏦 Převod" :
+                                                                         o.payment_gateway}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <span className={`font-bold text-xs ${isPaid ? "text-green-400" : isAwaiting ? "text-yellow-400" : "text-gray-500"}`}>
+                                                                        {fmtMoney(o.amount)}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${
+                                                                        isPaid
+                                                                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                                            : isAwaiting
+                                                                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                                                            : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                                                    }`}>
+                                                                        {isPaid ? "✅ Zaplaceno" : isAwaiting ? "⏳ Čeká" : o.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right text-[11px] text-gray-500">
+                                                                    {fmtDate(o.paid_at || o.created_at)}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    {isAwaiting && (
+                                                                        <button
+                                                                            onClick={async () => {
+                                                                                if (!confirm(`Potvrdit platbu ${o.order_number}?`)) return;
+                                                                                setConfirmingOrder(o.order_number);
+                                                                                try {
+                                                                                    await confirmBankPayment(o.order_number);
+                                                                                    await loadOrders();
+                                                                                } catch (err) {
+                                                                                    alert(err instanceof Error ? err.message : "Chyba");
+                                                                                } finally {
+                                                                                    setConfirmingOrder(null);
+                                                                                }
+                                                                            }}
+                                                                            disabled={confirmingOrder === o.order_number}
+                                                                            className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all disabled:animate-pulse disabled:cursor-wait"
+                                                                        >
+                                                                            {confirmingOrder === o.order_number ? "⏳" : "✅ Potvrdit"}
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 )}
                             </Panel>

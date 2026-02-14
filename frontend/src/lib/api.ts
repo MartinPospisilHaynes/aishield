@@ -345,9 +345,9 @@ export async function getCombinedReport(
     return res.json();
 }
 
-// ── Platby (multi-gateway: GoPay, Stripe, Comgate) ──
+// ── Platby (multi-gateway: GoPay, Stripe, Comgate, Bankovní převod) ──
 
-export type PaymentGateway = "gopay" | "stripe" | "comgate";
+export type PaymentGateway = "gopay" | "stripe" | "comgate" | "bank_transfer";
 
 export interface CheckoutResponse {
     payment_id: string;
@@ -365,7 +365,7 @@ export interface PaymentStatusResponse {
 }
 
 export interface GatewayInfo {
-    id: PaymentGateway;
+    id: PaymentGateway | string;
     name: string;
     description: string;
     available: boolean;
