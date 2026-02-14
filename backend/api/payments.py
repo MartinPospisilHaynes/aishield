@@ -149,6 +149,74 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
     )
 
 
+# ── Guest checkout (bez přihlášení, pouze coffee) ──
+
+class GuestCheckoutRequest(BaseModel):
+    """Request pro guest platbu (bez přihlášení). Pouze coffee."""
+    plan: str = "coffee"
+    email: str = ""
+
+
+@router.post("/checkout-guest", response_model=CheckoutResponse)
+async def create_guest_checkout(req: GuestCheckoutRequest):
+    """
+    Vytvoří platbu bez přihlášení — povoleno pouze pro plán 'coffee'.
+    Email je volitelný (GoPay ho nevyžaduje striktně).
+    """
+    if req.plan != "coffee":
+        raise HTTPException(status_code=403, detail="Guest checkout je povolen pouze pro plán 'coffee'.")
+
+    if req.plan not in PLANS:
+        raise HTTPException(status_code=400, detail=f"Neznámý balíček: {req.plan}")
+
+    settings = get_settings()
+    plan = PLANS[req.plan]
+    amount = getattr(settings, plan["price_field"])
+
+    order_number = f"AS-{req.plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
+
+    frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
+    api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
+
+    gopay = get_gopay()
+    guest_email = req.email or "guest@aishield.cz"
+
+    try:
+        payment = await gopay.create_payment(
+            amount=amount,
+            order_number=order_number,
+            description=f"AIshield.cz — {plan['name']}: {plan['description']}",
+            email=guest_email,
+            return_url=f"{frontend_url}/platba/stav?id={{paymentId}}",
+            notify_url=f"{api_url}/api/payments/webhook",
+        )
+    except Exception as e:
+        logger.error(f"[Payments] Chyba při guest checkout: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Chyba při komunikaci s GoPay: {str(e)}",
+        )
+
+    supabase = get_supabase()
+    supabase.table("orders").insert({
+        "order_number": order_number,
+        "gopay_payment_id": payment.payment_id,
+        "plan": req.plan,
+        "amount": amount,
+        "email": guest_email,
+        "user_email": guest_email,
+        "status": payment.state,
+        "order_type": "one_time",
+        "created_at": datetime.utcnow().isoformat(),
+    }).execute()
+
+    return CheckoutResponse(
+        payment_id=payment.payment_id,
+        gateway_url=payment.gateway_url,
+        order_number=order_number,
+    )
+
+
 # ────────────────────────────────────────────────────────────
 # MONITORING ELIGIBILITY (kontrola, zda klient může aktivovat monitoring)
 # ────────────────────────────────────────────────────────────

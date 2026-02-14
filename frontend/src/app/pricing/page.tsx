@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { createCheckout } from "@/lib/api";
+import { createCheckout, createGuestCheckout } from "@/lib/api";
 
 const plans = [
     {
@@ -95,6 +95,20 @@ export default function PricingPage() {
     const router = useRouter();
 
     async function handleCheckout(planKey: string) {
+        // Coffee = guest checkout, nevyžaduje přihlášení
+        if (planKey === "coffee") {
+            setLoading(planKey);
+            setError("");
+            try {
+                const data = await createGuestCheckout("coffee", user?.email || "");
+                window.location.href = data.gateway_url;
+            } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
+                setLoading(null);
+            }
+            return;
+        }
+
         // Pokud není přihlášen, přesměrovat na registraci
         if (!user) {
             router.push(`/registrace?redirect=/pricing&plan=${planKey}`);

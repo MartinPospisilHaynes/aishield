@@ -382,6 +382,27 @@ export async function createCheckout(
 }
 
 /**
+ * Guest checkout — platba bez přihlášení (pouze coffee).
+ */
+export async function createGuestCheckout(
+    plan: string,
+    email?: string,
+): Promise<CheckoutResponse> {
+    const res = await fetch(`${API_URL}/api/payments/checkout-guest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, email: email || "" }),
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
+
+/**
  * Zkontroluje stav platby.
  */
 export async function getPaymentStatus(
