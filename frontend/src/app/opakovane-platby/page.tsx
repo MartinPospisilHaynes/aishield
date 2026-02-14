@@ -37,7 +37,7 @@ export default function OpakovvanePlatbyPage() {
                                 Při aktivaci monitoringu souhlasíte s&nbsp;pravidelným automatickým
                                 strhováním platby z&nbsp;vaší platební karty jednou měsíčně.
                                 Platba se provádí přes zabezpečenou platební bránu{" "}
-                                <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay</a>.
+                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay</a>.
                             </p>
                         </div>
                     </div>
@@ -205,7 +205,7 @@ export default function OpakovvanePlatbyPage() {
                             </p>
                             <p>
                                 <strong className="text-white">Platební brána:</strong>{" "}
-                                <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay s.r.o.</a>
+                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay s.r.o.</a>
                             </p>
                         </div>
                     </div>

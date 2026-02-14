@@ -673,7 +673,7 @@ export default function PricingPage() {
                 <div className="mt-12 text-center">
                     <p className="text-xs text-slate-600">
                         Platby zpracovává{" "}
-                        <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline">
+                        <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline">
                             GoPay
                         </a>
                         {" "}— certifikovaná platební brána s PCI DSS

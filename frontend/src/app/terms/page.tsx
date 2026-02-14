@@ -204,7 +204,7 @@ export default function TermsPage() {
                                     — platební kartou (Visa, Mastercard), Apple Pay nebo Google Pay
                                     prostřednictvím zabezpečené platební brány{" "}
                                     <a
-                                        href="https://www.gopay.cz"
+                                        href="https://www.gopay.com"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-neon-fuchsia hover:underline"
