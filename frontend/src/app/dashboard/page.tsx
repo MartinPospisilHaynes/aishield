@@ -86,14 +86,18 @@ const TEMPLATE_NAMES: Record<string, string> = {
 const RISK_COLORS: Record<string, string> = {
     high: "bg-red-500/20 text-red-400 border border-red-500/30",
     medium: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-    low: "bg-amber-500/15 text-amber-300 border border-amber-400/25",
+    limited: "bg-cyan-500/15 text-cyan-300 border border-cyan-400/25",
+    low: "bg-cyan-500/15 text-cyan-300 border border-cyan-400/25",
+    minimal: "bg-slate-500/15 text-slate-400 border border-slate-500/25",
 };
 
-/* ── Obligation labels per risk level (marketing-oriented, not calming) ── */
+/* ── Obligation labels per risk level — dle skutečného znění EU AI Act ── */
 const OBLIGATION_LABEL: Record<string, string> = {
-    high: "Čl. 6 + 9 — plná regulace",
-    medium: "Čl. 50 + 9 — dokumentace",
-    low: "Čl. 50 — povinná transparence",
+    high: "Čl. 6 — vysoce rizikový systém",
+    medium: "Čl. 50 — transparenční povinnosti",
+    limited: "Čl. 50 — transparenční povinnosti",
+    low: "Čl. 50 — transparenční povinnosti",
+    minimal: "Minimální riziko",
 };
 
 /* ── Layman-friendly AI system explanations ── */

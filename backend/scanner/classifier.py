@@ -63,8 +63,9 @@ DŮLEŽITÉ:
 - Piš ČESKY (doporučení, popisy)
 - Buď stručný a přesný
 - U chatbotů: čl. 50 odst. 1 AI Act (povinnost informovat, že uživatel komunikuje s AI)
-- U analytiky s AI predikcemi: čl. 50 odst. 4
+- U generátorů obsahu: čl. 50 odst. 2 (povinnost označit syntetický obsah)
 - U doporučovacích systémů: čl. 50 odst. 1 pokud personalizované
+- Analytické nástroje (GA4, GTM, pixely) NEJSOU AI systémy dle AI Act — označ jako deployed=false
 - Vrať POUZE validní JSON pole"""
 
 USER_PROMPT_TEMPLATE = """Analyzovaný web: {url}

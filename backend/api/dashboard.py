@@ -95,14 +95,22 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
         "company_id", company_id
     ).order("created_at", desc=True).limit(10).execute()
 
-    # 3. Nálezy (z posledního skenu)
+    # 3. Nálezy (z posledního skenu) — filtrujeme false positives
     findings = []
+    # Nástroje, které NEJSOU AI systémy (pro zpětnou kompatibilitu se starými skeny)
+    NON_AI_TOOLS = {"google tag manager", "google analytics 4", "seznam retargeting", "heureka"}
     if scans_res.data:
         latest_scan_id = scans_res.data[0]["id"]
         findings_res = supabase.table("findings").select("*").eq(
             "scan_id", latest_scan_id
+        ).neq("source", "ai_classified_fp").neq(
+            "risk_level", "none"
         ).order("risk_level", desc=True).execute()
-        findings = findings_res.data or []
+        # Bezpečnostní filtr: vyřadíme i staré záznamy non-AI nástrojů
+        findings = [
+            f for f in (findings_res.data or [])
+            if f.get("name", "").lower() not in NON_AI_TOOLS
+        ]
 
     # 4. Dokumenty
     docs_res = supabase.table("documents").select("*").eq(

@@ -36,6 +36,10 @@ function RegistraceInner() {
     const [partner, setPartner] = useState<string | null>(null);
     const [aresLoading, setAresLoading] = useState(false);
     const [aresStatus, setAresStatus] = useState<"idle" | "found" | "not-found">("idle");
+    // Anti-bot: math CAPTCHA
+    const [captchaA, setCaptchaA] = useState(0);
+    const [captchaB, setCaptchaB] = useState(0);
+    const [captchaAnswer, setCaptchaAnswer] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = createClient();
@@ -44,6 +48,12 @@ function RegistraceInner() {
         const p = searchParams.get("partner");
         if (p) setPartner(p);
     }, [searchParams]);
+
+    // Generate math CAPTCHA on mount
+    useEffect(() => {
+        setCaptchaA(Math.floor(Math.random() * 10) + 1);
+        setCaptchaB(Math.floor(Math.random() * 10) + 1);
+    }, []);
 
     const redirectTo = searchParams.get("redirect") || "/dashboard";
 
@@ -95,6 +105,17 @@ function RegistraceInner() {
         if (!gdprConsent) {
             setError("Pro registraci je nutný souhlas se zpracováním údajů");
             setLoading(false);
+            return;
+        }
+
+        // Anti-bot: ověření matematického příkladu
+        if (parseInt(captchaAnswer, 10) !== captchaA + captchaB) {
+            setError("Nesprávná odpověď na ověřovací otázku. Zkuste to znovu.");
+            setLoading(false);
+            // Nový příklad
+            setCaptchaA(Math.floor(Math.random() * 10) + 1);
+            setCaptchaB(Math.floor(Math.random() * 10) + 1);
+            setCaptchaAnswer("");
             return;
         }
 
@@ -501,6 +522,31 @@ function RegistraceInner() {
                                 AI Act compliance v souladu s GDPR.
                             </span>
                         </label>
+
+                        {/* Anti-bot: matematický příklad */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                Ověření <span className="text-slate-500">(ochrana proti robotům)</span>
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-slate-300 font-mono whitespace-nowrap">
+                                    {captchaA} + {captchaB} =
+                                </span>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={captchaAnswer}
+                                    onChange={(e) => setCaptchaAnswer(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                                    placeholder="?"
+                                    required
+                                    maxLength={3}
+                                    className="w-20 rounded-xl border border-white/10 bg-white/5 px-4 py-3
+                                        text-white text-center placeholder:text-slate-500
+                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                        transition-all"
+                                />
+                            </div>
+                        </div>
 
                         <button
                             type="submit"
