@@ -3,40 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { adminLogin, isAdminLoggedIn } from "@/lib/admin-api";
-import { createClient } from "@/lib/supabase-browser";
 
 export default function AdminLoginPage() {
     const router = useRouter();
-    const supabase = createClient();
 
-    // Step 1 = Supabase login, Step 2 = CRM password
-    const [step, setStep] = useState<1 | 2>(1);
-
-    // Step 1 fields
-    const [email, setEmail] = useState("");
-    const [supabasePassword, setSupabasePassword] = useState("");
-    const [showSupabasePassword, setShowSupabasePassword] = useState(false);
-
-    // Step 2 fields
-    const [adminUser, setAdminUser] = useState("ADMIN");
-    const [adminPassword, setAdminPassword] = useState("");
-    const [showAdminPassword, setShowAdminPassword] = useState(false);
-
+    const [username, setUsername] = useState("ADMIN");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Check if already fully logged in
+    // Already logged in → redirect
     useEffect(() => {
-        (async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user && isAdminLoggedIn()) {
-                router.replace("/admin");
-            } else if (user) {
-                // Supabase session exists, skip to step 2
-                setStep(2);
-            }
-        })();
-    }, [router, supabase]);
+        if (isAdminLoggedIn()) {
+            router.replace("/admin");
+        }
+    }, [router]);
 
     // Eye toggle icon component
     function EyeToggle({ show, onToggle }: { show: boolean; onToggle: () => void }) {
@@ -51,35 +33,15 @@ export default function AdminLoginPage() {
         );
     }
 
-    // Step 1: Supabase login
-    async function handleSupabaseLogin(e: React.FormEvent) {
+    async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
         setError("");
         setLoading(true);
         try {
-            const { error: authError } = await supabase.auth.signInWithPassword({ email, password: supabasePassword });
-            if (authError) {
-                setError(authError.message === "Invalid login credentials" ? "Nesprávný email nebo heslo." : authError.message);
-                return;
-            }
-            setStep(2);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Chyba přihlášení");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    // Step 2: CRM admin login
-    async function handleAdminLogin(e: React.FormEvent) {
-        e.preventDefault();
-        setError("");
-        setLoading(true);
-        try {
-            await adminLogin(adminUser, adminPassword);
+            await adminLogin(username, password);
             router.push("/admin");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Nesprávné admin heslo");
+            setError(err instanceof Error ? err.message : "Nesprávné přihlašovací údaje");
         } finally {
             setLoading(false);
         }
@@ -96,121 +58,49 @@ export default function AdminLoginPage() {
                     <p className="text-gray-400 mt-2">Řídící panel systému</p>
                 </div>
 
-                {/* Step indicator */}
-                <div className="flex items-center justify-center gap-3 mb-6">
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${step === 1 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "bg-green-500/20 text-green-400 border border-green-500/30"}`}>
-                        {step > 1 ? "✓" : "1"} Účet
+                <form onSubmit={handleLogin} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Uživatel</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className={inputCls}
+                            placeholder="ADMIN"
+                            autoFocus
+                            required
+                        />
                     </div>
-                    <div className="w-6 h-px bg-white/20" />
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${step === 2 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "bg-white/5 text-gray-500 border border-white/10"}`}>
-                        2 Admin
-                    </div>
-                </div>
 
-                {step === 1 ? (
-                    <form onSubmit={handleSupabaseLogin} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 space-y-6">
-                        <p className="text-sm text-gray-400 text-center">
-                            Přihlaste se svým admin účtem
-                        </p>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Admin Email</label>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Heslo</label>
+                        <div className="relative">
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className={inputCls}
-                                placeholder="martin@desperados-design.cz"
-                                autoFocus
+                                placeholder="••••••••"
                                 required
                             />
+                            <EyeToggle show={showPassword} onToggle={() => setShowPassword(!showPassword)} />
                         </div>
+                    </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Heslo účtu</label>
-                            <div className="relative">
-                                <input
-                                    type={showSupabasePassword ? "text" : "password"}
-                                    value={supabasePassword}
-                                    onChange={(e) => setSupabasePassword(e.target.value)}
-                                    className={inputCls}
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <EyeToggle show={showSupabasePassword} onToggle={() => setShowSupabasePassword(!showSupabasePassword)} />
-                            </div>
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+                            ❌ {error}
                         </div>
+                    )}
 
-                        {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-                                ❌ {error}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading || !email || !supabasePassword}
-                            className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-cyan-500/20"
-                        >
-                            {loading ? "⏳ Ověřuji..." : "Pokračovat →"}
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleAdminLogin} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 space-y-6">
-                        <p className="text-sm text-gray-400 text-center">
-                            Zadejte administrátorské přístupové údaje
-                        </p>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Admin uživatel</label>
-                            <input
-                                type="text"
-                                value={adminUser}
-                                onChange={(e) => setAdminUser(e.target.value)}
-                                className={inputCls}
-                                placeholder="ADMIN"
-                                autoFocus
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Admin heslo</label>
-                            <div className="relative">
-                                <input
-                                    type={showAdminPassword ? "text" : "password"}
-                                    value={adminPassword}
-                                    onChange={(e) => setAdminPassword(e.target.value)}
-                                    className={inputCls}
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <EyeToggle show={showAdminPassword} onToggle={() => setShowAdminPassword(!showAdminPassword)} />
-                            </div>
-                        </div>
-
-                        {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-                                ❌ {error}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading || !adminUser || !adminPassword}
-                            className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-cyan-500/20"
-                        >
-                            {loading ? "⏳ Přihlašuji..." : "🔐 Vstoupit do Adminu"}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => { setStep(1); setError(""); }}
-                            className="w-full text-sm text-gray-500 hover:text-gray-300 transition-colors"
-                        >
-                            ← Zpět na přihlášení
-                        </button>
-                    </form>
-                )}
+                    <button
+                        type="submit"
+                        disabled={loading || !username || !password}
+                        className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-fuchsia-500 hover:from-cyan-400 hover:to-fuchsia-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-cyan-500/20"
+                    >
+                        {loading ? "⏳ Přihlašuji..." : "🔐 Vstoupit do Adminu"}
+                    </button>
+                </form>
 
                 <p className="text-center text-gray-500 text-xs mt-6">
                     AIshield.cz — AI Act Compliance Platform

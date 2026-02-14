@@ -20,8 +20,7 @@ export function isAdminLoggedIn(): boolean {
 }
 
 // Helper for admin-authenticated requests
-// Uses the Supabase auth token from the regular auth system (the admin user must be in ADMIN_EMAILS)
-// Also adds X-Admin-Token header for the CRM login endpoint
+// Sends X-Admin-Token header for CRM authentication (no Supabase needed)
 async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = getAdminToken();
     const headers: Record<string, string> = {
@@ -32,15 +31,6 @@ async function adminFetch(url: string, options: RequestInit = {}): Promise<Respo
         headers["Authorization"] = `Bearer ${token}`;
         headers["X-Admin-Token"] = token;
     }
-    // Also try to get Supabase session token since backend's require_admin checks Supabase auth
-    try {
-        const { createClient } = await import("@/lib/supabase-browser");
-        const supabase = createClient();
-        const { data } = await supabase.auth.getSession();
-        if (data.session?.access_token) {
-            headers["Authorization"] = `Bearer ${data.session.access_token}`;
-        }
-    } catch { }
     return fetch(url, { ...options, headers });
 }
 

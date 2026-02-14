@@ -771,7 +771,7 @@ export default function AdminPage() {
                                                             <td className="py-2">
                                                                 {o.fulfillment === "delivered" ? <span className="text-green-400">✅ Doručeno</span>
                                                                     : o.fulfillment === "subscription" ? <span className="text-cyan-400">🔁 Předplatné</span>
-                                                                    : <span className="text-yellow-400">⏳ Čeká ({o.docs_count}/7 doc{o.has_scan ? ", sken ✅" : ", sken ❌"})</span>}
+                                                                        : <span className="text-yellow-400">⏳ Čeká ({o.docs_count}/7 doc{o.has_scan ? ", sken ✅" : ", sken ❌"})</span>}
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -1993,8 +1993,8 @@ export default function AdminPage() {
                                                 key={f}
                                                 onClick={() => setClientFilter(f)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${clientFilter === f
-                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
                                                     }`}
                                             >
                                                 {labels[f]}
@@ -2088,8 +2088,8 @@ export default function AdminPage() {
                                                                     <span className="font-medium text-white truncate">{client.company_name}</span>
                                                                     {client.plan && (
                                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${client.plan === "enterprise" ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30" :
-                                                                                client.plan === "pro" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
-                                                                                    "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                                            client.plan === "pro" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" :
+                                                                                "bg-green-500/20 text-green-400 border border-green-500/30"
                                                                             }`}>
                                                                             {client.plan}
                                                                         </span>
@@ -2189,8 +2189,8 @@ export default function AdminPage() {
                                                                 }}
                                                                 disabled={rescanning === client.email || !client.company_url}
                                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${rescanning === client.email
-                                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 animate-pulse cursor-wait"
-                                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/10"
+                                                                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 animate-pulse cursor-wait"
+                                                                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/10"
                                                                     }`}
                                                             >
                                                                 {rescanning === client.email ? "⏳ Skenuji…" : "🔄 Rescan"}

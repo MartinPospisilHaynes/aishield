@@ -271,15 +271,55 @@ async def get_optional_user(
 
 
 async def require_admin(
-    user: AuthUser = Depends(get_current_user),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> AuthUser:
     """
-    Vyžaduje admin roli. Kontroluje email proti ADMIN_EMAILS.
+    Vyžaduje admin roli.
+
+    Podporuje DVĚ cesty autentizace:
+    1. CRM admin token (X-Admin-Token header) — jednoduchý hash z admin hesla
+    2. Supabase JWT (Authorization: Bearer) — ověří email proti ADMIN_EMAILS
+
+    CRM token je primární — admin panel nepotřebuje Supabase session.
     """
-    if user.email not in ADMIN_EMAILS:
-        logger.warning(f"[Auth] Non-admin access attempt by {user.email}")
+    import hashlib
+
+    # 1. Zkus CRM admin token (X-Admin-Token header NEBO Authorization: Bearer admin_...)
+    admin_token = request.headers.get("x-admin-token")
+    if not admin_token and credentials and credentials.credentials:
+        cred = credentials.credentials
+        if cred.startswith("admin_"):
+            admin_token = cred
+
+    if admin_token:
+        # Ověř token: admin_ + SHA256(password)[:32]
+        from backend.config import get_settings
+        _admin_pw = "Rc_732716141"
+        expected_token = "admin_" + hashlib.sha256(_admin_pw.encode()).hexdigest()[:32]
+        if admin_token == expected_token:
+            logger.info("[Auth] Admin authenticated via CRM token")
+            return AuthUser(
+                id="admin",
+                email="admin@aishield.cz",
+                role="admin",
+                metadata={},
+            )
+        else:
+            logger.warning("[Auth] Invalid CRM admin token")
+
+    # 2. Fallback: Supabase JWT
+    try:
+        user = await get_current_user(request, credentials)
+        if user.email not in ADMIN_EMAILS:
+            logger.warning(f"[Auth] Non-admin access attempt by {user.email}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Přístup pouze pro administrátory",
+            )
+        return user
+    except HTTPException:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Přístup pouze pro administrátory",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Neplatný admin token nebo přihlášení",
         )
-    return user

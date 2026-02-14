@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routy vyžadující přihlášení
-const PROTECTED_ROUTES = ["/dashboard", "/admin", "/dotaznik"];
+// Routy vyžadující přihlášení (Supabase session)
+// /admin routes mají vlastní CRM autentizaci — nepotřebují Supabase
+const PROTECTED_ROUTES = ["/dashboard", "/dotaznik"];
 
 export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({ request });
@@ -34,9 +35,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Pokud jde o chráněnou routu a uživatel není přihlášen → redirect na login
-    // /admin/login je výjimka — má vlastní CRM autentizaci
-    const isAdminLogin = request.nextUrl.pathname === "/admin/login";
-    const isProtected = !isAdminLogin && PROTECTED_ROUTES.some((route) =>
+    const isProtected = PROTECTED_ROUTES.some((route) =>
         request.nextUrl.pathname.startsWith(route),
     );
 
@@ -59,5 +58,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/admin/:path*", "/dotaznik/:path*", "/login", "/registrace"],
+    matcher: ["/dashboard/:path*", "/dotaznik/:path*", "/login", "/registrace"],
 };
