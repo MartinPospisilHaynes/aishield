@@ -387,7 +387,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                         <div>
                             <h1 className="text-2xl font-extrabold">Dashboard</h1>
-                            <p className="text-sm text-slate-400 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
+                            <p className="text-sm text-slate-300 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
                         </div>
                         <div className="flex gap-2 sm:gap-3 flex-wrap">
                             <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
@@ -455,7 +455,7 @@ export default function DashboardPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <h3 className="font-semibold text-white mb-1">Sken dokončen</h3>
-                                    <p className="text-sm text-slate-400 mb-1">
+                                    <p className="text-sm text-slate-300 mb-1">
                                         Nalezeno {scanFindings.length} AI {scanFindings.length === 1 ? 'systém' : scanFindings.length < 5 ? 'systémy' : 'systémů'}
                                     </p>
                                     {scanResult?.company_id && (
@@ -476,50 +476,64 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                    {/* ═══ STAT CARDS (3 cards: Výsledek testu, AI systémy, Dotazník) ═══ */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 items-start">
-                        {/* Card 1: Výsledek testu – heslovité hodnocení */}
+                    {/* ═══ STAT CARDS (4 cards: Sken webu, Výsledky dotazníku, AI systémy, Dotazník) ═══ */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 items-start">
+                        {/* Card 1: Sken webu – jen výsledky skenu */}
                         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs text-slate-500 uppercase tracking-wider">Výsledek testu</p>
-                                <span className="text-slate-600">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                <p className="text-xs text-slate-400 uppercase tracking-wider">Sken webu</p>
+                                <span className="text-slate-500">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                 </span>
                             </div>
                             {!hasScans ? (
-                                <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden.</p>
-                            ) : (highRisk > 0 || qHighRisk > 0) ? (
+                                <p className="text-sm text-slate-300 leading-relaxed">Sken zatím nebyl proveden.</p>
+                            ) : uniqueSystemsCount > 0 ? (
                                 <>
-                                    <p className="text-sm text-red-400 leading-relaxed">
-                                        🔴 Nalezeny vysoce rizikové AI systémy — vyžadují okamžitou akci
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                                        {hasQuest
-                                            ? `Sken + dotazník: celkem ${totalSystems} AI systémů, z toho ${highRisk + qHighRisk} vysoce rizikových.`
-                                            : "Pro úplnou analýzu vyplňte dotazník."}
-                                    </p>
-                                </>
-                            ) : totalSystems > 0 ? (
-                                <>
-                                    <p className="text-sm text-amber-400 leading-relaxed">
-                                        ⚠️ Nalezeno {totalSystems} AI {totalSystems === 1 ? 'systém' : totalSystems < 5 ? 'systémy' : 'systémů'} s povinnostmi dle AI Act
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                                        {hasQuest
-                                            ? "Dotazník vyplněn — kompletní analýza k dispozici."
-                                            : "Pro úplnou analýzu vyplňte dotazník."}
+                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-amber-400">{uniqueSystemsCount}</p>
+                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                        {uniqueSystemsCount === 1 ? 'AI systém nalezen' : uniqueSystemsCount < 5 ? 'AI systémy nalezeny' : 'AI systémů nalezeno'} na webu
                                     </p>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-sm text-amber-400 leading-relaxed">
-                                        ⚠ Automatický sken nezjistil AI systémy — to však neznamená, že žádné nepoužíváte.
+                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-green-400">0</p>
+                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                        Sken na webu nezjistil žádné AI systémy
                                     </p>
-                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                                        {hasQuest
-                                            ? "Dotazník vyplněn — pro jistotu doporučujeme pravidelný monitoring."
-                                            : "Vyplňte dotazník — odhalí interní AI nástroje, které sken nevidí."}
+                                </>
+                            )}
+                        </div>
+
+                        {/* Card 2: Výsledky dotazníku */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-xs text-slate-400 uppercase tracking-wider">Výsledky dotazníku</p>
+                                <span className="text-slate-500">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                </span>
+                            </div>
+                            {!hasQuest ? (
+                                <p className="text-sm text-slate-300 leading-relaxed">Dotazník zatím nebyl vyplněn.</p>
+                            ) : qFindings.length > 0 ? (
+                                <>
+                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-amber-400">{qFindings.length}</p>
+                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                        {qFindings.length === 1 ? 'interní AI systém odhalen' : qFindings.length < 5 ? 'interní AI systémy odhaleny' : 'interních AI systémů odhaleno'} dotazníkem
                                     </p>
+                                    {qUnknowns.length > 0 && (
+                                        <p className="text-xs text-amber-400 mt-1">{qUnknowns.length} {qUnknowns.length === 1 ? 'odpověď' : qUnknowns.length < 5 ? 'odpovědi' : 'odpovědí'} &bdquo;Nevím&ldquo;</p>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-green-400">0</p>
+                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                                        Dotazník neodhalil žádné interní AI systémy
+                                    </p>
+                                    {qUnknowns.length > 0 && (
+                                        <p className="text-xs text-amber-400 mt-1">{qUnknowns.length} {qUnknowns.length === 1 ? 'odpověď' : qUnknowns.length < 5 ? 'odpovědi' : 'odpovědí'} &bdquo;Nevím&ldquo;</p>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -533,7 +547,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center justify-between mb-1">
                                     <p className="text-xs text-slate-500 uppercase tracking-wider">AI systémy nalezeny</p>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-slate-600">
+                                        <span className="text-slate-500">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                         </span>
                                         <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -552,7 +566,7 @@ export default function DashboardPage() {
                                             : 'Sken zatím nebyl proveden'}
                                 </p>
                                 {hasQuest && qFindings.length > 0 && (
-                                    <p className="text-[10px] text-slate-500 mt-1">
+                                    <p className="text-[10px] text-slate-400 mt-1">
                                         {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} ze skenu` : ''}{uniqueSystemsCount > 0 && qFindings.length > 0 ? ' + ' : ''}{qFindings.length > 0 ? `${qFindings.length} z dotazníku` : ''}
                                     </p>
                                 )}
@@ -568,7 +582,7 @@ export default function DashboardPage() {
                                                     <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                            <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
+                                                            <p className="text-xs text-slate-400 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
                                                         </div>
                                                         <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                                             {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
@@ -587,7 +601,7 @@ export default function DashboardPage() {
                                                     <div key={f.question_key} className="flex items-center justify-between gap-3 rounded-lg bg-fuchsia-500/[0.03] border border-fuchsia-500/[0.1] px-4 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                            <p className="text-xs text-slate-500 mt-0.5">{f.ai_act_article}</p>
+                                                            <p className="text-xs text-slate-400 mt-0.5">{f.ai_act_article}</p>
                                                         </div>
                                                         <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                                             {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
@@ -600,9 +614,9 @@ export default function DashboardPage() {
                                     {/* Unknowns warning — color-coded by severity */}
                                     {qUnknowns.length > 0 && (
                                         <>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Nejisté oblasti ({qUnknowns.length}×)</p>
+                                            <p className="text-xs text-slate-400 uppercase tracking-wider mt-4 mb-3">Odpovědi &bdquo;Nevím&ldquo; ({qUnknowns.length}×)</p>
                                             <div className="space-y-1.5">
-                                                {qUnknowns.slice(0, 5).map((u) => {
+                                                {qUnknowns.map((u) => {
                                                     const sc = u.severity_color === "red" ? "text-red-400 border-red-500/30 bg-red-500/[0.06]"
                                                         : u.severity_color === "orange" ? "text-orange-400 border-orange-500/30 bg-orange-500/[0.06]"
                                                         : u.severity_color === "yellow" ? "text-amber-400 border-amber-500/20 bg-amber-500/[0.05]"
@@ -615,13 +629,10 @@ export default function DashboardPage() {
                                                         </div>
                                                     );
                                                 })}
-                                                {qUnknowns.length > 5 && (
-                                                    <p className="text-[10px] text-slate-500">… a dalších {qUnknowns.length - 5}</p>
-                                                )}
                                             </div>
                                         </>
                                     )}
-                                    {!hasQuest && <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>}
+                                    {!hasQuest && <p className="text-[10px] text-slate-400 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>}
                                 </div>
                             )}
                         </div>
@@ -630,7 +641,7 @@ export default function DashboardPage() {
                         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
                             <div className="flex items-center justify-between mb-1">
                                 <p className="text-xs text-slate-500 uppercase tracking-wider">Dotazník</p>
-                                <span className="text-slate-600">
+                                <span className="text-slate-500">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                 </span>
                             </div>
@@ -643,7 +654,7 @@ export default function DashboardPage() {
                                     <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-500" style={{ width: `${questPercentage}%` }} />
                                 </div>
                             )}
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                                 {hasQuest
                                     ? "Vyplněn — můžete upravit odpovědi"
                                     : questStatus === "rozpracovano"
@@ -656,8 +667,8 @@ export default function DashboardPage() {
                                 {hasScans && (
                                     hasQuest ? (
                                         <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
-                                            className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all">
-                                            Opravit odpovědi
+                                            className="btn-primary text-xs !px-3 !py-1.5 !rounded-lg">
+                                            Upravit odpovědi
                                         </a>
                                     ) : (
                                         <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
@@ -715,7 +726,7 @@ export default function DashboardPage() {
                         {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
-                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} onStartScan={handleStartScan} />}
+                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                         {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
@@ -733,7 +744,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white">Průběžný monitoring</h2>
-                            <p className="text-sm text-slate-400">Automatický sken webu + aktualizace dokumentů</p>
+                            <p className="text-sm text-slate-300">Automatický sken webu + aktualizace dokumentů</p>
                         </div>
                     </div>
 
@@ -746,7 +757,7 @@ export default function DashboardPage() {
                                 </svg>
                                 <div>
                                     <h3 className="font-semibold text-green-400">Monitoring aktivní</h3>
-                                    <p className="text-sm text-slate-400">
+                                    <p className="text-sm text-slate-300">
                                         Plán: {monitoringEligibility.checks.active_plan === "monitoring_plus" ? "Monitoring Plus (599 Kč/měsíc)" : "Monitoring (299 Kč/měsíc)"}
                                     </p>
                                 </div>
@@ -762,7 +773,7 @@ export default function DashboardPage() {
                                 </svg>
                                 <div>
                                     <h3 className="font-semibold text-cyan-400">Monitoring v ceně balíčku ENTERPRISE</h3>
-                                    <p className="text-sm text-slate-400">Váš balíček ENTERPRISE zahrnuje 2 roky průběžného monitoringu.</p>
+                                    <p className="text-sm text-slate-300">Váš balíček ENTERPRISE zahrnuje 2 roky průběžného monitoringu.</p>
                                 </div>
                             </div>
                         </div>
@@ -849,7 +860,7 @@ export default function DashboardPage() {
                     ) : (
                         /* Not eligible — show checklist */
                         <div>
-                            <p className="text-sm text-slate-400 mb-4">
+                            <p className="text-sm text-slate-300 mb-4">
                                 Monitoring můžete aktivovat po dokončení všech kroků. Průběh:
                             </p>
                             <div className="space-y-2">
@@ -892,7 +903,7 @@ export default function DashboardPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-400">Potřebujete poradit? Zavolejte nám</p>
+                            <p className="text-sm text-slate-300">Potřebujete poradit? Zavolejte nám</p>
                             <p className="text-lg font-bold text-white">HELPLINKA</p>
                         </div>
                     </div>
@@ -937,11 +948,11 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
                             </svg>
                         </button>
                     )}
-                    {icon && <span className="text-slate-600">{icon}</span>}
+                    {icon && <span className="text-slate-500">{icon}</span>}
                 </div>
             </div>
             <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${color}`}>{value}</p>
-            <p className="text-xs text-slate-500 mt-1">{sub}</p>
+            <p className="text-xs text-slate-400 mt-1">{sub}</p>
             {tooltip && showTip && (
                 <div className="absolute z-20 top-full left-0 right-0 mt-2 p-3 rounded-xl bg-slate-800 border border-white/[0.1] shadow-xl text-xs text-slate-300 leading-relaxed">
                     {tooltip}
@@ -1045,7 +1056,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                             </span>
                             <h4 className="font-semibold text-fuchsia-300">{currentStep.label}</h4>
                         </div>
-                        <p className="text-sm text-slate-400 mb-4 ml-0 sm:ml-9">{currentStep.desc}</p>
+                        <p className="text-sm text-slate-300 mb-4 ml-0 sm:ml-9">{currentStep.desc}</p>
                         {currentStep.onClick ? (
                             <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-0 sm:ml-9 inline-block disabled:opacity-50">
                                 {currentStep.cta}
@@ -1064,7 +1075,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <h4 className="font-semibold text-cyan-400">Všechny kroky dokončeny</h4>
-                        <p className="text-sm text-slate-400 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení. Pro udržení souladu doporučujeme pravidelný monitoring.</p>
+                        <p className="text-sm text-slate-300 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení. Pro udržení souladu doporučujeme pravidelný monitoring.</p>
                     </div>
                 )}
             </div>
@@ -1087,7 +1098,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                         </div>
                         <div>
                             <h3 className="font-semibold text-slate-200">Zpracováváme vaši objednávku</h3>
-                            <p className="text-sm text-slate-400 mt-1">
+                            <p className="text-sm text-slate-300 mt-1">
                                 {isBusinessHours ? "Obvykle do 4 hodin (doručujeme 8:00\u201316:00)" : "Výsledky budou doručeny zítra ráno v 8:00"}
                             </p>
                         </div>
@@ -1171,7 +1182,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                     </svg>
                     <div>
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Systémy umělé inteligence nalezeny</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed">
+                        <p className="text-xs text-slate-300 leading-relaxed">
                             Nalezeno <strong className="text-slate-300">{totalCount} AI systémů</strong>
                             {grouped.length > 0 && questionnaireFindings.length > 0
                                 ? ` (${grouped.length} ze skenu webu, ${questionnaireFindings.length} z dotazníku)`
@@ -1211,7 +1222,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                                 <span className="text-xs text-slate-500">{f.count}x nalezeno</span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-slate-400">{f.action_required}</p>
+                                        <p className="text-sm text-slate-300">{f.action_required}</p>
                                     </div>
                                     <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1258,7 +1269,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                             </span>
                                             <span className="text-[10px] text-fuchsia-400/60 font-medium">dotazník</span>
                                         </div>
-                                        <p className="text-sm text-slate-400 line-clamp-2">{f.action_required}</p>
+                                        <p className="text-sm text-slate-300 line-clamp-2">{f.action_required}</p>
                                     </div>
                                     <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1294,7 +1305,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                         </svg>
                         <div>
                             <h4 className="text-sm font-semibold text-slate-300 mb-1">Oblasti k ověření ({questionnaireUnknowns.length})</h4>
-                            <p className="text-xs text-slate-400 leading-relaxed">
+                            <p className="text-xs text-slate-300 leading-relaxed">
                                 U těchto otázek jste odpověděli &bdquo;Nevím&ldquo;. Pomůžeme vám to zjistit — u každé oblasti najdete konkrétní kroky.
                             </p>
                         </div>
@@ -1331,7 +1342,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                             <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${labelColor}`}>
                                                 {u.severity_label}
                                             </span>
-                                            {u.ai_act_article && <span className="text-[10px] text-slate-500">{u.ai_act_article}</span>}
+                                            {u.ai_act_article && <span className="text-[10px] text-slate-400">{u.ai_act_article}</span>}
                                         </div>
                                     </div>
                                     <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1346,7 +1357,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                                 <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-3">Jak to zjistit:</h5>
                                                 <ul className="space-y-2">
                                                     {u.checklist.map((item, idx) => (
-                                                        <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                                                        <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
                                                             <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
                                                             <span>{item}</span>
                                                         </li>
@@ -1354,7 +1365,13 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                                 </ul>
                                             </div>
                                         )}
-                                        <p className="text-xs text-slate-500 mt-3 leading-relaxed">{u.recommendation}</p>
+                                        <p className="text-xs text-slate-300 mt-3 leading-relaxed">{u.recommendation}</p>
+                                        <a
+                                            href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
+                                            className="btn-primary !text-xs !px-4 !py-2 !rounded-lg mt-3 inline-block"
+                                        >
+                                            Už vím! Chci změnit odpověď v dotazníku
+                                        </a>
                                     </div>
                                 )}
                             </div>
@@ -1373,7 +1390,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
             {/* CTA: fill questionnaire if not done */}
             {!hasQuest && findings.length > 0 && (
                 <div className="mt-4 rounded-xl border border-fuchsia-500/15 bg-fuchsia-500/[0.03] p-4 text-center">
-                    <p className="text-sm text-slate-400 mb-3">
+                    <p className="text-sm text-slate-300 mb-3">
                         Sken odhalil AI systémy na webu. <strong className="text-slate-300">Vyplňte dotazník</strong> pro odhalení interních AI nástrojů (ChatGPT, AI nábor, rozhodování…).
                     </p>
                     <a href={`/dotaznik?company_id=${companyId}`} className="btn-primary text-sm px-5 py-2 inline-block">
@@ -1415,7 +1432,7 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
                     </div>
                     <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
-                        <p className="text-xs text-slate-500 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
                     </div>
                     {doc.file_url && (
                         <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
@@ -1443,13 +1460,15 @@ const STANDARD_STEPS = [
 ];
 
 /* ── Tab: Kroky ke splnění ── */
-function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQuest, onStartScan }: {
+function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQuest, companyId, onStartScan }: {
     findings: DashboardData["findings"];
     questionnaireFindings: QuestionnaireFinding[];
     questionnaireUnknowns: QuestionnaireUnknown[];
     hasQuest: boolean;
+    companyId: string;
     onStartScan: () => void;
 }) {
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
     if (findings.length === 0 && questionnaireFindings.length === 0) {
         return (
             <EmptyState
@@ -1477,7 +1496,7 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                     </svg>
                     <div>
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Kroky ke splnění AI Act</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed">
+                        <p className="text-xs text-slate-300 leading-relaxed">
                             Níže je přehled všeho, co pro vás připravíme v rámci compliance balíčku.
                             <strong className="text-cyan-300"> Nemusíte řešit nic sami — vše za vás připravíme a vyřídíme my.</strong>{" "}
                             Stačí si vybrat balíček a o zbytek se postaráme.
@@ -1504,7 +1523,7 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                                 <p className="text-sm font-medium text-slate-200">
                                     {f.action_required || f.name}
                                 </p>
-                                <p className="text-xs text-slate-500 mt-0.5">{f.name}</p>
+                                <p className="text-xs text-slate-400 mt-0.5">{f.name}</p>
                                 <div className="flex items-center gap-3 mt-1.5">
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                         {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
@@ -1533,7 +1552,7 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-slate-200">{f.name}</p>
-                                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{f.action_required}</p>
+                                <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{f.action_required}</p>
                                 <div className="flex items-center gap-3 mt-1.5">
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
                                         {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
@@ -1546,13 +1565,13 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                 </>
             )}
 
-            {/* ── Unknowns — areas to verify (color-coded) ── */}
+            {/* ── Unknowns — expandable with checklist + "Už vím!" button ── */}
             {questionnaireUnknowns.length > 0 && (
                 <>
-                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">K ověření — odpovědi &bdquo;Nevím&ldquo;</h3>
+                    <h3 className="text-sm font-semibold text-slate-200 mt-6 mb-2">Odpovědi &bdquo;Nevím&ldquo; — co potřebujete zjistit</h3>
                     <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-                        <p className="text-xs text-slate-400 mb-3">
-                            U {questionnaireUnknowns.length} otázek jste odpověděli &bdquo;Nevím&ldquo;. Pomůžeme vám s ověřením — nebo můžete odpovědi upravit v dotazníku.
+                        <p className="text-sm text-slate-300 mb-3">
+                            U {questionnaireUnknowns.length} otázek jste odpověděli &bdquo;Nevím&ldquo;. Rozklikněte jednotlivé položky — dozvíte se, co přesně potřebujete zjistit a kde to najdete.
                         </p>
                         <div className="space-y-2">
                             {questionnaireUnknowns.map((u) => {
@@ -1561,14 +1580,46 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                                     : u.severity_color === "orange" ? "text-orange-400"
                                     : u.severity_color === "yellow" ? "text-amber-400"
                                     : "text-slate-400";
+                                const isExp = expanded[`plan_unk_${u.question_key}`] || false;
                                 return (
-                                    <div key={u.question_key} className="flex items-start gap-3 rounded-lg bg-white/[0.02] px-3 py-2.5">
-                                        <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-slate-300">{u.question_text}</p>
-                                            <p className={`text-[10px] mt-0.5 ${labelColor}`}>{u.severity_label}</p>
-                                        </div>
-                                        <span className="text-[10px] text-fuchsia-400/70 font-medium flex-shrink-0">✦ Prověříme</span>
+                                    <div key={u.question_key} className="rounded-lg bg-white/[0.02] overflow-hidden">
+                                        <button
+                                            onClick={() => setExpanded(prev => ({ ...prev, [`plan_unk_${u.question_key}`]: !prev[`plan_unk_${u.question_key}`] }))}
+                                            className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+                                        >
+                                            <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-slate-200">{u.question_text}</p>
+                                                <p className={`text-xs mt-0.5 ${labelColor}`}>{u.severity_label}</p>
+                                            </div>
+                                            <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 mt-1 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        {isExp && (
+                                            <div className="px-3 pb-3 pt-1 border-t border-white/[0.04]">
+                                                {u.checklist && u.checklist.length > 0 && (
+                                                    <div className="rounded-lg bg-slate-800/50 p-3 mb-3">
+                                                        <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Jak to zjistit:</h5>
+                                                        <ul className="space-y-1.5">
+                                                            {u.checklist.map((item, idx) => (
+                                                                <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
+                                                                    <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
+                                                                    <span>{item}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                <p className="text-xs text-slate-300 mb-3 leading-relaxed">{u.recommendation}</p>
+                                                <a
+                                                    href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
+                                                    className="btn-primary !text-xs !px-4 !py-2 !rounded-lg"
+                                                >
+                                                    Už vím! Chci změnit odpověď v dotazníku
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -1591,7 +1642,7 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-200">{step.label}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{step.desc}</p>
+                        <p className="text-xs text-slate-300 mt-0.5">{step.desc}</p>
                         <span className="text-[10px] text-fuchsia-400/70 font-medium mt-1 inline-block">✦ Vyřídíme za vás</span>
                     </div>
                 </div>
@@ -1759,12 +1810,12 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                 </h3>
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-sm">
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Nové heslo</label>
+                        <label className="block text-sm text-slate-300 mb-1">Nové heslo</label>
                         <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimálně 6 znaků" minLength={6} required
                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30 transition-all" />
                     </div>
                     <div>
-                        <label className="block text-sm text-slate-400 mb-1">Potvrdit nové heslo</label>
+                        <label className="block text-sm text-slate-300 mb-1">Potvrdit nové heslo</label>
                         <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Zadejte heslo znovu" minLength={6} required
                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30 transition-all" />
                     </div>
@@ -1923,7 +1974,7 @@ function PricingComparisonTable() {
             {/* ── Pricing Cards (same design as /pricing page) ── */}
             <div>
                 <h3 className="font-semibold text-slate-200 mb-1">Cenové balíčky</h3>
-                <p className="text-xs text-slate-400 mb-5">Vyberte si balíček — rozsah služeb závisí na zvoleném plánu.</p>
+                <p className="text-xs text-slate-300 mb-5">Vyberte si balíček — rozsah služeb závisí na zvoleném plánu.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {DASHBOARD_PLANS.map((plan) => (
@@ -1965,7 +2016,7 @@ function PricingComparisonTable() {
                                 <span className="text-slate-500 ml-1 text-sm">Kč</span>
                             </div>
                             <p className="text-[11px] text-slate-500 mb-2">{plan.priceNote}</p>
-                            <p className="text-xs text-slate-400 mb-4">{plan.description}</p>
+                            <p className="text-xs text-slate-300 mb-4">{plan.description}</p>
 
                             {/* Divider */}
                             <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
@@ -1985,7 +2036,7 @@ function PricingComparisonTable() {
                                         <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
-                                        <span className="text-slate-600">{feature}</span>
+                                        <span className="text-slate-500">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -2066,7 +2117,7 @@ function PricingComparisonTable() {
 function InfoRow({ label, value, isUrl }: { label: string; value: string; isUrl?: boolean }) {
     return (
         <div className="rounded-lg border border-white/[0.04] bg-white/[0.01] px-4 py-3">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">{label}</p>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
             {isUrl && value !== "—" ? (
                 <a href={value.startsWith("http") ? value : `https://${value}`}
                     target="_blank" rel="noopener noreferrer"

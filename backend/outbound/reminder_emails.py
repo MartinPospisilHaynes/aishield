@@ -34,11 +34,11 @@ def _build_reminder_html(
     """Sestaví HTML pro připomínkový email."""
 
     if reminder_type == "14_days":
-        greeting = "Rádi bychom vám připomněli"
+        greeting = "Rádi bychom Vám připomněli"
         urgency = ""
     else:
-        greeting = "Znovu se ozýváme"
-        urgency = " Čas běží — pravidla AI Actu už platí."
+        greeting = "Dovolujeme si Vám znovu připomenout"
+        urgency = " Nařízení EU AI Act je již v platnosti a týká se i českých firem."
 
     return f"""
 <!DOCTYPE html>
@@ -50,7 +50,7 @@ def _build_reminder_html(
 <!-- Header -->
 <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b,#312e81);border-radius:12px 12px 0 0;padding:30px 24px;text-align:center;">
     <h1 style="color:white;margin:0;font-size:22px;font-weight:700;">AIshield.cz</h1>
-    <p style="color:#a78bfa;margin:8px 0 0;font-size:13px;">Připomínka: váš AI compliance stav</p>
+    <p style="color:#a78bfa;margin:8px 0 0;font-size:13px;">Připomínka k Vašemu dotazníku</p>
 </div>
 
 <!-- Body -->
@@ -61,27 +61,27 @@ def _build_reminder_html(
     </p>
 
     <p style="color:#1e293b;font-size:15px;line-height:1.6;margin:0 0 16px;">
-        {greeting}, že jste si na <strong>aishield.cz</strong> provedli registraci
-        a analýzu webu <strong>{company_url}</strong>.{urgency}
+        {greeting}, že jste se na <strong>aishield.cz</strong> zaregistrovali
+        a nechali si zanalyzovat web <strong>{company_url}</strong>.{urgency}
     </p>
 
     <!-- Findings box -->
     <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px 20px;margin:20px 0;">
         <p style="color:#92400e;font-size:14px;margin:0;line-height:1.5;">
-            <strong>Na vašem webu bylo nalezeno {findings_count} AI systémů</strong>,
-            které se vás přímo týkají z pohledu evropského AI Actu.
+            Na Vašem webu jsme identifikovali <strong>{findings_count} oblastí souvisejících s AI</strong>,
+            které se Vás přímo týkají z pohledu evropského nařízení AI Act.
         </p>
     </div>
 
     <p style="color:#1e293b;font-size:15px;line-height:1.6;margin:0 0 16px;">
-        V dotazníku jste u <strong>{unknown_count} otázek</strong> odpověděli
-        &bdquo;Nevím&ldquo;. Bez těchto informací vám bohužel nemůžeme poskytnout
-        kompletní servis a plnou compliance dokumentaci.
+        V dotazníku jste u <strong>{unknown_count} otázek</strong> zvolili odpověď
+        &bdquo;Nevím&ldquo;. Bez těchto informací Vám bohužel nemůžeme připravit
+        kompletní compliance dokumentaci.
     </p>
 
     <p style="color:#1e293b;font-size:15px;line-height:1.6;margin:0 0 20px;">
-        Máte možnost své odpovědi <strong>kdykoli změnit</strong> — třeba když
-        zjistíte více informací od kolegů. Stačí se přihlásit a upravit dotazník.
+        Své odpovědi můžete <strong>kdykoli upravit</strong> — třeba až
+        zjistíte potřebné informace od kolegů. Stačí se přihlásit a doplnit dotazník.
     </p>
 
     <!-- CTA buttons -->
@@ -100,9 +100,9 @@ def _build_reminder_html(
     <!-- Responsibility note -->
     <div style="background:#f1f5f9;border-radius:8px;padding:14px 18px;margin:16px 0 0;">
         <p style="color:#64748b;font-size:12px;line-height:1.5;margin:0;">
-            Připomínáme, že compliance dokumentaci vyhotovujeme na základě
-            vašich odpovědí v dotazníku a výsledků skenu webu. Za správnost
-            údajů v dotazníku odpovídá vždy zákazník.
+            Compliance dokumentaci vyhotovujeme na základě
+            Vašich odpovědí v dotazníku a výsledků analýzy webu. Za správnost
+            uvedených údajů odpovídá zákazník.
         </p>
     </div>
 
@@ -142,10 +142,10 @@ async def send_reminder_emails(reminder_type: str = "14_days") -> dict:
 
     if reminder_type == "14_days":
         days_ago = 14
-        subject = "Připomínka: Na vašem webu byly nalezeny AI systémy — dokončete analýzu"
+        subject = "Připomínka: V dotazníku nám chybí některé Vaše odpovědi"
     else:
         days_ago = 30
-        subject = "Posledí připomínka: Potřebujeme vaše údaje pro AI compliance dokumentaci"
+        subject = "Připomínáme se - chybí nám od Vás důležité údaje"
 
     # Časové okno: hledáme odpovědi staré days_ago ± 1 den
     target_date = datetime.now(timezone.utc) - timedelta(days=days_ago)

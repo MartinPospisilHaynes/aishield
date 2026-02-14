@@ -252,6 +252,15 @@ function QuestionnaireInner() {
         }
     }, [searchParams]);
 
+    /* ── Jump to specific question via ?q=question_key ── */
+    useEffect(() => {
+        const jumpTo = searchParams.get("q");
+        if (jumpTo && allQuestions.length > 0) {
+            const idx = allQuestions.findIndex((aq) => aq.key === jumpTo);
+            if (idx >= 0) setCurrentQuestion(idx);
+        }
+    }, [searchParams, allQuestions.length]);
+
     /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
         setDirection("forward");
