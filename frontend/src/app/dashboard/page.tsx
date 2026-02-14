@@ -128,6 +128,13 @@ function countUniqueSystems(findings: DashboardData["findings"]): number {
     return names.size;
 }
 
+/** Czech declension helper: 1 krok / 2–4 kroky / 5+ kroků */
+function cz(n: number, one: string, twoFour: string, fivePlus: string): string {
+    if (n === 1) return one;
+    if (n >= 2 && n <= 4) return twoFour;
+    return fivePlus;
+}
+
 /* ── Group findings by unique name ── */
 function groupFindings(findings: DashboardData["findings"]): Array<{ name: string; risk_level: string; category: string; action_required: string; ai_act_article: string; count: number }> {
     const map = new Map<string, typeof findings[0] & { count: number }>();
@@ -560,7 +567,7 @@ export default function DashboardPage() {
                                 </p>
                                 <p className="text-xs text-amber-400/80 mt-1 font-medium">
                                     {totalSystems > 0
-                                        ? `${totalSystems} nesplněných povinností dle AI Actu`
+                                        ? `${totalSystems} ${cz(totalSystems, 'nesplněná povinnost', 'nesplněné povinnosti', 'nesplněných povinností')} dle AI Actu`
                                         : hasScans
                                             ? 'Žádné AI systémy nenalezeny'
                                             : 'Sken zatím nebyl proveden'}
@@ -619,8 +626,8 @@ export default function DashboardPage() {
                                                 {qUnknowns.map((u) => {
                                                     const sc = u.severity_color === "red" ? "text-red-400 border-red-500/30 bg-red-500/[0.06]"
                                                         : u.severity_color === "orange" ? "text-orange-400 border-orange-500/30 bg-orange-500/[0.06]"
-                                                        : u.severity_color === "yellow" ? "text-amber-400 border-amber-500/20 bg-amber-500/[0.05]"
-                                                        : "text-slate-400 border-slate-500/20 bg-slate-500/[0.04]";
+                                                            : u.severity_color === "yellow" ? "text-amber-400 border-amber-500/20 bg-amber-500/[0.05]"
+                                                                : "text-slate-400 border-slate-500/20 bg-slate-500/[0.04]";
                                                     const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
                                                     return (
                                                         <div key={u.question_key} className={`rounded-md border px-2.5 py-1.5 flex items-start gap-2 ${sc}`}>
@@ -645,8 +652,8 @@ export default function DashboardPage() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                 </span>
                             </div>
-                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? "text-cyan-400" : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
-                                {hasQuest ? "Hotovo" : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
+                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? (qUnknowns.length > 0 ? "text-amber-400" : "text-cyan-400") : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
+                                {hasQuest ? (qUnknowns.length > 0 ? "Odesláno" : "Hotovo") : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
                             </p>
                             {/* Progress bar */}
                             {!hasQuest && questStatus === "rozpracovano" && (
@@ -656,7 +663,9 @@ export default function DashboardPage() {
                             )}
                             <p className="text-xs text-slate-400 mt-1">
                                 {hasQuest
-                                    ? "Vyplněn — můžete upravit odpovědi"
+                                    ? (qUnknowns.length > 0
+                                        ? `Doporučujeme doplnit ${qUnknowns.length}× odpověď \u201eNevím\u201c`
+                                        : "Vyplněn — můžete upravit odpovědi")
                                     : questStatus === "rozpracovano"
                                         ? `${questProgress?.answered || 0}/${questProgress?.total_questions || 27} otázek zodpovězeno`
                                         : "Vyplňte pro přesnější analýzu"
@@ -692,7 +701,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
-                                    <p className="text-xs text-slate-400">Na základě skenu{qFindings.length > 0 ? ` a dotazníku` : ''} — {findingsCount + qFindings.length} kroků, vše vyřídíme za vás</p>
+                                    <p className="text-xs text-slate-300">Na základě skenu{qFindings.length > 0 ? ` a dotazníku` : ''} — {(() => { const n = findingsCount + qFindings.length; return `${n} ${cz(n, 'krok', 'kroky', 'kroků')}`; })()}, vše vyřídíme za vás</p>
                                 </div>
                             </div>
                             <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
@@ -1181,9 +1190,9 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Systémy umělé inteligence nalezeny</h4>
+                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">{totalCount === 1 ? 'Systém umělé inteligence nalezen' : 'Systémy umělé inteligence nalezeny'}</h4>
                         <p className="text-xs text-slate-300 leading-relaxed">
-                            Nalezeno <strong className="text-slate-300">{totalCount} AI systémů</strong>
+                            Nalezeno <strong className="text-slate-300">{totalCount} {cz(totalCount, 'AI systém', 'AI systémy', 'AI systémů')}</strong>
                             {grouped.length > 0 && questionnaireFindings.length > 0
                                 ? ` (${grouped.length} ze skenu webu, ${questionnaireFindings.length} z dotazníku)`
                                 : grouped.length > 0
@@ -1315,17 +1324,17 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                         const isExp = expanded[`unk_${u.question_key}`] || false;
                         const borderColor = u.severity_color === "red" ? "border-red-500/30 hover:border-red-500/50"
                             : u.severity_color === "orange" ? "border-orange-500/25 hover:border-orange-500/40"
-                            : u.severity_color === "yellow" ? "border-amber-500/20 hover:border-amber-500/35"
-                            : "border-slate-500/15 hover:border-slate-500/25";
+                                : u.severity_color === "yellow" ? "border-amber-500/20 hover:border-amber-500/35"
+                                    : "border-slate-500/15 hover:border-slate-500/25";
                         const bgColor = u.severity_color === "red" ? "bg-red-500/[0.03]"
                             : u.severity_color === "orange" ? "bg-orange-500/[0.03]"
-                            : u.severity_color === "yellow" ? "bg-amber-500/[0.02]"
-                            : "bg-white/[0.01]";
+                                : u.severity_color === "yellow" ? "bg-amber-500/[0.02]"
+                                    : "bg-white/[0.01]";
                         const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
                         const labelColor = u.severity_color === "red" ? "text-red-400 bg-red-500/10"
                             : u.severity_color === "orange" ? "text-orange-400 bg-orange-500/10"
-                            : u.severity_color === "yellow" ? "text-amber-400 bg-amber-500/10"
-                            : "text-slate-400 bg-slate-500/10";
+                                : u.severity_color === "yellow" ? "text-amber-400 bg-amber-500/10"
+                                    : "text-slate-400 bg-slate-500/10";
 
                         return (
                             <div key={u.question_key} className={`rounded-xl border ${borderColor} ${bgColor} transition-all overflow-hidden`}>
@@ -1571,15 +1580,15 @@ function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQu
                     <h3 className="text-sm font-semibold text-slate-200 mt-6 mb-2">Odpovědi &bdquo;Nevím&ldquo; — co potřebujete zjistit</h3>
                     <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
                         <p className="text-sm text-slate-300 mb-3">
-                            U {questionnaireUnknowns.length} otázek jste odpověděli &bdquo;Nevím&ldquo;. Rozklikněte jednotlivé položky — dozvíte se, co přesně potřebujete zjistit a kde to najdete.
+                            U {questionnaireUnknowns.length} {cz(questionnaireUnknowns.length, 'otázky', 'otázek', 'otázek')} jste zvolili odpověď &bdquo;Nevím&ldquo;. Rozklikněte jednotlivé položky — dozvíte se, co přesně potřebujete zjistit a kde to najdete.
                         </p>
                         <div className="space-y-2">
                             {questionnaireUnknowns.map((u) => {
                                 const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
                                 const labelColor = u.severity_color === "red" ? "text-red-400"
                                     : u.severity_color === "orange" ? "text-orange-400"
-                                    : u.severity_color === "yellow" ? "text-amber-400"
-                                    : "text-slate-400";
+                                        : u.severity_color === "yellow" ? "text-amber-400"
+                                            : "text-slate-400";
                                 const isExp = expanded[`plan_unk_${u.question_key}`] || false;
                                 return (
                                     <div key={u.question_key} className="rounded-lg bg-white/[0.02] overflow-hidden">
@@ -1704,7 +1713,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                             <span>{new Date(scan.created_at).toLocaleDateString("cs-CZ", {
                                 day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
                             })}</span>
-                            <span>{scan.total_findings} nálezů</span>
+                            <span>{scan.total_findings} {cz(scan.total_findings, 'nález', 'nálezy', 'nálezů')}</span>
                         </div>
                     </div>
                 </div>
