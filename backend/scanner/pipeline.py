@@ -77,6 +77,17 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         deployed = [c for c in classified if c.deployed]
         not_deployed = [c for c in classified if not c.deployed]
 
+        # Safety net: nástroje, které NEJSOU AI systémy, vždy vyřadíme
+        NON_AI_TOOLS = {"google tag manager", "google analytics 4", "seznam retargeting", "heureka"}
+        auto_fp = [c for c in deployed if c.name.lower() in NON_AI_TOOLS and c.risk_level == "minimal"]
+        if auto_fp:
+            for c in auto_fp:
+                c.deployed = False
+                c.reason = f"Automaticky vyřazeno: {c.name} není AI systém."
+                logger.info(f"[Pipeline] Auto-FP: {c.name} vyřazen (není AI systém)")
+            deployed = [c for c in deployed if c not in auto_fp]
+            not_deployed.extend(auto_fp)
+
         logger.info(
             f"[Pipeline] Claude klasifikace: "
             f"{len(deployed)} nasazených, "

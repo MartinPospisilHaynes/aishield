@@ -42,6 +42,14 @@ Tvůj úkol:
    - Raději označ jako deployed=false než jako deployed=true s "Nízké riziko / Pouze zmínka"
    - NIKDY neoznačuj jako deployed=true s popisem typu "pouze zmínka" nebo "ne nasazený" — to je logický rozpor
 
+   NÁSTROJE, KTERÉ NEJSOU AI SYSTÉMY — VŽDY deployed=false:
+   - Google Tag Manager (GTM) — je to jen kontejner na tagy, sám o sobě NENÍ AI systém
+   - Google Analytics 4 (GA4) — standardní webová analytika, NENÍ AI systém (pokud nemá aktivní Predictive Audiences)
+   - Seznam Retargeting, Sklik — běžný retargeting, NENÍ AI systém
+   - Heureka — e-commerce tracking, NENÍ AI systém
+   - Základní tracking pixely (bez AI funkcí) — NEJSOU AI systémy
+   Tyto nástroje NIKDY neoznačuj jako deployed=true, protože by to vytvořilo falešně pozitivní nález.
+
 2. Pro nasazené systémy upřesni:
    - risk_level: "minimal", "limited", "high" nebo "unacceptable" podle AI Act
    - ai_act_article: konkrétní článek/odstavec AI Act

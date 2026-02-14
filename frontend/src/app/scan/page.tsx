@@ -154,6 +154,7 @@ function ScanPageInner() {
     const [reportEmail, setReportEmail] = useState("");
     const [emailSent, setEmailSent] = useState(false);
     const [emailSending, setEmailSending] = useState(false);
+    const [isCached, setIsCached] = useState(false);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autoStartedRef = useRef(false);
@@ -221,14 +222,26 @@ function ScanPageInner() {
         setAiClassified(false);
         setEmailSent(false);
         setReportEmail("");
+        setIsCached(false);
         if (pollingRef.current) clearInterval(pollingRef.current);
         if (stageRef.current) clearTimeout(stageRef.current);
-
-        startStageAnimation();
 
         try {
             const result = await startScan(normalizedUrl);
             setScanId(result.scan_id);
+
+            // Cached result — skip animation, show results immediately
+            if (result.status === "cached") {
+                setIsCached(true);
+                const status = await getScanStatus(result.scan_id);
+                setScanResult(status);
+                setLoading(false);
+                setCurrentStage(SCAN_STAGES.length);
+                if (status.status === "done") await fetchFindings(result.scan_id);
+                return;
+            }
+
+            startStageAnimation();
             const status = await getScanStatus(result.scan_id);
             setScanResult(status);
             if (status.status === "queued" || status.status === "running") {
@@ -460,6 +473,23 @@ function ScanPageInner() {
                 {scanResult && scanResult.status === "done" && (
                     <div className="mt-8 space-y-6">
 
+                        {/* ── INFO BANNER: cached výsledky ── */}
+                        {isCached && (
+                            <div className="rounded-xl bg-cyan-500/8 border border-cyan-500/25 p-4">
+                                <div className="flex items-start gap-3">
+                                    <IconInfo className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm text-cyan-300 font-medium">
+                                            Tento web byl skenován v posledních 24 hodinách.
+                                        </p>
+                                        <p className="text-xs text-slate-400 mt-1">
+                                            Zobrazujeme výsledky z předchozího skenu. Nový sken bude možný za 24 hodin od posledního spuštění.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* ── ČERVENÝ VAROVNÝ BANNER (nahoře) ── */}
                         {hasFindings && (
                             <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-5">
@@ -627,18 +657,52 @@ function ScanPageInner() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="card text-center">
-                                <div className="flex justify-center mb-2">
-                                    <IconCheckBadge className="w-10 h-10 text-cyan-400" />
+                            <div className="space-y-4">
+                                {/* Hlavní karta — žádné nálezy */}
+                                <div className="card text-center">
+                                    <div className="flex justify-center mb-3">
+                                        <IconCheckBadge className="w-12 h-12 text-cyan-400" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
+                                    <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
+                                        To ale <strong className="text-white">neznamená, že na vašem webu žádné nepoužíváte</strong>.
+                                        Automatický sken prověřuje pouze veřejně viditelné skripty.
+                                        Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace,
+                                        po interakci uživatele, nebo běží na pozadí přes API.
+                                    </p>
                                 </div>
-                                <h3 className="font-semibold text-white">Sken nedokázal identifikovat AI systémy</h3>
-                                <p className="text-sm text-slate-400 mt-1">
-                                    Automatický sken prověřuje pouze veřejně viditelné skripty. Interní AI nástroje,
-                                    API integrace a backendové systémy sken neodhalí.
-                                </p>
-                                <p className="text-sm text-red-400/80 mt-2 font-medium">
-                                    ⚠ I jeden AI systém na webu vyžaduje dokumentaci a informování návštěvníků (čl. 50 AI Actu).
-                                </p>
+
+                                {/* Co s tím — dotazník */}
+                                <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-cyan-500/8 border border-fuchsia-500/25 p-6 text-center">
+                                    <h3 className="text-lg font-bold text-white">Jak zjistit, jestli potřebujete řešit AI Act?</h3>
+                                    <p className="text-sm text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
+                                        Vyplňte krátký dotazník — na jeho základě vám <strong className="text-white">zdarma vyhodnotíme</strong>,
+                                        zda vaše firma používá AI systémy, které spadají pod regulaci EU AI Act,
+                                        a jaké kroky případně musíte podniknout.
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-2">
+                                        Po registraci získáte přístup do klientské zóny, kde uvidíte výsledky skenu i dotazníku
+                                        a můžete se rozhodnout, které řešení je pro vás nejlepší.
+                                    </p>
+                                    <a
+                                        href="/registrace"
+                                        className="inline-block mt-5 btn-primary text-sm px-8 py-3"
+                                    >
+                                        Zaregistrovat se a vyplnit dotazník →
+                                    </a>
+                                </div>
+
+                                {/* Varování */}
+                                <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-4">
+                                    <div className="flex items-start gap-3">
+                                        <IconExclamation className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                        <p className="text-xs text-red-300/80 leading-relaxed">
+                                            <strong className="text-red-400">Pozor:</strong> I jeden AI systém na vašem webu znamená povinnosti dle EU AI Act.
+                                            Nesplnění hrozí pokutou až 35 mil. € nebo 7 % obratu.
+                                            <strong className="text-white"> Povinnost platí od 2. srpna 2026.</strong>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
