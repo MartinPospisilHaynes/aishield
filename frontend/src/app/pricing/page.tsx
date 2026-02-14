@@ -373,90 +373,158 @@ export default function PricingPage() {
                         </p>
                     </div>
 
-                    <div className="mx-auto max-w-4xl rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm min-w-[540px]">
-                                <thead>
-                                    <tr className="border-b border-white/[0.06]">
-                                        <th className="text-left px-5 py-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Služba</th>
-                                        <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                            BASIC
-                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">4 999 Kč</div>
-                                        </th>
-                                        <th className="text-center px-3 py-3 text-xs font-bold text-fuchsia-400 uppercase tracking-wider bg-fuchsia-500/[0.04]">
-                                            PRO
-                                            <div className="text-fuchsia-300 text-[10px] font-normal mt-0.5">14 999 Kč</div>
-                                        </th>
-                                        <th className="text-center px-3 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                            ENTERPRISE
-                                            <div className="text-fuchsia-400/60 text-[10px] font-normal mt-0.5">39 999 Kč</div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {[
-                                        { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
-                                        { label: "Compliance Kit (7 dokumentů)", basic: true, pro: true, enterprise: true },
-                                        { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
-                                        { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
-                                        { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
-                                        { label: "Interní AI politika firmy", basic: true, pro: true, enterprise: true },
-                                        { label: "Školení — prezentace v PowerPointu", basic: true, pro: true, enterprise: true },
-                                        { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
-                                        { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
-                                        { label: "Nastavení transparenční stránky na webu", basic: false, pro: true, enterprise: true },
-                                        { label: "Úprava cookie lišty a chatbot oznámení", basic: false, pro: true, enterprise: true },
-                                        { label: "Podpora po dodání (30 dní)", basic: false, pro: true, enterprise: true },
-                                        { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
-                                        { label: "10 hodin konzultací se specialistou", basic: false, pro: false, enterprise: true },
-                                        { label: "Metodická kontrola veškeré dokumentace", basic: false, pro: false, enterprise: true },
-                                        { label: "Rozšířený audit interních AI systémů", basic: false, pro: false, enterprise: true },
-                                        { label: "Multi-domain (více webů / e-shopů)", basic: false, pro: false, enterprise: true },
-                                        { label: "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace", basic: false, pro: false, enterprise: true },
-                                        { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
-                                        { label: "SLA 4h odezva v pracovní době", basic: false, pro: false, enterprise: true },
-                                    ].map((feat, i) => (
-                                        <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
-                                            <td className="px-5 py-2.5 text-sm text-slate-300">{feat.label}</td>
-                                            <td className="px-3 py-2.5 text-center">
-                                                {feat.basic ? (
-                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                                ) : (
-                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2.5 text-center bg-fuchsia-500/[0.02]">
-                                                {feat.pro ? (
-                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                                ) : (
-                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2.5 text-center">
-                                                {feat.enterprise ? (
-                                                    <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                                ) : (
-                                                    <svg className="w-4 h-4 text-red-400/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    {/* ── Feature data ── */}
+                    {(() => {
+                        const FEATURES = [
+                            { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
+                            { label: "Compliance Kit (7 dokumentů)", basic: true, pro: true, enterprise: true },
+                            { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
+                            { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
+                            { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
+                            { label: "Interní AI politika firmy", basic: true, pro: true, enterprise: true },
+                            { label: "Školení — prezentace v PPT", basic: true, pro: true, enterprise: true },
+                            { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
+                            { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
+                            { label: "Nastavení transparenční stránky", basic: false, pro: true, enterprise: true },
+                            { label: "Úprava cookie lišty a chatbotů", basic: false, pro: true, enterprise: true },
+                            { label: "Podpora po dodání (30 dní)", basic: false, pro: true, enterprise: true },
+                            { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
+                            { label: "10 h konzultací se specialistou", basic: false, pro: false, enterprise: true },
+                            { label: "Metodická kontrola dokumentace", basic: false, pro: false, enterprise: true },
+                            { label: "Rozšířený audit AI systémů", basic: false, pro: false, enterprise: true },
+                            { label: "Multi-domain (více webů)", basic: false, pro: false, enterprise: true },
+                            { label: "2 roky měsíčního monitoringu", basic: false, pro: false, enterprise: true },
+                            { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
+                            { label: "SLA 4h odezva v prac. době", basic: false, pro: false, enterprise: true },
+                        ];
+                        const CHECK = <svg className="w-5 h-5 text-green-400 mx-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>;
+                        const CROSS = <svg className="w-4 h-4 text-slate-600 mx-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" /></svg>;
 
-                        <div className="flex flex-col sm:flex-row gap-3 p-5 pt-4 border-t border-white/[0.06]">
-                            <button onClick={() => handleCheckout("basic")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                                {loading === "basic" ? "Přesměrování…" : "Objednat BASIC"}
-                            </button>
-                            <button onClick={() => handleCheckout("pro")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
-                                {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
-                            </button>
-                            <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
-                                {loading === "enterprise" ? "Přesměrování…" : "Objednat ENTERPRISE"}
-                            </button>
-                        </div>
-                    </div>
+                        const PLAN_META = [
+                            { key: "basic" as const, name: "BASIC", price: "4 999 Kč", color: "slate", fieldKey: "basic" as const },
+                            { key: "pro" as const, name: "PRO", price: "14 999 Kč", color: "fuchsia", fieldKey: "pro" as const },
+                            { key: "enterprise" as const, name: "ENTERPRISE", price: "39 999 Kč", color: "slate", fieldKey: "enterprise" as const },
+                        ];
+
+                        return (
+                            <>
+                                {/* ── DESKTOP TABLE (hidden below lg) ── */}
+                                <div className="hidden lg:block mx-auto max-w-4xl rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b border-white/[0.08]">
+                                                <th className="text-left pl-6 pr-4 py-4 text-xs text-slate-500 uppercase tracking-wider font-medium w-[45%]">Služba</th>
+                                                <th className="text-center px-4 py-4 w-[18%]">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">BASIC</div>
+                                                    <div className="text-fuchsia-400/60 text-[11px] font-normal mt-0.5">4 999 Kč</div>
+                                                </th>
+                                                <th className="text-center px-4 py-4 w-[18%] bg-fuchsia-500/[0.04] border-x border-fuchsia-500/10">
+                                                    <div className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider">PRO</div>
+                                                    <div className="text-fuchsia-300 text-[11px] font-normal mt-0.5">14 999 Kč</div>
+                                                </th>
+                                                <th className="text-center px-4 py-4 w-[19%]">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">ENTERPRISE</div>
+                                                    <div className="text-fuchsia-400/60 text-[11px] font-normal mt-0.5">39 999 Kč</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {FEATURES.map((feat, i) => (
+                                                <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 1 ? "bg-white/[0.01]" : ""}`}>
+                                                    <td className="pl-6 pr-4 py-3 text-[13px] text-slate-300 leading-snug">{feat.label}</td>
+                                                    <td className="px-4 py-3 text-center">{feat.basic ? CHECK : CROSS}</td>
+                                                    <td className="px-4 py-3 text-center bg-fuchsia-500/[0.02] border-x border-fuchsia-500/[0.06]">{feat.pro ? CHECK : CROSS}</td>
+                                                    <td className="px-4 py-3 text-center">{feat.enterprise ? CHECK : CROSS}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div className="flex gap-3 p-5 pt-4 border-t border-white/[0.06]">
+                                        <button onClick={() => handleCheckout("basic")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                                            {loading === "basic" ? "Přesměrování…" : "Objednat BASIC"}
+                                        </button>
+                                        <button onClick={() => handleCheckout("pro")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition-all">
+                                            {loading === "pro" ? "Přesměrování…" : "Objednat PRO ★"}
+                                        </button>
+                                        <button onClick={() => handleCheckout("enterprise")} className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all">
+                                            {loading === "enterprise" ? "Přesměrování…" : "Objednat ENTERPRISE"}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* ── MOBILE / TABLET CARDS (visible below lg) ── */}
+                                <div className="lg:hidden space-y-4 max-w-lg mx-auto">
+                                    {PLAN_META.map((plan) => {
+                                        const isPro = plan.key === "pro";
+                                        const included = FEATURES.filter((f) => f[plan.fieldKey]);
+                                        const excluded = FEATURES.filter((f) => !f[plan.fieldKey]);
+                                        return (
+                                            <details
+                                                key={plan.key}
+                                                className={`group rounded-2xl border overflow-hidden ${isPro
+                                                    ? "border-fuchsia-500/25 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent"
+                                                    : "border-white/[0.08] bg-white/[0.02]"
+                                                    }`}
+                                                open={isPro}
+                                            >
+                                                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <span className={`text-sm font-bold tracking-wide ${isPro ? "text-fuchsia-400" : "text-white"}`}>{plan.name}</span>
+                                                        {isPro && (
+                                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 uppercase">Nejoblíbenější</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                                        <span className={`text-sm font-bold ${isPro ? "text-fuchsia-300" : "text-slate-300"}`}>{plan.price}</span>
+                                                        <svg className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </summary>
+
+                                                <div className="px-5 pb-5">
+                                                    {/* Included */}
+                                                    <div className="space-y-1.5 mb-3">
+                                                        {included.map((f) => (
+                                                            <div key={f.label} className="flex items-start gap-2.5 text-[13px]">
+                                                                <svg className="w-4 h-4 mt-0.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                                <span className="text-slate-300">{f.label}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Excluded */}
+                                                    {excluded.length > 0 && (
+                                                        <div className="space-y-1.5 mb-4 pt-2 border-t border-white/[0.04]">
+                                                            {excluded.map((f) => (
+                                                                <div key={f.label} className="flex items-start gap-2.5 text-[13px]">
+                                                                    <svg className="w-4 h-4 mt-0.5 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" /></svg>
+                                                                    <span className="text-slate-600">{f.label}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* CTA */}
+                                                    <button
+                                                        onClick={() => handleCheckout(plan.key)}
+                                                        disabled={loading === plan.key}
+                                                        className={`w-full py-3 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${isPro
+                                                            ? "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20"
+                                                            : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                                                            }`}
+                                                    >
+                                                        {loading === plan.key ? "Přesměrování…" : `Objednat ${plan.name}`}
+                                                    </button>
+                                                </div>
+                                            </details>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* FAQ */}
