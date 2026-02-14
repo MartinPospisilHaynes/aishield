@@ -101,6 +101,29 @@ async def admin_email_health(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/send-reminders/{reminder_type}")
+async def admin_send_reminders(
+    reminder_type: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Odešle připomínkové emaily uživatelům s neověřenými „Nevím" odpověďmi.
+    reminder_type: "14_days" nebo "30_days"
+    Volá se z cron jobu nebo ručně z admin dashboardu.
+    """
+    if reminder_type not in ("14_days", "30_days"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Neplatný typ: {reminder_type}. Použijte '14_days' nebo '30_days'.",
+        )
+    try:
+        from backend.outbound.reminder_emails import send_reminder_emails
+        result = await send_reminder_emails(reminder_type)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/resend-webhook")
 async def resend_webhook(request: Request):
     """

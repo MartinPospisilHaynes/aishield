@@ -17,6 +17,8 @@ import {
     type Finding,
     type QuestionnaireProgress,
     type MonitoringEligibility,
+    type QuestionnaireFinding,
+    type QuestionnaireUnknown,
 } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 import ContactForm from "@/components/contact-form";
@@ -366,6 +368,11 @@ export default function DashboardPage() {
     const hasQuest = data?.questionnaire_status === "dokončen";
     const questPercentage = questProgress?.percentage ?? 0;
     const questStatus = questProgress?.status ?? "nezahajeno";
+    const qFindings = data?.questionnaire_findings || [];
+    const qUnknowns = data?.questionnaire_unknowns || [];
+    const qSummary = data?.questionnaire_summary || null;
+    const qHighRisk = qFindings.filter((f) => f.risk_level === "high").length;
+    const totalSystems = uniqueSystemsCount + qFindings.length;
 
     return (
         <>
@@ -481,10 +488,21 @@ export default function DashboardPage() {
                             </div>
                             {!hasScans ? (
                                 <p className="text-sm text-slate-500 leading-relaxed">Sken zatím nebyl proveden.</p>
-                            ) : uniqueSystemsCount > 0 ? (
+                            ) : (highRisk > 0 || qHighRisk > 0) ? (
                                 <>
                                     <p className="text-sm text-red-400 leading-relaxed">
-                                        ⚠️ Počet nalezených AI systémů spadajících pod AI Act: <span className="font-extrabold text-lg">{uniqueSystemsCount}</span>
+                                        🔴 Nalezeny vysoce rizikové AI systémy — vyžadují okamžitou akci
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                                        {hasQuest
+                                            ? `Sken + dotazník: celkem ${totalSystems} AI systémů, z toho ${highRisk + qHighRisk} vysoce rizikových.`
+                                            : "Pro úplnou analýzu vyplňte dotazník."}
+                                    </p>
+                                </>
+                            ) : totalSystems > 0 ? (
+                                <>
+                                    <p className="text-sm text-amber-400 leading-relaxed">
+                                        ⚠️ Nalezeno {totalSystems} AI {totalSystems === 1 ? 'systém' : totalSystems < 5 ? 'systémy' : 'systémů'} s povinnostmi dle AI Act
                                     </p>
                                     <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                                         {hasQuest
@@ -523,30 +541,87 @@ export default function DashboardPage() {
                                         </svg>
                                     </div>
                                 </div>
-                                <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${highRisk > 0 ? 'text-red-400' : uniqueSystemsCount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                                    {uniqueSystemsCount}
+                                <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${(highRisk + qHighRisk) > 0 ? 'text-red-400' : totalSystems > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                                    {totalSystems}
                                 </p>
                                 <p className="text-xs text-amber-400/80 mt-1 font-medium">
-                                    {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} nesplněných povinností dle AI Actu` : 'Sken zatím nebyl proveden'}
+                                    {totalSystems > 0
+                                        ? `${totalSystems} nesplněných povinností dle AI Actu`
+                                        : hasScans
+                                            ? 'Žádné AI systémy nenalezeny'
+                                            : 'Sken zatím nebyl proveden'}
                                 </p>
+                                {hasQuest && qFindings.length > 0 && (
+                                    <p className="text-[10px] text-slate-500 mt-1">
+                                        {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} ze skenu` : ''}{uniqueSystemsCount > 0 && qFindings.length > 0 ? ' + ' : ''}{qFindings.length > 0 ? `${qFindings.length} z dotazníku` : ''}
+                                    </p>
+                                )}
                             </button>
-                            {aiCardOpen && uniqueSystemsCount > 0 && (
+                            {aiCardOpen && totalSystems > 0 && (
                                 <div className="border-t border-white/[0.06] px-5 pb-5">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Registr nalezených AI systémů</p>
-                                    <div className="space-y-2">
-                                        {groupFindings(data?.findings || []).map((f) => (
-                                            <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                    <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
-                                                </div>
-                                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                    {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                                </span>
+                                    {/* Scan findings */}
+                                    {uniqueSystemsCount > 0 && (
+                                        <>
+                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Ze skenu webu</p>
+                                            <div className="space-y-2">
+                                                {groupFindings(data?.findings || []).map((f) => (
+                                                    <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-sm font-medium text-white truncate">{f.name}</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
+                                                        </div>
+                                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                            {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>
+                                        </>
+                                    )}
+                                    {/* Questionnaire findings */}
+                                    {qFindings.length > 0 && (
+                                        <>
+                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Z dotazníku — interní AI systémy</p>
+                                            <div className="space-y-2">
+                                                {qFindings.map((f) => (
+                                                    <div key={f.question_key} className="flex items-center justify-between gap-3 rounded-lg bg-fuchsia-500/[0.03] border border-fuchsia-500/[0.1] px-4 py-3">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-sm font-medium text-white truncate">{f.name}</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5">{f.ai_act_article}</p>
+                                                        </div>
+                                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                            {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                    {/* Unknowns warning — color-coded by severity */}
+                                    {qUnknowns.length > 0 && (
+                                        <>
+                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Nejisté oblasti ({qUnknowns.length}×)</p>
+                                            <div className="space-y-1.5">
+                                                {qUnknowns.slice(0, 5).map((u) => {
+                                                    const sc = u.severity_color === "red" ? "text-red-400 border-red-500/30 bg-red-500/[0.06]"
+                                                        : u.severity_color === "orange" ? "text-orange-400 border-orange-500/30 bg-orange-500/[0.06]"
+                                                        : u.severity_color === "yellow" ? "text-amber-400 border-amber-500/20 bg-amber-500/[0.05]"
+                                                        : "text-slate-400 border-slate-500/20 bg-slate-500/[0.04]";
+                                                    const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
+                                                    return (
+                                                        <div key={u.question_key} className={`rounded-md border px-2.5 py-1.5 flex items-start gap-2 ${sc}`}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0 ${dotColor}`} />
+                                                            <span className="text-[11px]">{u.question_text}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {qUnknowns.length > 5 && (
+                                                    <p className="text-[10px] text-slate-500">… a dalších {qUnknowns.length - 5}</p>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                    {!hasQuest && <p className="text-[10px] text-slate-600 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>}
                                 </div>
                             )}
                         </div>
@@ -596,7 +671,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
-                    {hasScans && hasQuest && findingsCount > 0 && (
+                    {hasScans && hasQuest && (findingsCount > 0 || qFindings.length > 0) && (
                         <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-4 sm:p-6">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
@@ -606,7 +681,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
-                                    <p className="text-xs text-slate-400">Na základě skenu — {findingsCount} kroků, vše vyřídíme za vás</p>
+                                    <p className="text-xs text-slate-400">Na základě skenu{qFindings.length > 0 ? ` a dotazníku` : ''} — {findingsCount + qFindings.length} kroků, vše vyřídíme za vás</p>
                                 </div>
                             </div>
                             <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
@@ -638,9 +713,9 @@ export default function DashboardPage() {
                     {/* Tab content */}
                     <div className="min-h-[400px]">
                         {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
-                        {activeTab === "findings" && <TabFindings findings={data?.findings || []} onStartScan={handleStartScan} />}
+                        {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
-                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} onStartScan={handleStartScan} />}
+                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} onStartScan={handleStartScan} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                         {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
@@ -1058,10 +1133,17 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
 
 
 /* ── Tab: AI systémy (Findings) with expandable detail ── */
-function TabFindings({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
+function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, hasQuest, companyId, onStartScan }: {
+    findings: DashboardData["findings"];
+    questionnaireFindings: QuestionnaireFinding[];
+    questionnaireUnknowns: QuestionnaireUnknown[];
+    hasQuest: boolean;
+    companyId: string;
+    onStartScan: () => void;
+}) {
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-    if (findings.length === 0) {
+    if (findings.length === 0 && questionnaireFindings.length === 0) {
         return (
             <EmptyState
                 title="Sken ještě nebyl spuštěn"
@@ -1078,6 +1160,7 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
     }
 
     const grouped = groupFindings(findings);
+    const totalCount = grouped.length + questionnaireFindings.length;
 
     return (
         <div className="space-y-3">
@@ -1089,57 +1172,215 @@ function TabFindings({ findings, onStartScan }: { findings: DashboardData["findi
                     <div>
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Systémy umělé inteligence nalezeny</h4>
                         <p className="text-xs text-slate-400 leading-relaxed">
-                            Nalezeno <strong className="text-slate-300">{grouped.length} unikátních AI systémů</strong> na vašem webu.
-                            Klikněte na systém pro zobrazení detailu a vysvětlení srozumitelným jazykem.
+                            Nalezeno <strong className="text-slate-300">{totalCount} AI systémů</strong>
+                            {grouped.length > 0 && questionnaireFindings.length > 0
+                                ? ` (${grouped.length} ze skenu webu, ${questionnaireFindings.length} z dotazníku)`
+                                : grouped.length > 0
+                                    ? ' ze skenu vašeho webu'
+                                    : ' z odpovědí v dotazníku'
+                            }.
+                            Klikněte na systém pro zobrazení detailu.
                         </p>
                     </div>
                 </div>
             </div>
 
-            {grouped.map((f) => {
-                const isExpanded = expanded[f.name] || false;
-                const explanation = AI_SYSTEM_EXPLANATIONS[f.name] || `AI systém nalezený na vašem webu \u2013 doporučujeme tento nález zahrnout do analýzy a compliance dokumentace, abyste měli jistotu souladu s EU AI Act.`;
+            {/* ── Scan findings ── */}
+            {grouped.length > 0 && (
+                <>
+                    {questionnaireFindings.length > 0 && (
+                        <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium pt-2">Ze skenu webu</h3>
+                    )}
+                    {grouped.map((f) => {
+                        const isExpanded = expanded[f.name] || false;
+                        const explanation = AI_SYSTEM_EXPLANATIONS[f.name] || `AI systém nalezený na vašem webu \u2013 doporučujeme tento nález zahrnout do analýzy a compliance dokumentace, abyste měli jistotu souladu s EU AI Act.`;
 
-                return (
-                    <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
-                        <button
-                            onClick={() => setExpanded(prev => ({ ...prev, [f.name]: !prev[f.name] }))}
-                            className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3 sm:gap-4"
-                        >
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
-                                    <h4 className="font-semibold text-slate-200">{f.name}</h4>
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                    </span>
-                                    {f.count > 1 && (
-                                        <span className="text-xs text-slate-500">{f.count}x nalezeno</span>
-                                    )}
-                                </div>
-                                <p className="text-sm text-slate-400">{f.action_required}</p>
-                            </div>
-                            <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        return (
+                            <div key={f.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all overflow-hidden">
+                                <button
+                                    onClick={() => setExpanded(prev => ({ ...prev, [f.name]: !prev[f.name] }))}
+                                    className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3 sm:gap-4"
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                                            <h4 className="font-semibold text-slate-200">{f.name}</h4>
+                                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                            </span>
+                                            {f.count > 1 && (
+                                                <span className="text-xs text-slate-500">{f.count}x nalezeno</span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-slate-400">{f.action_required}</p>
+                                    </div>
+                                    <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
-                        {isExpanded && (
-                            <div className="px-5 pb-5 pt-0 border-t border-white/[0.04]">
-                                <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
-                                    <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
-                                    <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
-                                </div>
-                                {(f.category || f.ai_act_article) && (
-                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
-                                        {f.category && <span>Kategorie: {f.category}</span>}
-                                        {f.ai_act_article && f.ai_act_article !== "—" && <span>Článek AI Act: {f.ai_act_article}</span>}
+                                {isExpanded && (
+                                    <div className="px-5 pb-5 pt-0 border-t border-white/[0.04]">
+                                        <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
+                                            <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
+                                            <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
+                                        </div>
+                                        {(f.category || f.ai_act_article) && (
+                                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
+                                                {f.category && <span>Kategorie: {f.category}</span>}
+                                                {f.ai_act_article && f.ai_act_article !== "—" && <span>Článek AI Act: {f.ai_act_article}</span>}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                        )}
+                        );
+                    })}
+                </>
+            )}
+
+            {/* ── Questionnaire findings ── */}
+            {questionnaireFindings.length > 0 && (
+                <>
+                    <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium pt-4">Z dotazníku — interní AI systémy</h3>
+                    {questionnaireFindings.map((f) => {
+                        const isExpanded = expanded[`q_${f.question_key}`] || false;
+                        return (
+                            <div key={f.question_key} className="rounded-xl border border-fuchsia-500/[0.12] bg-fuchsia-500/[0.02] hover:border-fuchsia-500/[0.2] transition-all overflow-hidden">
+                                <button
+                                    onClick={() => setExpanded(prev => ({ ...prev, [`q_${f.question_key}`]: !prev[`q_${f.question_key}`] }))}
+                                    className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3 sm:gap-4"
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                                            <h4 className="font-semibold text-slate-200">{f.name}</h4>
+                                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                            </span>
+                                            <span className="text-[10px] text-fuchsia-400/60 font-medium">dotazník</span>
+                                        </div>
+                                        <p className="text-sm text-slate-400 line-clamp-2">{f.action_required}</p>
+                                    </div>
+                                    <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {isExpanded && (
+                                    <div className="px-5 pb-5 pt-0 border-t border-fuchsia-500/[0.08]">
+                                        <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
+                                            <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Doporučení</h5>
+                                            <p className="text-sm text-slate-300 leading-relaxed">{f.action_required}</p>
+                                        </div>
+                                        {f.ai_act_article && (
+                                            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 mt-3">
+                                                <span>Článek AI Act: {f.ai_act_article}</span>
+                                                <span>Priorita: {f.priority}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </>
+            )}
+
+            {/* ── Unknowns — color-coded by severity with checklists ── */}
+            {questionnaireUnknowns.length > 0 && (
+                <div className="mt-4 space-y-3">
+                    <div className="flex items-start gap-3 mb-2">
+                        <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div>
+                            <h4 className="text-sm font-semibold text-slate-300 mb-1">Oblasti k ověření ({questionnaireUnknowns.length})</h4>
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                U těchto otázek jste odpověděli &bdquo;Nevím&ldquo;. Pomůžeme vám to zjistit — u každé oblasti najdete konkrétní kroky.
+                            </p>
+                        </div>
                     </div>
-                );
-            })}
+
+                    {questionnaireUnknowns.map((u) => {
+                        const isExp = expanded[`unk_${u.question_key}`] || false;
+                        const borderColor = u.severity_color === "red" ? "border-red-500/30 hover:border-red-500/50"
+                            : u.severity_color === "orange" ? "border-orange-500/25 hover:border-orange-500/40"
+                            : u.severity_color === "yellow" ? "border-amber-500/20 hover:border-amber-500/35"
+                            : "border-slate-500/15 hover:border-slate-500/25";
+                        const bgColor = u.severity_color === "red" ? "bg-red-500/[0.03]"
+                            : u.severity_color === "orange" ? "bg-orange-500/[0.03]"
+                            : u.severity_color === "yellow" ? "bg-amber-500/[0.02]"
+                            : "bg-white/[0.01]";
+                        const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
+                        const labelColor = u.severity_color === "red" ? "text-red-400 bg-red-500/10"
+                            : u.severity_color === "orange" ? "text-orange-400 bg-orange-500/10"
+                            : u.severity_color === "yellow" ? "text-amber-400 bg-amber-500/10"
+                            : "text-slate-400 bg-slate-500/10";
+
+                        return (
+                            <div key={u.question_key} className={`rounded-xl border ${borderColor} ${bgColor} transition-all overflow-hidden`}>
+                                <button
+                                    onClick={() => setExpanded(prev => ({ ...prev, [`unk_${u.question_key}`]: !prev[`unk_${u.question_key}`] }))}
+                                    className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-3"
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
+                                            <h4 className="font-semibold text-slate-200 text-sm">{u.question_text}</h4>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1.5">
+                                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${labelColor}`}>
+                                                {u.severity_label}
+                                            </span>
+                                            {u.ai_act_article && <span className="text-[10px] text-slate-500">{u.ai_act_article}</span>}
+                                        </div>
+                                    </div>
+                                    <svg className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {isExp && (
+                                    <div className="px-5 pb-5 pt-0 border-t border-white/[0.04]">
+                                        {u.checklist && u.checklist.length > 0 && (
+                                            <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
+                                                <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-3">Jak to zjistit:</h5>
+                                                <ul className="space-y-2">
+                                                    {u.checklist.map((item, idx) => (
+                                                        <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                                                            <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
+                                                            <span>{item}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-slate-500 mt-3 leading-relaxed">{u.recommendation}</p>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                    <a href={`/dotaznik?company_id=${companyId}&edit=true`}
+                        className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 mt-1 transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Upravit odpovědi v dotazníku
+                    </a>
+                </div>
+            )}
+
+            {/* CTA: fill questionnaire if not done */}
+            {!hasQuest && findings.length > 0 && (
+                <div className="mt-4 rounded-xl border border-fuchsia-500/15 bg-fuchsia-500/[0.03] p-4 text-center">
+                    <p className="text-sm text-slate-400 mb-3">
+                        Sken odhalil AI systémy na webu. <strong className="text-slate-300">Vyplňte dotazník</strong> pro odhalení interních AI nástrojů (ChatGPT, AI nábor, rozhodování…).
+                    </p>
+                    <a href={`/dotaznik?company_id=${companyId}`} className="btn-primary text-sm px-5 py-2 inline-block">
+                        Vyplnit dotazník
+                    </a>
+                </div>
+            )}
         </div>
     );
 }
@@ -1202,8 +1443,14 @@ const STANDARD_STEPS = [
 ];
 
 /* ── Tab: Kroky ke splnění ── */
-function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"]; onStartScan: () => void }) {
-    if (findings.length === 0) {
+function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQuest, onStartScan }: {
+    findings: DashboardData["findings"];
+    questionnaireFindings: QuestionnaireFinding[];
+    questionnaireUnknowns: QuestionnaireUnknown[];
+    hasQuest: boolean;
+    onStartScan: () => void;
+}) {
+    if (findings.length === 0 && questionnaireFindings.length === 0) {
         return (
             <EmptyState
                 title="Zatím žádné kroky"
@@ -1240,31 +1487,95 @@ function TabPlan({ findings, onStartScan }: { findings: DashboardData["findings"
             </div>
 
             {/* ── Kroky vyplývající ze skenu ── */}
-            <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě skenu vašeho webu</h3>
-            {grouped.map((f) => (
-                <div
-                    key={f.name}
-                    className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
-                >
-                    <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-200">
-                            {f.action_required || f.name}
+            {grouped.length > 0 && (
+                <>
+                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě skenu vašeho webu</h3>
+                    {grouped.map((f) => (
+                        <div
+                            key={f.name}
+                            className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
+                        >
+                            <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-200">
+                                    {f.action_required || f.name}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-0.5">{f.name}</p>
+                                <div className="flex items-center gap-3 mt-1.5">
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                    </span>
+                                    <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </>
+            )}
+
+            {/* ── Kroky vyplývající z dotazníku ── */}
+            {questionnaireFindings.length > 0 && (
+                <>
+                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě dotazníku — interní AI systémy</h3>
+                    {questionnaireFindings.map((f) => (
+                        <div
+                            key={f.question_key}
+                            className="flex items-start gap-3 sm:gap-4 rounded-xl border border-fuchsia-500/[0.12] bg-fuchsia-500/[0.02] px-3 sm:px-5 py-3 sm:py-4"
+                        >
+                            <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-200">{f.name}</p>
+                                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{f.action_required}</p>
+                                <div className="flex items-center gap-3 mt-1.5">
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
+                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
+                                    </span>
+                                    <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </>
+            )}
+
+            {/* ── Unknowns — areas to verify (color-coded) ── */}
+            {questionnaireUnknowns.length > 0 && (
+                <>
+                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">K ověření — odpovědi &bdquo;Nevím&ldquo;</h3>
+                    <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                        <p className="text-xs text-slate-400 mb-3">
+                            U {questionnaireUnknowns.length} otázek jste odpověděli &bdquo;Nevím&ldquo;. Pomůžeme vám s ověřením — nebo můžete odpovědi upravit v dotazníku.
                         </p>
-                        <p className="text-xs text-slate-500 mt-0.5">{f.name}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                            </span>
-                            <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
+                        <div className="space-y-2">
+                            {questionnaireUnknowns.map((u) => {
+                                const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
+                                const labelColor = u.severity_color === "red" ? "text-red-400"
+                                    : u.severity_color === "orange" ? "text-orange-400"
+                                    : u.severity_color === "yellow" ? "text-amber-400"
+                                    : "text-slate-400";
+                                return (
+                                    <div key={u.question_key} className="flex items-start gap-3 rounded-lg bg-white/[0.02] px-3 py-2.5">
+                                        <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-slate-300">{u.question_text}</p>
+                                            <p className={`text-[10px] mt-0.5 ${labelColor}`}>{u.severity_label}</p>
+                                        </div>
+                                        <span className="text-[10px] text-fuchsia-400/70 font-medium flex-shrink-0">✦ Prověříme</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
-                </div>
-            ))}
+                </>
+            )}
 
             {/* ── Dokumenty a výstupy, které pro vás vyrobíme ── */}
             <h3 className="text-sm font-semibold text-slate-300 mt-8 mb-2">Dokumenty a výstupy, které pro vás připravíme</h3>

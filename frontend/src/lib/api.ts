@@ -535,6 +535,37 @@ export interface DashboardFinding {
     status: string;
 }
 
+export interface QuestionnaireFinding {
+    question_key: string;
+    name: string;
+    category: string;
+    risk_level: string;
+    ai_act_article: string;
+    action_required: string;
+    priority: string;
+    source: "questionnaire";
+}
+
+export interface QuestionnaireUnknown {
+    question_key: string;
+    question_text: string;
+    risk_level: string;
+    ai_act_article: string;
+    recommendation: string;
+    priority: string;
+    severity: "critical" | "high" | "limited" | "minimal";
+    severity_color: "red" | "orange" | "yellow" | "gray";
+    severity_label: string;
+    checklist: string[];
+}
+
+export interface QuestionnaireSummary {
+    total_answers: number;
+    ai_systems_declared: number;
+    unknown_count: number;
+    risk_breakdown: Record<string, number>;
+}
+
 export interface DashboardDocument {
     id: string;
     template_key: string;
@@ -559,6 +590,9 @@ export interface DashboardData {
     documents: DashboardDocument[];
     orders: DashboardOrder[];
     questionnaire_status: string;
+    questionnaire_findings: QuestionnaireFinding[];
+    questionnaire_unknowns: QuestionnaireUnknown[];
+    questionnaire_summary: QuestionnaireSummary | null;
     compliance_score: number | null;
 }
 

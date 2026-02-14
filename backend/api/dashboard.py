@@ -4,9 +4,13 @@ Endpointy pro zákaznický portál — přehled compliance stavu,
 dokumenty, skeny, akční plán.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from backend.database import get_supabase
 from backend.api.auth import AuthUser, get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -124,6 +128,9 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
 
     # 6. Dotazník — přes tabulku clients (client.company_id → questionnaire_responses.client_id)
     questionnaire_status = "nevyplněn"
+    questionnaire_findings = []
+    questionnaire_unknowns = []
+    questionnaire_summary = {}
     try:
         # Najdi klienta pro tuto firmu
         client_res = supabase.table("clients").select("id").eq(
@@ -131,10 +138,102 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
         ).limit(1).execute()
         if client_res.data:
             client_id = client_res.data[0]["id"]
-            quest_res = supabase.table("questionnaire_responses").select("id").eq(
+            quest_res = supabase.table("questionnaire_responses").select("*").eq(
                 "client_id", client_id
-            ).limit(1).execute()
-            questionnaire_status = "dokončen" if quest_res.data else "nevyplněn"
+            ).execute()
+            if quest_res.data:
+                questionnaire_status = "dokončen"
+                # Analyzovat odpovědi a vygenerovat findings
+                try:
+                    from backend.api.questionnaire import (
+                        QuestionnaireAnswer,
+                        _analyze_responses,
+                        QUESTIONNAIRE_SECTIONS,
+                    )
+                    # Sestavit QuestionnaireAnswer objekty
+                    q_answers = []
+                    for row in quest_res.data:
+                        q_answers.append(QuestionnaireAnswer(
+                            question_key=row["question_key"],
+                            section=row["section"],
+                            answer=row["answer"],
+                            details=row.get("details"),
+                            tool_name=row.get("tool_name"),
+                        ))
+
+                    analysis = _analyze_responses(q_answers)
+
+                    # Vytvořit question_map pro texty otázek
+                    question_map = {}
+                    for section in QUESTIONNAIRE_SECTIONS:
+                        for q in section["questions"]:
+                            question_map[q["key"]] = q
+
+                    # Recommendations → questionnaire_findings (pro dashboard)
+                    for rec in analysis.get("recommendations", []):
+                        q_def = question_map.get(rec["question_key"], {})
+                        q_text = q_def.get("text", rec["question_key"])
+
+                        # "nevím" odpovědi jdou do seznamu unknowns
+                        is_unknown = any(
+                            a.answer == "unknown" and a.question_key == rec["question_key"]
+                            for a in q_answers
+                        )
+                        if is_unknown:
+                            questionnaire_unknowns.append({
+                                "question_key": rec["question_key"],
+                                "question_text": q_text,
+                                "risk_level": rec["risk_level"],
+                                "ai_act_article": rec.get("ai_act_article", ""),
+                                "recommendation": rec["recommendation"],
+                                "priority": rec["priority"],
+                                "severity": rec.get("severity", "limited"),
+                                "severity_color": rec.get("severity_color", "yellow"),
+                                "severity_label": rec.get("severity_label", "Omezené riziko"),
+                                "checklist": rec.get("checklist", []),
+                            })
+                        else:
+                            # Najít odpovídající odpověď pro tool_name / details
+                            matching_answer = next(
+                                (a for a in q_answers if a.question_key == rec["question_key"]),
+                                None,
+                            )
+                            tool_name = rec.get("tool_name", "")
+                            if matching_answer and matching_answer.details:
+                                # Pokusit se zjistit název nástrojů z details
+                                for dk, dv in matching_answer.details.items():
+                                    if "tool" in dk and dv:
+                                        if isinstance(dv, list):
+                                            tool_name = ", ".join(dv)
+                                        elif isinstance(dv, str) and dv:
+                                            tool_name = dv
+                                        break
+
+                            questionnaire_findings.append({
+                                "question_key": rec["question_key"],
+                                "name": tool_name or q_text,
+                                "category": q_def.get("ai_act_article", ""),
+                                "risk_level": rec["risk_level"],
+                                "ai_act_article": rec.get("ai_act_article", ""),
+                                "action_required": rec["recommendation"],
+                                "priority": rec["priority"],
+                                "source": "questionnaire",
+                            })
+
+                    questionnaire_summary = {
+                        "total_answers": analysis.get("total_answers", 0),
+                        "ai_systems_declared": analysis.get("ai_systems_declared", 0),
+                        "unknown_count": analysis.get("unknown_count", 0),
+                        "risk_breakdown": analysis.get("risk_breakdown", {}),
+                    }
+                    logger.info(
+                        f"[Dashboard] Questionnaire analysis: "
+                        f"{len(questionnaire_findings)} findings, "
+                        f"{len(questionnaire_unknowns)} unknowns "
+                        f"for company {company_id}"
+                    )
+                except Exception as e:
+                    logger.error(f"[Dashboard] Chyba při analýze dotazníku: {e}")
     except Exception:
         pass  # Tabulka nemusí existovat
 
@@ -202,5 +301,8 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
             for o in (orders_res.data or [])
         ],
         "questionnaire_status": questionnaire_status,
+        "questionnaire_findings": questionnaire_findings,
+        "questionnaire_unknowns": questionnaire_unknowns,
+        "questionnaire_summary": questionnaire_summary,
         "compliance_score": compliance_score,
     }

@@ -831,6 +831,11 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
             continue
 
         risk = q_def.get("risk_hint", "minimal")
+        severity_info = _NEVIM_SEVERITY.get(ans.question_key, {
+            "severity": "minimal", "color": "gray", "label": "Nízká priorita"
+        })
+        checklist = UNKNOWN_CHECKLISTS.get(ans.question_key, [])
+
         # "Nevím" u vysoce rizikových oblastí je samo o sobě riziko
         if risk in ("high", "limited"):
             recommendations.append({
@@ -845,6 +850,10 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
                     f'AI systém dle AI Act.'
                 ),
                 "priority": "střední",
+                "severity": severity_info["severity"],
+                "severity_color": severity_info["color"],
+                "severity_label": severity_info["label"],
+                "checklist": checklist,
             })
 
     # Seřadit doporučení: high → limited → minimal
@@ -858,6 +867,164 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
         "risk_breakdown": risk_breakdown,
         "recommendations": recommendations,
     }
+
+
+# ── Checklisty pro odpovědi Nevim — konkrétní kroky co má klient udělat ──
+
+UNKNOWN_CHECKLISTS: dict[str, list[str]] = {
+    # Zakázané praktiky
+    'uses_social_scoring': [
+        'Zeptejte se vedení: Hodnotíme zákazníky nějakým bodovým systémem?',
+        'Zkontrolujte CRM systém — má funkci skóre zákazníka?',
+        'Ověřte, zda výsledky scoringu neomezují přístup ke službám.',
+    ],
+    'uses_subliminal_manipulation': [
+        'Zeptejte se marketingu: Používáme AI k personalizaci cen podle chování?',
+        'Zkontrolujte reklamní nástroje — mají funkce dynamického cílení?',
+        'Ověřte, zda AI neovlivňuje zákazníky bez jejich vědomí.',
+    ],
+    'uses_realtime_biometric': [
+        'Zeptejte se správce budovy: Máme kamery s rozpoznáváním obličejů?',
+        'Zkontrolujte docházkový systém — používá otisk prstu nebo obličej?',
+        'Ověřte přístupové systémy do budovy a serverovny.',
+    ],
+    # Interní AI
+    'uses_chatgpt': [
+        'Zeptejte se zaměstnanců: Používá někdo ChatGPT, Claude nebo podobný AI chat?',
+        'Zkontrolujte firemní předplatné — máte ChatGPT Plus, Copilot Pro?',
+        'Podívejte se na historii prohlížečů na firemních počítačích.',
+    ],
+    'uses_copilot': [
+        'Zeptejte se vývojářů: Používáte GitHub Copilot nebo podobný AI nástroj?',
+        'Zkontrolujte předplatné vývojářských nástrojů.',
+    ],
+    'uses_ai_content': [
+        'Zeptejte se marketingu: Generujete obrázky nebo texty pomocí AI?',
+        'Zkontrolujte, zda se na sociálních sítích nepoužívá Canva AI, Midjourney apod.',
+    ],
+    'uses_deepfake': [
+        'Zeptejte se marketingu: Vytváříme videa s AI avatary nebo klonovaným hlasem?',
+        'Zkontrolujte faktury — platíme za HeyGen, Synthesia, ElevenLabs?',
+    ],
+    # HR
+    'uses_ai_recruitment': [
+        'Zeptejte se HR: Používáme nějaký software na třídění životopisů?',
+        'Zkontrolujte, zda Jobs.cz, LinkedIn Recruiter nebo jiný portál nefiltruje kandidáty automaticky.',
+        'Zeptejte se: Rozhoduje o kandidátech člověk, nebo software?',
+    ],
+    'uses_ai_employee_monitoring': [
+        'Zeptejte se IT: Máme nainstalovaný software na sledování produktivity?',
+        'Zkontrolujte, zda firemní počítače nemají monitoring (Hubstaff, Time Doctor apod.).',
+        'Ověřte, zda GPS sledování firemních aut nepoužívá AI analýzu.',
+    ],
+    'uses_emotion_recognition': [
+        'Zeptejte se HR: Analyzujeme náladu zaměstnanců pomocí AI?',
+        'Zkontrolujte call centrum — má AI analýzu tónu hlasu?',
+        'Ověřte kamerové systémy — rozpoznávají výrazy obličeje?',
+    ],
+    # Finance
+    'uses_ai_accounting': [
+        'Zeptejte se účetní: Používá účetní software AI funkce?',
+        'Zkontrolujte Fakturoid, Money, Pohodu — mají zapnuté AI doporučení?',
+    ],
+    'uses_ai_creditscoring': [
+        'Zeptejte se obchodního oddělení: Hodnotíme bonitu zákazníků automaticky?',
+        'Zkontrolujte, zda e-shop nebo ERP nepoužívá AI scoring platební morálky.',
+    ],
+    'uses_ai_insurance': [
+        'Zeptejte se vedení: Používáme AI při stanovení cen pojištění?',
+        'Zkontrolujte pojišťovací software — má AI funkce?',
+    ],
+    # Zákaznický servis
+    'uses_ai_chatbot': [
+        'Podívejte se na svůj web — vyskočí tam chatovací okno?',
+        'Zkontrolujte faktury: Platíme za Smartsupp, Tidio, Intercom?',
+        'Zeptejte se správce webu: Máme na webu AI chatbota?',
+    ],
+    'uses_ai_email_auto': [
+        'Zeptejte se zákaznické podpory: Odpovídá na emaily automat?',
+        'Zkontrolujte helpdesk systém — má zapnuté AI auto-reply?',
+    ],
+    'uses_ai_decision': [
+        'Zeptejte se vedení: Rozhoduje někde ve firmě AI místo člověka?',
+        'Zkontrolujte reklamační proces — zamítá reklamace automat?',
+        'Ověřte, zda slevy nebo přístup ke službám neurčuje AI.',
+    ],
+    'uses_dynamic_pricing': [
+        'Zeptejte se e-shop manažera: Mění se ceny automaticky podle zákazníka?',
+        'Zkontrolujte cenotvorbu — používáme AI pricing nástroj?',
+    ],
+    # Kritická infrastruktura
+    'uses_ai_critical_infra': [
+        'Zeptejte se technického ředitele: Řídí AI něco kritického (energie, doprava)?',
+        'Zkontrolujte SCADA / řídicí systémy — mají AI komponenty?',
+    ],
+    'uses_ai_safety_component': [
+        'Zeptejte se produktového manažera: Je AI součástí bezpečnostní funkce produktu?',
+        'Zkontrolujte CE dokumentaci — zmiňuje AI?',
+    ],
+    # Ochrana dat
+    'ai_processes_personal_data': [
+        'Zeptejte se DPO / právníka: Zpracováváme osobní údaje v AI nástrojích?',
+        'Zkontrolujte, jaká data zaměstnanci vkládají do ChatGPT a podobných nástrojů.',
+    ],
+    'ai_data_stored_eu': [
+        'Zkontrolujte smlouvy s AI poskytovateli — kde jsou data uložena?',
+        'ChatGPT, Google AI = data pravděpodobně v USA.',
+    ],
+    'ai_transparency_docs': [
+        'Spočítejte, kolik AI nástrojů firma používá (stačí jednoduchý seznam).',
+        'Zeptejte se každého oddělení: Jaké AI nástroje používáte?',
+    ],
+    # AI gramotnost
+    'has_ai_training': [
+        'Zeptejte se HR: Proběhlo školení o bezpečném používání AI?',
+        'Zkontrolujte, zda existuje záznam o proškolení zaměstnanců.',
+    ],
+    'has_ai_guidelines': [
+        'Zeptejte se vedení: Máme pravidla pro používání AI ve firmě?',
+        'Zkontrolujte interní dokumenty — existuje AI politika nebo směrnice?',
+    ],
+    # Provider
+    'develops_own_ai': [
+        'Zeptejte se CTO: Vyvíjíme vlastní AI modely nebo integrujeme AI do produktů?',
+        'Zkontrolujte, zda produkty firmy obsahují AI funkce.',
+    ],
+}
+
+# ── Mapování severity pro odpovědi Nevim ──
+
+_NEVIM_SEVERITY: dict[str, dict] = {
+    # Čl. 5 — zakázané praktiky
+    'uses_social_scoring':          {'severity': 'critical', 'color': 'red',    'label': 'Kritické'},
+    'uses_subliminal_manipulation': {'severity': 'critical', 'color': 'red',    'label': 'Kritické'},
+    'uses_realtime_biometric':      {'severity': 'critical', 'color': 'red',    'label': 'Kritické'},
+    'uses_emotion_recognition':     {'severity': 'critical', 'color': 'red',    'label': 'Kritické'},
+    # Příloha III — high-risk
+    'uses_ai_recruitment':          {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_employee_monitoring':  {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_creditscoring':        {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_insurance':            {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_decision':             {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_critical_infra':       {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_ai_safety_component':     {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'develops_own_ai':              {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    # Čl. 50 — omezené riziko
+    'uses_chatgpt':                 {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_ai_content':              {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_deepfake':                {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_ai_chatbot':              {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_ai_email_auto':           {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_dynamic_pricing':         {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'uses_ai_accounting':           {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'ai_processes_personal_data':   {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'ai_data_stored_eu':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'ai_transparency_docs':         {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'has_ai_training':              {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'has_ai_guidelines':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    # Minimální
+    'uses_copilot':                 {'severity': 'minimal',  'color': 'gray',   'label': 'Nízká priorita'},
+}
 
 
 def _get_recommendation(question_key: str, risk: str, tool_name: str, details: Optional[dict]) -> str:

@@ -173,16 +173,6 @@ def generate_report_email_html(
                 f'<span style="color:{D["accent_cyan"]};">{action}</span></div>'
             )
 
-        # "Co vám nabízíme" — brief offer per category
-        category = f.get("category", "")
-        offer = OFFER_TEXT.get(category, DEFAULT_OFFER)
-        extras += (
-            f'<div style="margin-top:6px;font-size:13px;">'
-            f'<span style="color:{D["text_muted"]};">Co vám nabízíme:</span> '
-            f'<span style="color:{D["accent_fuchsia"]};">{offer}</span>'
-            f'</div>'
-        )
-
         findings_html += f"""
         <tr>
             <td style="padding:16px;border-bottom:1px solid {D["border"]};">
