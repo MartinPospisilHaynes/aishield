@@ -6,20 +6,35 @@ import { Suspense } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+type PaymentGateway = "gopay" | "stripe" | "comgate";
+
 type PaymentStatus = {
-    payment_id: number;
+    payment_id: string;
     state: string;
     is_paid: boolean;
     order_number: string;
+    gateway?: PaymentGateway;
+};
+
+const GATEWAY_NAMES: Record<PaymentGateway, string> = {
+    gopay: "GoPay",
+    stripe: "Stripe",
+    comgate: "Comgate",
 };
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
-    const paymentId = searchParams.get("id");
+    // GoPay: ?id=123&gateway=gopay
+    // Stripe: ?session_id=cs_...&gateway=stripe
+    // Comgate: ?id=xxx&refId=yyy&gateway=comgate
+    const gateway = (searchParams.get("gateway") || "gopay") as PaymentGateway;
+    const paymentId = searchParams.get("id") || searchParams.get("session_id");
     const isSubscription = searchParams.get("type") === "subscription";
     const [status, setStatus] = useState<PaymentStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const gatewayName = GATEWAY_NAMES[gateway] || gateway;
 
     useEffect(() => {
         if (!paymentId) {
@@ -30,7 +45,9 @@ function PaymentStatusContent() {
 
         async function checkStatus() {
             try {
-                const res = await fetch(`${API_URL}/api/payments/status/${paymentId}`);
+                const res = await fetch(
+                    `${API_URL}/api/payments/status/${paymentId}?gateway=${gateway}`
+                );
                 if (!res.ok) throw new Error("Nelze ověřit platbu");
                 const data = await res.json();
                 setStatus(data);
@@ -42,7 +59,7 @@ function PaymentStatusContent() {
         }
 
         checkStatus();
-    }, [paymentId]);
+    }, [paymentId, gateway]);
 
     if (loading) {
         return (
@@ -60,7 +77,7 @@ function PaymentStatusContent() {
                         </div>
                         <h2 className="text-xl font-bold mb-2">Ověřuji platbu...</h2>
                         <p className="text-sm text-slate-400">
-                            Komunikuji s platební bránou GoPay.
+                            Komunikuji s platební bránou {gatewayName}.
                         </p>
                     </div>
                 </div>

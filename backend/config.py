@@ -32,6 +32,19 @@ class Settings(BaseSettings):
     gopay_client_secret: str = ""
     gopay_is_production: bool = False
 
+    # ── Stripe ──
+    stripe_secret_key: str = ""          # sk_test_... nebo sk_live_...
+    stripe_publishable_key: str = ""     # pk_test_... nebo pk_live_...
+    stripe_webhook_secret: str = ""      # whsec_...
+
+    # ── Comgate ──
+    comgate_merchant_id: str = ""        # ID obchodníka z Comgate
+    comgate_secret: str = ""             # Tajný klíč z Comgate
+    comgate_is_production: bool = False  # True = produkce, False = test
+
+    # ── Výchozí platební brána ──
+    default_payment_gateway: str = "gopay"  # gopay | stripe | comgate
+
     # ── Ceny balíčků (CZK) ──
     price_basic: int = 4999
     price_pro: int = 14999

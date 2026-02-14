@@ -27,6 +27,9 @@ resend==2.5.1
 # HTTP client
 httpx>=0.26.0,<0.28
 
+# Payment gateways
+stripe>=8.0.0
+
 # Scheduling
 apscheduler==3.10.4
 

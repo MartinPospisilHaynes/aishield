@@ -18,7 +18,7 @@ export default function TermsPage() {
                     Všeobecné obchodní podmínky
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 14. února 2026 &bull; Verze 3.0
+                    Poslední aktualizace: 14. února 2026 &bull; Verze 3.1
                 </p>
 
                 <div className="mt-8 space-y-6">
@@ -202,7 +202,7 @@ export default function TermsPage() {
                                 <li>
                                     <strong className="text-white">Online platba</strong>{" "}
                                     — platební kartou (Visa, Mastercard), Apple Pay nebo Google Pay
-                                    prostřednictvím zabezpečené platební brány{" "}
+                                    prostřednictvím zabezpečených platebních bran{" "}
                                     <a
                                         href="https://www.gopay.com"
                                         target="_blank"
@@ -211,6 +211,25 @@ export default function TermsPage() {
                                     >
                                         GoPay
                                     </a>
+                                    ,{" "}
+                                    <a
+                                        href="https://stripe.com"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-neon-fuchsia hover:underline"
+                                    >
+                                        Stripe
+                                    </a>
+                                    {" "}nebo{" "}
+                                    <a
+                                        href="https://www.comgate.cz"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-neon-fuchsia hover:underline"
+                                    >
+                                        Comgate
+                                    </a>
+                                    . Uživatel si zvolí preferovanou platební bránu při objednávce.
                                 </li>
                                 <li>
                                     <strong className="text-white">Bankovní převod</strong>{" "}
@@ -615,7 +634,7 @@ export default function TermsPage() {
                             <p>
                                 14.5. Monitoring je hrazen měsíčně předem formou
                                 automatické opakované platby přes platební bránu
-                                GoPay, nebo ročně předem s uvedenou slevou. Při
+                                GoPay (případně Stripe či Comgate), nebo ročně předem s uvedenou slevou. Při
                                 roční platbě se minimální doba trvání prodlužuje
                                 na 12 měsíců.
                             </p>

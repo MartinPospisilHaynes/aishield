@@ -345,32 +345,55 @@ export async function getCombinedReport(
     return res.json();
 }
 
-// ── Platby (GoPay) ──
+// ── Platby (multi-gateway: GoPay, Stripe, Comgate) ──
+
+export type PaymentGateway = "gopay" | "stripe" | "comgate";
 
 export interface CheckoutResponse {
-    payment_id: number;
+    payment_id: string;
     gateway_url: string;
     order_number: string;
+    gateway: PaymentGateway;
 }
 
 export interface PaymentStatusResponse {
-    payment_id: number;
+    payment_id: string;
     state: string;
     is_paid: boolean;
     order_number: string;
+    gateway?: PaymentGateway;
+}
+
+export interface GatewayInfo {
+    id: PaymentGateway;
+    name: string;
+    description: string;
+    available: boolean;
+    default: boolean;
 }
 
 /**
- * Vytvoří platbu v GoPay a vrátí URL pro přesměrování na platební bránu.
+ * Vrátí seznam dostupných platebních bran.
+ */
+export async function getAvailableGateways(): Promise<GatewayInfo[]> {
+    const res = await fetch(`${API_URL}/api/payments/gateways`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.gateways || [];
+}
+
+/**
+ * Vytvoří platbu přes zvolenou bránu a vrátí URL pro přesměrování.
  */
 export async function createCheckout(
     plan: string,
     email: string,
+    gateway: PaymentGateway = "gopay",
 ): Promise<CheckoutResponse> {
     const res = await authFetch(`${API_URL}/api/payments/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, email }),
+        body: JSON.stringify({ plan, email, gateway }),
     });
 
     if (!res.ok) {
@@ -387,11 +410,12 @@ export async function createCheckout(
 export async function createGuestCheckout(
     plan: string,
     email?: string,
+    gateway: PaymentGateway = "gopay",
 ): Promise<CheckoutResponse> {
     const res = await fetch(`${API_URL}/api/payments/checkout-guest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, email: email || "" }),
+        body: JSON.stringify({ plan, email: email || "", gateway }),
     });
 
     if (!res.ok) {
@@ -403,12 +427,13 @@ export async function createGuestCheckout(
 }
 
 /**
- * Zkontroluje stav platby.
+ * Zkontroluje stav platby (multi-gateway).
  */
 export async function getPaymentStatus(
-    paymentId: number,
+    paymentId: string,
+    gateway: PaymentGateway = "gopay",
 ): Promise<PaymentStatusResponse> {
-    const res = await authFetch(`${API_URL}/api/payments/status/${paymentId}`);
+    const res = await fetch(`${API_URL}/api/payments/status/${paymentId}?gateway=${gateway}`);
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));

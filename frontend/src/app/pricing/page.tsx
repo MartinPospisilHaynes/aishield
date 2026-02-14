@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { createCheckout, createGuestCheckout } from "@/lib/api";
+import { createCheckout, createGuestCheckout, getAvailableGateways } from "@/lib/api";
+import type { PaymentGateway, GatewayInfo } from "@/lib/api";
 
 const plans = [
     {
@@ -91,8 +92,18 @@ const plans = [
 export default function PricingPage() {
     const [loading, setLoading] = useState<string | null>(null);
     const [error, setError] = useState("");
+    const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>("gopay");
+    const [gateways, setGateways] = useState<GatewayInfo[]>([]);
     const { user } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        getAvailableGateways().then((gws) => {
+            setGateways(gws);
+            const defaultGw = gws.find((g) => g.default && g.available);
+            if (defaultGw) setSelectedGateway(defaultGw.id);
+        });
+    }, []);
 
     async function handleCheckout(planKey: string) {
         // Coffee = guest checkout, nevyžaduje přihlášení
@@ -100,7 +111,7 @@ export default function PricingPage() {
             setLoading(planKey);
             setError("");
             try {
-                const data = await createGuestCheckout("coffee", user?.email || "");
+                const data = await createGuestCheckout("coffee", user?.email || "", selectedGateway);
                 window.location.href = data.gateway_url;
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
@@ -119,8 +130,8 @@ export default function PricingPage() {
         setError("");
 
         try {
-            const data = await createCheckout(planKey, user.email || "");
-            // Přesměrovat na GoPay platební bránu
+            const data = await createCheckout(planKey, user.email || "", selectedGateway);
+            // Přesměrovat na platební bránu
             window.location.href = data.gateway_url;
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
@@ -150,8 +161,8 @@ export default function PricingPage() {
                         <span className="neon-text">compliance balíček</span>
                     </h1>
                     <p className="mt-4 text-slate-400 text-lg leading-relaxed">
-                        Jednorázové balíčky — dokumentace, implementace i odborná kontrola. Platba kartou,
-                        bankovním převodem, Apple Pay nebo Google Pay.
+                        Jednorázové balíčky — dokumentace, implementace i odborná kontrola. Na výběr
+                        z&nbsp;platebních bran GoPay, Stripe a&nbsp;Comgate. Karty, bankovní převod, Apple Pay i Google Pay.
                     </p>
                 </div>
 
@@ -247,8 +258,70 @@ export default function PricingPage() {
                     ))}
                 </div>
 
+                {/* Payment gateway selector */}
+                <div className="mt-16 max-w-2xl mx-auto">
+                    <div className="text-center mb-6">
+                        <p className="text-sm text-slate-400 mb-1">Vyberte platební bránu</p>
+                        <p className="text-xs text-slate-600">Všechny brány jsou zabezpečené a podporují nejběžnější metody</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {[
+                            {
+                                id: "gopay" as PaymentGateway,
+                                name: "GoPay",
+                                desc: "Karty, převod, Apple Pay, Google Pay",
+                                color: "fuchsia",
+                            },
+                            {
+                                id: "stripe" as PaymentGateway,
+                                name: "Stripe",
+                                desc: "Visa, Mastercard, Apple Pay, Google Pay",
+                                color: "indigo",
+                            },
+                            {
+                                id: "comgate" as PaymentGateway,
+                                name: "Comgate",
+                                desc: "Karty, bankovní převod, Apple Pay",
+                                color: "cyan",
+                            },
+                        ].map((gw) => {
+                            const gwInfo = gateways.find((g) => g.id === gw.id);
+                            const isAvailable = gwInfo ? gwInfo.available : gw.id === "gopay";
+                            const isSelected = selectedGateway === gw.id;
+
+                            return (
+                                <button
+                                    key={gw.id}
+                                    onClick={() => isAvailable && setSelectedGateway(gw.id)}
+                                    disabled={!isAvailable}
+                                    className={`relative rounded-xl border p-4 text-left transition-all ${
+                                        isSelected
+                                            ? `border-${gw.color}-500/40 bg-${gw.color}-500/[0.08] shadow-[0_0_20px_rgba(232,121,249,0.06)]`
+                                            : isAvailable
+                                                ? "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15] cursor-pointer"
+                                                : "border-white/[0.04] bg-white/[0.01] opacity-40 cursor-not-allowed"
+                                    }`}
+                                >
+                                    {isSelected && (
+                                        <div className="absolute top-2.5 right-2.5">
+                                            <svg className="w-4 h-4 text-fuchsia-400" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                    <p className="font-bold text-sm text-white">{gw.name}</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">{gw.desc}</p>
+                                    {!isAvailable && (
+                                        <p className="text-[10px] text-yellow-500/70 mt-1">Brzy dostupné</p>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 {/* Payment methods */}
-                <div className="mt-16 text-center">
+                <div className="mt-10 text-center">
                     <p className="text-xs text-slate-500 mb-4">Akceptujeme</p>
                     <div className="flex items-center justify-center gap-6 text-slate-500 flex-wrap">
                         <div className="flex items-center gap-2 text-xs">
