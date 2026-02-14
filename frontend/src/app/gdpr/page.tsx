@@ -155,6 +155,11 @@ export default function GdprPage() {
                                         location: "USA",
                                     },
                                     {
+                                        name: "Anthropic (Claude AI)",
+                                        role: "AI klasifikace a dokumentace (bez os. údajů)",
+                                        location: "USA",
+                                    },
+                                    {
                                         name: "Hetzner",
                                         role: "Backend server",
                                         location: "Německo",
@@ -216,6 +221,11 @@ export default function GdprPage() {
                                         right: "Právo vznést námitku",
                                         article: "čl. 21",
                                         desc: "Proti oprávněnému zájmu",
+                                    },
+                                    {
+                                        right: "Právo odvolat souhlas",
+                                        article: "čl. 7 odst. 3",
+                                        desc: "Kdykoliv, bez udání důvodu",
                                     },
                                 ].map((r) => (
                                     <div

@@ -171,8 +171,8 @@ export default function Header() {
                                 href={link.href}
                                 onClick={() => setMobileOpen(false)}
                                 className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] ${isActive(link.href)
-                                        ? "bg-gradient-to-r from-fuchsia-500/15 to-cyan-500/10 border border-fuchsia-500/20"
-                                        : "hover:bg-white/5 border border-transparent"
+                                    ? "bg-gradient-to-r from-fuchsia-500/15 to-cyan-500/10 border border-fuchsia-500/20"
+                                    : "hover:bg-white/5 border border-transparent"
                                     }`}
                             >
                                 <span className={`w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-lg ${isActive(link.href) ? "bg-fuchsia-500/15 text-fuchsia-400" : "bg-white/[0.06] text-slate-400"}`}>{link.icon}</span>

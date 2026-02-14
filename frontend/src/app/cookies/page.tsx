@@ -18,7 +18,7 @@ export default function CookiesPage() {
                     Zásady používání cookies
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Platné od 1. ledna 2026
+                    Poslední aktualizace: 1. ledna 2025 &bull; Verze 1.0
                 </p>
 
                 <div className="mt-8 prose prose-invert max-w-none space-y-8 text-slate-300 leading-relaxed">
@@ -105,6 +105,24 @@ export default function CookiesPage() {
                             Máte dotaz ohledně cookies? Kontaktujte nás na{" "}
                             <a href="mailto:info@aishield.cz" className="text-neon-fuchsia hover:underline">info@aishield.cz</a>.
                         </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
+                        <h2 className="text-xl font-semibold text-white mb-3">Související dokumenty</h2>
+                        <ul className="space-y-2 text-slate-400 text-sm">
+                            <li>
+                                <a href="/privacy" className="text-neon-fuchsia hover:underline">Ochrana soukromí</a>{" "}
+                                — zásady zpracování osobních údajů
+                            </li>
+                            <li>
+                                <a href="/gdpr" className="text-neon-fuchsia hover:underline">GDPR</a>{" "}
+                                — informace o zpracování osobních údajů dle GDPR
+                            </li>
+                            <li>
+                                <a href="/terms" className="text-neon-fuchsia hover:underline">Obchodní podmínky</a>{" "}
+                                — všeobecné obchodní podmínky služby
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

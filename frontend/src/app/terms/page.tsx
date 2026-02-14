@@ -18,7 +18,7 @@ export default function TermsPage() {
                     Všeobecné obchodní podmínky
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 10. února 2026 &bull; Verze 2.1
+                    Poslední aktualizace: 10. února 2025 &bull; Verze 2.1
                 </p>
 
                 <div className="mt-8 space-y-6">
@@ -503,7 +503,8 @@ export default function TermsPage() {
                                 <strong className="text-white">ENTERPRISE</strong> —
                                 individuální rozsah dle dohody. Může zahrnovat: konzultaci
                                 ke compliance strategii (neprávní povahy), metodickou kontrolu
-                                konzistence dokumentace, měsíční monitoring (za příplatek),
+                                konzistence dokumentace, měsíční monitoring (2 roky monitoringu
+                                jsou zahrnuty v ceně balíčku, prodloužení za příplatek),
                                 rozšířený dotazník interních AI systémů a osnovu školení
                                 AI gramotnosti dle čl. 4 AI Act. Konkrétní rozsah a cena
                                 jsou stanoveny individuální nabídkou.
@@ -511,7 +512,14 @@ export default function TermsPage() {
                             <p>
                                 13.4. Volitelný doplněk: měsíční monitoring za příplatek
                                 (aktuální cena uvedena na stránce Ceník). Podrobné
-                                podmínky monitoringu viz bod 14.
+                                podmínky monitoringu viz bod 14 a stránka{" "}
+                                <a
+                                    href="/opakovane-platby"
+                                    className="text-neon-fuchsia hover:underline"
+                                >
+                                    Opakované platby
+                                </a>
+                                .
                             </p>
                         </div>
                     </div>
@@ -548,6 +556,13 @@ export default function TermsPage() {
                                     className="text-neon-fuchsia hover:underline"
                                 >
                                     Ceník
+                                </a>
+                                {" "}a podrobné podmínky opakovaných plateb na stránce{" "}
+                                <a
+                                    href="/opakovane-platby"
+                                    className="text-neon-fuchsia hover:underline"
+                                >
+                                    Opakované platby
                                 </a>
                                 .
                             </p>
@@ -645,7 +660,7 @@ export default function TermsPage() {
                                 ostatních ustanovení.
                             </p>
                             <p>
-                                15.6. Tyto VOP nabývají účinnosti dne 10. února 2026.
+                                15.6. Tyto VOP nabývají účinnosti dne 10. února 2025.
                             </p>
                         </div>
                     </div>

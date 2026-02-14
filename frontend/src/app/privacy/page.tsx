@@ -133,6 +133,10 @@ export default function PrivacyPage() {
                             nalezených AI systémů a generování compliance dokumentace
                             (bez přenosu osobních údajů uživatelů)
                         </li>
+                        <li>
+                            <strong className="text-white">Hetzner</strong> — hosting
+                            backend serveru (servery v Německu, EU)
+                        </li>
                     </ul>
                     <p className="mt-3">
                         Vaše údaje neprodáváme a nesdílíme s třetími stranami pro
@@ -264,7 +268,7 @@ export default function PrivacyPage() {
             <div className="mx-auto max-w-3xl px-6">
                 <h1 className="text-3xl font-bold text-white">Ochrana soukromí</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 12. února 2026
+                    Poslední aktualizace: 12. února 2025
                 </p>
 
                 <div className="mt-8 space-y-6">

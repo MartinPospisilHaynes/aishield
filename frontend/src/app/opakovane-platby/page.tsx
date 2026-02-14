@@ -18,7 +18,7 @@ export default function OpakovvanePlatbyPage() {
                     Opakované platby — Monitoring
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 14. února 2026
+                    Poslední aktualizace: 14. února 2025
                 </p>
 
                 <div className="mt-8 space-y-6">
@@ -37,7 +37,7 @@ export default function OpakovvanePlatbyPage() {
                                 Při aktivaci monitoringu souhlasíte s&nbsp;pravidelným automatickým
                                 strhováním platby z&nbsp;vaší platební karty jednou měsíčně.
                                 Platba se provádí přes zabezpečenou platební bránu{" "}
-                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay</a>.
+                                <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay</a>.
                             </p>
                         </div>
                     </div>
@@ -205,19 +205,25 @@ export default function OpakovvanePlatbyPage() {
                             </p>
                             <p>
                                 <strong className="text-white">Platební brána:</strong>{" "}
-                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay s.r.o.</a>
+                                <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay s.r.o.</a>
                             </p>
                         </div>
                     </div>
                 </div>
 
                 {/* Back link */}
-                <div className="mt-10 text-center">
+                <div className="mt-10 text-center space-x-6">
                     <a
                         href="/pricing"
                         className="text-sm text-slate-500 hover:text-neon-fuchsia transition-colors"
                     >
                         ← Zpět na ceník
+                    </a>
+                    <a
+                        href="/terms"
+                        className="text-sm text-slate-500 hover:text-neon-fuchsia transition-colors"
+                    >
+                        Obchodní podmínky →
                     </a>
                 </div>
             </div>
