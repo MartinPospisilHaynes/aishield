@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -9,6 +9,7 @@ export default function Header() {
     const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
     const pathname = usePathname();
+    const menuRef = useRef<HTMLDivElement>(null);
 
     function isActive(href: string) {
         if (href === "/") return pathname === "/";
@@ -16,9 +17,35 @@ export default function Header() {
     }
 
     async function handleSignOut() {
+        setMobileOpen(false);
         await signOut();
         router.push("/");
     }
+
+    // Close menu on route change
+    useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+    // Close menu on outside click
+    useEffect(() => {
+        if (!mobileOpen) return;
+        function handleClick(e: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMobileOpen(false);
+        }
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, [mobileOpen]);
+
+    // Lock body scroll when menu open
+    useEffect(() => {
+        document.body.style.overflow = mobileOpen ? "hidden" : "";
+        return () => { document.body.style.overflow = ""; };
+    }, [mobileOpen]);
+
+    const NAV_LINKS = [
+        { href: "/scan", icon: "🔍", label: "Skenovat web", desc: "AI audit vašeho webu zdarma" },
+        { href: "/pricing", icon: "💰", label: "Ceník", desc: "Balíčky a ceny služeb" },
+        { href: "/about", icon: "ℹ️", label: "Jak to funguje", desc: "Postup naší práce" },
+    ];
 
     return (
         <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
@@ -68,7 +95,6 @@ export default function Header() {
                     {loading ? (
                         <div className="h-9 w-24 rounded-xl bg-white/5 animate-pulse" />
                     ) : user ? (
-                        /* ── Přihlášený uživatel ── */
                         <div className="flex items-center gap-4">
                             <a
                                 href="/dashboard"
@@ -98,7 +124,6 @@ export default function Header() {
                             </div>
                         </div>
                     ) : (
-                        /* ── Nepřihlášený ── */
                         <>
                             <a href="/login" className="btn-secondary text-sm px-4 py-2">
                                 Přihlásit se
@@ -110,65 +135,133 @@ export default function Header() {
                     )}
                 </div>
 
-                {/* Mobile menu button */}
+                {/* ── Mobile hamburger ── */}
                 <button
-                    className="md:hidden text-slate-400 hover:text-white"
-                    aria-label="Menu"
+                    className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 active:scale-95 transition-all"
+                    aria-label={mobileOpen ? "Zavřít menu" : "Otevřít menu"}
                     onClick={() => setMobileOpen(!mobileOpen)}
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         {mobileOpen ? (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         ) : (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         )}
                     </svg>
                 </button>
             </nav>
 
-            {/* Mobile menu */}
-            {mobileOpen && (
-                <div className="md:hidden border-t border-white/[0.06] bg-dark-900/95 backdrop-blur-xl px-6 py-4 space-y-3">
-                    <a href="/scan" className={`block text-base transition-colors py-2 ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
-                        Skenovat web
-                    </a>
-                    <a href="/pricing" className={`block text-base transition-colors py-2 ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
-                        Ceník
-                    </a>
-                    <a href="/about" className={`block text-base transition-colors py-2 ${isActive("/about") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
-                        Jak to funguje
-                    </a>
-                    <a
-                        href="tel:+420732716141"
-                        className="flex items-center gap-2 rounded-lg bg-fuchsia-600/90 px-4 py-2.5 text-base font-semibold text-white hover:bg-fuchsia-500 transition mt-1"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                        </svg>
-                        HELPLINKA — 732 716 141
-                    </a>
+            {/* ── Mobile overlay + slide-down menu ── */}
+            <div
+                className={`md:hidden fixed inset-0 top-[73px] z-40 transition-opacity duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+            >
+                {/* Backdrop */}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
 
-                    {user ? (
-                        <>
-                            <a href="/dashboard" className="block text-base text-neon-cyan font-medium py-2">
-                                Dashboard
+                {/* Menu panel */}
+                <div
+                    ref={menuRef}
+                    className={`relative bg-[#0d1117] border-b border-white/10 shadow-2xl shadow-black/50 transition-all duration-300 ease-out ${mobileOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"}`}
+                >
+                    {/* Nav links with icons */}
+                    <div className="px-4 py-3 space-y-1">
+                        {NAV_LINKS.map(link => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] ${
+                                    isActive(link.href)
+                                        ? "bg-gradient-to-r from-fuchsia-500/15 to-cyan-500/10 border border-fuchsia-500/20"
+                                        : "hover:bg-white/5 border border-transparent"
+                                }`}
+                            >
+                                <span className="text-2xl w-8 text-center flex-shrink-0">{link.icon}</span>
+                                <div className="min-w-0">
+                                    <div className={`text-[15px] font-semibold ${isActive(link.href) ? "text-fuchsia-400" : "text-white"}`}>{link.label}</div>
+                                    <div className="text-xs text-slate-500 mt-0.5">{link.desc}</div>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-600 ml-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
                             </a>
-                            <button onClick={handleSignOut} className="block text-base text-red-400 py-2">
-                                Odhlásit se
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <a href="/login" className="block text-base text-slate-300 font-medium py-2">
-                                Přihlásit se
-                            </a>
-                            <a href="/scan" className="btn-primary text-base px-4 py-2 text-center block mt-2">
-                                Skenovat ZDARMA
-                            </a>
-                        </>
-                    )}
+                        ))}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mx-6 border-t border-white/[0.06]" />
+
+                    {/* Helplinka */}
+                    <div className="px-4 py-3">
+                        <a
+                            href="tel:+420732716141"
+                            onClick={() => setMobileOpen(false)}
+                            className="flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-fuchsia-600/15 border border-fuchsia-500/20 hover:bg-fuchsia-600/25 transition-all active:scale-[0.98]"
+                        >
+                            <span className="text-2xl w-8 text-center flex-shrink-0">📞</span>
+                            <div className="min-w-0">
+                                <div className="text-[15px] font-semibold text-fuchsia-400">HELPLINKA</div>
+                                <div className="text-xs text-slate-400 mt-0.5">732 716 141 — volejte kdykoliv</div>
+                            </div>
+                        </a>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mx-6 border-t border-white/[0.06]" />
+
+                    {/* Auth section */}
+                    <div className="px-4 py-3 pb-6">
+                        {loading ? (
+                            <div className="h-12 rounded-2xl bg-white/5 animate-pulse" />
+                        ) : user ? (
+                            <div className="space-y-2">
+                                {/* User card */}
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        {(user.user_metadata?.company_name || user.email || "?").charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-sm text-white font-medium truncate">{user.user_metadata?.company_name || user.email}</div>
+                                        <div className="text-xs text-slate-500 truncate">{user.email}</div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <a
+                                        href="/dashboard"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold text-sm hover:bg-cyan-500/20 transition-all active:scale-[0.98]"
+                                    >
+                                        <span className="text-lg">📊</span> Dashboard
+                                    </a>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm hover:bg-red-500/20 transition-all active:scale-[0.98]"
+                                    >
+                                        <span className="text-lg">🚪</span> Odhlásit
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                                <a
+                                    href="/login"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold text-sm hover:bg-white/10 transition-all active:scale-[0.98]"
+                                >
+                                    <span className="text-lg">🔑</span> Přihlásit se
+                                </a>
+                                <a
+                                    href="/scan"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold text-sm hover:from-fuchsia-500 hover:to-purple-500 transition-all active:scale-[0.98] shadow-lg shadow-fuchsia-500/20"
+                                >
+                                    <span className="text-lg">🚀</span> Skenovat
+                                </a>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            )}
+            </div>
         </header>
     );
 }
