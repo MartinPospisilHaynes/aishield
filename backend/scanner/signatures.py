@@ -343,7 +343,7 @@ AI_SIGNATURES: list[AISignature] = [
     ),
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # ANALYTIKA s AI (čl. 50 + čl. 26)
+    # ANALYTIKA s AI
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     AISignature(
@@ -353,10 +353,10 @@ AI_SIGNATURES: list[AISignature] = [
         script_patterns=["googletagmanager.com/gtag", "google-analytics.com"],
         cookie_patterns=["_ga", "_gid"],
         risk_level="minimal",
-        ai_act_article="čl. 50 odst. 4 (pokud AI predikce)",
-        action_required="Pokud používáte AI predikce chování (Predictive Audiences), "
-                       "přidejte informaci do cookie banneru a privacy policy.",
-        description_cs="Google Analytics 4 — webová analytika s AI predikcemi chování uživatelů.",
+        ai_act_article="minimální riziko (čl. 95 — dobrovolné kodexy)",
+        action_required="GA4 samo o sobě není AI systém dle EU AI Act. "
+                       "Pokud používáte Predictive Audiences, zvažte transparentnost vůči uživatelům.",
+        description_cs="Google Analytics 4 — webová analytika s volitelnými AI predikcemi.",
     ),
 
     AISignature(
@@ -365,9 +365,9 @@ AI_SIGNATURES: list[AISignature] = [
         signatures=["GTM-", "googletagmanager"],
         script_patterns=["googletagmanager.com/gtm.js"],
         risk_level="minimal",
-        ai_act_article="čl. 50 odst. 4",
-        action_required="Zkontrolujte, které AI tagy máte v GTM nakonfigurované. "
-                       "Každý AI tag vyžaduje transparenci.",
+        ai_act_article="minimální riziko (čl. 95 — dobrovolné kodexy)",
+        action_required="GTM není AI systém — je to správce tagů. "
+                       "Zkontrolujte, zda některé tagy nezavádějí AI systémy.",
         description_cs="Google Tag Manager — správce tagů, může obsahovat AI trackery.",
     ),
 
@@ -403,10 +403,10 @@ AI_SIGNATURES: list[AISignature] = [
         script_patterns=["connect.facebook.net", "facebook.com/tr"],
         cookie_patterns=["_fbp", "_fbc"],
         risk_level="limited",
-        ai_act_article="čl. 50 odst. 4, čl. 26",
-        action_required="Meta Pixel používá AI pro cílení reklam a lookalike audience. "
-                       "Přidejte informaci do cookie banneru.",
-        description_cs="Meta Pixel — sledování konverzí s AI cílením reklam.",
+        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
+        action_required="Meta provádí AI cílení reklam na své straně. "
+                       "Informujte uživatele v cookie banneru a privacy policy.",
+        description_cs="Meta Pixel — sledování konverzí, AI cílení provádí Meta na své platformě.",
     ),
 
     AISignature(
@@ -416,9 +416,10 @@ AI_SIGNATURES: list[AISignature] = [
         script_patterns=["analytics.tiktok.com"],
         cookie_patterns=["_ttp"],
         risk_level="limited",
-        ai_act_article="čl. 50 odst. 4, čl. 26",
-        action_required="TikTok Pixel používá AI pro cílení — přidejte do cookie banneru.",
-        description_cs="TikTok Pixel — sledování konverzí s AI cílením reklam.",
+        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
+        action_required="TikTok provádí AI cílení reklam na své straně. "
+                       "Informujte uživatele v cookie banneru a privacy policy.",
+        description_cs="TikTok Pixel — sledování konverzí, AI cílení provádí TikTok na své platformě.",
     ),
 
     AISignature(
@@ -428,9 +429,10 @@ AI_SIGNATURES: list[AISignature] = [
         script_patterns=["snap.licdn.com"],
         cookie_patterns=["li_sugr", "bcookie"],
         risk_level="limited",
-        ai_act_article="čl. 50 odst. 4",
-        action_required="LinkedIn Insight Tag s AI cílením — přidejte do cookie banneru.",
-        description_cs="LinkedIn Insight Tag — B2B analytika s AI cílením reklam.",
+        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
+        action_required="LinkedIn provádí AI cílení reklam na své straně. "
+                       "Informujte uživatele v cookie banneru a privacy policy.",
+        description_cs="LinkedIn Insight Tag — B2B analytika, AI cílení provádí LinkedIn na své platformě.",
     ),
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -541,9 +543,10 @@ AI_SIGNATURES: list[AISignature] = [
         script_patterns=["c.seznam.cz", "d.seznam.cz", "imedia.cz"],
         cookie_patterns=["szn"],
         risk_level="minimal",
-        ai_act_article="čl. 50 odst. 4",
-        action_required="Seznam retargeting s AI cílením — přidejte do cookie banneru.",
-        description_cs="Seznam — český vyhledávač s AI retargetingem.",
+        ai_act_article="minimální riziko (čl. 95 — dobrovolné kodexy)",
+        action_required="Seznam retargeting — přidejte do cookie banneru. "
+                       "AI cílení provádí Seznam na své straně.",
+        description_cs="Seznam — český vyhledávač s retargetingem.",
     ),
 
     AISignature(
@@ -552,8 +555,8 @@ AI_SIGNATURES: list[AISignature] = [
         signatures=["heureka", "heureka.cz"],
         script_patterns=["im9.cz", "heureka.cz"],
         risk_level="minimal",
-        ai_act_article="čl. 50 odst. 4",
-        action_required="Heureka Měření konverzí — minimální riziko, ale přidejte do cookie banneru.",
+        ai_act_article="minimální riziko (čl. 95 — dobrovolné kodexy)",
+        action_required="Heureka měření konverzí — přidejte do cookie banneru.",
         description_cs="Heureka — měření konverzí a recenze.",
     ),
 

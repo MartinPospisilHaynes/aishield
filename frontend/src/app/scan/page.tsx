@@ -298,9 +298,9 @@ function ScanPageInner() {
     };
     const riskLabel = (level: string) => {
         switch (level) {
-            case "high": return "Čl. 6 + 9 — plná regulace";
-            case "limited": return "Čl. 50 + 9 — dokumentace";
-            case "minimal": return "Čl. 50 — povinná transparence";
+            case "high": return "Čl. 6 — vysoce rizikový systém";
+            case "limited": return "Čl. 50 — transparenční povinnosti";
+            case "minimal": return "Minimální riziko";
             default: return level;
         }
     };
@@ -716,9 +716,9 @@ function ScanPageInner() {
                                             <strong className="text-white">EU AI Act rozlišuje 3 úrovně povinností — všechny vyžadují akci:</strong>
                                         </p>
                                         <ul className="space-y-1 ml-1">
-                                            <li><span className="text-red-400 font-medium">Čl. 6 + 9 — plná regulace:</span> Systémy s vysokým rizikem vyžadují kompletní dokumentaci, registraci a průběžný audit.</li>
-                                            <li><span className="text-cyan-400 font-medium">Čl. 50 + 9 — dokumentace:</span> Systémy s omezeným rizikem vyžadují transparenční povinnosti a technickou dokumentaci.</li>
-                                            <li><span className="text-slate-300 font-medium">Čl. 50 — povinná transparence:</span> I chatboty, analytika a doporučovací systémy vyžadují informování návštěvníků a dokumentaci.</li>
+                                            <li><span className="text-red-400 font-medium">Vysoce rizikový (čl. 6):</span> Systémy ovlivňující rozhodnutí o lidech (scoring, biometrie, nábor) vyžadují registraci, audit, technickou dokumentaci a lidský dohled.</li>
+                                            <li><span className="text-cyan-400 font-medium">Omezené riziko (čl. 50):</span> Chatboty musí informovat uživatele, že komunikují s AI. Generátory obsahu musí označovat výstupy jako uměle vytvořené.</li>
+                                            <li><span className="text-slate-300 font-medium">Minimální riziko:</span> Na většinu AI systémů se vztahují pouze dobrovolné kodexy chování (čl. 95), ale i tak doporučujeme transparentnost.</li>
                                         </ul>
                                         <p className="text-slate-300 font-medium">
                                             ⚠ Byť i jeden AI systém na vašem webu znamená povinnosti. Nesplnění hrozí pokutou až 35 mil. € nebo 7 % obratu.
