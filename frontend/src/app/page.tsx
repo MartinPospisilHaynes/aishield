@@ -184,7 +184,7 @@ const FAQ_ITEMS = [
             "2) Dostanete přehledný report s výsledky — jaké AI nástroje máte, jaké povinnosti z nich plynou a do jaké kategorie spadáte. " +
             "3) Vyberete si balíček služeb podle vašich potřeb — od základního BASIC po kompletní ENTERPRISE s konzultací. " +
             "4) Vyplníte krátký dotazník o vaší firmě (zabere asi 5 minut, většinou jen klikáte) — díky tomu připravíme dokumenty přesně na míru. " +
-            "5) Do 7 dnů obdržíte kompletní sadu 7 dokumentů v PDF — report, registr, transparenční stránku, oznámení, AI politiku, školení v PowerPointu a záznamový list.",
+            "5) Do 7 dnů obdržíte vše, co váš balíček obsahuje — kompletní sadu dokumentů v PDF, implementaci i nastavení. Všechno vyřídime za vás, můžete být v klidu.",
     },
     {
         q: "Co musím vyplnit v dotazníku?",
@@ -729,8 +729,8 @@ export default function HomePage() {
                             </div>
                             <h3 className="text-base sm:text-lg font-semibold mb-2">Dostanete dokumenty</h3>
                             <p className="text-xs sm:text-sm text-slate-400">
-                                Do 7 dnů obdržíte kompletní sadu dokumentů.
-                                Máte solidní základ pro soulad se zákonem.
+                                Do 7 dnů obdržíte vše, co váš balíček obsahuje.
+                                Kompletní servis — máte vyřešeno, můžete být v klidu.
                             </p>
                         </div>
                     </div>

@@ -2497,11 +2497,10 @@ export default function AdminPage() {
                                                             }
                                                         }}
                                                         disabled={confirmingOrder === o.order_number}
-                                                        className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                                                            confirmingOrder === o.order_number
+                                                        className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${confirmingOrder === o.order_number
                                                                 ? "bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse cursor-wait"
                                                                 : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {confirmingOrder === o.order_number ? "⏳ Potvrzuji…" : "✅ Potvrdit platbu"}
                                                     </button>
@@ -2527,11 +2526,10 @@ export default function AdminPage() {
                                             <button
                                                 key={f}
                                                 onClick={() => setOrderFilter(f)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                    orderFilter === f
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${orderFilter === f
                                                         ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                                                         : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
                                                 {labels[f]}
                                             </button>
@@ -2550,11 +2548,10 @@ export default function AdminPage() {
                                             <button
                                                 key={f}
                                                 onClick={() => setOrderGwFilter(f)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                    orderGwFilter === f
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${orderGwFilter === f
                                                         ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
                                                         : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
-                                                }`}
+                                                    }`}
                                             >
                                                 {labels[f]}
                                             </button>
@@ -2604,16 +2601,15 @@ export default function AdminPage() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3">
-                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                                                                        o.payment_gateway === "stripe"
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.payment_gateway === "stripe"
                                                                             ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
                                                                             : o.payment_gateway === "bank_transfer"
-                                                                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                                                            : "bg-white/5 text-gray-400 border border-white/10"
-                                                                    }`}>
+                                                                                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                                                : "bg-white/5 text-gray-400 border border-white/10"
+                                                                        }`}>
                                                                         {o.payment_gateway === "stripe" ? "💳 Stripe" :
-                                                                         o.payment_gateway === "bank_transfer" ? "🏦 Převod" :
-                                                                         o.payment_gateway}
+                                                                            o.payment_gateway === "bank_transfer" ? "🏦 Převod" :
+                                                                                o.payment_gateway}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
@@ -2622,13 +2618,12 @@ export default function AdminPage() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center">
-                                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${
-                                                                        isPaid
+                                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${isPaid
                                                                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                                                             : isAwaiting
-                                                                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
-                                                                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                                                                    }`}>
+                                                                                ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                                                                : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                                                        }`}>
                                                                         {isPaid ? "✅ Zaplaceno" : isAwaiting ? "⏳ Čeká" : o.status}
                                                                     </span>
                                                                 </td>

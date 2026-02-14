@@ -716,11 +716,10 @@ export default function PricingPage() {
                             {/* Stripe — always available */}
                             <button
                                 onClick={() => setSelectedGateway("stripe")}
-                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-                                    selectedGateway === "stripe"
+                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${selectedGateway === "stripe"
                                         ? "border-fuchsia-500/50 bg-fuchsia-500/10 ring-1 ring-fuchsia-500/30"
                                         : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                                }`}
+                                    }`}
                             >
                                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#635BFF]/20 flex items-center justify-center">
                                     <svg className="w-5 h-5 text-[#635BFF]" fill="currentColor" viewBox="0 0 24 24">
@@ -736,9 +735,8 @@ export default function PricingPage() {
                                     </div>
                                     <span className="text-xs text-slate-400">Visa, Mastercard, Apple Pay, Google Pay</span>
                                 </div>
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                    selectedGateway === "stripe" ? "border-fuchsia-500 bg-fuchsia-500" : "border-slate-600"
-                                }`}>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedGateway === "stripe" ? "border-fuchsia-500 bg-fuchsia-500" : "border-slate-600"
+                                    }`}>
                                     {selectedGateway === "stripe" && (
                                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -750,11 +748,10 @@ export default function PricingPage() {
                             {/* Bank Transfer — always available */}
                             <button
                                 onClick={() => setSelectedGateway("bank_transfer")}
-                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-                                    selectedGateway === "bank_transfer"
+                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${selectedGateway === "bank_transfer"
                                         ? "border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/30"
                                         : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                                }`}
+                                    }`}
                             >
                                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
                                     <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -765,9 +762,8 @@ export default function PricingPage() {
                                     <span className="font-semibold text-white text-sm block">Bankovní převod</span>
                                     <span className="text-xs text-slate-400">Faktura s platebními údaji na email</span>
                                 </div>
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                    selectedGateway === "bank_transfer" ? "border-cyan-500 bg-cyan-500" : "border-slate-600"
-                                }`}>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedGateway === "bank_transfer" ? "border-cyan-500 bg-cyan-500" : "border-slate-600"
+                                    }`}>
                                     {selectedGateway === "bank_transfer" && (
                                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
