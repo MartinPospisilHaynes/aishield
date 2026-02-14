@@ -18,7 +18,7 @@ export default function TermsPage() {
                     Všeobecné obchodní podmínky
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 10. února 2025 &bull; Verze 2.1
+                    Poslední aktualizace: 14. února 2026 &bull; Verze 3.0
                 </p>
 
                 <div className="mt-8 space-y-6">
@@ -182,8 +182,7 @@ export default function TermsPage() {
                         <div className="text-slate-400 leading-relaxed space-y-3">
                             <p>
                                 4.1. Smlouva o poskytování placených služeb vzniká okamžikem
-                                úspěšné úhrady zvoleného cenového balíčku prostřednictvím
-                                platební brány GoPay.
+                                úspěšné úhrady zvoleného cenového balíčku.
                             </p>
                             <p>
                                 4.2. Aktuální ceny jsou uvedeny na stránce{" "}
@@ -196,11 +195,48 @@ export default function TermsPage() {
                                 . Všechny ceny jsou konečné. Poskytovatel není plátcem DPH.
                             </p>
                             <p>
-                                4.3. Po úspěšné platbě Uživatel obdrží na e-mail potvrzení
-                                objednávky a daňový doklad.
+                                4.3. Uživatel může uhradit objednávku jedním z&nbsp;následujících
+                                způsobů:
+                            </p>
+                            <ul className="list-disc list-inside space-y-1.5 ml-2">
+                                <li>
+                                    <strong className="text-white">Online platba</strong>{" "}
+                                    — platební kartou (Visa, Mastercard), Apple Pay nebo Google Pay
+                                    prostřednictvím zabezpečené platební brány{" "}
+                                    <a
+                                        href="https://www.gopay.cz"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-neon-fuchsia hover:underline"
+                                    >
+                                        GoPay
+                                    </a>
+                                </li>
+                                <li>
+                                    <strong className="text-white">Bankovní převod</strong>{" "}
+                                    — po registraci Poskytovatel zašle Uživateli e-mail
+                                    s&nbsp;platebními údaji. Po připsání platby na účet
+                                    Poskytovatele a jejím ručním potvrzení v&nbsp;administraci
+                                    se Uživateli zpřístupní dotazník a další kroky služby.
+                                </li>
+                            </ul>
+                            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                                <p className="text-sm">
+                                    <strong className="text-white">Platební údaje pro bankovní převod:</strong>
+                                </p>
+                                <p className="text-sm">Číslo účtu: 2610538018/3030</p>
+                                <p className="text-sm">Zodpovědná osoba: Martin Haynes</p>
+                                <p className="text-sm mt-1">
+                                    Do poznámky pro příjemce uveďte:{" "}
+                                    <strong className="text-white">jméno kontaktní osoby + název projektu</strong>
+                                </p>
+                            </div>
+                            <p>
+                                4.4. Po úspěšné platbě (online i převodem) Uživatel obdrží
+                                na e-mail potvrzení objednávky a daňový doklad.
                             </p>
                             <p>
-                                4.4. Poskytovatel si vyhrazuje právo ceny změnit. Změna cen
+                                4.5. Poskytovatel si vyhrazuje právo ceny změnit. Změna cen
                                 se nevztahuje na již uhrazené objednávky.
                             </p>
                         </div>
@@ -484,30 +520,32 @@ export default function TermsPage() {
                         <div className="text-slate-400 leading-relaxed space-y-3">
                             <p>
                                 13.1.{" "}
-                                <strong className="text-white">BASIC</strong> — automatizované
-                                skenování webu, vygenerování balíčku dokumentačních podkladů
-                                (Compliance Report, Akční plán, Registr AI systémů,
-                                Transparenční stránka, Chatbot oznámení, AI politika firmy,
-                                Osnova školení). Bez implementační podpory.
+                                <strong className="text-white">BASIC (4 999 Kč)</strong> — automatizované
+                                skenování webu a vygenerování AI Act Compliance Kitu obsahujícího
+                                7 dokumentů: Compliance Report, Akční plán, Registr AI systémů,
+                                Transparenční stránka (HTML šablona), texty oznámení pro AI nástroje
+                                (chatbot a další), Interní AI politika firmy, Školení —
+                                prezentace v PowerPointu a Záznamový list o proškolení.
+                                Bez implementační podpory.
                             </p>
                             <p>
                                 13.2.{" "}
-                                <strong className="text-white">PRO</strong> — vše z BASIC
-                                a navíc: technická asistence s nasazením HTML šablony transparenční
-                                stránky na web Uživatele, úprava chatbot
-                                oznámení a prioritní zpracování. Technická podpora po dobu
+                                <strong className="text-white">PRO (14 999 Kč)</strong> — vše z BASIC
+                                a navíc: implementace na klíč — instalace compliance widgetu
+                                na web Uživatele, nasazení transparenční stránky, úprava chatbot
+                                oznámení a cookie lišty. Podpora platforem WordPress, Shoptet
+                                i custom řešení. Prioritní zpracování. Technická podpora po dobu
                                 30 dní od dodání.
                             </p>
                             <p>
                                 13.3.{" "}
-                                <strong className="text-white">ENTERPRISE</strong> —
-                                individuální rozsah dle dohody. Může zahrnovat: konzultaci
-                                ke compliance strategii (neprávní povahy), metodickou kontrolu
-                                konzistence dokumentace, měsíční monitoring (2 roky monitoringu
-                                jsou zahrnuty v ceně balíčku, prodloužení za příplatek),
-                                rozšířený dotazník interních AI systémů a osnovu školení
-                                AI gramotnosti dle čl. 4 AI Act. Konkrétní rozsah a cena
-                                jsou stanoveny individuální nabídkou.
+                                <strong className="text-white">ENTERPRISE (39 999 Kč)</strong> —
+                                vše z PRO a navíc: 10 hodin konzultací s compliance specialistou
+                                (neprávní povahy), metodická kontrola veškeré dokumentace,
+                                rozšířený audit interních AI systémů, multi-domain podpora
+                                (více webů / e-shopů), 2 roky měsíčního monitoringu v ceně
+                                balíčku (po uplynutí možnost prodloužení za příplatek),
+                                dedikovaný specialista a SLA 4h odezva v pracovní době.
                             </p>
                             <p>
                                 13.4. Volitelný doplněk: měsíční monitoring za příplatek
@@ -660,7 +698,7 @@ export default function TermsPage() {
                                 ostatních ustanovení.
                             </p>
                             <p>
-                                15.6. Tyto VOP nabývají účinnosti dne 10. února 2025.
+                                15.6. Tyto VOP nabývají účinnosti dne 14. února 2026.
                             </p>
                         </div>
                     </div>

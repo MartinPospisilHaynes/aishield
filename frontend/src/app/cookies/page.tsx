@@ -18,7 +18,7 @@ export default function CookiesPage() {
                     Zásady používání cookies
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 1. ledna 2025 &bull; Verze 1.0
+                    Poslední aktualizace: 14. února 2026 &bull; Verze 1.0
                 </p>
 
                 <div className="mt-8 prose prose-invert max-w-none space-y-8 text-slate-300 leading-relaxed">

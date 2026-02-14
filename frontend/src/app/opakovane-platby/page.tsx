@@ -18,7 +18,7 @@ export default function OpakovvanePlatbyPage() {
                     Opakované platby — Monitoring
                 </h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 14. února 2025
+                    Poslední aktualizace: 14. února 2026
                 </p>
 
                 <div className="mt-8 space-y-6">

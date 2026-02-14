@@ -268,7 +268,7 @@ export default function PrivacyPage() {
             <div className="mx-auto max-w-3xl px-6">
                 <h1 className="text-3xl font-bold text-white">Ochrana soukromí</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                    Poslední aktualizace: 12. února 2025
+                    Poslední aktualizace: 14. února 2026
                 </p>
 
                 <div className="mt-8 space-y-6">

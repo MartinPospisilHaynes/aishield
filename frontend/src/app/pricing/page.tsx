@@ -250,7 +250,7 @@ export default function PricingPage() {
                 {/* Payment methods */}
                 <div className="mt-16 text-center">
                     <p className="text-xs text-slate-500 mb-4">Akceptujeme</p>
-                    <div className="flex items-center justify-center gap-6 text-slate-500">
+                    <div className="flex items-center justify-center gap-6 text-slate-500 flex-wrap">
                         <div className="flex items-center gap-2 text-xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M2 6.5A2.5 2.5 0 014.5 4h15A2.5 2.5 0 0122 6.5v11a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 17.5v-11zM4 9h16v2H4V9z" />
@@ -274,6 +274,39 @@ export default function PricingPage() {
                                 <path d="M20.2 10.5c-.18-.64-.74-1.18-1.5-1.18h-2.44l-1.64-2.76C14.24 6.02 13.64 5.7 13 5.68H11c-.64.02-1.24.34-1.62.88L7.74 9.32H5.3c-.76 0-1.32.54-1.5 1.18L3 14.86c-.14.5.04 1.06.44 1.42.32.28.72.42 1.12.42H19.44c.4 0 .8-.14 1.12-.42.4-.36.58-.92.44-1.42l-.8-4.36z" />
                             </svg>
                             Google Pay
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bank transfer info */}
+                <div className="mt-10 max-w-xl mx-auto">
+                    <div className="rounded-2xl border border-cyan-500/15 bg-gradient-to-b from-cyan-500/[0.04] to-transparent p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2.5 rounded-xl bg-cyan-500/10">
+                                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-base font-bold text-white">Platba bankovním převodem</h3>
+                        </div>
+                        <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+                            Preferujete klasický bankovní převod? Žádný problém. Po registraci vám
+                            zašleme e-mail s&nbsp;platebními údaji. Po připsání platby vám odemkneme
+                            dotazník a&nbsp;celý proces běží stejně jako při online platbě.
+                        </p>
+                        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-1.5 text-sm">
+                            <p>
+                                <strong className="text-white">Číslo účtu:</strong>{" "}
+                                <span className="text-cyan-300 font-mono">2610538018/3030</span>
+                            </p>
+                            <p>
+                                <strong className="text-white">Zodpovědná osoba:</strong>{" "}
+                                Martin Haynes
+                            </p>
+                            <p className="pt-1.5 border-t border-white/[0.06] text-slate-500">
+                                Do poznámky pro příjemce uveďte:{" "}
+                                <strong className="text-slate-300">jméno kontaktní osoby + název projektu</strong>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -548,7 +581,7 @@ export default function PricingPage() {
                         {[
                             {
                                 q: "Jak platba probíhá?",
-                                a: "Po kliknutí na tlačítko budete přesměrováni na zabezpečenou platební bránu GoPay. Můžete platit kartou, bankovním převodem, Apple Pay nebo Google Pay."
+                                a: "Máte dvě možnosti: (1) Online — po kliknutí na tlačítko budete přesměrováni na platební bránu GoPay, kde zaplatíte kartou, Apple Pay nebo Google Pay. (2) Bankovní převod — po registraci vám zašleme e-mail s platebními údaji (účet 2610538018/3030). Po připsání platby a potvrzení administrátorem se vám odemkne dotazník."
                             },
                             {
                                 q: "Je to jednorázová platba?",
@@ -640,7 +673,7 @@ export default function PricingPage() {
                 <div className="mt-12 text-center">
                     <p className="text-xs text-slate-600">
                         Platby zpracovává{" "}
-                        <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline">
+                        <a href="https://www.gopay.cz" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline">
                             GoPay
                         </a>
                         {" "}— certifikovaná platební brána s PCI DSS
