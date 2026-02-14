@@ -328,12 +328,18 @@ function TestimonialCarousel() {
 
         let animId: number;
         let lastTime = 0;
-        const speed = 0.5; // px per frame (~30px/s at 60fps)
+        let accum = 0;
+        const speed = 30; // px per second
 
         const step = (time: number) => {
             if (!paused && lastTime) {
-                const delta = time - lastTime;
-                container.scrollLeft += speed * (delta / 16);
+                const delta = (time - lastTime) / 1000; // seconds
+                accum += speed * delta;
+                const px = Math.floor(accum);
+                if (px >= 1) {
+                    container.scrollLeft += px;
+                    accum -= px;
+                }
 
                 // Seamless loop: when we've scrolled past the first set, jump back
                 const halfScroll = container.scrollWidth / 2;
