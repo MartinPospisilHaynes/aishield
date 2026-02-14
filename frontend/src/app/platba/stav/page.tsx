@@ -111,6 +111,8 @@ function PaymentStatusContent() {
 
     // ── Platba úspěšná ──
     if (status?.is_paid) {
+        const isCoffee = status.order_number?.startsWith("AS-COFFEE");
+
         return (
             <section className="py-20 relative">
                 <div className="absolute inset-0 -z-10">
@@ -120,34 +122,62 @@ function PaymentStatusContent() {
                 <div className="mx-auto max-w-lg px-6 text-center">
                     <div className="glass py-12">
                         {/* Success icon */}
-                        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                            <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                        <div className={`mx-auto mb-6 w-20 h-20 rounded-2xl flex items-center justify-center ${isCoffee ? "bg-amber-500/10 border border-amber-500/20" : "bg-green-500/10 border border-green-500/20"}`}>
+                            {isCoffee ? (
+                                <svg className="w-10 h-10 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 4v2m3-2v2m3-2v2" />
+                                </svg>
+                            ) : (
+                                <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
                         </div>
 
-                        <h1 className="text-2xl font-extrabold mb-2">
-                            Platba <span className="text-green-400">úspěšná</span>!
-                        </h1>
-                        <p className="text-slate-400 text-sm mb-2">
-                            Objednávka: <span className="text-slate-300 font-mono">{status.order_number}</span>
-                        </p>
-                        {isSubscription ? (
-                            <p className="text-slate-400 text-sm mb-8">
-                                Monitoring byl úspěšně aktivován. Platba bude strhávána automaticky každý měsíc.
-                                Stav monitoringu najdete v dashboardu.
-                            </p>
+                        {isCoffee ? (
+                            <>
+                                <h1 className="text-2xl font-extrabold mb-4">
+                                    Hmm.. <span className="text-amber-400">lahodné</span> ☕
+                                </h1>
+                                <p className="text-slate-300 text-sm mb-2 leading-relaxed">
+                                    Moc děkuji za pozvání na kafé!
+                                </p>
+                                <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                                    Hned se mi bude pracovat lépe. Díky za podporu!
+                                </p>
+                            </>
                         ) : (
-                            <p className="text-slate-400 text-sm mb-8">
-                                Faktura vám přijde na email. Nyní vyplňte dotazník,
-                                abychom vám připravili dokumenty na míru.
-                            </p>
+                            <>
+                                <h1 className="text-2xl font-extrabold mb-2">
+                                    Platba <span className="text-green-400">úspěšná</span>!
+                                </h1>
+                                <p className="text-slate-400 text-sm mb-2">
+                                    Objednávka: <span className="text-slate-300 font-mono">{status.order_number}</span>
+                                </p>
+                                {isSubscription ? (
+                                    <p className="text-slate-400 text-sm mb-8">
+                                        Monitoring byl úspěšně aktivován. Platba bude strhávána automaticky každý měsíc.
+                                        Stav monitoringu najdete v dashboardu.
+                                    </p>
+                                ) : (
+                                    <p className="text-slate-400 text-sm mb-8">
+                                        Faktura vám přijde na email. Nyní vyplňte dotazník,
+                                        abychom vám připravili dokumenty na míru.
+                                    </p>
+                                )}
+                            </>
                         )}
 
                         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
 
                         <div className="space-y-3">
-                            {isSubscription ? (
+                            {isCoffee ? (
+                                <a href="/dashboard" className="btn-primary w-full py-3.5 block text-center">
+                                    Přejít na Dashboard
+                                </a>
+                            ) : isSubscription ? (
                                 <a href="/dashboard#monitoring" className="btn-primary w-full py-3.5 block text-center">
                                     Přejít na Dashboard
                                 </a>

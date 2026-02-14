@@ -71,9 +71,9 @@ class StripeClient:
         if not self.is_configured:
             raise RuntimeError("Stripe není nakonfigurován (chybí STRIPE_SECRET_KEY)")
 
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{
+        session_params = {
+            "payment_method_types": ["card"],
+            "line_items": [{
                 "price_data": {
                     "currency": "czk",
                     "product_data": {
@@ -83,15 +83,20 @@ class StripeClient:
                 },
                 "quantity": 1,
             }],
-            mode="payment",
-            customer_email=email,
-            client_reference_id=order_number,
-            success_url=return_url,
-            cancel_url=return_url,
-            metadata={
+            "mode": "payment",
+            "client_reference_id": order_number,
+            "success_url": return_url,
+            "cancel_url": return_url,
+            "metadata": {
                 "order_number": order_number,
             },
-        )
+        }
+
+        # Pre-fill email only if a real one is provided
+        if email and email != "guest@aishield.cz":
+            session_params["customer_email"] = email
+
+        session = stripe.checkout.Session.create(**session_params)
 
         logger.info(f"[Stripe] Checkout Session vytvořena: {session.id} ({amount} CZK)")
 
