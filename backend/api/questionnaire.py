@@ -125,6 +125,14 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Používáte AI k ovlivňování lidí bez jejich vědomí?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) E-shop zvyšuje ceny, když AI detekuje frustraci zákazníka.\n2) Reklama cílí AI algoritmy na seniory v tísni s nabídkou předražených produktů.\n3) Aplikace používá skryté manipulativní designové vzory řízené AI. Nepatří sem běžná personalizace nabídek.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "manipulation_type", "label": "O jaký typ ovlivňování jde? (vyberte vše)", "type": "multi_select",
+                         "options": ["Dynamické ceny podle emocí/chování", "Cílení na zranitelné skupiny", "Skryté manipulativní UX vzory", "Jiné"]},
+                        {"key": "manipulation_warning", "label": "⚠️ ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem.", "type": "info"},
+                    ]
+                },
                 "risk_hint": "high",
                 "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
             },
@@ -408,7 +416,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "decision_scope", "label": "O čem AI rozhoduje?", "type": "multi_select",
                          "options": ["Reklamace", "Slevy / ceny", "Přístup ke službám", "Schvalování žádostí", "Jiné"]},
                         {"key": "decision_human_review", "label": "Je k dispozici lidský přezkum?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "AI rozhodující o právech zákazníků bez možnosti lidského přezkumu porušuje čl. 14 AI Act (povinnost lidského dohledu). Zákazník má právo požadovat, aby rozhodnutí přezkoumal člověk."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -951,6 +960,27 @@ def _analyze_responses(answers: list[QuestionnaireAnswer]) -> dict:
                 "checklist": checklist,
             })
 
+    # Doporučení pro odpovědi "Ne" u otázek, kde "Ne" = compliance problém
+    # (klient nemá přehled / školení / pravidla / data v EU → musíme to flagovat)
+    no_answers = [a for a in answers if a.answer == "no"]
+    for ans in no_answers:
+        if ans.question_key in _NO_ANSWER_RECOMMENDATIONS:
+            q_def = question_map.get(ans.question_key)
+            if not q_def:
+                continue
+            no_rec = _NO_ANSWER_RECOMMENDATIONS[ans.question_key]
+            checklist = UNKNOWN_CHECKLISTS.get(ans.question_key, [])
+            recommendations.append({
+                "question_key": ans.question_key,
+                "tool_name": "",
+                "risk_level": no_rec["risk_level"],
+                "ai_act_article": q_def.get("ai_act_article", ""),
+                "recommendation": no_rec["recommendation"],
+                "priority": no_rec["priority"],
+                "is_no_answer": True,
+                "checklist": checklist,
+            })
+
     # Seřadit doporučení: high → limited → minimal
     risk_order = {"high": 0, "limited": 1, "minimal": 2}
     recommendations.sort(key=lambda r: risk_order.get(r["risk_level"], 3))
@@ -1155,6 +1185,60 @@ _NEVIM_SEVERITY: dict[str, dict] = {
     'has_ai_guidelines':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     # Minimální
     'uses_copilot':                 {'severity': 'minimal',  'color': 'gray',   'label': 'Nízká priorita'},
+}
+
+
+# ── Odpovědi "Ne" které jsou compliance problém ──
+# Tyto otázky: pokud klient odpoví "Ne", znamená to nesplnění povinnosti
+# nebo nemožnost dodat compliance dokumentaci. Generujeme doporučení.
+
+_NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
+    'ai_transparency_docs': {
+        'risk_level': 'limited',
+        'priority': 'vysoká',
+        'recommendation': (
+            'Nemáte přehled o tom, jaké AI ve firmě používáte. '
+            'Bez tohoto přehledu nelze splnit žádnou povinnost AI Act — '
+            'nevíte, které systémy regulovat, registrovat ani dokumentovat. '
+            'Toto je úplně první krok ke compliance: vytvořte jednoduchý registr '
+            'všech AI nástrojů (název, kdo používá, k čemu, jaká data zpracovává). '
+            'AIshield.cz vám tento registr dodá v rámci služby.'
+        ),
+    },
+    'has_ai_training': {
+        'risk_level': 'limited',
+        'priority': 'vysoká',
+        'recommendation': (
+            'Vaši zaměstnanci nebyli proškoleni o bezpečném používání AI. '
+            'Článek 4 AI Act vyžaduje „dostatečnou úroveň AI gramotnosti" '
+            'a tato povinnost platí již od 2. února 2025. '
+            'Zajistěte školení co nejdříve — AIshield.cz dodává kompletní '
+            'školící prezentaci (PowerPoint) a šablonu prezenční listiny.'
+        ),
+    },
+    'has_ai_guidelines': {
+        'risk_level': 'limited',
+        'priority': 'střední',
+        'recommendation': (
+            'Nemáte ve firmě pravidla pro používání AI. '
+            'Bez interní směrnice zaměstnanci nevědí, jaká data smí do AI vkládat, '
+            'zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování. '
+            'Doporučujeme vytvořit alespoň jednoduchý dokument „Pravidla pro AI ve firmě". '
+            'AIshield.cz vám tuto směrnici dodá v rámci služby.'
+        ),
+    },
+    'ai_data_stored_eu': {
+        'risk_level': 'limited',
+        'priority': 'střední',
+        'recommendation': (
+            'Data vašich AI systémů nejsou uložena v EU. '
+            'Pro soulad s GDPR při přenosu dat do třetích zemí (zejména USA) '
+            'musíte zajistit adekvátní záruky — standardní smluvní doložky (SCC), '
+            'adequacy decision, nebo binding corporate rules. '
+            'Ověřte smlouvy s poskytovateli AI služeb (OpenAI, Google, Anthropic) '
+            'a zajistěte platný Data Processing Agreement.'
+        ),
+    },
 }
 
 
