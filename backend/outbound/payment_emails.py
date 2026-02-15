@@ -145,17 +145,26 @@ def build_bank_transfer_email(
     email: str,
     variable_symbol: str,
     due_date: str,
-) -> str:
+) -> tuple[str, list[dict]]:
     """
     Build branded HTML email with bank transfer payment details + QR code.
     Sent when customer chooses "Bankovní převod" payment method.
+    Returns (html, attachments) — attachments contain the QR code as CID inline image.
     """
     plan_name = PLAN_NAMES.get(plan, plan.upper())
 
     # Generuj platební QR kód (SPAYD standard)
     qr_base64 = generate_payment_qr_base64(amount, variable_symbol, order_number)
     qr_html = ""
+    attachments: list[dict] = []
     if qr_base64:
+        # Use CID (Content-ID) so email clients actually display the image
+        # data: URIs are blocked by Gmail, Outlook, and most email clients
+        attachments.append({
+            "content": qr_base64,
+            "filename": "qr-platba.png",
+            "content_type": "image/png",
+        })
         qr_html = f"""
     <!-- QR Payment Code -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.95);border-radius:12px;margin-bottom:24px;">
@@ -234,13 +243,17 @@ def build_bank_transfer_email(
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:24px;">
     <tr><td style="padding:20px 24px;">
         <p style="margin:0 0 8px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
-            ✅ Po připsání platby na náš účet vám dáme vědět emailem.
+            ✅ Po připsání platby na náš účet vám zašleme fakturu.
         </p>
         <p style="margin:0 0 8px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
             🚀 Ihned se dáme do práce a hotové dílo odevzdáváme <strong style="color:#ffffff;">do 7 pracovních dní</strong>.
         </p>
+        <p style="margin:0 0 16px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            ❓ Máte dotaz? Napište nám na <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a> nebo volejte na <a href="tel:+420732716141" style="color:#a78bfa;text-decoration:none;">732 716 141</a>
+        </p>
         <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
-            ❓ Máte dotaz? Napište nám na <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a>
+            S pozdravem<br>
+            <strong style="color:#ffffff;">Martin Haynes</strong>, CEO
         </p>
     </td></tr>
     </table>
@@ -255,7 +268,7 @@ def build_bank_transfer_email(
     </table>
     """
 
-    return _email_wrapper(content)
+    return _email_wrapper(content), attachments
 
 
 def build_payment_received_email(

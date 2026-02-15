@@ -301,9 +301,9 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
             order_data["billing_data"] = req.billing.model_dump()
         supabase.table("orders").insert(order_data).execute()
 
-        # Odeslat email s platebními údaji
+        # Odeslat email s platebními údaji + QR kód jako příloha
         try:
-            html = build_bank_transfer_email(
+            html, qr_attachments = build_bank_transfer_email(
                 order_number=order_number,
                 plan=req.plan,
                 amount=amount,
@@ -317,6 +317,7 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
                 html=html,
                 from_email="info@aishield.cz",
                 from_name="AIshield.cz",
+                attachments=qr_attachments if qr_attachments else None,
             )
             logger.info(f"[Payments] Bank transfer email sent to {req.email} for {order_number}")
         except Exception as e:

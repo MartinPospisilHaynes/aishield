@@ -74,6 +74,7 @@ async def send_email(
     html: str,
     from_email: str | None = None,
     from_name: str | None = None,
+    attachments: list[dict] | None = None,
 ) -> dict:
     """
     Odešle email přes Resend API.
@@ -109,6 +110,9 @@ async def send_email(
                     "List-Unsubscribe": f"<https://aishield.cz/api/unsubscribe?email={to}>",
                     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
                 },
+                **({
+                    "attachments": attachments,
+                } if attachments else {}),
             },
         )
         response.raise_for_status()
