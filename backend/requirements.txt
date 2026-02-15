@@ -30,6 +30,9 @@ httpx>=0.26.0,<0.28
 # Payment gateways
 stripe>=8.0.0
 
+# QR code generation (payment QR codes in emails)
+qrcode[pil]==8.0
+
 # Scheduling
 apscheduler==3.10.4
 

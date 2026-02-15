@@ -561,10 +561,10 @@ export default function DashboardPage() {
                                         <div className="mt-2 space-y-1.5">
                                             {qFindings.map((f) => (
                                                 <div key={f.question_key} className={`rounded-md px-3 py-2 border ${f.risk_level === 'high'
-                                                        ? 'bg-red-500/[0.05] border-red-500/[0.15]'
-                                                        : f.risk_level === 'limited'
-                                                            ? 'bg-amber-500/[0.05] border-amber-500/[0.15]'
-                                                            : 'bg-cyan-500/[0.03] border-cyan-500/[0.1]'
+                                                    ? 'bg-red-500/[0.05] border-red-500/[0.15]'
+                                                    : f.risk_level === 'limited'
+                                                        ? 'bg-amber-500/[0.05] border-amber-500/[0.15]'
+                                                        : 'bg-cyan-500/[0.03] border-cyan-500/[0.1]'
                                                     }`}>
                                                     <p className={`text-[10px] font-semibold uppercase tracking-wider ${f.risk_level === 'high' ? 'text-red-400' : f.risk_level === 'limited' ? 'text-amber-400' : 'text-cyan-400'
                                                         }`}>
@@ -789,10 +789,13 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
 
 /* ── Tab: Přehled ── */
 function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean }) {
-    const hasPaidOrder = data?.orders.some((o) => o.status === "PAID") || false;
     const hasScans = hasScansOverride || (data?.scans.length || 0) > 0;
     const hasQuest = data?.questionnaire_status === "dokončen";
     const hasDocs = (data?.documents.length || 0) > 0;
+    const hasOrder = (data?.orders || []).length > 0;
+    const hasPaidOrder = data?.orders.some((o) => o.status === "PAID") || false;
+    const ws = data?.company?.workflow_status || 'new';
+    const isProcessingDocs = ws === 'processing' || ws === 'documents_sent';
 
     const steps = [
         {
@@ -812,19 +815,35 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             onClick: undefined as (() => void) | undefined,
         },
         {
-            done: hasPaidOrder,
+            done: hasOrder,
             label: "Objednávka",
-            desc: "Odemkněte compliance dokumenty a školení",
-            href: "#pricing",
-            cta: "Vybrat balíček",
+            desc: hasOrder ? "Objednávka byla přijata" : "Odemkněte compliance dokumenty a školení",
+            href: hasOrder ? null : "#pricing",
+            cta: hasOrder ? "✓ Objednáno" : "Vybrat balíček",
+            onClick: undefined as (() => void) | undefined,
+        },
+        {
+            done: hasPaidOrder,
+            label: "Platba",
+            desc: hasPaidOrder ? "Platba byla přijata" : hasOrder ? "Čekáme na připsání platby na účet" : "Po objednání obdržíte platební údaje",
+            href: null,
+            cta: hasPaidOrder ? "✓ Zaplaceno" : hasOrder ? "Čeká na platbu" : "",
+            onClick: undefined as (() => void) | undefined,
+        },
+        {
+            done: isProcessingDocs,
+            label: "Tvorba dokumentace",
+            desc: isProcessingDocs ? "Pracujeme na vaší dokumentaci" : hasPaidOrder ? "Připravujeme vaše dokumenty" : "Po zaplacení začneme s tvorbou",
+            href: null,
+            cta: isProcessingDocs ? "Zpracováváme" : "",
             onClick: undefined as (() => void) | undefined,
         },
         {
             done: hasDocs,
-            label: "Dodání dokumentace",
-            desc: "7 dokumentů pro splnění AI Act (může trvat až 14 dní)",
-            href: "#",
-            cta: "Viz tab Dokumenty",
+            label: "Dodání",
+            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení" : "7 dokumentů pro splnění AI Act",
+            href: hasDocs ? "#" : null,
+            cta: hasDocs ? "Viz tab Dokumenty" : "",
             onClick: undefined as (() => void) | undefined,
         },
     ];
@@ -832,7 +851,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
     const currentStepIndex = steps.findIndex((s) => !s.done);
     const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
     const completedCount = steps.filter((s) => s.done).length;
-    const lineWidthPercent = completedCount <= 1 ? 0 : ((completedCount - 1) / (steps.length - 1)) * 75;
+    const lineWidthPercent = completedCount <= 1 ? 0 : ((completedCount - 1) / (steps.length - 1)) * 83.4;
 
     const isProcessing = hasPaidOrder && !hasDocs;
     const currentHour = new Date().getHours();
@@ -843,16 +862,16 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             {/* Progress Timeline */}
             <div className="glass">
                 <h3 className="font-semibold mb-8">Postup k compliance</h3>
-                <div className="grid grid-cols-4 relative mb-8">
-                    <div className="absolute top-5 left-[12.5%] right-[12.5%] h-0.5 bg-white/[0.06]" />
+                <div className="grid grid-cols-6 relative mb-8">
+                    <div className="absolute top-5 left-[8.3%] right-[8.3%] h-0.5 bg-white/[0.06]" />
                     {lineWidthPercent > 0 && (
-                        <div className="absolute top-5 left-[12.5%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full" style={{ width: `${lineWidthPercent}%` }} />
+                        <div className="absolute top-5 left-[8.3%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full" style={{ width: `${lineWidthPercent}%` }} />
                     )}
                     {steps.map((step, i) => {
                         const isCurrent = i === currentStepIndex;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
-                                <div className={`flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 ${step.done
+                                <div className={`flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${step.done
                                     ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
                                     : isCurrent
                                         ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
@@ -864,7 +883,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                         </svg>
                                     ) : (i + 1)}
                                 </div>
-                                <span className={`text-[10px] sm:text-xs mt-1.5 sm:mt-2.5 font-medium text-center leading-tight ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
+                                <span className={`text-[9px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-medium text-center leading-tight ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
                                     {step.label}
                                 </span>
                             </div>
@@ -926,34 +945,6 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                 {isBusinessHours ? "Obvykle do 4 hodin (doručujeme 8:00\u201316:00)" : "Výsledky budou doručeny zítra ráno v 8:00"}
                             </p>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Objednávky */}
-            {data?.orders && data.orders.length > 0 && (
-                <div className="glass">
-                    <h3 className="font-semibold mb-4">Objednávky</h3>
-                    <div className="space-y-2">
-                        {data.orders.map((order) => (
-                            <div key={order.order_number} className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm hover:border-white/[0.12] transition-all gap-2">
-                                <div>
-                                    <span className="text-slate-300 font-medium">{order.order_number}</span>
-                                    <span className="text-slate-500 ml-2">({order.plan.toUpperCase()})</span>
-                                </div>
-                                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                                    <span className="text-slate-400">{new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč</span>
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID"
-                                        ? "bg-green-500/10 text-green-400"
-                                        : order.status === "CREATED"
-                                            ? "bg-amber-500/10 text-amber-400"
-                                            : "bg-red-500/10 text-red-400"
-                                        }`}>
-                                        {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká" : order.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             )}

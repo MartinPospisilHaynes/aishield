@@ -1,12 +1,20 @@
 """
 AIshield.cz — Payment Email Templates
 Branded HTML email templates for payment lifecycle:
-1. Bank transfer invoice (order confirmation with payment details)
+1. Bank transfer invoice (order confirmation with payment details + QR code)
 2. Payment received confirmation
 3. Delivery notification
 """
 
+import base64
+import io
 from datetime import datetime, timedelta
+
+try:
+    import qrcode
+    HAS_QRCODE = True
+except ImportError:
+    HAS_QRCODE = False
 
 # ── Brand constants (matching report_email.py) ──
 SHIELD_LOGO_SVG = (
@@ -94,6 +102,42 @@ def generate_variable_symbol(order_number: str) -> str:
     return vs
 
 
+# ── IBAN for AIshield.cz account (2610538018/3030 = Air Bank) ──
+AISHIELD_IBAN = "CZ9130300000002610538018"
+
+
+def generate_payment_qr_base64(amount: int, variable_symbol: str, order_number: str) -> str:
+    """
+    Generuje platební QR kód dle českého standardu SPAYD (Short Payment Descriptor).
+    Vrací base64-encoded PNG obrázek QR kódu.
+
+    SPAYD formát: SPD*1.0*ACC:{IBAN}*AM:{částka}*CC:CZK*X-VS:{VS}*MSG:{zpráva}
+    Podporován všemi českými bankami (George, Air Bank, ČSOB, mBank, Fio, KB...).
+    """
+    if not HAS_QRCODE:
+        return ""
+
+    spayd = (
+        f"SPD*1.0"
+        f"*ACC:{AISHIELD_IBAN}"
+        f"*AM:{amount:.2f}"
+        f"*CC:CZK"
+        f"*X-VS:{variable_symbol}"
+        f"*MSG:{order_number}"
+    )
+
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=6, border=2)
+    qr.add_data(spayd)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    return base64.b64encode(buf.read()).decode("ascii")
+
+
 def build_bank_transfer_email(
     order_number: str,
     plan: str,
@@ -103,10 +147,30 @@ def build_bank_transfer_email(
     due_date: str,
 ) -> str:
     """
-    Build branded HTML email with bank transfer payment details.
+    Build branded HTML email with bank transfer payment details + QR code.
     Sent when customer chooses "Bankovní převod" payment method.
     """
     plan_name = PLAN_NAMES.get(plan, plan.upper())
+
+    # Generuj platební QR kód (SPAYD standard)
+    qr_base64 = generate_payment_qr_base64(amount, variable_symbol, order_number)
+    qr_html = ""
+    if qr_base64:
+        qr_html = f"""
+    <!-- QR Payment Code -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.95);border-radius:12px;margin-bottom:24px;">
+    <tr><td align="center" style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;font-weight:700;color:#1e293b;">
+            &#128241; Platební QR kód
+        </p>
+        <img src="data:image/png;base64,{qr_base64}" alt="Platební QR kód" width="200" height="200" style="display:block;margin:0 auto;border-radius:8px;" />
+        <p style="margin:12px 0 0 0;font-size:11px;color:#64748b;line-height:1.5;">
+            Naskenujte QR kód v mobilní aplikaci vaší banky.<br>
+            Všechny údaje se předvyplní automaticky.
+        </p>
+    </td></tr>
+    </table>
+    """
 
     content = f"""
     <!-- Title -->
@@ -163,6 +227,8 @@ def build_bank_transfer_email(
         </table>
     </td></tr>
     </table>
+
+    {qr_html}
 
     <!-- Info -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:24px;">

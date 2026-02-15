@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     email_from: str = "info@aishield.cz"
     resend_webhook_secret: str = ""
 
+    # ── FIO Banka API (pro automatické párování plateb) ──
+    fio_api_token: str = ""  # Token z internetového bankovnictví FIO → Nastavení → API
+
     # ── Data Security ──
     data_export_key: str = ""  # Fernet klíč pro šifrovaný export (vygeneruj: python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
 
