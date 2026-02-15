@@ -752,13 +752,6 @@ function QuestionnaireInner() {
                     )}
                     {!q.help_text && <div className="mb-4" />}
 
-                    {/* Nevím info banner */}
-                    <div className="rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-3 py-2.5 mb-6">
-                        <p className="text-xs text-amber-300/80 leading-relaxed">
-                            💡 Pokud si nejste jistí, zvolte &bdquo;Nevím&ldquo; — odpověď můžete kdykoli doplnit později z vašeho dashboardu. Dotazník tím neztratíte.
-                        </p>
-                    </div>
-
                     {/* Answer tiles */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
                         {([
@@ -796,6 +789,11 @@ function QuestionnaireInner() {
                         })}
                     </div>
 
+                    {/* Nevím hint — below answer tiles */}
+                    <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                        Odpov\u011b\u010f &bdquo;Nev\u00edm&ldquo; je do\u010dasn\u00e1 &mdash; dopl\u0148te ji, jakmile informaci zjist\u00edte. 100% pokryt\u00ed z\u00e1konn\u00fdch po\u017eadavk\u016f je mo\u017en\u00e9 a\u017e se v\u0161emi odpov\u011b\u010fmi.
+                    </p>
+
                     {/* AI Act reference pill */}
                     {q.ai_act_article && (
                         <div className="mb-6">
@@ -830,6 +828,7 @@ function QuestionnaireInner() {
 
                                             {/* Select → tile grid */}
                                             {field.type === "select" && field.options && (
+                                                <>
                                                 <div className="flex flex-wrap gap-2">
                                                     {field.options.map((opt) => {
                                                         const selected = (ans?.details[field.key] as string) === opt;
@@ -850,6 +849,18 @@ function QuestionnaireInner() {
                                                         );
                                                     })}
                                                 </div>
+                                                {/* "Jiný" text input — show when "Jiný" or "Jiné" is selected */}
+                                                {((ans?.details[field.key] as string) === "Jiný" || (ans?.details[field.key] as string) === "Jiné") && (
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Upřesněte, jaký jiný nástroj…"
+                                                        className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                        value={(ans?.details[`${field.key}_other`] as string) || ""}
+                                                        onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
+                                                        autoFocus
+                                                    />
+                                                )}
+                                                </>
                                             )}
 
                                             {/* Multi-select → tile grid with checkmarks */}
@@ -879,14 +890,15 @@ function QuestionnaireInner() {
                                                             );
                                                         })}
                                                     </div>
-                                                    {/* "Jiné" text input — show when "Jiné" is selected */}
-                                                    {(multiSelections[`${q.key}__${field.key}`] || []).includes("Jiné") && (
+                                                    {/* "Jiné"/"Jiný" text input — show when selected */}
+                                                    {((multiSelections[`${q.key}__${field.key}`] || []).includes("Jiné") || (multiSelections[`${q.key}__${field.key}`] || []).includes("Jiný")) && (
                                                         <input
                                                             type="text"
                                                             placeholder="Upřesněte, jaký jiný nástroj…"
                                                             className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                             value={(ans?.details[`${field.key}_other`] as string) || ""}
                                                             onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
+                                                            autoFocus
                                                         />
                                                     )}
                                                 </>

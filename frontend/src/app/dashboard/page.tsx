@@ -425,6 +425,16 @@ export default function DashboardPage() {
                                     <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
                                         <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-1000" style={{ width: `${((scanStage + 1) / SCAN_STAGES.length) * 100}%` }} />
                                     </div>
+                                    {scanStage >= 7 && (
+                                        <div className="flex items-start gap-2 rounded-lg bg-white/[0.03] border border-slate-700/50 px-3 py-2.5 mt-2">
+                                            <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <p className="text-xs text-slate-300 leading-relaxed">
+                                                Nezavírejte okno prohlížeče. Vyhodnocení umělou inteligencí může trvat až jednu minutu.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -445,8 +455,8 @@ export default function DashboardPage() {
                                             Zobrazit nálezy
                                         </button>
                                         {hasScans && (
-                                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                                {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
+                                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
+                                                Vyplnit dotazník
                                             </a>
                                         )}
                                     </div>
@@ -1237,23 +1247,23 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {documents.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-white/[0.12] transition-all">
-                    <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
+                    <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-white/[0.12] transition-all">
+                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
+                            <p className="text-xs text-slate-400 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
+                        </div>
+                        {doc.file_url && (
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
+                                Stáhnout PDF
+                            </a>
+                        )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
-                    </div>
-                    {doc.file_url && (
-                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
-                            Stáhnout PDF
-                        </a>
-                    )}
-                </div>
-            ))}
+                ))}
             </div>
         </div>
     );
