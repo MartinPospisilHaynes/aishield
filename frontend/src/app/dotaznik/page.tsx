@@ -745,12 +745,19 @@ function QuestionnaireInner() {
 
                     {/* Help text */}
                     {q.help_text && (
-                        <p className="text-slate-400 text-sm mb-8 flex items-start gap-2">
+                        <p className="text-slate-400 text-sm mb-4 flex items-start gap-2">
                             <span className="text-slate-500 mt-0.5 flex-shrink-0">ℹ️</span>
                             {q.help_text}
                         </p>
                     )}
-                    {!q.help_text && <div className="mb-8" />}
+                    {!q.help_text && <div className="mb-4" />}
+
+                    {/* Nevím info banner */}
+                    <div className="rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-3 py-2.5 mb-6">
+                        <p className="text-xs text-amber-300/80 leading-relaxed">
+                            💡 Pokud si nejste jistí, zvolte &bdquo;Nevím&ldquo; — odpověď můžete kdykoli doplnit později z vašeho dashboardu. Dotazník tím neztratíte.
+                        </p>
+                    </div>
 
                     {/* Answer tiles */}
                     <div className="grid grid-cols-3 gap-3 mb-4">

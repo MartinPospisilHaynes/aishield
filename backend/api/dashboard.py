@@ -254,6 +254,7 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
             "name": company.get("name", ""),
             "url": company.get("url", ""),
             "created_at": company.get("created_at", ""),
+            "workflow_status": company.get("workflow_status", "new"),
         },
         "scans": [
             {

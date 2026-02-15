@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+function generateMathChallenge(): { a: number; b: number; answer: number } {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    return { a, b, answer: a + b };
+}
 
 export default function ContactForm() {
     const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", message: "" });
@@ -8,12 +14,22 @@ export default function ContactForm() {
     const [honeypot, setHoneypot] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [sending, setSending] = useState(false);
+    const [captcha] = useState(() => generateMathChallenge());
+    const [captchaInput, setCaptchaInput] = useState("");
+    const [captchaError, setCaptchaError] = useState(false);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         // Honeypot check — bots fill hidden fields
         if (honeypot) return;
         if (!gdprConsent) return;
+
+        // Math captcha check
+        if (parseInt(captchaInput, 10) !== captcha.answer) {
+            setCaptchaError(true);
+            return;
+        }
+        setCaptchaError(false);
 
         setSending(true);
         try {
@@ -125,6 +141,26 @@ export default function ContactForm() {
                             className="w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition resize-none"
                             placeholder="Popište, s čím vám můžeme pomoci..."
                         />
+                    </div>
+
+                    {/* Math captcha — anti-robot */}
+                    <div>
+                        <label htmlFor="c-captcha" className="block text-sm font-medium text-slate-300 mb-1.5">
+                            Ověření: Kolik je {captcha.a} + {captcha.b}? *
+                        </label>
+                        <input
+                            id="c-captcha"
+                            type="text"
+                            inputMode="numeric"
+                            required
+                            value={captchaInput}
+                            onChange={e => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
+                            className={`w-full sm:w-32 rounded-xl bg-white/[0.06] border px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition ${captchaError ? "border-red-500/50" : "border-white/[0.1]"}`}
+                            placeholder="?"
+                        />
+                        {captchaError && (
+                            <p className="text-xs text-red-400 mt-1">Špatná odpověď, zkuste to znovu.</p>
+                        )}
                     </div>
 
                     {/* GDPR souhlas */}

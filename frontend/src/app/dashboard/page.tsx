@@ -9,14 +9,10 @@ import {
     getScanFindings,
     getQuestionnaireProgress,
     createCheckout,
-    getMonitoringEligibility,
-    createSubscription,
-    cancelSubscription,
     type DashboardData,
     type ScanStatus,
     type Finding,
     type QuestionnaireProgress,
-    type MonitoringEligibility,
     type QuestionnaireFinding,
     type QuestionnaireUnknown,
 } from "@/lib/api";
@@ -59,7 +55,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     },
     {
         key: "plan",
-        label: "Kroky ke splnění",
+        label: "Musíte doplnit",
         icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>),
     },
     {
@@ -158,10 +154,6 @@ export default function DashboardPage() {
 
     // ── Questionnaire progress ──
     const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
-
-    // ── Monitoring eligibility ──
-    const [monitoringEligibility, setMonitoringEligibility] = useState<MonitoringEligibility | null>(null);
-    const [monitoringLoading, setMonitoringLoading] = useState<string | null>(null); // "monitoring" | "monitoring_plus" | null
 
     // ── AI systems card expand ──
     const [aiCardOpen, setAiCardOpen] = useState(false);
@@ -303,26 +295,6 @@ export default function DashboardPage() {
             .catch(() => { /* silent */ });
     }, [data?.company?.id]);
 
-    // Fetch monitoring eligibility
-    useEffect(() => {
-        if (!user?.email) return;
-        getMonitoringEligibility()
-            .then(setMonitoringEligibility)
-            .catch(() => { /* silent */ });
-    }, [user?.email, data]);
-
-    const handleSubscribe = useCallback(async (plan: "monitoring" | "monitoring_plus") => {
-        if (!user?.email) return;
-        setMonitoringLoading(plan);
-        try {
-            const result = await createSubscription(plan, user.email);
-            window.location.href = result.gateway_url;
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Chyba při vytváření předplatného");
-            setMonitoringLoading(null);
-        }
-    }, [user?.email]);
-
     if (authLoading || loading) {
         return (
             <section className="py-20">
@@ -394,7 +366,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                         <div>
                             <h1 className="text-2xl font-extrabold">Dashboard</h1>
-                            <p className="text-sm text-slate-300 mt-1 truncate">{companyName} — {(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
+                            <p className="text-sm text-slate-300 mt-1 truncate">{(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
                         </div>
                         <div className="flex gap-2 sm:gap-3 flex-wrap">
                             <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
@@ -483,229 +455,195 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                    {/* ═══ STAT CARDS (4 cards: Sken webu, Výsledky dotazníku, AI systémy, Dotazník) ═══ */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 items-start">
-                        {/* Card 1: Sken webu – jen výsledky skenu */}
-                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider">Sken webu</p>
-                                <span className="text-slate-500">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                                </span>
-                            </div>
+                    {/* ═══ STAT CARDS (4 equal panels) ═══ */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {/* Panel 1: Sken webu */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
+                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Sken webu</p>
                             {!hasScans ? (
-                                <p className="text-sm text-slate-300 leading-relaxed">Sken zatím nebyl proveden.</p>
+                                <>
+                                    <p className="text-2xl font-extrabold mt-1 text-slate-500">—</p>
+                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Sken zatím nebyl proveden.</p>
+                                </>
                             ) : uniqueSystemsCount > 0 ? (
                                 <>
-                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-amber-400">{uniqueSystemsCount}</p>
-                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                        {uniqueSystemsCount === 1 ? 'AI systém nalezen' : uniqueSystemsCount < 5 ? 'AI systémy nalezeny' : 'AI systémů nalezeno'} na webu
+                                    <p className="text-2xl font-extrabold mt-1 text-amber-400">{uniqueSystemsCount}</p>
+                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                        {cz(uniqueSystemsCount, 'AI systém nalezen', 'AI systémy nalezeny', 'AI systémů nalezeno')}, {cz(uniqueSystemsCount, 'který spadá', 'které spadají', 'které spadají')} do zákona EU o umělé inteligenci.
                                     </p>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-green-400">0</p>
-                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                        Sken na webu nezjistil žádné AI systémy
+                                    <p className="text-2xl font-extrabold mt-1 text-green-400">0</p>
+                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                        Sken na webu nezjistil žádné AI systémy, které podléhají zákonu Evropské unie o umělé inteligenci.
                                     </p>
                                 </>
                             )}
-                        </div>
-
-                        {/* Card 2: Výsledky dotazníku */}
-                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider">Výsledky dotazníku</p>
-                                <span className="text-slate-500">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                                </span>
-                            </div>
-                            {!hasQuest ? (
-                                <p className="text-sm text-slate-300 leading-relaxed">Dotazník zatím nebyl vyplněn.</p>
-                            ) : qFindings.length > 0 ? (
-                                <>
-                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-amber-400">{qFindings.length}</p>
-                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                        {qFindings.length === 1 ? 'interní AI systém odhalen' : qFindings.length < 5 ? 'interní AI systémy odhaleny' : 'interních AI systémů odhaleno'} dotazníkem
-                                    </p>
-                                    {qUnknowns.length > 0 && (
-                                        <p className="text-xs text-amber-400 mt-1">{qUnknowns.length} {qUnknowns.length === 1 ? 'odpověď' : qUnknowns.length < 5 ? 'odpovědi' : 'odpovědí'} &bdquo;Nevím&ldquo;</p>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-green-400">0</p>
-                                    <p className="text-sm text-slate-300 mt-1 leading-relaxed">
-                                        Dotazník neodhalil žádné interní AI systémy
-                                    </p>
-                                    {qUnknowns.length > 0 && (
-                                        <p className="text-xs text-amber-400 mt-1">{qUnknowns.length} {qUnknowns.length === 1 ? 'odpověď' : qUnknowns.length < 5 ? 'odpovědi' : 'odpovědí'} &bdquo;Nevím&ldquo;</p>
-                                    )}
-                                </>
+                            {hasScans && uniqueSystemsCount === 0 && !hasQuest && (
+                                <p className="text-[10px] text-amber-400/80 mt-2">100% jistotu budeme mít až po vyplnění dotazníku.</p>
                             )}
-                        </div>
-
-                        {/* Card 2: AI systémy – rozbalovací registr */}
-                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-all">
-                            <button
-                                onClick={() => setAiCardOpen(!aiCardOpen)}
-                                className="w-full p-5 text-left"
-                            >
-                                <div className="flex items-center justify-between mb-1">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider">AI systémy nalezeny</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-slate-500">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                        </span>
-                                        <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {/* Expandable scan findings */}
+                            {hasScans && uniqueSystemsCount > 0 && (
+                                <div className="mt-3 border-t border-white/[0.06] pt-3">
+                                    <button onClick={() => setAiCardOpen(!aiCardOpen)} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                        {aiCardOpen ? 'Skrýt nálezy' : 'Zobrazit nálezy'}
+                                        <svg className={`w-3 h-3 transition-transform ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
-                                    </div>
-                                </div>
-                                <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${(highRisk + qHighRisk) > 0 ? 'text-red-400' : totalSystems > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                                    {totalSystems}
-                                </p>
-                                <p className="text-xs text-amber-400/80 mt-1 font-medium">
-                                    {totalSystems > 0
-                                        ? `${totalSystems} ${cz(totalSystems, 'nesplněná povinnost', 'nesplněné povinnosti', 'nesplněných povinností')} dle AI Actu`
-                                        : hasScans
-                                            ? 'Žádné AI systémy nenalezeny'
-                                            : 'Sken zatím nebyl proveden'}
-                                </p>
-                                {hasQuest && qFindings.length > 0 && (
-                                    <p className="text-[10px] text-slate-400 mt-1">
-                                        {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} ze skenu` : ''}{uniqueSystemsCount > 0 && qFindings.length > 0 ? ' + ' : ''}{qFindings.length > 0 ? `${qFindings.length} z dotazníku` : ''}
-                                    </p>
-                                )}
-                            </button>
-                            {aiCardOpen && totalSystems > 0 && (
-                                <div className="border-t border-white/[0.06] px-5 pb-5">
-                                    {/* Scan findings */}
-                                    {uniqueSystemsCount > 0 && (
-                                        <>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Ze skenu webu</p>
-                                            <div className="space-y-2">
-                                                {groupFindings(data?.findings || []).map((f) => (
-                                                    <div key={f.name} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                            <p className="text-xs text-slate-400 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}× nalezeno` : ''}</p>
-                                                        </div>
-                                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                            {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
+                                    </button>
+                                    {aiCardOpen && (
+                                        <div className="mt-2 space-y-1.5">
+                                            {groupFindings(data?.findings || []).map((f) => (
+                                                <div key={f.name} className="rounded-md bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                                                    <p className="text-xs font-medium text-white">{f.name}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
-                                    {/* Questionnaire findings */}
-                                    {qFindings.length > 0 && (
-                                        <>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wider mt-4 mb-3">Z dotazníku — interní AI systémy</p>
-                                            <div className="space-y-2">
-                                                {qFindings.map((f) => (
-                                                    <div key={f.question_key} className="flex items-center justify-between gap-3 rounded-lg bg-fuchsia-500/[0.03] border border-fuchsia-500/[0.1] px-4 py-3">
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="text-sm font-medium text-white truncate">{f.name}</p>
-                                                            <p className="text-xs text-slate-400 mt-0.5">{f.ai_act_article}</p>
-                                                        </div>
-                                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium flex-shrink-0 ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                                            {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
-                                    {/* Unknowns warning — color-coded by severity */}
-                                    {qUnknowns.length > 0 && (
-                                        <>
-                                            <p className="text-xs text-slate-400 uppercase tracking-wider mt-4 mb-3">Odpovědi &bdquo;Nevím&ldquo; ({qUnknowns.length}×)</p>
-                                            <div className="space-y-1.5">
-                                                {qUnknowns.map((u) => {
-                                                    const sc = u.severity_color === "red" ? "text-red-400 border-red-500/30 bg-red-500/[0.06]"
-                                                        : u.severity_color === "orange" ? "text-orange-400 border-orange-500/30 bg-orange-500/[0.06]"
-                                                            : u.severity_color === "yellow" ? "text-amber-400 border-amber-500/20 bg-amber-500/[0.05]"
-                                                                : "text-slate-400 border-slate-500/20 bg-slate-500/[0.04]";
-                                                    const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
-                                                    return (
-                                                        <div key={u.question_key} className={`rounded-md border px-2.5 py-1.5 flex items-start gap-2 ${sc}`}>
-                                                            <span className={`w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0 ${dotColor}`} />
-                                                            <span className="text-[11px]">{u.question_text}</span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </>
-                                    )}
-                                    {!hasQuest && <p className="text-[10px] text-slate-400 mt-3">Vyplněním dotazníku získáte přesnější analýzu včetně interních AI nástrojů.</p>}
                                 </div>
                             )}
+                            <div className="mt-auto pt-3">
+                                <button onClick={handleStartScan} disabled={scanLoading} className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
+                                    {scanLoading ? 'Skenuji...' : 'Opakovat sken'}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Card 3: Dotazník with progress */}
-                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all">
-                            <div className="flex items-center justify-between mb-1">
-                                <p className="text-xs text-slate-500 uppercase tracking-wider">Dotazník</p>
-                                <span className="text-slate-500">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                                </span>
-                            </div>
-                            <p className={`text-2xl sm:text-3xl font-extrabold mt-1 ${hasQuest ? (qUnknowns.length > 0 ? "text-amber-400" : "text-cyan-400") : questStatus === "rozpracovano" ? "text-amber-400" : "text-slate-500"}`}>
-                                {hasQuest ? (qUnknowns.length > 0 ? "Odesláno" : "Hotovo") : questStatus === "rozpracovano" ? `${questPercentage}%` : "0%"}
-                            </p>
-                            {/* Progress bar */}
-                            {!hasQuest && questStatus === "rozpracovano" && (
-                                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-2 mb-1">
-                                    <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 transition-all duration-500" style={{ width: `${questPercentage}%` }} />
-                                </div>
+                        {/* Panel 2: Výsledky dotazníku */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
+                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Výsledky dotazníku</p>
+                            {!hasQuest ? (
+                                <>
+                                    <p className="text-2xl font-extrabold mt-1 text-slate-500">—</p>
+                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Dotazník zatím nebyl vyplněn.</p>
+                                </>
+                            ) : qFindings.length > 0 ? (
+                                <>
+                                    <p className="text-2xl font-extrabold mt-1 text-amber-400">{qFindings.length}</p>
+                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                        {cz(qFindings.length, 'AI systém odhalen', 'AI systémy odhaleny', 'AI systémů odhaleno')} dotazníkem.
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-2xl font-extrabold mt-1 text-green-400">0</p>
+                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">Dotazník neodhalil žádné AI systémy.</p>
+                                </>
                             )}
-                            <p className="text-xs text-slate-400 mt-1">
-                                {hasQuest
-                                    ? (qUnknowns.length > 0
-                                        ? `Doporučujeme doplnit ${qUnknowns.length}× odpověď \u201eNevím\u201c`
-                                        : "Vyplněn — můžete upravit odpovědi")
-                                    : questStatus === "rozpracovano"
-                                        ? `${questProgress?.answered || 0}/${questProgress?.total_questions || 27} otázek zodpovězeno`
-                                        : "Vyplňte pro přesnější analýzu"
-                                }
-                            </p>
-                            {/* Action buttons */}
-                            <div className="flex gap-2 mt-3">
+                            {hasQuest && qUnknowns.length > 0 && (
+                                <p className="text-[10px] text-amber-400 mt-2 leading-relaxed">
+                                    U {qUnknowns.length} {cz(qUnknowns.length, 'otázky', 'otázek', 'otázek')} jste odpověděli &bdquo;Nevím&ldquo;. Tyto informace je nutné zjistit a doplnit — jinak Vám nedokážeme zaručit 100% ochranu.
+                                </p>
+                            )}
+                            <div className="mt-auto pt-3">
                                 {hasScans && (
                                     hasQuest ? (
                                         <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
-                                            className="btn-primary text-xs !px-3 !py-1.5 !rounded-lg">
-                                            Upravit odpovědi
+                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
+                                            {qUnknowns.length > 0 ? 'Doplnit odpovědi' : 'Upravit odpovědi'}
                                         </a>
                                     ) : (
                                         <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
-                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 hover:bg-fuchsia-500/30 transition-all">
-                                            {questStatus === "rozpracovano" ? "Pokračovat" : "Vyplnit"}
+                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
+                                            Vyplnit dotazník
                                         </a>
                                     )
                                 )}
                             </div>
                         </div>
+
+                        {/* Panel 3: Celkem systémů */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
+                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Celkem AI systémů</p>
+                            <p className={`text-2xl font-extrabold mt-1 ${totalSystems > 0 ? 'text-amber-400' : hasScans ? 'text-green-400' : 'text-slate-500'}`}>
+                                {hasScans || hasQuest ? totalSystems : '—'}
+                            </p>
+                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                {!hasScans && !hasQuest
+                                    ? 'Proveďte sken a vyplňte dotazník.'
+                                    : totalSystems > 0
+                                        ? `${cz(totalSystems, 'Systém spadající', 'Systémy spadající', 'Systémů spadajících')} do zákona EU o umělé inteligenci.`
+                                        : 'Žádné AI systémy podléhající regulaci nenalezeny.'
+                                }
+                            </p>
+                            {(hasScans || hasQuest) && totalSystems > 0 && (
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    {uniqueSystemsCount > 0 ? `${uniqueSystemsCount} ze skenu` : ''}{uniqueSystemsCount > 0 && qFindings.length > 0 ? ' + ' : ''}{qFindings.length > 0 ? `${qFindings.length} z dotazníku` : ''}
+                                </p>
+                            )}
+                            {hasQuest && qUnknowns.length > 0 && (
+                                <p className="text-[10px] text-amber-400/80 mt-2">
+                                    Celkový počet lze s jistotou říct až po zodpovězení všech otázek v dotazníku.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Panel 4: Status */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
+                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Status</p>
+                            {(() => {
+                                const ws = data?.company?.workflow_status || 'new';
+                                const hasPaid = (data?.orders || []).some(o => o.status === 'PAID');
+                                const hasDocs = (data?.documents || []).length > 0;
+                                const questIncomplete = hasQuest && qUnknowns.length > 0;
+
+                                if (hasDocs && hasPaid && ws === 'documents_sent') {
+                                    return (
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-green-400">Dokončeno</p>
+                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">Vše je připraveno. Vaše dokumenty jsou ke stažení v záložce Dokumenty.</p>
+                                        </>
+                                    );
+                                }
+                                if (hasPaid && !hasDocs) {
+                                    return (
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-cyan-400">Zpracováváme</p>
+                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">Pracujeme na Vaší dokumentaci. Předáme Vám vše potřebné do 7 pracovních dní.</p>
+                                        </>
+                                    );
+                                }
+                                if (!hasQuest || questIncomplete) {
+                                    return (
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-amber-400">Čekáme</p>
+                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                {!hasQuest
+                                                    ? 'Čekáme na vyplnění dotazníku.'
+                                                    : `Dotazník obsahuje ${qUnknowns.length}× odpověď „Nevím". Doplňte prosím chybějící informace.`
+                                                }
+                                            </p>
+                                        </>
+                                    );
+                                }
+                                return (
+                                    <>
+                                        <p className="text-2xl font-extrabold mt-1 text-slate-400">Připraveno</p>
+                                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">Analýza dokončena. Vyberte si balíček pro vygenerování compliance dokumentace.</p>
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </div>
 
-                    {/* ═══ PROMINENT ACTION PLAN (when both scan + questionnaire done) ═══ */}
-                    {hasScans && hasQuest && (findingsCount > 0 || qFindings.length > 0) && (
-                        <div className="mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.04] to-cyan-500/[0.04] p-4 sm:p-6">
+                    {/* ═══ ACTION BANNER ═══ */}
+                    {hasScans && hasQuest && qUnknowns.length > 0 && (
+                        <div className="mb-8 rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.04] to-fuchsia-500/[0.04] p-4 sm:p-6">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="h-10 w-10 rounded-xl bg-fuchsia-500/20 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-slate-200">Kroky ke splnění jsou připraveny</h3>
-                                    <p className="text-xs text-slate-300">Na základě skenu{qFindings.length > 0 ? ` a dotazníku` : ''} — {(() => { const n = findingsCount + qFindings.length; return `${n} ${cz(n, 'krok', 'kroky', 'kroků')}`; })()}, vše vyřídíme za vás</p>
+                                    <h3 className="font-semibold text-slate-200">Je potřeba doplnit odpovědi v dotazníku</h3>
+                                    <p className="text-xs text-slate-300">U {qUnknowns.length} {cz(qUnknowns.length, 'otázky', 'otázek', 'otázek')} jste zvolili &bdquo;Nevím&ldquo; — podívejte se, jak tyto informace zjistit</p>
                                 </div>
                             </div>
                             <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
-                                Zobrazit kroky
+                                Zobrazit podrobnosti
                             </button>
                         </div>
                     )}
@@ -735,169 +673,10 @@ export default function DashboardPage() {
                         {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
-                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
+                        {activeTab === "plan" && <TabPlan questionnaireUnknowns={qUnknowns} companyId={data?.company?.id || ''} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                         {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
-                </div>
-            </section>
-
-            {/* ── Monitoring section ── */}
-            <section id="monitoring" className="mx-auto max-w-7xl px-6 py-8">
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 sm:p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white">Průběžný monitoring</h2>
-                            <p className="text-sm text-slate-300">Automatický sken webu + aktualizace dokumentů</p>
-                        </div>
-                    </div>
-
-                    {/* Active subscription */}
-                    {monitoringEligibility?.checks.has_active_subscription ? (
-                        <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div>
-                                    <h3 className="font-semibold text-green-400">Monitoring aktivní</h3>
-                                    <p className="text-sm text-slate-300">
-                                        Plán: {monitoringEligibility.checks.active_plan === "monitoring_plus" ? "Monitoring Plus (599 Kč/měsíc)" : "Monitoring (299 Kč/měsíc)"}
-                                    </p>
-                                </div>
-                            </div>
-                            <p className="text-xs text-slate-500">Váš web je pravidelně skenován a dokumenty jsou automaticky aktualizovány.</p>
-                        </div>
-                    ) : monitoringEligibility?.checks.is_enterprise ? (
-                        /* Enterprise — monitoring included */
-                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-5">
-                            <div className="flex items-center gap-3 mb-3">
-                                <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div>
-                                    <h3 className="font-semibold text-cyan-400">Monitoring v ceně balíčku ENTERPRISE</h3>
-                                    <p className="text-sm text-slate-300">Váš balíček ENTERPRISE zahrnuje 2 roky průběžného monitoringu.</p>
-                                </div>
-                            </div>
-                        </div>
-                    ) : monitoringEligibility?.eligible ? (
-                        /* Eligible — show monitoring plans */
-                        <div>
-                            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4 mb-6">
-                                <div className="flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <p className="text-sm text-cyan-300">Všechny podmínky splněny — můžete aktivovat monitoring.</p>
-                                </div>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {/* Monitoring */}
-                                <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 flex flex-col">
-                                    <h3 className="font-bold text-white mb-1">Monitoring</h3>
-                                    <div className="mb-3">
-                                        <span className="text-2xl font-extrabold text-white">299</span>
-                                        <span className="text-slate-500 ml-1">Kč/měsíc</span>
-                                    </div>
-                                    <ul className="space-y-1.5 text-sm mb-5 flex-1">
-                                        {[
-                                            "1× měsíčně automatický sken webu",
-                                            "Srovnání s předchozím skenem (diff)",
-                                            "Emailové upozornění při nálezu",
-                                            "Aktualizovaný Compliance Report",
-                                            "Aktualizovaný Registr AI systémů",
-                                            "Historie skenů v dashboardu",
-                                        ].map((f) => (
-                                            <li key={f} className="flex items-start gap-2">
-                                                <svg className="w-4 h-4 mt-0.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                <span className="text-slate-300">{f}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <button
-                                        onClick={() => handleSubscribe("monitoring")}
-                                        disabled={monitoringLoading !== null}
-                                        className="w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition disabled:opacity-50"
-                                    >
-                                        {monitoringLoading === "monitoring" ? "Přesměrování…" : "Aktivovat Monitoring"}
-                                    </button>
-                                </div>
-
-                                {/* Monitoring Plus */}
-                                <div className="rounded-xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-5 flex flex-col">
-                                    <h3 className="font-bold text-white mb-1">Monitoring Plus</h3>
-                                    <div className="mb-3">
-                                        <span className="text-2xl font-extrabold neon-text">599</span>
-                                        <span className="text-slate-500 ml-1">Kč/měsíc</span>
-                                    </div>
-                                    <ul className="space-y-1.5 text-sm mb-5 flex-1">
-                                        {[
-                                            "2× měsíčně automatický sken webu",
-                                            "Vše z Monitoring",
-                                            "Aktualizace VŠECH 7 dokumentů",
-                                            "Implementace změn na webu klienta",
-                                            "Prioritní emailová podpora",
-                                            "Čtvrtletní souhrnný přehled",
-                                        ].map((f) => (
-                                            <li key={f} className="flex items-start gap-2">
-                                                <svg className="w-4 h-4 mt-0.5 text-fuchsia-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                <span className="text-slate-300">{f}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <button
-                                        onClick={() => handleSubscribe("monitoring_plus")}
-                                        disabled={monitoringLoading !== null}
-                                        className="w-full rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 px-6 py-2.5 text-sm font-semibold text-white hover:from-fuchsia-500 hover:to-fuchsia-400 shadow-lg shadow-fuchsia-500/20 transition disabled:opacity-50"
-                                    >
-                                        {monitoringLoading === "monitoring_plus" ? "Přesměrování…" : "Aktivovat Monitoring Plus"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        /* Not eligible — show checklist */
-                        <div>
-                            <p className="text-sm text-slate-300 mb-4">
-                                Monitoring můžete aktivovat po dokončení všech kroků. Průběh:
-                            </p>
-                            <div className="space-y-2">
-                                {[
-                                    { done: monitoringEligibility?.checks.scan_completed, label: "Sken webu dokončen" },
-                                    { done: monitoringEligibility?.checks.questionnaire_done, label: "Dotazník vyplněn" },
-                                    { done: monitoringEligibility?.checks.has_paid_order, label: "Balíček zaplacen (BASIC / PRO / ENTERPRISE)" },
-                                    { done: monitoringEligibility?.checks.documents_generated, label: "Compliance dokumenty vygenerovány" },
-                                ].map((check) => (
-                                    <div key={check.label} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.06] px-4 py-2.5">
-                                        {check.done ? (
-                                            <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        ) : (
-                                            <div className="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0" />
-                                        )}
-                                        <span className={`text-sm ${check.done ? "text-green-400/80" : "text-slate-500"}`}>
-                                            {check.label}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                            <p className="text-xs text-slate-600 mt-4">
-                                Monitoring je volitelný doplněk od 299 Kč/měsíc. Dostupný po kompletním dokončení základního balíčku.
-                            </p>
-                        </div>
-                    )}
                 </div>
             </section>
 
@@ -1084,7 +863,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <h4 className="font-semibold text-cyan-400">Všechny kroky dokončeny</h4>
-                        <p className="text-sm text-slate-300 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení. Pro udržení souladu doporučujeme pravidelný monitoring.</p>
+                        <p className="text-sm text-slate-300 mt-1">Vaše compliance dokumenty jsou připraveny ke stažení.</p>
                     </div>
                 )}
             </div>
@@ -1199,7 +978,9 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                     ? ' ze skenu vašeho webu'
                                     : ' z odpovědí v dotazníku'
                             }.
-                            Klikněte na systém pro zobrazení detailu.
+                            Využívání těchto nástrojů Vám dává <strong className="text-cyan-300">konkurenční výhodu</strong> před weby, které AI nepoužívají.
+                            Stačí o tom správně informovat návštěvníky a mít k tomu příslušnou dokumentaci.
+                            <strong className="text-cyan-300"> Vše dokážeme zařídit za Vás</strong>, abyste se mohli soustředit na svůj byznys.
                         </p>
                     </div>
                 </div>
@@ -1240,9 +1021,15 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
 
                                 {isExpanded && (
                                     <div className="px-5 pb-5 pt-0 border-t border-white/[0.04]">
-                                        <div className="rounded-lg bg-slate-800/50 p-4 mt-3">
-                                            <h5 className="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider mb-2">Co to znamená?</h5>
+                                        <div className="rounded-lg bg-cyan-500/[0.04] border border-cyan-500/10 p-4 mt-3">
+                                            <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Využíváte moderní technologii</h5>
                                             <p className="text-sm text-slate-300 leading-relaxed">{explanation}</p>
+                                            <p className="text-sm text-slate-300 leading-relaxed mt-2">
+                                                Tento nástroj Vám přináší <strong className="text-cyan-300">konkurenční výhodu</strong>.
+                                                Stačí o jeho využití informovat návštěvníky webu a mít k tomu příslušnou dokumentaci.
+                                                {(f.risk_level === 'high') && ' U vysoce rizikových systémů je navíc nutné proškolit zaměstnance, kteří s ním pracují.'}
+                                            </p>
+                                            <p className="text-xs text-fuchsia-400 mt-3 font-medium">Vše dokážeme zařídit za Vás — nemusíte řešit nic sami.</p>
                                         </div>
                                         {(f.category || f.ai_act_article) && (
                                             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
@@ -1431,8 +1218,25 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {documents.map((doc) => (
+        <div className="space-y-4">
+            {/* 7-day processing notice */}
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
+                <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Doba zpracování</h4>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                            Kompletní dokumenty připravujeme do <strong className="text-cyan-300">7 pracovních dnů</strong> od zaplacení balíčku.
+                            Pro přípravu dokumentů je nutné mít vyplněný dotazník — čím přesněji odpovíte, tím kvalitnější dokumenty obdržíte.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {documents.map((doc) => (
                 <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-white/[0.12] transition-all">
                     <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
                         <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1450,216 +1254,101 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
                     )}
                 </div>
             ))}
+            </div>
         </div>
     );
 }
 
 
-/* ── Standard compliance steps we always deliver ── */
-const STANDARD_STEPS = [
-    { label: "Compliance Report", desc: "Kompletní přehled stavu vašeho webu — hodnocení AI systémů, odkazy na konkrétní články AI Actu" },
-    { label: "Registr AI systémů", desc: "Seznam všech nalezených AI nástrojů na webu s klasifikací rizik" },
-    { label: "Transparenční stránka", desc: "Veřejná podstránka informující návštěvníky, že web používá AI — hotová ke vložení na web" },
-    { label: "Texty oznámení pro AI nástroje", desc: "Texty pro chatboty, cookie lišty a další AI systémy — aby návštěvník věděl, že komunikuje s AI" },
-    { label: "AI politika firmy", desc: "Interní dokument popisující pravidla používání AI ve vaší firmě" },
-    { label: "Školení zaměstnanců", desc: "PowerPoint prezentace na míru pro vaše zaměstnance o povinnostech dle AI Actu" },
-    { label: "Záznamový list o proškolení", desc: "Formulář pro evidenci, že zaměstnanci byli proškoleni — kdyby přišla kontrola" },
-    { label: "Úprava cookie lišty", desc: "Návrh textu cookie lišty zohledňující AI systémy na webu" },
-    { label: "Doporučení pro GDPR a AI", desc: "Propojení povinností AI Actu s existující GDPR dokumentací" },
-];
-
-/* ── Tab: Kroky ke splnění ── */
-function TabPlan({ findings, questionnaireFindings, questionnaireUnknowns, hasQuest, companyId, onStartScan }: {
-    findings: DashboardData["findings"];
-    questionnaireFindings: QuestionnaireFinding[];
+/* ── Tab: Musíte doplnit ── */
+function TabPlan({ questionnaireUnknowns, companyId }: {
     questionnaireUnknowns: QuestionnaireUnknown[];
-    hasQuest: boolean;
     companyId: string;
-    onStartScan: () => void;
 }) {
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-    if (findings.length === 0 && questionnaireFindings.length === 0) {
+
+    if (questionnaireUnknowns.length === 0) {
         return (
             <EmptyState
-                title="Zatím žádné kroky"
-                description="Nejdříve proveďte sken webu — kroky ke splnění se vygenerují z nálezů."
-                onAction={onStartScan}
-                cta="Spustit sken"
+                title="Žádné nezodpovězené otázky"
+                description={"Výborně! Na všechny otázky v dotazníku jste odpověděli. Nemáte žádné položky \u201ENevím\u201C k doplnění."}
                 illustration={
-                    <svg className="w-10 h-10 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    <svg className="w-10 h-10 text-green-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 }
             />
         );
     }
 
-    const grouped = groupFindings(findings);
-
     return (
         <div className="space-y-4">
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4">
                 <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Kroky ke splnění AI Act</h4>
+                        <h4 className="text-sm font-semibold text-amber-300 mb-1">Potřebujeme vaši součinnost</h4>
                         <p className="text-xs text-slate-300 leading-relaxed">
-                            Níže je přehled všeho, co pro vás připravíme v rámci compliance balíčku.
-                            <strong className="text-cyan-300"> Nemusíte řešit nic sami — vše za vás připravíme a vyřídíme my.</strong>{" "}
-                            Stačí si vybrat balíček a o zbytek se postaráme.
+                            U {questionnaireUnknowns.length} {cz(questionnaireUnknowns.length, 'otázky', 'otázek', 'otázek')} jste v dotazníku zvolili &bdquo;Nevím&ldquo;.
+                            Abychom pro vás mohli připravit kompletní dokumentaci, potřebujeme znát přesné odpovědi.
+                            <strong className="text-amber-300"> Rozklikněte jednotlivé položky — dozvíte se, koho se ve firmě zeptat a co přesně zjistit.</strong>
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* ── Kroky vyplývající ze skenu ── */}
-            {grouped.length > 0 && (
-                <>
-                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě skenu vašeho webu</h3>
-                    {grouped.map((f) => (
-                        <div
-                            key={f.name}
-                            className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
-                        >
-                            <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                                <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-200">
-                                    {f.action_required || f.name}
-                                </p>
-                                <p className="text-xs text-slate-400 mt-0.5">{f.name}</p>
-                                <div className="flex items-center gap-3 mt-1.5">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                    </span>
-                                    <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
+            <div className="space-y-2">
+                {questionnaireUnknowns.map((u) => {
+                    const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
+                    const labelColor = u.severity_color === "red" ? "text-red-400"
+                        : u.severity_color === "orange" ? "text-orange-400"
+                            : u.severity_color === "yellow" ? "text-amber-400"
+                                : "text-slate-400";
+                    const isExp = expanded[`plan_unk_${u.question_key}`] || false;
+                    return (
+                        <div key={u.question_key} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                            <button
+                                onClick={() => setExpanded(prev => ({ ...prev, [`plan_unk_${u.question_key}`]: !prev[`plan_unk_${u.question_key}`] }))}
+                                className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors"
+                            >
+                                <span className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-slate-200">{u.question_text}</p>
+                                    <p className={`text-xs mt-0.5 ${labelColor}`}>{u.severity_label}</p>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                </>
-            )}
-
-            {/* ── Kroky vyplývající z dotazníku ── */}
-            {questionnaireFindings.length > 0 && (
-                <>
-                    <h3 className="text-sm font-semibold text-slate-300 mt-6 mb-2">Na základě dotazníku — interní AI systémy</h3>
-                    {questionnaireFindings.map((f) => (
-                        <div
-                            key={f.question_key}
-                            className="flex items-start gap-3 sm:gap-4 rounded-xl border border-fuchsia-500/[0.12] bg-fuchsia-500/[0.02] px-3 sm:px-5 py-3 sm:py-4"
-                        >
-                            <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                                <svg className="w-3 h-3 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 mt-1 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-200">{f.name}</p>
-                                <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{f.action_required}</p>
-                                <div className="flex items-center gap-3 mt-1.5">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                        {OBLIGATION_LABEL[f.risk_level] || OBLIGATION_LABEL.low}
-                                    </span>
-                                    <span className="text-[10px] text-fuchsia-400/70 font-medium">✦ Vyřídíme za vás</span>
+                            </button>
+                            {isExp && (
+                                <div className="px-4 pb-4 pt-2 border-t border-white/[0.04]">
+                                    {u.checklist && u.checklist.length > 0 && (
+                                        <div className="rounded-lg bg-slate-800/50 p-3 mb-3">
+                                            <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Jak to zjistit:</h5>
+                                            <ul className="space-y-1.5">
+                                                {u.checklist.map((item, idx) => (
+                                                    <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
+                                                        <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
+                                                        <span>{item}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-slate-300 mb-3 leading-relaxed">{u.recommendation}</p>
+                                    <a
+                                        href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
+                                        className="btn-primary !text-xs !px-4 !py-2 !rounded-lg"
+                                    >
+                                        Už vím! Chci změnit odpověď v dotazníku
+                                    </a>
                                 </div>
-                            </div>
+                            )}
                         </div>
-                    ))}
-                </>
-            )}
-
-            {/* ── Unknowns — expandable with checklist + "Už vím!" button ── */}
-            {questionnaireUnknowns.length > 0 && (
-                <>
-                    <h3 className="text-sm font-semibold text-slate-200 mt-6 mb-2">Odpovědi &bdquo;Nevím&ldquo; — co potřebujete zjistit</h3>
-                    <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-                        <p className="text-sm text-slate-300 mb-3">
-                            U {questionnaireUnknowns.length} {cz(questionnaireUnknowns.length, 'otázky', 'otázek', 'otázek')} jste zvolili odpověď &bdquo;Nevím&ldquo;. Rozklikněte jednotlivé položky — dozvíte se, co přesně potřebujete zjistit a kde to najdete.
-                        </p>
-                        <div className="space-y-2">
-                            {questionnaireUnknowns.map((u) => {
-                                const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
-                                const labelColor = u.severity_color === "red" ? "text-red-400"
-                                    : u.severity_color === "orange" ? "text-orange-400"
-                                        : u.severity_color === "yellow" ? "text-amber-400"
-                                            : "text-slate-400";
-                                const isExp = expanded[`plan_unk_${u.question_key}`] || false;
-                                return (
-                                    <div key={u.question_key} className="rounded-lg bg-white/[0.02] overflow-hidden">
-                                        <button
-                                            onClick={() => setExpanded(prev => ({ ...prev, [`plan_unk_${u.question_key}`]: !prev[`plan_unk_${u.question_key}`] }))}
-                                            className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
-                                        >
-                                            <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-slate-200">{u.question_text}</p>
-                                                <p className={`text-xs mt-0.5 ${labelColor}`}>{u.severity_label}</p>
-                                            </div>
-                                            <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 mt-1 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-                                        {isExp && (
-                                            <div className="px-3 pb-3 pt-1 border-t border-white/[0.04]">
-                                                {u.checklist && u.checklist.length > 0 && (
-                                                    <div className="rounded-lg bg-slate-800/50 p-3 mb-3">
-                                                        <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Jak to zjistit:</h5>
-                                                        <ul className="space-y-1.5">
-                                                            {u.checklist.map((item, idx) => (
-                                                                <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
-                                                                    <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
-                                                                    <span>{item}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                                <p className="text-xs text-slate-300 mb-3 leading-relaxed">{u.recommendation}</p>
-                                                <a
-                                                    href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
-                                                    className="btn-primary !text-xs !px-4 !py-2 !rounded-lg"
-                                                >
-                                                    Už vím! Chci změnit odpověď v dotazníku
-                                                </a>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {/* ── Dokumenty a výstupy, které pro vás vyrobíme ── */}
-            <h3 className="text-sm font-semibold text-slate-300 mt-8 mb-2">Dokumenty a výstupy, které pro vás připravíme</h3>
-            {STANDARD_STEPS.map((step) => (
-                <div
-                    key={step.label}
-                    className="flex items-start gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4"
-                >
-                    <div className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-200">{step.label}</p>
-                        <p className="text-xs text-slate-300 mt-0.5">{step.desc}</p>
-                        <span className="text-[10px] text-fuchsia-400/70 font-medium mt-1 inline-block">✦ Vyřídíme za vás</span>
-                    </div>
-                </div>
-            ))}
-
-            {/* ══ Cenové balíčky — srovnávací tabulka ══ */}
-            <div className="mt-8">
-                <PricingComparisonTable />
+                    );
+                })}
             </div>
         </div>
     );
@@ -1690,7 +1379,7 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                 <div key={scan.id} className="flex items-center gap-3 sm:gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-5 py-3 sm:py-4 hover:border-white/[0.12] transition-all">
                     <div className="flex flex-col items-center gap-1">
                         <div className={`h-3 w-3 rounded-full ${scan.status === "completed"
-                            ? "bg-cyan-500"
+                            ? (scan.total_findings === 0 ? "bg-green-500" : "bg-cyan-500")
                             : scan.status === "running"
                                 ? "bg-amber-500 animate-pulse"
                                 : "bg-red-500"
@@ -2142,7 +1831,7 @@ function InfoRow({ label, value, isUrl }: { label: string; value: string; isUrl?
 
 /* ── Empty State ── */
 function EmptyState({ title, description, href, cta, onAction, illustration }: {
-    title: string; description: string; href?: string; cta: string; onAction?: () => void; illustration?: React.ReactNode;
+    title: string; description: string; href?: string; cta?: string; onAction?: () => void; illustration?: React.ReactNode;
 }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 text-center">

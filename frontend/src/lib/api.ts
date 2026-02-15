@@ -513,6 +513,7 @@ export interface DashboardCompany {
     name: string;
     url: string;
     created_at: string;
+    workflow_status: string;
 }
 
 export interface DashboardScan {
