@@ -39,9 +39,15 @@ export async function GET(request: Request) {
             },
         );
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error, data: sessionData } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
             // PKCE výměna úspěšná — uživatel je přihlášen
+            // Pokud chybí web_url (Google OAuth bez doplňujících údajů),
+            // přesměrovat na onboarding
+            const meta = sessionData?.session?.user?.user_metadata;
+            if (!meta?.web_url) {
+                return NextResponse.redirect(`${origin}/onboarding`);
+            }
             return NextResponse.redirect(`${origin}${next}`);
         }
 

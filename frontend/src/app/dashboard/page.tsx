@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useAnalytics } from "@/lib/analytics";
 import {
@@ -149,6 +150,7 @@ function groupFindings(findings: DashboardData["findings"]): Array<{ name: strin
 export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
     const { track, setUserEmail } = useAnalytics();
+    const router = useRouter();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -311,6 +313,12 @@ export default function DashboardPage() {
                 </div>
             </section>
         );
+    }
+
+    // Google OAuth uživatel bez doplněných údajů → onboarding
+    if (user && !user.user_metadata?.web_url && !data?.company?.url) {
+        router.replace("/onboarding");
+        return null;
     }
 
     if (error) {

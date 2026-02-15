@@ -517,14 +517,16 @@ function ScanPageInner() {
                                 <div className="flex items-start gap-3">
                                     <IconCheckCircle className="w-7 h-7 text-green-400 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <h2 className="text-lg font-bold text-green-400">
+                                        <h2 className="text-lg font-bold text-white">
                                             ✓ Skvělá zpráva — váš web využívá umělou inteligenci!
                                         </h2>
-                                        <p className="mt-2 text-sm text-green-300/80 leading-relaxed">
+                                        <p className="mt-2 text-sm text-white/90 leading-relaxed">
                                             Používáním AI technologií na svém webu máte významnou konkurenční výhodu.
                                             Chatboty, analytika a doporučovací systémy zlepšují zákaznický zážitek a konverze.
                                             Teď jen potřebujete mít vše legislativně v pořádku, aby vám tato výhoda
-                                            zůstala i po začátku platnosti EU AI Act.
+                                            zůstala i po začátku platnosti EU AI Act. A navíc — weby a e-shopy,
+                                            které budou mít tuto zákonnou povinnost splněnou, budou upřednostňovány
+                                            ve vyhledávačích.
                                         </p>
                                     </div>
                                 </div>
