@@ -39,11 +39,6 @@ ADMIN_EMAILS: set[str] = {
     "info@desperados-design.cz",
 }
 
-# Test emails — mohou být smazány a znovu registrovány přes admin endpoint
-TEST_EMAILS: set[str] = {
-    "info@desperados-design.cz",
-}
-
 
 @dataclass
 class AuthUser:

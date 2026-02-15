@@ -2410,8 +2410,8 @@ export default function AdminPage() {
                                                                                 }
                                                                             }}
                                                                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${clientDetailTab === t.id
-                                                                                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                                                                    : "text-gray-400 border border-white/10 hover:text-white hover:bg-white/5"
+                                                                                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                                                : "text-gray-400 border border-white/10 hover:text-white hover:bg-white/5"
                                                                                 }`}
                                                                         >
                                                                             {t.icon} {t.label}
@@ -2440,8 +2440,8 @@ export default function AdminPage() {
                                                                                                     <div className="flex items-start justify-between gap-2">
                                                                                                         <span className="text-gray-300 font-medium">{r.question_key.replace(/_/g, " ")}</span>
                                                                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${r.answer === "yes" ? "bg-green-500/20 text-green-400" :
-                                                                                                                r.answer === "no" ? "bg-gray-500/20 text-gray-400" :
-                                                                                                                    "bg-cyan-500/20 text-cyan-400"
+                                                                                                            r.answer === "no" ? "bg-gray-500/20 text-gray-400" :
+                                                                                                                "bg-cyan-500/20 text-cyan-400"
                                                                                                             }`}>
                                                                                                             {r.answer}
                                                                                                         </span>
@@ -2486,9 +2486,9 @@ export default function AdminPage() {
                                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                                         <span className="text-white font-medium text-sm">{f.name}</span>
                                                                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${f.risk_level === "high" ? "bg-red-500/20 text-red-400" :
-                                                                                                                f.risk_level === "limited" ? "bg-orange-500/20 text-orange-400" :
-                                                                                                                    f.risk_level === "minimal" ? "bg-green-500/20 text-green-400" :
-                                                                                                                        "bg-gray-500/20 text-gray-400"
+                                                                                                            f.risk_level === "limited" ? "bg-orange-500/20 text-orange-400" :
+                                                                                                                f.risk_level === "minimal" ? "bg-green-500/20 text-green-400" :
+                                                                                                                    "bg-gray-500/20 text-gray-400"
                                                                                                             }`}>
                                                                                                             {f.risk_level}
                                                                                                         </span>
@@ -2501,8 +2501,8 @@ export default function AdminPage() {
                                                                                                     <div className="text-xs text-cyan-400/70">{f.action_required}</div>
                                                                                                 </div>
                                                                                                 <span className={`text-[10px] px-2 py-0.5 rounded border shrink-0 ${f.status === "open" ? "border-yellow-500/30 text-yellow-400" :
-                                                                                                        f.status === "resolved" ? "border-green-500/30 text-green-400" :
-                                                                                                            "border-white/10 text-gray-500"
+                                                                                                    f.status === "resolved" ? "border-green-500/30 text-green-400" :
+                                                                                                        "border-white/10 text-gray-500"
                                                                                                     }`}>
                                                                                                     {f.status}
                                                                                                 </span>

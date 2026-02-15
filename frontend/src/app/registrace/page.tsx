@@ -8,9 +8,6 @@ import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aishield.cz";
 
-/** Testovací emaily — pro tyto se automaticky resetuje účet při registraci */
-const TEST_EMAILS = new Set(["info@desperados-design.cz"]);
-
 /** Normalize URL: accept "www.firma.cz" or "firma.cz" and prepend https:// */
 function normalizeUrl(raw: string): string {
     const trimmed = raw.trim();
@@ -33,7 +30,6 @@ function RegistraceInner() {
     const [oauthLoading, setOauthLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-    const [testResetDone, setTestResetDone] = useState(false);
     const [partner, setPartner] = useState<string | null>(null);
     const [aresLoading, setAresLoading] = useState(false);
     const [aresStatus, setAresStatus] = useState<"idle" | "found" | "not-found">("idle");
@@ -125,38 +121,6 @@ function RegistraceInner() {
 
         // 1. Registrace v Supabase Auth
         const normalizedWeb = normalizeUrl(webUrl);
-
-        // ── TESTOVACÍ REŽIM: automatický reset + auto-potvrzení ──
-        const isTestEmail = TEST_EMAILS.has(email.trim().toLowerCase());
-        if (isTestEmail) {
-            try {
-                const resetRes = await fetch(`${API_URL}/api/admin/test-reset`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: email.trim().toLowerCase(),
-                        password,
-                        web_url: normalizedWeb || "https://www.desperados-design.cz",
-                    }),
-                });
-                if (!resetRes.ok) {
-                    const detail = await resetRes.json().catch(() => ({}));
-                    setError(detail.detail || "Chyba při resetu testovacího účtu");
-                    setLoading(false);
-                    return;
-                }
-                // Účet je vytvořený a auto-potvrzený → přesměrování na login
-                setTestResetDone(true);
-                setLoading(false);
-                return;
-            } catch (err) {
-                setError("Nepodařilo se resetovat testovací účet. Zkuste to znovu.");
-                setLoading(false);
-                return;
-            }
-        }
-
-        // ── NORMÁLNÍ REGISTRACE ──
         const { data, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -208,51 +172,6 @@ function RegistraceInner() {
         setSuccess(true);
         setLoading(false);
         track("registration_completed", { method: "email" });
-    }
-
-    // ── TESTOVACÍ ÚČET: reset proběhl úspěšně ──
-    if (testResetDone) {
-        return (
-            <section className="py-20 relative">
-                <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-[20%] left-[40%] h-[400px] w-[400px] rounded-full bg-cyan-500/8 blur-[120px]" />
-                </div>
-                <div className="mx-auto max-w-md px-4 sm:px-6">
-                    <div className="glass text-center py-12">
-                        <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                            <span className="text-3xl">🧪</span>
-                        </div>
-                        <h2 className="text-xl font-bold mb-2 text-emerald-400">
-                            Testovací účet resetován
-                        </h2>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-2">
-                            Účet <strong className="text-slate-200">{email}</strong> byl kompletně
-                            vyčištěn a znovu vytvořen.
-                        </p>
-                        <p className="text-slate-500 text-xs mb-6">
-                            Email je auto-potvrzený — žádné čekání na potvrzovací odkaz.
-                            Všechna stará data (skeny, dotazník, dokumenty) byla smazána.
-                        </p>
-
-                        <div className="flex items-start gap-3 rounded-xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 mb-4 text-left">
-                            <span className="text-emerald-400 text-lg mt-0.5">✅</span>
-                            <div className="text-xs text-emerald-300/80 leading-relaxed">
-                                <strong className="text-emerald-300">Přihlašovací údaje:</strong>
-                                <br />Email: {email}
-                                <br />Heslo: zůstává stejné jak jste zadali
-                            </div>
-                        </div>
-
-                        <a
-                            href="/login"
-                            className="btn-primary mt-4 inline-flex items-center gap-2"
-                        >
-                            Přihlásit se →
-                        </a>
-                    </div>
-                </div>
-            </section>
-        );
     }
 
     if (success) {
@@ -430,15 +349,6 @@ function RegistraceInner() {
                                     focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
                                     transition-all"
                             />
-                            {TEST_EMAILS.has(email.trim().toLowerCase()) && (
-                                <p className="mt-1.5 text-xs text-emerald-400 flex items-center gap-1.5">
-                                    <span>🧪</span>
-                                    <span>
-                                        <strong>Testovací režim</strong> — účet bude automaticky resetován
-                                        a potvrzený bez emailu
-                                    </span>
-                                </p>
-                            )}
                         </div>
 
                         <div>

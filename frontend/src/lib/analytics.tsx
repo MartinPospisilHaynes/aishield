@@ -57,9 +57,9 @@ const MAX_BATCH_SIZE = 25;
 // ── Context ──
 
 const AnalyticsContext = createContext<AnalyticsContextType>({
-  track: () => {},
-  trackPageView: () => {},
-  setUserEmail: () => {},
+  track: () => { },
+  trackPageView: () => { },
+  setUserEmail: () => { },
   getSessionId: () => "",
 });
 

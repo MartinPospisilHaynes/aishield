@@ -511,7 +511,27 @@ function ScanPageInner() {
                             </div>
                         )}
 
-                        {/* ── ČERVENÝ VAROVNÝ BANNER (nahoře) ── */}
+                        {/* ── ZELENÝ POZITIVNÍ BANNER ── */}
+                        {hasFindings && (
+                            <div className="rounded-2xl bg-green-500/10 border-2 border-green-500/40 p-5">
+                                <div className="flex items-start gap-3">
+                                    <IconCheckCircle className="w-7 h-7 text-green-400 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <h2 className="text-lg font-bold text-green-400">
+                                            ✓ Skvělá zpráva — váš web využívá umělou inteligenci!
+                                        </h2>
+                                        <p className="mt-2 text-sm text-green-300/80 leading-relaxed">
+                                            Používáním AI technologií na svém webu máte významnou konkurenční výhodu.
+                                            Chatboty, analytika a doporučovací systémy zlepšují zákaznický zážitek a konverze.
+                                            Teď jen potřebujete mít vše legislativně v pořádku, aby vám tato výhoda
+                                            zůstala i po začátku platnosti EU AI Act.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ── ČERVENÝ VAROVNÝ BANNER ── */}
                         {hasFindings && (
                             <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-5">
                                 <div className="flex items-start gap-3">
