@@ -389,11 +389,20 @@ export async function createCheckout(
     plan: string,
     email: string,
     gateway: PaymentGateway = "gopay",
+    billing?: {
+        company?: string;
+        ico?: string;
+        dic?: string;
+        street?: string;
+        city?: string;
+        zip?: string;
+        phone?: string;
+    },
 ): Promise<CheckoutResponse> {
     const res = await authFetch(`${API_URL}/api/payments/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, email, gateway }),
+        body: JSON.stringify({ plan, email, gateway, billing }),
     });
 
     if (!res.ok) {

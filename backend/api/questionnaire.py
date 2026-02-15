@@ -18,10 +18,11 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 from backend.database import get_supabase
+from backend.api.auth import AuthUser, get_optional_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -669,6 +670,72 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
         "status": "saved",
         "saved_count": saved_count,
         "analysis": analysis,
+    }
+
+
+@router.get("/questionnaire/my-status")
+async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user)):
+    """
+    Zjistí stav dotazníku přihlášeného uživatele.
+    Vrátí is_complete, has_unknowns, total_answers.
+    """
+    if not user:
+        return {"is_complete": False, "has_unknowns": False, "total_answers": 0}
+
+    supabase = get_supabase()
+
+    # Najít company_id přes scan_results (nejčastější cesta)
+    company_id = None
+    try:
+        scans = supabase.table("scan_results") \
+            .select("company_id") \
+            .eq("user_email", user.email) \
+            .limit(1) \
+            .execute()
+        if scans.data:
+            company_id = scans.data[0]["company_id"]
+    except Exception:
+        pass
+
+    if not company_id:
+        # Zkusit najít přes clients tabulku
+        try:
+            clients = supabase.table("clients") \
+                .select("id") \
+                .eq("email", user.email) \
+                .limit(1) \
+                .execute()
+            if clients.data:
+                company_id = clients.data[0]["id"]
+        except Exception:
+            pass
+
+    if not company_id:
+        return {"is_complete": False, "has_unknowns": False, "total_answers": 0}
+
+    # Najít odpovědi
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        return {"is_complete": False, "has_unknowns": False, "total_answers": 0}
+
+    result = supabase.table("questionnaire_responses") \
+        .select("question_key, answer") \
+        .eq("client_id", client_id) \
+        .execute()
+
+    if not result.data:
+        return {"is_complete": False, "has_unknowns": False, "total_answers": 0}
+
+    total = len(result.data)
+    unknowns = sum(1 for r in result.data if r.get("answer") == "nevim")
+    # 27 questions total in the questionnaire
+    is_complete = total >= 27 and unknowns == 0
+
+    return {
+        "is_complete": is_complete,
+        "has_unknowns": unknowns > 0,
+        "total_answers": total,
+        "unknown_count": unknowns,
     }
 
 

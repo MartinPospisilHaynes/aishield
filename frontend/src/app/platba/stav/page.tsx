@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { createClient } from "@/lib/supabase-browser";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -31,9 +32,37 @@ function PaymentStatusContent() {
     const [status, setStatus] = useState<PaymentStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [questionnaireComplete, setQuestionnaireComplete] = useState<boolean | null>(null);
 
     const gatewayName = GATEWAY_NAMES[gateway] || gateway;
     const isBankTransfer = gateway === "bank_transfer";
+
+    // Check questionnaire completeness
+    useEffect(() => {
+        async function checkQuestionnaire() {
+            try {
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+                if (!token) {
+                    setQuestionnaireComplete(false);
+                    return;
+                }
+                const res = await fetch(`${API_URL}/api/questionnaire/my-status`, {
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setQuestionnaireComplete(data.is_complete === true);
+                } else {
+                    setQuestionnaireComplete(false);
+                }
+            } catch {
+                setQuestionnaireComplete(false);
+            }
+        }
+        checkQuestionnaire();
+    }, []);
 
     useEffect(() => {
         // Bank transfer — no online gateway to check
@@ -96,7 +125,8 @@ function PaymentStatusContent() {
                             Na váš email jsme odeslali fakturu s platebními údaji pro bankovní převod.
                         </p>
 
-                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 mb-8 text-left max-w-sm mx-auto">
+                        {/* Steps */}
+                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 mb-4 text-left max-w-sm mx-auto">
                             <h4 className="text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-3">Co bude následovat</h4>
                             <ul className="space-y-2 text-sm text-slate-300">
                                 <li className="flex items-start gap-2">
@@ -109,19 +139,54 @@ function PaymentStatusContent() {
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-cyan-400 font-bold mt-0.5">3.</span>
-                                    Vyplňte dotazník pro přípravu dokumentů
+                                    Vyplňte dotazník pro přípravu dokumentů (pokud jste tak již neučinili)
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-cyan-400 font-bold mt-0.5">4.</span>
+                                    Veškeré potřebné materiály dodáme <strong className="text-white">do 7 pracovních dní</strong>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
+                        {/* Email delay notice */}
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 mb-6 text-left max-w-sm mx-auto">
+                            <p className="text-xs text-amber-300/80 leading-relaxed">
+                                <strong>Poznámka:</strong> V případě velkého vytížení může e-mail s fakturou dorazit až do 15 minut.
+                                Zkontrolujte prosím i složku <strong>spam</strong> nebo <strong>hromadné</strong>.
+                                Pokud email ani tak nedorazí, kontaktujte nás prosím přes formulář níže.
+                            </p>
+                        </div>
+
+                        {/* Contact info */}
+                        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 max-w-sm mx-auto">
+                            <p className="text-xs font-semibold text-slate-300 mb-2">V případě jakýchkoliv otázek nás neváhejte kontaktovat:</p>
+                            <div className="space-y-1.5">
+                                <a href="tel:+420734575007" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+                                    +420 734 575 007
+                                </a>
+                                <a href="mailto:info@aishield.cz" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    info@aishield.cz
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
 
                         <div className="space-y-3">
-                            <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
-                                Vyplnit dotazník
-                            </a>
+                            {/* Conditional questionnaire button */}
+                            {questionnaireComplete === false && (
+                                <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                    Vyplnit dotazník
+                                </a>
+                            )}
                             <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
                                 Přejít na Dashboard
+                            </a>
+                            {/* Contact form fallback */}
+                            <a href="/#kontakt" className="text-xs text-slate-500 hover:text-slate-300 transition-colors block text-center mt-2">
+                                Email nedorazil? Kontaktujte nás přes formulář →
                             </a>
                         </div>
                     </div>

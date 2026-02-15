@@ -263,8 +263,8 @@ function CheckoutInner() {
                                     type="button"
                                     onClick={() => setGateway("stripe")}
                                     className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${gateway === "stripe"
-                                            ? "bg-fuchsia-500/10 border-fuchsia-500/40"
-                                            : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]"
+                                        ? "bg-fuchsia-500/10 border-fuchsia-500/40"
+                                        : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]"
                                         }`}
                                 >
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${gateway === "stripe" ? "border-fuchsia-500" : "border-slate-500"
@@ -282,8 +282,8 @@ function CheckoutInner() {
                                     type="button"
                                     onClick={() => setGateway("bank_transfer")}
                                     className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${gateway === "bank_transfer"
-                                            ? "bg-fuchsia-500/10 border-fuchsia-500/40"
-                                            : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]"
+                                        ? "bg-fuchsia-500/10 border-fuchsia-500/40"
+                                        : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]"
                                         }`}
                                 >
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${gateway === "bank_transfer" ? "border-fuchsia-500" : "border-slate-500"

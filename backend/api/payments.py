@@ -72,11 +72,24 @@ SUBSCRIPTION_PLANS = {
 }
 
 
+class BillingInfo(BaseModel):
+    """Fakturační údaje zákazníka."""
+    company: str = ""
+    ico: str = ""
+    dic: str = ""
+    street: str = ""
+    city: str = ""
+    zip: str = ""
+    phone: str = ""
+    email: str = ""
+
+
 class CheckoutRequest(BaseModel):
     """Request pro vytvoření platby."""
     plan: str  # "basic" nebo "pro"
     email: str
     gateway: Literal["gopay", "stripe", "comgate", "bank_transfer"] = "stripe"
+    billing: BillingInfo | None = None
 
 
 class CheckoutResponse(BaseModel):
@@ -272,7 +285,7 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
         due_date = (datetime.utcnow() + timedelta(days=7)).strftime("%d. %m. %Y")
 
         supabase = get_supabase()
-        supabase.table("orders").insert({
+        order_data = {
             "order_number": order_number,
             "gopay_payment_id": f"BT-{variable_symbol}",
             "plan": req.plan,
@@ -283,7 +296,10 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
             "order_type": "one_time",
             "payment_gateway": "bank_transfer",
             "created_at": datetime.utcnow().isoformat(),
-        }).execute()
+        }
+        if req.billing:
+            order_data["billing_data"] = req.billing.model_dump()
+        supabase.table("orders").insert(order_data).execute()
 
         # Odeslat email s platebními údaji
         try:

@@ -560,16 +560,14 @@ export default function DashboardPage() {
                                     {qCardOpen && (
                                         <div className="mt-2 space-y-1.5">
                                             {qFindings.map((f) => (
-                                                <div key={f.question_key} className={`rounded-md px-3 py-2 border ${
-                                                    f.risk_level === 'high'
+                                                <div key={f.question_key} className={`rounded-md px-3 py-2 border ${f.risk_level === 'high'
                                                         ? 'bg-red-500/[0.05] border-red-500/[0.15]'
                                                         : f.risk_level === 'limited'
                                                             ? 'bg-amber-500/[0.05] border-amber-500/[0.15]'
                                                             : 'bg-cyan-500/[0.03] border-cyan-500/[0.1]'
-                                                }`}>
-                                                    <p className={`text-[10px] font-semibold uppercase tracking-wider ${
-                                                        f.risk_level === 'high' ? 'text-red-400' : f.risk_level === 'limited' ? 'text-amber-400' : 'text-cyan-400'
                                                     }`}>
+                                                    <p className={`text-[10px] font-semibold uppercase tracking-wider ${f.risk_level === 'high' ? 'text-red-400' : f.risk_level === 'limited' ? 'text-amber-400' : 'text-cyan-400'
+                                                        }`}>
                                                         {f.risk_level === 'high' ? '⚠ Vysoké riziko' : f.risk_level === 'limited' ? '⚡ Omezené riziko' : '✓ Minimální riziko'}
                                                     </p>
                                                     <p className="text-xs font-medium text-white mt-1">{f.human_summary || f.name}</p>
