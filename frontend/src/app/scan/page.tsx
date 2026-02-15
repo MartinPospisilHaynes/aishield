@@ -698,7 +698,10 @@ function ScanPageInner() {
                                         <IconExclamation className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                                         <p className="text-xs text-red-300/80 leading-relaxed">
                                             <strong className="text-red-400">Pozor:</strong> I jeden AI systém na vašem webu znamená povinnosti dle EU AI Act.
-                                            Nesplnění hrozí pokutou až 35 mil. € nebo 7 % obratu.
+                                            Pokuty jsou odstupňované dle závažnosti:{" "}
+                                            <strong className="text-white">7,5 mil. € </strong> za nesplnění administrativních povinností,{" "}
+                                            <strong className="text-white">15 mil. € </strong> za porušení transparentnosti (čl. 50),{" "}
+                                            <strong className="text-white">až 35 mil. € </strong> za zakázané praktiky.
                                             <strong className="text-white"> Povinnost platí od 2. srpna 2026.</strong>
                                         </p>
                                     </div>
@@ -716,12 +719,12 @@ function ScanPageInner() {
                                             <strong className="text-white">EU AI Act rozlišuje 3 úrovně povinností — všechny vyžadují akci:</strong>
                                         </p>
                                         <ul className="space-y-1 ml-1">
-                                            <li><span className="text-red-400 font-medium">Vysoce rizikový (čl. 6):</span> Systémy ovlivňující rozhodnutí o lidech (scoring, biometrie, nábor) vyžadují registraci, audit, technickou dokumentaci a lidský dohled.</li>
+                                            <li><span className="text-red-400 font-medium">Vysoce rizikový (čl. 6):</span> Systémy ovlivňující rozhodnutí o lidech (scoring, biometrie, nábor) vyžadují registraci v EU databázi, interní evidenci, audit, technickou dokumentaci a lidský dohled.</li>
                                             <li><span className="text-cyan-400 font-medium">Omezené riziko (čl. 50):</span> Chatboty musí informovat uživatele, že komunikují s AI. Generátory obsahu musí označovat výstupy jako uměle vytvořené.</li>
                                             <li><span className="text-slate-300 font-medium">Minimální riziko:</span> Na většinu AI systémů se vztahují pouze dobrovolné kodexy chování (čl. 95), ale i tak doporučujeme transparentnost.</li>
                                         </ul>
                                         <p className="text-slate-300 font-medium">
-                                            ⚠ Byť i jeden AI systém na vašem webu znamená povinnosti. Nesplnění hrozí pokutou až 35 mil. € nebo 7 % obratu.
+                                            ⚠ Byť i jeden AI systém na vašem webu znamená povinnosti. Pokuty: 7,5 mil. € za administrativní chyby, 15 mil. € za chybějící transparentnost, až 35 mil. € za zakázané AI praktiky — nebo 1–7 % celosvětového obratu.
                                         </p>
                                     </div>
                                 </div>

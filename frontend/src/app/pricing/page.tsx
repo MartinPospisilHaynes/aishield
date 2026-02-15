@@ -665,6 +665,6 @@ export default function PricingPage() {
                 </div>
             </div>
 
-</section>
+        </section>
     );
 }
