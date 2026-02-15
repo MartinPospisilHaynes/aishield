@@ -45,8 +45,13 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# ── Hardcoded admin password (match supabase_db_password) ──
-_ADMIN_PASSWORD = "Rc_732716141"
+# ── Admin password from environment ──
+def _get_admin_password() -> str:
+    from backend.config import get_settings
+    pw = get_settings().admin_password
+    if not pw:
+        raise RuntimeError("ADMIN_PASSWORD not configured in .env")
+    return pw
 
 # ── Brute-force protection ──
 _MAX_LOGIN_ATTEMPTS = 5          # max pokusy v okně
@@ -100,7 +105,7 @@ async def admin_crm_login(request: Request):
     username = (body.get("username") or "").strip()
     password = (body.get("password") or "").strip()
 
-    if username != "ADMIN" or password != _ADMIN_PASSWORD:
+    if username != "ADMIN" or password != _get_admin_password():
         # Record failed attempt
         if key in _login_attempts:
             attempts, first_attempt = _login_attempts[key]
@@ -1596,3 +1601,113 @@ async def crm_business_overview(
 def fmtAmount(amount: int | float) -> str:
     """Format amount for display."""
     return f"{int(amount):,} Kč".replace(",", " ")
+
+
+# ─────────────────────────────────────────────
+# CLIENT DETAIL: Questionnaire Responses + Findings
+# ─────────────────────────────────────────────
+
+@router.get("/crm/client/{email}/questionnaire")
+async def crm_client_questionnaire(
+    email: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """Get questionnaire responses for a client by email."""
+    sb = _get_sb()
+    # Find client by email
+    client = sb.table("clients").select("id,company_id").eq("email", email).execute()
+    if not client.data:
+        # Try finding company by email
+        company = sb.table("companies").select("id").eq("email", email).execute()
+        if not company.data:
+            return {"responses": [], "summary": {}}
+        company_id = company.data[0]["id"]
+        # Find client linked to this company
+        client = sb.table("clients").select("id,company_id").eq("company_id", company_id).execute()
+        if not client.data:
+            return {"responses": [], "summary": {}}
+
+    client_id = client.data[0]["id"]
+
+    responses = (
+        sb.table("questionnaire_responses")
+        .select("*")
+        .eq("client_id", client_id)
+        .order("submitted_at", desc=False)
+        .execute()
+    )
+
+    # Group by section
+    sections: dict[str, list] = {}
+    for r in responses.data:
+        section = r.get("section", "unknown")
+        if section not in sections:
+            sections[section] = []
+        sections[section].append({
+            "question_key": r.get("question_key"),
+            "answer": r.get("answer"),
+            "details": r.get("details"),
+            "tool_name": r.get("tool_name"),
+            "submitted_at": r.get("submitted_at"),
+        })
+
+    return {
+        "client_id": client_id,
+        "total_responses": len(responses.data),
+        "sections": sections,
+        "responses": responses.data,
+    }
+
+
+@router.get("/crm/client/{email}/findings")
+async def crm_client_findings(
+    email: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """Get scan findings for a client by email."""
+    sb = _get_sb()
+
+    # Find company by email
+    company = sb.table("companies").select("id,name").eq("email", email).execute()
+    if not company.data:
+        # Try via client -> company
+        client = sb.table("clients").select("company_id").eq("email", email).execute()
+        if not client.data or not client.data[0].get("company_id"):
+            return {"findings": [], "total": 0}
+        company_id = client.data[0]["company_id"]
+        company = sb.table("companies").select("id,name").eq("id", company_id).execute()
+        if not company.data:
+            return {"findings": [], "total": 0}
+
+    company_id = company.data[0]["id"]
+    company_name = company.data[0].get("name", "")
+
+    findings = (
+        sb.table("findings")
+        .select("*")
+        .eq("company_id", company_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    return {
+        "company_id": company_id,
+        "company_name": company_name,
+        "total": len(findings.data),
+        "findings": [
+            {
+                "id": f.get("id"),
+                "name": f.get("name"),
+                "category": f.get("category"),
+                "risk_level": f.get("risk_level"),
+                "ai_act_article": f.get("ai_act_article"),
+                "action_required": f.get("action_required"),
+                "ai_classification_text": f.get("ai_classification_text"),
+                "evidence_html": f.get("evidence_html"),
+                "status": f.get("status"),
+                "source": f.get("source"),
+                "created_at": f.get("created_at"),
+            }
+            for f in findings.data
+        ],
+    }

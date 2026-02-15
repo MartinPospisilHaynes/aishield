@@ -27,6 +27,8 @@ import {
     getAdminOrders,
     getAdminOrderStats,
     confirmBankPayment,
+    getClientQuestionnaire,
+    getClientFindings,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -43,6 +45,9 @@ import type {
     DetailedOrder,
     AdminOrder,
     AdminOrderStats,
+    ClientQuestionnaireData,
+    ClientFindingsData,
+    FindingDetail,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -341,6 +346,10 @@ export default function AdminPage() {
     const [rescanning, setRescanning] = useState<string | null>(null);
     const [rescanResult, setRescanResult] = useState<RescanResult | null>(null);
     const [expandedClient, setExpandedClient] = useState<string | null>(null);
+    const [clientDetailTab, setClientDetailTab] = useState<"overview" | "questionnaire" | "findings">("overview");
+    const [clientQuestionnaire, setClientQuestionnaire] = useState<ClientQuestionnaireData | null>(null);
+    const [clientFindings, setClientFindings] = useState<ClientFindingsData | null>(null);
+    const [loadingDetail, setLoadingDetail] = useState(false);
 
     // Tools
     const [toolResult, setToolResult] = useState<string | null>(null);
@@ -354,6 +363,7 @@ export default function AdminPage() {
 
     // Loading
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     // ── Auth check ──
     useEffect(() => {
@@ -379,8 +389,9 @@ export default function AdminPage() {
             if (admin) setAdminStats(admin);
             if (h) setHealth(h);
             if (biz) setBizOverview(biz);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Dashboard load error:", e);
+            setLoadError(`Dashboard: ${e}`);
         }
     }, []);
 
@@ -388,8 +399,9 @@ export default function AdminPage() {
         try {
             const d = await getAdminCompanies("all", 500);
             setCompanies(d.companies || []);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Companies load error:", e);
+            setLoadError(`Firmy: ${e}`);
         }
     }, []);
 
@@ -397,8 +409,9 @@ export default function AdminPage() {
         try {
             const d = await getCrmPipeline();
             setPipeline(d);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Pipeline load error:", e);
+            setLoadError(`Pipeline: ${e}`);
         }
     }, []);
 
@@ -407,8 +420,9 @@ export default function AdminPage() {
             const [el, h] = await Promise.all([getAdminEmailLog(200), getEmailHealth()]);
             setEmails(el.emails || []);
             setHealth(h);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Emails load error:", e);
+            setLoadError(`Emaily: ${e}`);
         }
     }, []);
 
@@ -417,8 +431,9 @@ export default function AdminPage() {
             const [a, d] = await Promise.all([getAdminAlerts(50), getAdminDiffs(50)]);
             setAlerts(a.alerts || []);
             setDiffs(d.diffs || []);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Monitoring load error:", e);
+            setLoadError(`Monitoring: ${e}`);
         }
     }, []);
 
@@ -426,8 +441,9 @@ export default function AdminPage() {
         try {
             const d = await getAgencyClients();
             setAgencyClients(d.clients || []);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Agency load error:", e);
+            setLoadError(`Agentura: ${e}`);
         }
     }, []);
 
@@ -435,8 +451,9 @@ export default function AdminPage() {
         try {
             const d = await getClientManagement();
             setClientData(d);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Client management load error:", e);
+            setLoadError(`Klienti: ${e}`);
         }
     }, []);
 
@@ -448,8 +465,9 @@ export default function AdminPage() {
             ]);
             setAdminOrders(orders);
             setOrderStats(stats);
-        } catch {
-            // silent
+        } catch (e) {
+            console.error("Orders load error:", e);
+            setLoadError(`Objednávky: ${e}`);
         }
     }, []);
 
@@ -704,6 +722,19 @@ export default function AdminPage() {
                 </div>
 
                 <div className="px-8 py-6 space-y-6">
+                    {/* Error banner */}
+                    {loadError && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-red-400 text-lg">⚠️</span>
+                                <div>
+                                    <div className="text-red-400 font-medium text-sm">Chyba při načítání dat</div>
+                                    <div className="text-red-300/70 text-xs mt-0.5">{loadError}</div>
+                                </div>
+                            </div>
+                            <button onClick={() => setLoadError(null)} className="text-red-400/60 hover:text-red-400 text-sm">✕</button>
+                        </div>
+                    )}
                     {/* ══════════════════════════════════════════ */}
                     {/*  TAB: Přehled (Dashboard)                 */}
                     {/* ══════════════════════════════════════════ */}
@@ -2149,7 +2180,17 @@ export default function AdminPage() {
                                                         {/* Main row */}
                                                         <div
                                                             className="p-4 flex items-center gap-4 cursor-pointer"
-                                                            onClick={() => setExpandedClient(isExpanded ? null : client.email)}
+                                                            onClick={() => {
+                                                                if (isExpanded) {
+                                                                    setExpandedClient(null);
+                                                                    setClientDetailTab("overview");
+                                                                    setClientQuestionnaire(null);
+                                                                    setClientFindings(null);
+                                                                } else {
+                                                                    setExpandedClient(client.email);
+                                                                    setClientDetailTab("overview");
+                                                                }
+                                                            }}
                                                         >
                                                             {/* Expand arrow */}
                                                             <span className={`text-gray-500 text-xs transition-transform ${isExpanded ? "rotate-90" : ""}`}>▶</span>
@@ -2173,6 +2214,9 @@ export default function AdminPage() {
                                                                     )}
                                                                 </div>
                                                                 <div className="text-xs text-gray-500">{client.email}</div>
+                                                                {client.company_url && (
+                                                                    <div className="text-[10px] text-cyan-400/60 truncate max-w-[200px]">{client.company_url.replace(/^https?:\/\//, "")}</div>
+                                                                )}
                                                             </div>
 
                                                             {/* Revenue */}
@@ -2272,6 +2316,147 @@ export default function AdminPage() {
                                                         {/* Expanded detail */}
                                                         {isExpanded && (
                                                             <div className="px-4 pb-4 pl-10 space-y-4">
+                                                                {/* Detail tabs */}
+                                                                <div className="flex gap-2 border-b border-white/10 pb-2">
+                                                                    {([
+                                                                        { id: "overview" as const, label: "Přehled", icon: "📋" },
+                                                                        { id: "questionnaire" as const, label: "Dotazník", icon: "📝" },
+                                                                        { id: "findings" as const, label: "AI Nálezy", icon: "🔍" },
+                                                                    ]).map(t => (
+                                                                        <button
+                                                                            key={t.id}
+                                                                            onClick={async (e) => {
+                                                                                e.stopPropagation();
+                                                                                setClientDetailTab(t.id);
+                                                                                if (t.id === "questionnaire" && !clientQuestionnaire) {
+                                                                                    setLoadingDetail(true);
+                                                                                    try {
+                                                                                        const data = await getClientQuestionnaire(client.email);
+                                                                                        setClientQuestionnaire(data);
+                                                                                    } catch (err) { console.error(err); }
+                                                                                    finally { setLoadingDetail(false); }
+                                                                                }
+                                                                                if (t.id === "findings" && !clientFindings) {
+                                                                                    setLoadingDetail(true);
+                                                                                    try {
+                                                                                        const data = await getClientFindings(client.email);
+                                                                                        setClientFindings(data);
+                                                                                    } catch (err) { console.error(err); }
+                                                                                    finally { setLoadingDetail(false); }
+                                                                                }
+                                                                            }}
+                                                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                                                clientDetailTab === t.id
+                                                                                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                                                    : "text-gray-400 border border-white/10 hover:text-white hover:bg-white/5"
+                                                                            }`}
+                                                                        >
+                                                                            {t.icon} {t.label}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+
+                                                                {/* Tab: Questionnaire */}
+                                                                {clientDetailTab === "questionnaire" && (
+                                                                    <div className="space-y-3">
+                                                                        {loadingDetail ? (
+                                                                            <div className="text-cyan-400 text-sm animate-pulse">Načítám dotazník...</div>
+                                                                        ) : !clientQuestionnaire || clientQuestionnaire.total_responses === 0 ? (
+                                                                            <div className="text-gray-500 text-sm">Dotazník nebyl vyplněn.</div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <div className="text-xs text-gray-400 mb-2">Celkem odpovědí: {clientQuestionnaire.total_responses}</div>
+                                                                                {Object.entries(clientQuestionnaire.sections).map(([section, responses]) => (
+                                                                                    <Panel key={section} className="p-4">
+                                                                                        <h4 className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider mb-3">
+                                                                                            {section.replace(/_/g, " ")}
+                                                                                        </h4>
+                                                                                        <div className="space-y-2">
+                                                                                            {responses.map((r, i) => (
+                                                                                                <div key={i} className="flex flex-col gap-1 bg-black/20 rounded-lg p-3 text-xs">
+                                                                                                    <div className="flex items-start justify-between gap-2">
+                                                                                                        <span className="text-gray-300 font-medium">{r.question_key.replace(/_/g, " ")}</span>
+                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                                                                                                            r.answer === "yes" ? "bg-green-500/20 text-green-400" :
+                                                                                                            r.answer === "no" ? "bg-gray-500/20 text-gray-400" :
+                                                                                                            "bg-cyan-500/20 text-cyan-400"
+                                                                                                        }`}>
+                                                                                                            {r.answer}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    {r.tool_name && (
+                                                                                                        <div className="text-cyan-400/70">Nástroj: {r.tool_name}</div>
+                                                                                                    )}
+                                                                                                    {r.details && Object.keys(r.details).length > 0 && (
+                                                                                                        <div className="text-gray-500 mt-1 space-y-0.5">
+                                                                                                            {Object.entries(r.details).map(([k, v]) => (
+                                                                                                                <div key={k}><span className="text-gray-400">{k.replace(/_/g, " ")}:</span> {String(v)}</div>
+                                                                                                            ))}
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </Panel>
+                                                                                ))}
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Tab: Findings */}
+                                                                {clientDetailTab === "findings" && (
+                                                                    <div className="space-y-3">
+                                                                        {loadingDetail ? (
+                                                                            <div className="text-cyan-400 text-sm animate-pulse">Načítám nálezy...</div>
+                                                                        ) : !clientFindings || clientFindings.total === 0 ? (
+                                                                            <div className="text-gray-500 text-sm">Žádné nálezy ze skenování.</div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <div className="text-xs text-gray-400 mb-2">
+                                                                                    Celkem nálezů: {clientFindings.total} | Firma: {clientFindings.company_name}
+                                                                                </div>
+                                                                                <div className="space-y-2">
+                                                                                    {clientFindings.findings.map((f: FindingDetail) => (
+                                                                                        <Panel key={f.id} className="p-4">
+                                                                                            <div className="flex items-start justify-between gap-3">
+                                                                                                <div className="flex-1">
+                                                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                                                        <span className="text-white font-medium text-sm">{f.name}</span>
+                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                                                                                            f.risk_level === "high" ? "bg-red-500/20 text-red-400" :
+                                                                                                            f.risk_level === "limited" ? "bg-orange-500/20 text-orange-400" :
+                                                                                                            f.risk_level === "minimal" ? "bg-green-500/20 text-green-400" :
+                                                                                                            "bg-gray-500/20 text-gray-400"
+                                                                                                        }`}>
+                                                                                                            {f.risk_level}
+                                                                                                        </span>
+                                                                                                        <span className="text-[10px] text-gray-500">{f.category}</span>
+                                                                                                    </div>
+                                                                                                    <div className="text-xs text-gray-400 mb-1">{f.ai_classification_text}</div>
+                                                                                                    {f.ai_act_article && (
+                                                                                                        <div className="text-xs text-fuchsia-400/70 mb-1">AI Act: {f.ai_act_article}</div>
+                                                                                                    )}
+                                                                                                    <div className="text-xs text-cyan-400/70">{f.action_required}</div>
+                                                                                                </div>
+                                                                                                <span className={`text-[10px] px-2 py-0.5 rounded border shrink-0 ${
+                                                                                                    f.status === "open" ? "border-yellow-500/30 text-yellow-400" :
+                                                                                                    f.status === "resolved" ? "border-green-500/30 text-green-400" :
+                                                                                                    "border-white/10 text-gray-500"
+                                                                                                }`}>
+                                                                                                    {f.status}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </Panel>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Tab: Overview (existing content) */}
+                                                                {clientDetailTab === "overview" && (
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                                     {/* Orders history */}
                                                                     <Panel className="p-4">
@@ -2408,6 +2593,7 @@ export default function AdminPage() {
                                                                         </div>
                                                                     </Panel>
                                                                 </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>

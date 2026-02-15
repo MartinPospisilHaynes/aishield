@@ -295,7 +295,10 @@ async def require_admin(
     if admin_token:
         # Ověř token: admin_ + SHA256(password)[:32]
         from backend.config import get_settings
-        _admin_pw = "Rc_732716141"
+        _admin_pw = get_settings().admin_password
+        if not _admin_pw:
+            logger.error("[Auth] ADMIN_PASSWORD not set in .env")
+            raise HTTPException(status_code=500, detail="Server configuration error")
         expected_token = "admin_" + hashlib.sha256(_admin_pw.encode()).hexdigest()[:32]
         if admin_token == expected_token:
             logger.info("[Auth] Admin authenticated via CRM token")

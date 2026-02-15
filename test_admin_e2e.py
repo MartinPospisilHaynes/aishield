@@ -49,9 +49,9 @@ SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
-# CRM login hardcoded credentials (same as backend)
+# CRM login credentials (from environment)
 CRM_USERNAME = "ADMIN"
-CRM_PASSWORD = "Rc_732716141"
+CRM_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 if not SUPABASE_ANON_KEY or not ADMIN_EMAIL or not ADMIN_PASSWORD:
     print("\033[91m╔══════════════════════════════════════════════════════════════╗")

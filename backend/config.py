@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     email_from: str = "info@aishield.cz"
     resend_webhook_secret: str = ""
 
+    # ── Admin ──
+    admin_password: str = ""  # Admin heslo pro CRM login (nastavte v .env jako ADMIN_PASSWORD)
+
     # ── FIO Banka API (pro automatické párování plateb) ──
     fio_api_token: str = ""  # Token z internetového bankovnictví FIO → Nastavení → API
 

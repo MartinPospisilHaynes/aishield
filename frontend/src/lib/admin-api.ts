@@ -270,9 +270,185 @@ export async function getCompanyTimeline(companyId: string): Promise<{ activitie
     return res.json();
 }
 
-// Re-export existing admin functions that we still need
-export { getAdminStats, runAdminTask, getAdminEmailLog, getAdminCompanies, getEmailHealth, getAdminAlerts, getAdminDiffs, sendLegislativeAlert, getAgencyClients, startAgencyBatchScan, generateAgencyEmail } from "@/lib/api";
-export type { AdminStats, EmailHealth, AgencyClient } from "@/lib/api";
+// ── Admin functions (using adminFetch for CRM token auth) ──
+
+export interface AdminStats {
+    companies_total: number;
+    companies_scanned: number;
+    emails_today: number;
+    emails_total: number;
+    orders_paid: number;
+    conversion_pct: number;
+    recent_logs: Array<{
+        id: string;
+        task_name: string;
+        status: string;
+        result: Record<string, unknown> | null;
+        error: string | null;
+        started_at: string;
+    }>;
+}
+
+export async function getAdminStats(): Promise<AdminStats> {
+    const res = await adminFetch(`${API_URL}/api/admin/stats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function runAdminTask(taskName: string): Promise<Record<string, unknown>> {
+    const res = await adminFetch(`${API_URL}/api/admin/run/${taskName}`, { method: "POST" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminEmailLog(limit = 50) {
+    const res = await adminFetch(`${API_URL}/api/admin/email-log?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminCompanies(status = "all", limit = 50) {
+    const res = await adminFetch(`${API_URL}/api/admin/companies?status=${status}&limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export interface EmailHealth {
+    mode: string;
+    adjustment_reason: string;
+    days_active: number;
+    daily_limit: number;
+    sent_today: number;
+    remaining_today: number;
+    sent_7d: number;
+    bounced_7d: number;
+    complained_7d: number;
+    opened_7d: number;
+    bounce_rate: number;
+    complaint_rate: number;
+    open_rate: number;
+    blacklisted_count: number;
+    unsubscribed_count: number;
+    is_healthy: boolean;
+    can_send: boolean;
+    warnings: string[];
+}
+
+export async function getEmailHealth(): Promise<EmailHealth> {
+    const res = await adminFetch(`${API_URL}/api/admin/email-health`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminAlerts(limit = 50) {
+    const res = await adminFetch(`${API_URL}/api/admin/alerts?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAdminDiffs(limit = 20) {
+    const res = await adminFetch(`${API_URL}/api/admin/diffs?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function sendLegislativeAlert(title: string, bodyText: string) {
+    const res = await adminFetch(`${API_URL}/api/admin/legislative-alert`, {
+        method: "POST",
+        body: JSON.stringify({ title, body_text: bodyText }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export interface AgencyClient {
+    name: string;
+    url: string;
+    email?: string;
+    contact_name?: string;
+    notes?: string;
+}
+
+export async function startAgencyBatchScan(clients: AgencyClient[]) {
+    const res = await adminFetch(`${API_URL}/api/admin/agency/scan-batch`, {
+        method: "POST",
+        body: JSON.stringify({ clients }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getAgencyClients() {
+    const res = await adminFetch(`${API_URL}/api/admin/agency/clients`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function generateAgencyEmail(data: {
+    client_name: string;
+    contact_name: string;
+    url: string;
+    email: string;
+    findings_count?: number;
+    scan_id?: string;
+}) {
+    const res = await adminFetch(`${API_URL}/api/admin/agency/generate-email`, {
+        method: "POST",
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+// ── Client Detail: Questionnaire + Findings ──
+
+export interface QuestionnaireResponse {
+    question_key: string;
+    answer: string;
+    details: Record<string, string> | null;
+    tool_name: string | null;
+    submitted_at: string;
+}
+
+export interface ClientQuestionnaireData {
+    client_id: string;
+    total_responses: number;
+    sections: Record<string, QuestionnaireResponse[]>;
+    responses: Record<string, unknown>[];
+}
+
+export async function getClientQuestionnaire(email: string): Promise<ClientQuestionnaireData> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/client/${encodeURIComponent(email)}/questionnaire`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export interface FindingDetail {
+    id: string;
+    name: string;
+    category: string;
+    risk_level: string;
+    ai_act_article: string;
+    action_required: string;
+    ai_classification_text: string;
+    evidence_html: string;
+    status: string;
+    source: string;
+    created_at: string;
+}
+
+export interface ClientFindingsData {
+    company_id: string;
+    company_name: string;
+    total: number;
+    findings: FindingDetail[];
+}
+
+export async function getClientFindings(email: string): Promise<ClientFindingsData> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/client/${encodeURIComponent(email)}/findings`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
 
 // ── Client Management types ──
 
