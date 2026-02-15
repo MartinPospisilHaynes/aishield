@@ -344,7 +344,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "insurance_tool", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
                          "options": ["Guidewire", "NESS / Allianz AI", "ČPP / ČSOB interní AI", "Jiný"]},
                         {"key": "insurance_impact", "label": "Ovlivňuje AI cenu nebo dostupnost pojištění?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ano": "AI systém, který ovlivňuje cenu nebo dostupnost pojištění, je vysoce rizikový dle Přílohy III, bod 5a. Musíte zajistit posouzení shody, registraci v EU databázi, průběžné monitorování a právo pojistníka na vysvětlení rozhodnutí."}},
                     ]
                 },
                 "risk_hint": "high",
