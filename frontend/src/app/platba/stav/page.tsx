@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase-browser";
+import ContactForm from "@/components/contact-form";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -45,7 +46,7 @@ function PaymentStatusContent() {
                 const { data: { session } } = await supabase.auth.getSession();
                 const token = session?.access_token;
                 if (!token) {
-                    setQuestionnaireComplete(false);
+                    // No auth — can't check, leave null (don't show button)
                     return;
                 }
                 const res = await fetch(`${API_URL}/api/questionnaire/my-status`, {
@@ -54,11 +55,10 @@ function PaymentStatusContent() {
                 if (res.ok) {
                     const data = await res.json();
                     setQuestionnaireComplete(data.is_complete === true);
-                } else {
-                    setQuestionnaireComplete(false);
                 }
+                // On error, leave null — don't show the button
             } catch {
-                setQuestionnaireComplete(false);
+                // On error, leave null — don't show the button
             }
         }
         checkQuestionnaire();
@@ -161,9 +161,9 @@ function PaymentStatusContent() {
                         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 max-w-sm mx-auto">
                             <p className="text-xs font-semibold text-slate-300 mb-2">V případě jakýchkoliv otázek nás neváhejte kontaktovat:</p>
                             <div className="space-y-1.5">
-                                <a href="tel:+420734575007" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+                                <a href="tel:+420732716141" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
-                                    +420 734 575 007
+                                    +420 732 716 141
                                 </a>
                                 <a href="mailto:info@aishield.cz" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -175,7 +175,7 @@ function PaymentStatusContent() {
                         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
 
                         <div className="space-y-3">
-                            {/* Conditional questionnaire button */}
+                            {/* Conditional questionnaire button — only show when explicitly incomplete */}
                             {questionnaireComplete === false && (
                                 <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
                                     Vyplnit dotazník
@@ -184,11 +184,12 @@ function PaymentStatusContent() {
                             <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
                                 Přejít na Dashboard
                             </a>
-                            {/* Contact form fallback */}
-                            <a href="/#kontakt" className="text-xs text-slate-500 hover:text-slate-300 transition-colors block text-center mt-2">
-                                Email nedorazil? Kontaktujte nás přes formulář →
-                            </a>
                         </div>
+                    </div>
+
+                    {/* Contact form — fallback if email didn't arrive */}
+                    <div className="mt-10 max-w-lg mx-auto">
+                        <ContactForm />
                     </div>
                 </div>
             </section>
@@ -317,10 +318,12 @@ function PaymentStatusContent() {
                                 </a>
                             ) : (
                                 <>
-                                    <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
-                                        Vyplnit dotazník
-                                    </a>
-                                    <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
+                                    {questionnaireComplete === false && (
+                                        <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                            Vyplnit dotazník
+                                        </a>
+                                    )}
+                                    <a href="/dashboard" className={`${questionnaireComplete === false ? "btn-secondary" : "btn-primary"} w-full py-3 block text-center`}>
                                         Přejít na Dashboard
                                     </a>
                                 </>

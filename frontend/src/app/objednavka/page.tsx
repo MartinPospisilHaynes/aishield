@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createCheckout } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
+
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const PLANS: Record<string, { name: string; price: number; features: string[] }> = {
     basic: {
@@ -47,8 +49,8 @@ function CheckoutInner() {
     const plan = PLANS[planKey];
 
     const [email, setEmail] = useState("");
-    const [company, setCompany] = useState("");
     const [ico, setIco] = useState("");
+    const [company, setCompany] = useState("");
     const [dic, setDic] = useState("");
     const [street, setStreet] = useState("");
     const [city, setCity] = useState("");
@@ -58,6 +60,15 @@ function CheckoutInner() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [userLoaded, setUserLoaded] = useState(false);
+
+    // ARES auto-fill states
+    const [aresLoading, setAresLoading] = useState(false);
+    const [aresError, setAresError] = useState<string | null>(null);
+    const [aresFilled, setAresFilled] = useState(false);
+
+    // Anti-bot: honeypot + timing
+    const [honeypot, setHoneypot] = useState("");
+    const formLoadedAt = useRef(Date.now());
 
     // Load user email from supabase session
     useEffect(() => {
@@ -77,6 +88,44 @@ function CheckoutInner() {
         })();
     }, [planKey, router]);
 
+    // ARES lookup when IČO reaches 8 digits
+    const lookupAres = useCallback(async (icoValue: string) => {
+        const cleaned = icoValue.replace(/\s/g, "");
+        if (cleaned.length !== 8 || !/^\d{8}$/.test(cleaned)) return;
+
+        setAresLoading(true);
+        setAresError(null);
+        try {
+            const res = await fetch(`${API_URL}/api/ares/${cleaned}`);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: "Firma nenalezena" }));
+                setAresError(err.detail || "Firma nenalezena v ARES");
+                return;
+            }
+            const data = await res.json();
+            if (data.name) setCompany(data.name);
+            if (data.dic) setDic(data.dic);
+            if (data.street) setStreet(data.street);
+            if (data.city) setCity(data.city);
+            if (data.zip) setZip(data.zip);
+            setAresFilled(true);
+        } catch {
+            setAresError("Nepodařilo se spojit s ARES");
+        } finally {
+            setAresLoading(false);
+        }
+    }, []);
+
+    function handleIcoChange(value: string) {
+        setIco(value);
+        setAresFilled(false);
+        setAresError(null);
+        const cleaned = value.replace(/\s/g, "");
+        if (cleaned.length === 8 && /^\d{8}$/.test(cleaned)) {
+            lookupAres(value);
+        }
+    }
+
     if (!plan) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -93,14 +142,20 @@ function CheckoutInner() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
+
+        // Anti-bot checks
+        if (honeypot) return;
+        const elapsed = Date.now() - formLoadedAt.current;
+        if (elapsed < 3000) {
+            setError("Formulář byl odeslán příliš rychle. Zkuste to prosím znovu.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            // Store billing info in localStorage for now (could be sent to backend)
-            const billing = { company, ico, dic, street, city, zip, phone, email };
-            localStorage.setItem("aishield_billing", JSON.stringify(billing));
-
-            const data = await createCheckout(planKey, email, gateway);
+            const billing = { company, ico, dic, street, city, zip, phone };
+            const data = await createCheckout(planKey, email, gateway, billing);
             window.location.href = data.gateway_url;
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
@@ -115,6 +170,8 @@ function CheckoutInner() {
             </div>
         );
     }
+
+    const inputClass = "w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600";
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -135,13 +192,67 @@ function CheckoutInner() {
                 <p className="text-slate-400 mb-8">Vyplňte fakturační údaje a zvolte způsob platby</p>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    {/* Honeypot — invisible to humans */}
+                    <div className="absolute" style={{ left: "-9999px", top: "-9999px" }} aria-hidden="true">
+                        <label>
+                            Nechte prázdné
+                            <input
+                                type="text"
+                                tabIndex={-1}
+                                autoComplete="off"
+                                value={honeypot}
+                                onChange={(e) => setHoneypot(e.target.value)}
+                            />
+                        </label>
+                    </div>
+
                     {/* Left — billing form */}
                     <div className="lg:col-span-3 space-y-6">
-                        {/* Company section */}
+                        {/* 1. IČO — first, with ARES auto-fill */}
+                        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
+                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                                Identifikace firmy
+                            </h2>
+
+                            <div>
+                                <label className="block text-sm text-slate-400 mb-1">IČO — zadejte a údaje se načtou automaticky z ARES</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={8}
+                                        value={ico}
+                                        onChange={(e) => handleIcoChange(e.target.value)}
+                                        placeholder="např. 04291247"
+                                        className={`${inputClass} ${aresFilled ? "border-emerald-500/40 bg-emerald-500/5" : ""} ${aresError ? "border-red-500/40" : ""}`}
+                                    />
+                                    {aresLoading && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <div className="w-5 h-5 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
+                                    {aresFilled && !aresLoading && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>
+                                        </div>
+                                    )}
+                                </div>
+                                {aresError && (
+                                    <p className="text-xs text-red-400 mt-1">{aresError}</p>
+                                )}
+                                {aresFilled && (
+                                    <p className="text-xs text-emerald-400 mt-1">Údaje načteny z ARES ✓</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 2. Company details (auto-filled from ARES) */}
                         <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" /></svg>
                                 Fakturační údaje
+                                {aresFilled && <span className="text-xs bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full ml-auto">z ARES</span>}
                             </h2>
 
                             <div className="space-y-4">
@@ -152,32 +263,20 @@ function CheckoutInner() {
                                         required
                                         value={company}
                                         onChange={(e) => setCompany(e.target.value)}
-                                        placeholder="AIshield s.r.o."
-                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        placeholder="Vaše firma s.r.o."
+                                        className={inputClass}
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm text-slate-400 mb-1">IČO</label>
-                                        <input
-                                            type="text"
-                                            value={ico}
-                                            onChange={(e) => setIco(e.target.value)}
-                                            placeholder="12345678"
-                                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-slate-400 mb-1">DIČ</label>
-                                        <input
-                                            type="text"
-                                            value={dic}
-                                            onChange={(e) => setDic(e.target.value)}
-                                            placeholder="CZ12345678"
-                                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
-                                        />
-                                    </div>
+                                <div>
+                                    <label className="block text-sm text-slate-400 mb-1">DIČ</label>
+                                    <input
+                                        type="text"
+                                        value={dic}
+                                        onChange={(e) => setDic(e.target.value)}
+                                        placeholder="CZ04291247"
+                                        className={inputClass}
+                                    />
                                 </div>
 
                                 <div>
@@ -187,8 +286,8 @@ function CheckoutInner() {
                                         required
                                         value={street}
                                         onChange={(e) => setStreet(e.target.value)}
-                                        placeholder="Václavské náměstí 1"
-                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        placeholder="Hlavní 123/4"
+                                        className={inputClass}
                                     />
                                 </div>
 
@@ -201,7 +300,7 @@ function CheckoutInner() {
                                             value={city}
                                             onChange={(e) => setCity(e.target.value)}
                                             placeholder="Praha"
-                                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                            className={inputClass}
                                         />
                                     </div>
                                     <div>
@@ -212,14 +311,14 @@ function CheckoutInner() {
                                             value={zip}
                                             onChange={(e) => setZip(e.target.value)}
                                             placeholder="110 00"
-                                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                            className={inputClass}
                                         />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Contact section */}
+                        {/* 3. Contact section */}
                         <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -234,8 +333,8 @@ function CheckoutInner() {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="info@firma.cz"
-                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        placeholder="jan.novak@vase-firma.cz"
+                                        className={inputClass}
                                     />
                                 </div>
                                 <div>
@@ -244,14 +343,14 @@ function CheckoutInner() {
                                         type="tel"
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
-                                        placeholder="+420 123 456 789"
-                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        placeholder="+420 777 123 456"
+                                        className={inputClass}
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Payment method */}
+                        {/* 4. Payment method */}
                         <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
                             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
