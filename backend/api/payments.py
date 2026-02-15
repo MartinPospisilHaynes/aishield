@@ -24,6 +24,7 @@ from backend.outbound.payment_emails import (
     generate_variable_symbol,
 )
 from backend.outbound.email_engine import send_email
+from backend.api.analytics import track_server_event
 
 logger = logging.getLogger(__name__)
 
@@ -1053,6 +1054,21 @@ async def gopay_webhook(request: Request):
                 "activated": True,
             }).eq("gopay_payment_id", str(int(payment_id))).execute()
 
+            # Server-side analytics: payment_completed (spolehlivější než frontend)
+            track_server_event(
+                "payment_completed_server",
+                properties={
+                    "gateway": "gopay",
+                    "payment_id": str(payment_id),
+                    "amount": order.get("amount"),
+                    "plan": order.get("plan"),
+                    "order_number": order.get("order_number"),
+                    "order_type": order.get("order_type"),
+                    "source": "webhook",
+                },
+                user_email=order.get("email") or order.get("user_email"),
+            )
+
             # Aktivace první subscription platby
             if order.get("order_type") == "subscription":
                 now = datetime.utcnow()
@@ -1110,6 +1126,20 @@ async def gopay_webhook(request: Request):
                 "next_charge_at": next_charge,
                 "total_charged": (sub.get("total_charged") or 0) + sub["amount"],
             }).eq("id", sub["id"]).execute()
+
+            # Server-side analytics: subscription recurrence
+            track_server_event(
+                "payment_completed_server",
+                properties={
+                    "gateway": "gopay",
+                    "payment_id": str(payment_id),
+                    "amount": sub["amount"],
+                    "plan": sub["plan"],
+                    "order_type": "subscription_recurrence",
+                    "source": "webhook",
+                },
+                user_email=sub.get("email"),
+            )
 
             logger.info(
                 f"[Payments] Recurrence platba zaznamenána: sub={sub['id']}, "
@@ -1174,6 +1204,22 @@ async def stripe_webhook(request: Request):
             supabase.table("orders").update(update_data).eq(
                 "gopay_payment_id", session_id
             ).execute()
+
+            # Server-side analytics
+            if is_paid:
+                order = existing.data[0]
+                track_server_event(
+                    "payment_completed_server",
+                    properties={
+                        "gateway": "stripe",
+                        "payment_id": session_id,
+                        "amount": order.get("amount"),
+                        "plan": order.get("plan"),
+                        "order_number": order.get("order_number"),
+                        "source": "webhook",
+                    },
+                    user_email=order.get("email") or order.get("user_email"),
+                )
 
             logger.info(f"[Stripe Webhook] Platba aktualizována: {session_id} → {state}")
         else:
@@ -1242,6 +1288,22 @@ async def comgate_webhook(request: Request):
         supabase.table("orders").update(update_data).eq(
             "gopay_payment_id", trans_id
         ).execute()
+
+        # Server-side analytics
+        if is_paid:
+            order = existing.data[0]
+            track_server_event(
+                "payment_completed_server",
+                properties={
+                    "gateway": "comgate",
+                    "payment_id": trans_id,
+                    "amount": order.get("amount"),
+                    "plan": order.get("plan"),
+                    "order_number": order.get("order_number"),
+                    "source": "webhook",
+                },
+                user_email=order.get("email") or order.get("user_email"),
+            )
 
         logger.info(f"[Comgate Webhook] Platba aktualizována: {trans_id} → {state}")
     else:

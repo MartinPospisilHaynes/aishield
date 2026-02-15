@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createCheckout } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
-import { useAnalytics } from "@/lib/analytics";
+import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -47,6 +47,7 @@ function CheckoutInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { track } = useAnalytics();
+    const trackApiError = useApiErrorTracking();
     const planKey = searchParams.get("plan") || "basic";
     const plan = PLANS[planKey];
 
@@ -164,6 +165,7 @@ function CheckoutInner() {
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
             track("checkout_failed", { plan: planKey, error: err instanceof Error ? err.message : "unknown" });
+            trackApiError("/api/payments/checkout", err, { plan: planKey, gateway });
             setLoading(false);
         }
     }

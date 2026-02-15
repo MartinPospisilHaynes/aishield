@@ -83,6 +83,38 @@ def _hash_ip(ip: str) -> str:
     return hashlib.sha256(f"aishield_salt_{ip}".encode()).hexdigest()[:16]
 
 
+# ── Server-side tracking helper ──
+
+def track_server_event(
+    event_name: str,
+    properties: dict | None = None,
+    user_email: str | None = None,
+    session_id: str | None = None,
+    page_url: str | None = None,
+):
+    """
+    Zaloguje analytický event přímo ze serveru (webhooky, crony, API chyby).
+    Používá se tam, kde frontend nemůže event garantovat — např. payment webhooky.
+    """
+    try:
+        sb = get_supabase()
+        sb.table("analytics_events").insert({
+            "session_id": session_id or f"server_{datetime.now(timezone.utc).strftime('%Y%m%d')}",
+            "event_name": event_name,
+            "properties": properties or {},
+            "page_url": page_url,
+            "user_email": user_email,
+            "device": "server",
+            "browser": "server",
+            "os": "server",
+            "ip_hash": "server",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+        logger.info(f"Server event tracked: {event_name}")
+    except Exception as e:
+        logger.error(f"Server event tracking failed: {e}")
+
+
 # ── Endpoints ──
 
 @router.post("/event", status_code=202)
@@ -330,3 +362,106 @@ async def get_sessions(limit: int = 50):
     except Exception as e:
         logger.error(f"Analytics sessions failed: {e}")
         return {"sessions": [], "total": 0, "error": str(e)}
+
+
+# ══════════════════════════════════════════════════════════════
+# Data retention — agregace a čištění starých eventů (90 dní)
+# ══════════════════════════════════════════════════════════════
+
+@router.post("/retention/cleanup")
+async def retention_cleanup(days: int = 90):
+    """
+    Agreguje raw eventy starší než {days} dní do denních souhrnů a maže originály.
+    Volat přes cron (daily) nebo manuálně z admin panelu.
+
+    Proces:
+      1. Načte eventy starší než cutoff
+      2. Agreguje je do analytics_daily_summary (datum + event_name + count)
+      3. Smaže raw řádky
+    """
+    try:
+        sb = get_supabase()
+        from datetime import timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+        # 1. Načíst staré eventy (po dávkách max 5000)
+        old_events = sb.table("analytics_events") \
+            .select("id, event_name, created_at, session_id, page_url, user_email, device, browser, properties") \
+            .lt("created_at", cutoff) \
+            .order("created_at") \
+            .limit(5000) \
+            .execute()
+
+        events = old_events.data or []
+        if not events:
+            return {"status": "ok", "message": "Žádné staré eventy k vyčištění", "deleted": 0, "aggregated": 0}
+
+        # 2. Agregovat do denních souhrnů
+        daily: dict[str, dict[str, int]] = {}  # date -> {event_name: count}
+        for ev in events:
+            day = ev.get("created_at", "")[:10]
+            name = ev.get("event_name", "unknown")
+            if day not in daily:
+                daily[day] = {}
+            daily[day][name] = daily[day].get(name, 0) + 1
+
+        # 3. Upsert do analytics_daily_summary tabulky
+        summary_rows = []
+        for day, event_counts in daily.items():
+            for event_name, count in event_counts.items():
+                summary_rows.append({
+                    "date": day,
+                    "event_name": event_name,
+                    "count": count,
+                })
+
+        if summary_rows:
+            # Upsert — pokud už existuje řádek pro daný den+event, přičíst
+            for row in summary_rows:
+                try:
+                    existing = sb.table("analytics_daily_summary") \
+                        .select("id, count") \
+                        .eq("date", row["date"]) \
+                        .eq("event_name", row["event_name"]) \
+                        .limit(1) \
+                        .execute()
+
+                    if existing.data:
+                        new_count = existing.data[0]["count"] + row["count"]
+                        sb.table("analytics_daily_summary") \
+                            .update({"count": new_count}) \
+                            .eq("id", existing.data[0]["id"]) \
+                            .execute()
+                    else:
+                        sb.table("analytics_daily_summary").insert(row).execute()
+                except Exception as e:
+                    logger.error(f"Summary upsert error for {row['date']}/{row['event_name']}: {e}")
+
+        # 4. Smazat raw eventy (po dávkách)
+        ids_to_delete = [ev["id"] for ev in events]
+        batch_size = 100
+        deleted_count = 0
+        for i in range(0, len(ids_to_delete), batch_size):
+            batch_ids = ids_to_delete[i:i + batch_size]
+            try:
+                sb.table("analytics_events").delete().in_("id", batch_ids).execute()
+                deleted_count += len(batch_ids)
+            except Exception as e:
+                logger.error(f"Retention delete batch error: {e}")
+
+        logger.info(
+            f"Analytics retention: aggregated {len(summary_rows)} summaries, "
+            f"deleted {deleted_count}/{len(events)} old events (cutoff={cutoff[:10]})"
+        )
+
+        return {
+            "status": "ok",
+            "deleted": deleted_count,
+            "aggregated": len(summary_rows),
+            "days_covered": len(daily),
+            "cutoff_date": cutoff[:10],
+        }
+
+    except Exception as e:
+        logger.error(f"Analytics retention failed: {e}")
+        return {"status": "error", "error": str(e)}

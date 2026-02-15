@@ -9,7 +9,7 @@ import {
     type ScanStatus,
     type Finding,
 } from "@/lib/api";
-import { useAnalytics } from "@/lib/analytics";
+import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
 /* ── Inline SVG Icon helpers ── */
 const IconSearch = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -145,6 +145,7 @@ function RiskTooltip({ level, children }: { level: string; children: React.React
 function ScanPageInner() {
     const searchParams = useSearchParams();
     const { track } = useAnalytics();
+    const trackApiError = useApiErrorTracking();
     const [url, setUrl] = useState("");
     const scanStartTimeRef = useRef<number>(0);
     const [loading, setLoading] = useState(false);
@@ -271,8 +272,9 @@ function ScanPageInner() {
             setLoading(false);
             if (stageRef.current) clearTimeout(stageRef.current);
             track("scan_failed", { url: normalizedUrl, error: errMsg });
+            trackApiError("/api/scan", err, { url: normalizedUrl });
         }
-    }, [startPolling, fetchFindings, startStageAnimation, track]);
+    }, [startPolling, fetchFindings, startStageAnimation, track, trackApiError]);
 
     useEffect(() => {
         const urlParam = searchParams.get("url");

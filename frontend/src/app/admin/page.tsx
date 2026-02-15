@@ -2993,6 +2993,33 @@ export default function AdminPage() {
                                         📢 Přejít na Monitoring
                                     </button>
                                 </Panel>
+
+                                {/* Data retention */}
+                                <Panel className="p-6">
+                                    <div className="text-3xl mb-3">🗑️</div>
+                                    <h3 className="font-semibold text-white mb-2">Retence dat (90 dní)</h3>
+                                    <p className="text-xs text-gray-400 mb-4">
+                                        Agreguje staré analytické eventy do denních souhrnů a maže raw data starší 90 dní.
+                                    </p>
+                                    <button
+                                        onClick={async () => {
+                                            setToolResult(null);
+                                            try {
+                                                const res = await fetch(
+                                                    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/analytics/retention/cleanup?days=90`,
+                                                    { method: "POST" }
+                                                );
+                                                const data = await res.json();
+                                                setToolResult(`✅ Retence: smazáno ${data.deleted} eventů, agregováno ${data.aggregated} souhrnů (cutoff: ${data.cutoff_date})`);
+                                            } catch (e) {
+                                                setToolResult(`❌ Chyba: ${e}`);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all text-sm font-medium"
+                                    >
+                                        🗑️ Spustit Cleanup
+                                    </button>
+                                </Panel>
                             </div>
 
                             {toolResult && (

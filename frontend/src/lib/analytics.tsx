@@ -225,9 +225,73 @@ export function AnalyticsProvider({
     <AnalyticsContext.Provider
       value={{ track, trackPageView, setUserEmail, getSessionId }}
     >
+      <GlobalErrorTracker />
       {children}
     </AnalyticsContext.Provider>
   );
+}
+
+// ── Auto-activated error tracker (inside Provider) ──
+function GlobalErrorTracker() {
+  useErrorTracking();
+  return null;
+}
+
+// ── Global error tracking ──
+
+export function useErrorTracking() {
+  const { track } = useAnalytics();
+
+  useEffect(() => {
+    // Unhandled JS errors
+    const handleError = (event: ErrorEvent) => {
+      track("js_error", {
+        message: event.message,
+        filename: event.filename?.replace(/https?:\/\/[^/]+/, "") || "",
+        lineno: event.lineno,
+        colno: event.colno,
+        page: window.location.pathname,
+      });
+    };
+
+    // Unhandled promise rejections
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      track("unhandled_rejection", {
+        reason: String(event.reason).slice(0, 200),
+        page: window.location.pathname,
+      });
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleRejection);
+    };
+  }, [track]);
+}
+
+// ── API error tracking helper ──
+// Call this in catch blocks: trackApiError("/api/scan", error)
+
+export function useApiErrorTracking() {
+  const { track } = useAnalytics();
+
+  const trackApiError = useCallback(
+    (endpoint: string, error: unknown, extra?: Record<string, unknown>) => {
+      track("api_error", {
+        endpoint: endpoint.replace(/https?:\/\/[^/]+/, ""),
+        error_message: error instanceof Error ? error.message : String(error).slice(0, 200),
+        status: (error as { status?: number })?.status || null,
+        page: typeof window !== "undefined" ? window.location.pathname : "",
+        ...extra,
+      });
+    },
+    [track]
+  );
+
+  return trackApiError;
 }
 
 // ── Scroll depth tracker (standalone hook) ──
