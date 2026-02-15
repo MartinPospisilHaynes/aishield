@@ -157,6 +157,7 @@ export default function DashboardPage() {
 
     // ── AI systems card expand ──
     const [aiCardOpen, setAiCardOpen] = useState(false);
+    const [qCardOpen, setQCardOpen] = useState(false);
 
     // ── Inline scan state ──
     const [scanActive, setScanActive] = useState(false);
@@ -544,22 +545,36 @@ export default function DashboardPage() {
                             )}
                             {hasQuest && qUnknowns.length > 0 && (
                                 <p className="text-[10px] text-amber-400 mt-2 leading-relaxed">
-                                    U {qUnknowns.length} {cz(qUnknowns.length, 'otázky', 'otázek', 'otázek')} jste odpověděli &bdquo;Nevím&ldquo;. Tyto informace je nutné zjistit a doplnit — jinak Vám nedokážeme zaručit 100% ochranu.
+                                    U {qUnknowns.length} {cz(qUnknowns.length, 'otázky', 'otázek', 'otázek')} jste odpověděli &bdquo;Nevím&ldquo;. Tyto informace je nutné zjistit a doplnit, abychom Vám mohli poskytnout 100% jistotu krytí.
                                 </p>
                             )}
+                            {/* Expandable questionnaire findings */}
+                            {hasQuest && qFindings.length > 0 && (
+                                <div className="mt-3 border-t border-white/[0.06] pt-3">
+                                    <button onClick={() => setQCardOpen(!qCardOpen)} className="text-xs text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition-colors">
+                                        {qCardOpen ? 'Skrýt nálezy' : 'Zobrazit nálezy'}
+                                        <svg className={`w-3 h-3 transition-transform ${qCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    {qCardOpen && (
+                                        <div className="mt-2 space-y-1.5">
+                                            {qFindings.map((f) => (
+                                                <div key={f.question_key} className="rounded-md bg-fuchsia-500/[0.03] border border-fuchsia-500/[0.1] px-3 py-2">
+                                                    <p className="text-xs font-medium text-white">{f.name}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{f.category}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <div className="mt-auto pt-3">
-                                {hasScans && (
-                                    hasQuest ? (
-                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}&edit=true`}
-                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
-                                            {qUnknowns.length > 0 ? 'Doplnit odpovědi' : 'Upravit odpovědi'}
-                                        </a>
-                                    ) : (
-                                        <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
-                                            className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
-                                            Vyplnit dotazník
-                                        </a>
-                                    )
+                                {hasScans && !hasQuest && (
+                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                        className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
+                                        Vyplnit dotazník
+                                    </a>
                                 )}
                             </div>
                         </div>
@@ -988,9 +1003,9 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                     ? ' ze skenu vašeho webu'
                                     : ' z odpovědí v dotazníku'
                             }.
-                            Využívání těchto nástrojů Vám dává <strong className="text-cyan-300">konkurenční výhodu</strong> před weby, které AI nepoužívají.
-                            Stačí o tom správně informovat návštěvníky a mít k tomu příslušnou dokumentaci.
-                            <strong className="text-cyan-300"> Vše dokážeme zařídit za Vás</strong>, abyste se mohli soustředit na svůj byznys.
+                            <strong className="text-cyan-300"> To je báječné!</strong> Využívání těchto nástrojů Vám dává <strong className="text-cyan-300">ohromnou konkurenční výhodu</strong> před weby, které AI nepoužívají.
+                            Jen je potřeba mít vše správně ošetřeno tak, jak to vyžaduje legislativa EU &mdash; správně informovat návštěvníky a mít k tomu příslušnou dokumentaci.
+                            <strong className="text-cyan-300"> Vše zařídíme za Vás!</strong>
                         </p>
                     </div>
                 </div>
@@ -1653,17 +1668,10 @@ function PricingComparisonTable() {
 
     async function handleCheckout(planKey: string) {
         if (!user) {
-            window.location.href = `/registrace?redirect=/dashboard&plan=${planKey}`;
+            window.location.href = `/registrace?redirect=/objednavka&plan=${planKey}`;
             return;
         }
-        setLoading(planKey);
-        try {
-            const data = await createCheckout(planKey, user.email || "");
-            window.location.href = data.gateway_url;
-        } catch (err: unknown) {
-            alert(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
-            setLoading(null);
-        }
+        window.location.href = `/objednavka?plan=${planKey}`;
     }
 
     const Check = () => (

@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { createCheckout, createGuestCheckout, getAvailableGateways } from "@/lib/api";
-import type { PaymentGateway, GatewayInfo } from "@/lib/api";
+import { createGuestCheckout } from "@/lib/api";
 
 const plans = [
     {
@@ -94,30 +93,11 @@ export default function PricingPage() {
     const [error, setError] = useState("");
     const [coffeeEmail, setCoffeeEmail] = useState("");
     const [showCoffeeEmail, setShowCoffeeEmail] = useState(false);
-    const [gateways, setGateways] = useState<GatewayInfo[]>([]);
-    const [showPaymentModal, setShowPaymentModal] = useState<string | null>(null);
-    const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>("stripe");
+
     const { user } = useAuth();
     const router = useRouter();
 
-    useEffect(() => {
-        getAvailableGateways().then((gws) => {
-            setGateways(gws);
-        });
-    }, []);
 
-    async function proceedWithPayment(planKey: string, gateway: PaymentGateway) {
-        setShowPaymentModal(null);
-        setLoading(planKey);
-        setError("");
-        try {
-            const data = await createCheckout(planKey, user?.email || "", gateway);
-            window.location.href = data.gateway_url;
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
-            setLoading(null);
-        }
-    }
 
     async function handleCheckout(planKey: string) {
         // Coffee = guest checkout, nevyžaduje přihlášení
@@ -141,12 +121,12 @@ export default function PricingPage() {
 
         // Pokud není přihlášen, přesměrovat na registraci
         if (!user) {
-            router.push(`/registrace?redirect=/pricing&plan=${planKey}`);
+            router.push(`/registrace?redirect=/objednavka&plan=${planKey}`);
             return;
         }
 
-        // Ukázat modal pro výběr platební metody
-        setShowPaymentModal(planKey);
+        // Přesměrovat na objednávkovou stránku s fakturačními údaji
+        router.push(`/objednavka?plan=${planKey}`);
     }
 
     return (
@@ -685,145 +665,6 @@ export default function PricingPage() {
                 </div>
             </div>
 
-            {/* Payment Method Modal */}
-            {showPaymentModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                        onClick={() => setShowPaymentModal(null)}
-                    />
-
-                    {/* Modal */}
-                    <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0f172a] p-6 sm:p-8 shadow-2xl">
-                        {/* Close */}
-                        <button
-                            onClick={() => setShowPaymentModal(null)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <h3 className="text-xl font-bold text-white mb-1">Vyberte platební metodu</h3>
-                        <p className="text-sm text-slate-400 mb-6">
-                            {plans.find((p) => p.key === showPaymentModal)?.name} —{" "}
-                            {plans.find((p) => p.key === showPaymentModal)?.price} Kč
-                        </p>
-
-                        <div className="space-y-3">
-                            {/* Stripe — always available */}
-                            <button
-                                onClick={() => setSelectedGateway("stripe")}
-                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${selectedGateway === "stripe"
-                                        ? "border-fuchsia-500/50 bg-fuchsia-500/10 ring-1 ring-fuchsia-500/30"
-                                        : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                                    }`}
-                            >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#635BFF]/20 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-[#635BFF]" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M2 6.5A2.5 2.5 0 014.5 4h15A2.5 2.5 0 0122 6.5v11a2.5 2.5 0 01-2.5 2.5h-15A2.5 2.5 0 012 17.5v-11zM4 9h16v2H4V9z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-white text-sm">Platební karta</span>
-                                        <span className="text-[10px] font-medium bg-fuchsia-500/20 text-fuchsia-300 px-2 py-0.5 rounded-full">
-                                            Doporučeno
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-slate-400">Visa, Mastercard, Apple Pay, Google Pay</span>
-                                </div>
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedGateway === "stripe" ? "border-fuchsia-500 bg-fuchsia-500" : "border-slate-600"
-                                    }`}>
-                                    {selectedGateway === "stripe" && (
-                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    )}
-                                </div>
-                            </button>
-
-                            {/* Bank Transfer — always available */}
-                            <button
-                                onClick={() => setSelectedGateway("bank_transfer")}
-                                className={`w-full flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${selectedGateway === "bank_transfer"
-                                        ? "border-cyan-500/50 bg-cyan-500/10 ring-1 ring-cyan-500/30"
-                                        : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                                    }`}
-                            >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <span className="font-semibold text-white text-sm block">Bankovní převod</span>
-                                    <span className="text-xs text-slate-400">Faktura s platebními údaji na email</span>
-                                </div>
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedGateway === "bank_transfer" ? "border-cyan-500 bg-cyan-500" : "border-slate-600"
-                                    }`}>
-                                    {selectedGateway === "bank_transfer" && (
-                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    )}
-                                </div>
-                            </button>
-
-                            {/* GoPay — coming soon */}
-                            <div className="w-full flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.01] p-4 opacity-50 cursor-not-allowed">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-slate-500 text-sm">GoPay</span>
-                                        <span className="text-[10px] font-medium bg-white/5 text-slate-500 px-2 py-0.5 rounded-full">
-                                            Připravujeme
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-slate-600">Online platby, bankovní tlačítka</span>
-                                </div>
-                            </div>
-
-                            {/* Comgate — coming soon */}
-                            <div className="w-full flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.01] p-4 opacity-50 cursor-not-allowed">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-slate-500 text-sm">Comgate</span>
-                                        <span className="text-[10px] font-medium bg-white/5 text-slate-500 px-2 py-0.5 rounded-full">
-                                            Připravujeme
-                                        </span>
-                                    </div>
-                                    <span className="text-xs text-slate-600">Platební brána pro ČR/SK</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Confirm button */}
-                        <button
-                            onClick={() => proceedWithPayment(showPaymentModal, selectedGateway)}
-                            disabled={!!loading}
-                            className="w-full mt-6 py-3.5 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 shadow-lg shadow-fuchsia-500/25"
-                        >
-                            {loading ? "Zpracovávám..." : "Pokračovat k platbě"}
-                        </button>
-
-                        <p className="text-center text-[11px] text-slate-600 mt-3">
-                            Bezpečná platba · Vaše údaje jsou chráněny
-                        </p>
-                    </div>
-                </div>
-            )}
-        </section>
+</section>
     );
 }

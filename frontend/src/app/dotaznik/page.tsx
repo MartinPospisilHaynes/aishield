@@ -14,6 +14,7 @@ interface FollowupField {
     label: string;
     type: "text" | "select" | "multi_select" | "info";
     options?: string[];
+    warning?: Record<string, string>;
 }
 
 interface Question {
@@ -592,7 +593,11 @@ function QuestionnaireInner() {
 
     const ans = answers[q.key];
     const isLast = currentQuestion === totalQuestions - 1;
-    const showFollowup = ans?.answer === "yes" && q.followup;
+    const showFollowup = q.followup && (
+        (q.followup.condition === "yes" && ans?.answer === "yes") ||
+        (q.followup.condition === "unknown" && ans?.answer === "unknown") ||
+        (q.followup.condition === "no" && ans?.answer === "no")
+    );
 
     /* ── Multi-select grid (industry, etc.) ── */
     if ((q.type === "multi_select" || q.type === "single_select") && q.options) {
@@ -613,9 +618,9 @@ function QuestionnaireInner() {
 
                         {/* Help text */}
                         {q.help_text && (
-                            <p className="text-slate-400 text-sm mb-6 text-center">
+                            <div className="text-slate-400 text-sm mb-6 text-center whitespace-pre-line">
                                 {q.help_text}
-                            </p>
+                            </div>
                         )}
                         {!q.help_text && isMulti && (
                             <p className="text-slate-500 text-sm mb-6 text-center">
@@ -745,10 +750,10 @@ function QuestionnaireInner() {
 
                     {/* Help text */}
                     {q.help_text && (
-                        <p className="text-slate-400 text-sm mb-4 flex items-start gap-2">
+                        <div className="text-slate-400 text-sm mb-4 flex items-start gap-2">
                             <span className="text-slate-500 mt-0.5 flex-shrink-0">ℹ️</span>
-                            {q.help_text}
-                        </p>
+                            <span className="whitespace-pre-line">{q.help_text}</span>
+                        </div>
                     )}
                     {!q.help_text && <div className="mb-4" />}
 
@@ -769,8 +774,10 @@ function QuestionnaireInner() {
                                             // LAST QUESTION: auto-submit after visual feedback
                                             console.log('[Dotazník] Poslední otázka zodpovězena, auto-submit za 600ms');
                                             setTimeout(handleSubmit, 600);
-                                        } else if (opt.value !== "yes" || !q.followup) {
-                                            // Auto-advance for no/unknown, or yes without followup
+                                        } else if (q.followup && q.followup.condition === opt.value) {
+                                            // This answer triggers followup — don't auto-advance
+                                        } else if (!q.followup || q.followup.condition !== opt.value) {
+                                            // Auto-advance when no followup or answer doesn't trigger followup
                                             setTimeout(goNext, 350);
                                         }
                                     }}
@@ -788,11 +795,6 @@ function QuestionnaireInner() {
                             );
                         })}
                     </div>
-
-                    {/* Nevím hint — below answer tiles */}
-                    <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                        Odpov\u011b\u010f &bdquo;Nev\u00edm&ldquo; je do\u010dasn\u00e1 &mdash; dopl\u0148te ji, jakmile informaci zjist\u00edte. 100% pokryt\u00ed z\u00e1konn\u00fdch po\u017eadavk\u016f je mo\u017en\u00e9 a\u017e se v\u0161emi odpov\u011b\u010fmi.
-                    </p>
 
                     {/* AI Act reference pill */}
                     {q.ai_act_article && (
@@ -829,37 +831,44 @@ function QuestionnaireInner() {
                                             {/* Select → tile grid */}
                                             {field.type === "select" && field.options && (
                                                 <>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {field.options.map((opt) => {
-                                                        const selected = (ans?.details[field.key] as string) === opt;
-                                                        return (
-                                                            <button
-                                                                key={opt}
-                                                                onClick={() => setDetail(q.key, field.key, opt)}
-                                                                className={`
-                                  px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
-                                  ${selected
-                                                                        ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
-                                                                        : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
-                                                                    }
-                                `}
-                                                            >
-                                                                {opt}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                                {/* "Jiný" text input — show when "Jiný" or "Jiné" is selected */}
-                                                {((ans?.details[field.key] as string) === "Jiný" || (ans?.details[field.key] as string) === "Jiné") && (
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Upřesněte, jaký jiný nástroj…"
-                                                        className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
-                                                        value={(ans?.details[`${field.key}_other`] as string) || ""}
-                                                        onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
-                                                        autoFocus
-                                                    />
-                                                )}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const selected = (ans?.details[field.key] as string) === opt;
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => setDetail(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {/* "Jiný" text input */}
+                                                    {((ans?.details[field.key] as string) === "Jiný" || (ans?.details[field.key] as string) === "Jiné") && (
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Upřesněte…"
+                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                            value={(ans?.details[`${field.key}_other`] as string) || ""}
+                                                            onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
+                                                            autoFocus
+                                                        />
+                                                    )}
+                                                    {/* Warning banner */}
+                                                    {field.warning && ans?.details[field.key] && (field.warning as Record<string, string>)[ans.details[field.key] as string] && (
+                                                        <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
+                                                            <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
+                                                            <p className="text-xs text-red-300 leading-relaxed">{(field.warning as Record<string, string>)[ans.details[field.key] as string]}</p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
 
@@ -890,17 +899,29 @@ function QuestionnaireInner() {
                                                             );
                                                         })}
                                                     </div>
-                                                    {/* "Jiné"/"Jiný" text input — show when selected */}
+                                                    {/* "Jiné"/"Jiný" text input */}
                                                     {((multiSelections[`${q.key}__${field.key}`] || []).includes("Jiné") || (multiSelections[`${q.key}__${field.key}`] || []).includes("Jiný")) && (
                                                         <input
                                                             type="text"
-                                                            placeholder="Upřesněte, jaký jiný nástroj…"
+                                                            placeholder="Upřesněte…"
                                                             className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                             value={(ans?.details[`${field.key}_other`] as string) || ""}
                                                             onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
                                                             autoFocus
                                                         />
                                                     )}
+                                                    {/* Warning banner for multi_select — check if any selected value triggers warning */}
+                                                    {field.warning && (() => {
+                                                        const sel = multiSelections[`${q.key}__${field.key}`] || [];
+                                                        const w = field.warning as Record<string, string>;
+                                                        const msg = sel.map(s => w[s]).filter(Boolean);
+                                                        return msg.length > 0 ? (
+                                                            <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
+                                                                <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
+                                                                <p className="text-xs text-red-300 leading-relaxed">{msg.join(" ")}</p>
+                                                            </div>
+                                                        ) : null;
+                                                    })()}
                                                 </>
                                             )}
 
@@ -947,6 +968,11 @@ function QuestionnaireInner() {
                             </button>
                         ) : null}
                     </div>
+
+                    {/* Nevím hint */}
+                    <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
+                        {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
+                    </p>
 
                     {/* Save & Continue Later */}
                     <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />

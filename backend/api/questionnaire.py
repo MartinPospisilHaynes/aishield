@@ -86,7 +86,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "ai_role", "label": "Jaká je vaše role?", "type": "multi_select",
-                         "options": ["Vyvíjíme AI (provider)", "Nasazujeme AI od jiných (deployer)", "Importujeme AI do EU (importer)", "Distribuujeme AI (distributor)"]},
+                         "options": ["Vyvíjíme AI (provider)", "Nasazujeme AI od jiných (deployer)", "Importujeme AI do EU (importer)", "Distribuujeme AI (distributor)", "Jiné"]},
                     ]
                 },
                 "risk_hint": "high",
@@ -106,12 +106,12 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_social_scoring",
                 "text": "Hodnotíte lidi komplexním skóre chování, které ovlivňuje jejich přístup ke službám?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Banka odmítne úvěr kvůli špatnému skóre z jiné oblasti (pozdní platby za telefon). 2) E-shop nabízí horší ceny zákazníkům s nízkým ‚interním skóre'. 3) Pojišťovna zvýší pojistné na základě sociálního profilu klienta. Nepatří sem běžné věrnostní programy.",
+                "help_text": "Příklady:\n1) Banka odmítne úvěr kvůli špatnému skóre z jiné oblasti (pozdní platby za telefon).\n2) E-shop nabízí horší ceny zákazníkům s nízkým ‚interním skóre'.\n3) Pojišťovna zvýší pojistné na základě sociálního profilu klienta. Nepatří sem běžné věrnostní programy.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "scoring_tool_name", "label": "Název systému", "type": "select",
-                         "options": ["Vlastní systém", "Salesforce", "HubSpot", "Jiný CRM", "Jiný"]},
+                        {"key": "scoring_tool_name", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Salesforce", "HubSpot", "Jiný CRM", "Jiný"]},
                         {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "multi_select",
                          "options": ["Zaměstnanci", "Zákazníci"]},
                     ]
@@ -123,19 +123,19 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_subliminal_manipulation",
                 "text": "Používáte AI k ovlivňování lidí bez jejich vědomí?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) E-shop zvyšuje ceny, když AI detekuje frustraci zákazníka. 2) Reklama cílí AI algoritmy na seniory v tísni s nabídkou předražených produktů. 3) Aplikace používá skryté manipulativní designové vzory řízené AI. Nepatří sem běžná personalizace nabídek.",
+                "help_text": "Příklady:\n1) E-shop zvyšuje ceny, když AI detekuje frustraci zákazníka.\n2) Reklama cílí AI algoritmy na seniory v tísni s nabídkou předražených produktů.\n3) Aplikace používá skryté manipulativní designové vzory řízené AI. Nepatří sem běžná personalizace nabídek.",
                 "risk_hint": "high",
                 "ai_act_article": "čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace",
             },
             {
                 "key": "uses_realtime_biometric",
                 "text": "Používáte biometrickou identifikaci (obličej, otisk prstu, hlas)?",
-                "help_text": "Příklady: 1) Docházkový systém na otisk prstu (HR oddělení). 2) Kamerový systém na recepci identifikující zaměstnance obličejem (bezpečnostní oddělení). 3) Vstupní brána na rozpoznání hlasu (IT oddělení).",
+                "help_text": "Příklady:\n1) Docházkový systém na otisk prstu (HR oddělení).\n2) Kamerový systém na recepci identifikující zaměstnance obličejem (bezpečnostní oddělení).\n3) Vstupní brána na rozpoznání hlasu (IT oddělení).",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "biometric_tool_name", "label": "Název systému", "type": "select",
+                        {"key": "biometric_tool_name", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
                          "options": ["Kamerový systém", "Docházkový systém", "Přístupový systém", "Jiný"]},
                         {"key": "biometric_purpose", "label": "Účel (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Docházka zaměstnanců", "Kontrola přístupu", "Identifikace zákazníků", "Bezpečnost", "Jiné"]},
@@ -158,7 +158,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_chatgpt",
                 "text": "Používá někdo ve firmě ChatGPT, Claude nebo podobný AI chat?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Marketingové oddělení píše newslettery v ChatGPT. 2) Účetní se ptá Claude na daňové předpisy. 3) Obchodník připravuje nabídky pomocí Copilota. Patří sem i bezplatné verze.",
+                "help_text": "Příklady:\n1) Marketingové oddělení píše newslettery v ChatGPT.\n2) Účetní se ptá Claude na daňové předpisy.\n3) Obchodník připravuje nabídky pomocí Copilota. Patří sem i bezplatné verze.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -167,7 +167,7 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "chatgpt_purpose", "label": "K čemu je používáte?", "type": "multi_select",
                          "options": ["Psaní textů", "Překlady", "Emaily", "Analýza dat", "Programování", "Zákaznický servis", "Jiné"]},
                         {"key": "chatgpt_data_type", "label": "Jaká data do něj vkládáte?", "type": "multi_select",
-                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data", "Zdrojový kód / obchodní tajemství"]},
+                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data", "Zdrojový kód / obchodní tajemství", "Jiné"]},
                     ]
                 },
                 "risk_hint": "limited",
@@ -177,7 +177,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_copilot",
                 "text": "Používáte AI pro psaní kódu nebo programování?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Vývojář používá GitHub Copilot k doplňování kódu (IT oddělení). 2) Data analyst vytváří SQL dotazy v Cursoru. 3) DevOps inženýr generuje skripty pomocí Amazon CodeWhisperer.",
+                "help_text": "Příklady:\n1) Vývojář používá GitHub Copilot k doplňování kódu (IT oddělení).\n2) Data analyst vytváří SQL dotazy v Cursoru.\n3) DevOps inženýr generuje skripty pomocí Amazon CodeWhisperer.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -194,14 +194,14 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_content",
                 "text": "Generujete obrázky, videa nebo texty pomocí AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Marketing generuje obrázky produktů v Midjourney pro sociální sítě. 2) Grafik vytváří bannery v Canva AI (kreativní oddělení). 3) Copywriter píše popisky produktů v Jasper / Copy.ai.",
+                "help_text": "Příklady:\n1) Marketing generuje obrázky produktů v Midjourney pro sociální sítě.\n2) Grafik vytváří bannery v Canva AI (kreativní oddělení).\n3) Copywriter píše popisky produktů v Jasper / Copy.ai.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "content_tool_name", "label": "Které nástroje používáte?", "type": "multi_select",
                          "options": ["DALL-E", "Midjourney", "Stable Diffusion", "Canva AI", "Jasper", "Copy.ai", "Jiný"]},
                         {"key": "content_published", "label": "Kde AI obsah používáte?", "type": "multi_select",
-                         "options": ["Web / sociální sítě", "Interní materiály", "E-maily zákazníkům", "Reklamní kampaně"]},
+                         "options": ["Web / sociální sítě", "Interní materiály", "E-maily zákazníkům", "Reklamní kampaně", "Jiné"]},
                     ]
                 },
                 "risk_hint": "limited",
@@ -211,14 +211,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_deepfake",
                 "text": "Vytváříte syntetická videa, klonujete hlas nebo používáte AI avatary?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Marketing vytváří promo videa s AI avatarem v Synthesia. 2) E-learningové oddělení klonuje hlas lektora pomocí ElevenLabs. 3) HR natáčí onboarding videa s virtuálním mluvčím v HeyGen.",
+                "help_text": "Příklady:\n1) Marketing vytváří promo videa s AI avatarem v Synthesia.\n2) E-learningové oddělení klonuje hlas lektora pomocí ElevenLabs.\n3) HR natáčí onboarding videa s virtuálním mluvčím v HeyGen.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "deepfake_tool_name", "label": "Který nástroj používáte?", "type": "select",
-                         "options": ["HeyGen", "Synthesia", "ElevenLabs", "D-ID", "Murf AI", "Vlastní řešení", "Jiný"]},
+                        {"key": "deepfake_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["HeyGen", "Synthesia", "ElevenLabs", "D-ID", "Murf AI", "Jiný"]},
                         {"key": "deepfake_disclosed", "label": "Označujete tento obsah jako AI generovaný?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Od 2. srpna 2025 je podle čl. 50 AI Act povinné označit veškerý deep-fake obsah (syntetická videa, klonovaný hlas, AI avatary) jako uměle vytvořený. Nesplnění může vést k pokutě."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -237,13 +238,13 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "uses_ai_recruitment",
                 "text": "Používáte AI při náboru zaměstnanců?",
-                "help_text": "Příklady: 1) HR používá LinkedIn Recruiter k automatickému třídění životopisů. 2) Teamio filtruje kandidáty podle klíčových slov v CV. 3) Jobs.cz AI automaticky řadí uchazeče podle shody s popisem pozice.",
+                "help_text": "Příklady:\n1) HR používá LinkedIn Recruiter k automatickému třídění životopisů.\n2) Teamio filtruje kandidáty podle klíčových slov v CV.\n3) Jobs.cz AI automaticky řadí uchazeče podle shody s popisem pozice.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "recruitment_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Vlastní systém", "Jiné"]},
+                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Jiné"]},
                         {"key": "recruitment_autonomous", "label": "Rozhoduje AI samostatně o kandidátech?", "type": "select",
                          "options": ["Ano, automaticky filtruje", "Ne, pouze doporučuje"]},
                     ]
@@ -254,7 +255,7 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "uses_ai_employee_monitoring",
                 "text": "Sledujete zaměstnance pomocí AI?",
-                "help_text": "Příklady: 1) IT oddělení má Hubstaff / Time Doctor na sledování aktivity obrazovky. 2) Logistika používá GPS tracking kurjérů. 3) Výroba má kamery s AI detekcí bezpečnostních pravidel.",
+                "help_text": "Příklady:\n1) IT oddělení má Hubstaff / Time Doctor na sledování aktivity obrazovky.\n2) Logistika používá GPS tracking kurjérů.\n3) Výroba má kamery s AI detekcí bezpečnostních pravidel.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
@@ -262,7 +263,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "monitoring_type", "label": "Co sledujete?", "type": "multi_select",
                          "options": ["Sledování obrazovky", "Měření produktivity", "GPS sledování", "Kamerový dohled s AI", "Analýza emailů", "Jiné"]},
                         {"key": "monitoring_informed", "label": "Jsou zaměstnanci informováni?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Zaměstnanci mají právo být informováni o sledování. Neinformování může porušit GDPR i AI Act (čl. 26 odst. 7)."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -272,12 +274,12 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_emotion_recognition",
                 "text": "Rozpoznáváte emoce zaměstnanců nebo zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Call centrum analyzuje tón hlasu operátorů pro hodnocení kvality (zákaznický servis). 2) Kamera v kanceláři sleduje výraz obličeje pro ‚měření spokojenosti‘ (HR). 3) Školicí systém detekuje nudu studentů pomocí webkamery (vzdělávání).",
+                "help_text": "Příklady:\n1) Call centrum analyzuje tón hlasu operátorů pro hodnocení kvality (zákaznický servis).\n2) Kamera v kanceláři sleduje výraz obličeje pro ‚měření spokojenosti‘ (HR).\n3) Školicí systém detekuje nudu studentů pomocí webkamery (vzdělávání).",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "emotion_tool_name", "label": "Název systému", "type": "select",
-                         "options": ["Kamerový systém", "Call centrum analýza", "Vlastní systém", "Jiný"]},
+                        {"key": "emotion_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Kamerový systém", "Call centrum analýza", "Jiný"]},
                         {"key": "emotion_context", "label": "V jakém kontextu? (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost", "Jiné"]},
                     ]
@@ -299,14 +301,14 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_accounting",
                 "text": "Používáte AI v účetnictví nebo fakturaci?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Účetní kancelář používá Pohodu s AI kategorizací faktur. 2) Fakturoid automaticky páruje přijaté platby. 3) Money S5 navrhuje účetní políčky pomocí AI.",
+                "help_text": "Příklady:\n1) Účetní kancelář používá Pohodu s AI kategorizací faktur.\n2) Fakturoid automaticky páruje přijaté platby.\n3) Money S5 navrhuje účetní políčky pomocí AI.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "accounting_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
                          "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Jiné"]},
                         {"key": "accounting_decisions", "label": "Dělá AI autonomní finanční rozhodnutí?", "type": "select",
-                         "options": ["Ne, pouze asistuje", "Ano, schvaluje platby", "Ano, hodnotí kreditní riziko"]},
+                         "options": ["Ne, pouze asistuje", "Ano, schvaluje platby"]},
                     ]
                 },
                 "risk_hint": "limited",
@@ -316,14 +318,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_creditscoring",
                 "text": "Hodnotíte bonitu zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Finanční oddělení používá CRIF scoring k hodnocení bonity klientů. 2) E-shop automaticky schvaluje / zamítá nákup na splátky podle AI skóre. 3) Leasingová společnost používá Bisnode k ověření platební morálky.",
+                "help_text": "Příklady:\n1) Finanční oddělení používá CRIF scoring k hodnocení bonity klientů.\n2) E-shop automaticky schvaluje / zamítá nákup na splátky podle AI skóre.\n3) Leasingová společnost používá Bisnode k ověření platební morálky.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "credit_tool", "label": "Který systém používáte?", "type": "select",
-                         "options": ["CRIF – Czech Credit Bureau", "Bisnode / Dun & Bradstreet", "Scoring Solutions", "Vlastní systém", "Jiný"]},
+                        {"key": "credit_tool", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["CRIF – Czech Credit Bureau", "Bisnode / Dun & Bradstreet", "Scoring Solutions", "Jiný"]},
                         {"key": "credit_impact", "label": "Ovlivňuje AI rozhodnutí o úvěrech/smlouvách?", "type": "select",
-                         "options": ["Ano, přímo rozhoduje", "Ne"]},
+                         "options": ["Ano, přímo rozhoduje", "Ne"],
+                         "warning": {"Ano, přímo rozhoduje": "Automatické rozhodování o úvěrech bez lidského dohledu spadá do kategorie vysoce rizikových AI systémů (Příloha III, bod 5b). Vyžaduje registraci v EU databázi a průběžné monitorování."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -332,13 +335,13 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "uses_ai_insurance",
                 "text": "Používáte AI v pojišťovnictví?",
-                "help_text": "Příklady: 1) Pojišťovna stanovuje výši pojistného pomocí AI modelu (aktuárské oddělení). 2) Likvidace škod probíhá automaticky — AI posoudí fotky nehody. 3) AI hodnocení rizika klienta při sjednávání životního pojištění.",
+                "help_text": "Příklady:\n1) Pojišťovna stanovuje výši pojistného pomocí AI modelu (aktuárské oddělení).\n2) Likvidace škod probíhá automaticky — AI posoudí fotky nehody.\n3) AI hodnocení rizika klienta při sjednávání životního pojištění.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "insurance_tool", "label": "Který systém používáte?", "type": "select",
-                         "options": ["Guidewire", "NESS / Allianz AI", "Vlastní systém", "ČPP / ČSOB interní AI", "Jiný"]},
+                        {"key": "insurance_tool", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Guidewire", "NESS / Allianz AI", "ČPP / ČSOB interní AI", "Jiný"]},
                         {"key": "insurance_impact", "label": "Ovlivňuje AI cenu nebo dostupnost pojištění?", "type": "select",
                          "options": ["Ano", "Ne"]},
                     ]
@@ -360,14 +363,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_chatbot",
                 "text": "Máte na webu chatbota nebo virtuálního asistenta?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) E-shop má Smartsupp chatbota, který odpovídá na dotazy o dostupnosti zboží. 2) SaaS firma používá Intercom k automatickému řešení podpory. 3) Restaurace má na webu Tidio bota pro rezervace.",
+                "help_text": "Příklady:\n1) E-shop má Smartsupp chatbota, který odpovídá na dotazy o dostupnosti zboží.\n2) SaaS firma používá Intercom k automatickému řešení podpory.\n3) Restaurace má na webu Tidio bota pro rezervace.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "chatbot_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Vlastní řešení", "Jiné"]},
+                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Jiné"]},
                         {"key": "chatbot_disclosed", "label": "Ví návštěvník, že komunikuje s AI?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem. Tato povinnost platí od 2. srpna 2025."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -377,14 +381,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_email_auto",
                 "text": "Automaticky odpovídáte na emaily zákazníků pomocí AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Zákaznický servis e-shopu automaticky odpovídá na dotazy o doručení přes Freshdesk AI. 2) IT podpora používá Zendesk AI k třídění a odpovídání na tickety. 3) Obchodní oddělení má nastavené auto-reply v Intercomu.",
+                "help_text": "Příklady:\n1) Zákaznický servis e-shopu automaticky odpovídá na dotazy o doručení přes Freshdesk AI.\n2) IT podpora používá Zendesk AI k třídění a odpovídání na tickety.\n3) Obchodní oddělení má nastavené auto-reply v Intercomu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "email_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "Vlastní řešení", "Jiné"]},
+                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "Jiné"]},
                         {"key": "email_disclosed", "label": "Ví zákazník, že odpovídá AI?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem. Tato povinnost platí od 2. srpna 2025."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -394,7 +399,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_decision",
                 "text": "Rozhoduje AI o reklamacích, slevách nebo přístupu ke službám?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) E-shop automaticky zamítá reklamace mimo lhůtu pomocí AI pravidel (zákaznický servis). 2) AI určuje výši slevy podle historie nákupů zákazníka (obchodní oddělení). 3) Poskytovatel služeb blokuje přístup k účtu na základě AI hodnocení rizika.",
+                "help_text": "Příklady:\n1) E-shop automaticky zamítá reklamace mimo lhůtu pomocí AI pravidel (zákaznický servis).\n2) AI určuje výši slevy podle historie nákupů zákazníka (obchodní oddělení).\n3) Poskytovatel služeb blokuje přístup k účtu na základě AI hodnocení rizika.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -411,16 +416,17 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_dynamic_pricing",
                 "text": "Používáte AI k automatickému nastavování cen podle chování zákazníka?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) E-shop zvyšuje ceny víkendům podle AI predikce poptávky. 2) Letěnky zdražují, když AI detekuje vyšší zájem z určité lokace. 3) AI nabízí různé ceny vracíce se vs. novemu zákazníkovi. Dynamické ceny dle sezóny jsou běžné — problém je cílená personalizace.",
+                "help_text": "Příklady:\n1) E-shop zvyšuje ceny víkendům podle AI predikce poptávky.\n2) Letěnky zdražují, když AI detekuje vyšší zájem z určité lokace.\n3) AI nabízí různé ceny vracíce se vs. novemu zákazníkovi. Dynamické ceny dle sezóny jsou běžné — problém je cílená personalizace.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "pricing_tool", "label": "Který nástroj používáte?", "type": "select",
-                         "options": ["Prisync", "Competera", "Dynamic Yield", "Vlastní řešení", "Jiný"]},
+                        {"key": "pricing_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Prisync", "Competera", "Dynamic Yield", "Jiný"]},
                         {"key": "pricing_basis", "label": "Na základě čeho se ceny mění?", "type": "multi_select",
                          "options": ["Historie nákupů", "Lokace zákazníka", "Čas / sezóna", "Profil zákazníka", "Poptávka", "Jiné"]},
                         {"key": "pricing_disclosed", "label": "Ví zákazník o personalizaci cen?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Personalizace cen bez informování zákazníka může představovat nekalou obchodní praktiku a porušení transparentnosti dle AI Act."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -439,13 +445,13 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "uses_ai_critical_infra",
                 "text": "Řídí AI něco kritického ve vaší firmě?",
-                "help_text": "Příklady: 1) Energetická firma řídí AI distribuční síť elektřiny (provozní oddělení). 2) Vodní dílo používá AI k optimalizaci čištění vody. 3) Dopravní firma má AI předikci údržby vozového parku.",
+                "help_text": "Příklady:\n1) Energetická firma řídí AI distribuční síť elektřiny (provozní oddělení).\n2) Vodní dílo používá AI k optimalizaci čištění vody.\n3) Dopravní firma má AI předikci údržby vozového parku.",
                 "type": "yes_no_unknown",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "infra_tool_name", "label": "Který systém používáte?", "type": "select",
-                         "options": ["Siemens MindSphere", "ABB Ability", "Honeywell Forge", "Vlastní systém", "Jiný"]},
+                        {"key": "infra_tool_name", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
+                         "options": ["Siemens MindSphere", "ABB Ability", "Honeywell Forge", "Jiný"]},
                         {"key": "infra_sector", "label": "Sektor (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Energetika", "Doprava", "Vodohospodářství", "Telekomunikace", "Zdravotnictví", "Jiné"]},
                     ]
@@ -457,11 +463,11 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_safety_component",
                 "text": "Je AI součástí bezpečnostní komponenty vašeho produktu?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) AI řídí brzdný systém v automobilu (výrobní oddělení). 2) AI monitoruje bezpečnost výrobní linky a vypíná stroj při detekci nebezpečí. 3) AI je součástí zdravotnického přístroje (diagnostika). CE označení = prohlášení výrobce o shodě s EU legislativou.",
+                "help_text": "Příklady:\n1) AI řídí brzdný systém v automobilu (výrobní oddělení).\n2) AI monitoruje bezpečnost výrobní linky a vypíná stroj při detekci nebezpečí.\n3) AI je součástí zdravotnického přístroje (diagnostika). CE označení = prohlášení výrobce o shodě s EU legislativou.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "safety_product", "label": "O jaký produkt jde?", "type": "select",
+                        {"key": "safety_product", "label": "O jaký produkt jde? (vyberte vše)", "type": "multi_select",
                          "options": ["Zdravotnický přístroj", "Průmyslový stroj", "Automobil / dopravní prostředek", "Bezpečnostní systém", "Jiný"]},
                         {"key": "safety_ce_mark", "label": "Má produkt CE označení?", "type": "select",
                          "options": ["Ano", "Ne"]},
@@ -485,14 +491,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "ai_processes_personal_data",
                 "text": "Zpracovávají vaše AI systémy osobní údaje?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Do ChatGPT vkládáte jména a emaily zákazníků (obchodní oddělení). 2) HR nahrává životopisy kandidátů do AI nástroje. 3) Účetní zpracovává rodná čísla v AI systému. U vysoce rizikových AI systémů se doporučuje DPIA (posouzení vlivu na ochranu dat).",
+                "help_text": "Příklady:\n1) Do ChatGPT vkládáte jména a emaily zákazníků (obchodní oddělení).\n2) HR nahrává životopisy kandidátů do AI nástroje.\n3) Účetní zpracovává rodná čísla v AI systému. U vysoce rizikových AI systémů se doporučuje DPIA (posouzení vlivu na ochranu dat).",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "personal_data_types", "label": "Jaké osobní údaje?", "type": "multi_select",
                          "options": ["Jména a kontakty", "Rodná čísla / OP", "Zdravotní údaje", "Finanční údaje", "Fotografie / video", "Lokační data", "Jiné"]},
                         {"key": "dpia_done", "label": "Provedli jste DPIA (posouzení vlivu na ochranu dat)?", "type": "select",
-                         "options": ["Ano", "Ne"]},
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "U AI systémů zpracovávajících osobní údaje se důrazně doporučuje provedení DPIA (posouzení vlivu na ochranu dat) dle GDPR čl. 35."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -502,7 +509,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "ai_data_stored_eu",
                 "text": "Jsou data vašich AI systémů uložena v EU?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) ChatGPT ukládá data na serverech v USA (OpenAI). 2) Google Gemini — servery v USA i EU. 3) Vlastní AI hostovaná na českém VPS (CZ.NIC). Pokud nevíte, pravděpodobně jsou data mimo EU.",
+                "help_text": "Příklady:\n1) ChatGPT ukládá data na serverech v USA (OpenAI).\n2) Google Gemini — servery v USA i EU.\n3) Vlastní AI hostovaná na českém VPS (CZ.NIC).\nPokud nevíte, pravděpodobně jsou data mimo EU.",
+                "followup": {
+                    "condition": "unknown",
+                    "fields": [
+                        {"key": "data_location_hint", "label": "Pomůžeme vám to zjistit — které AI nástroje používáte?", "type": "multi_select",
+                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA/EU)", "Microsoft Copilot (EU i USA)", "Claude (Anthropic — USA)", "Vlastní server v ČR/EU", "Jiný"]},
+                        {"key": "data_location_info", "label": "ℹ️ Většina velkých AI poskytovatelů (OpenAI, Google, Anthropic) ukládá data primárně v USA. Pro GDPR soulad zvažte EU hosting nebo smluvní záruky (SCC).", "type": "info"},
+                    ]
+                },
                 "risk_hint": "limited",
                 "ai_act_article": "Nařízení GDPR čl. 44+ — přenos dat do třetích zemí",
             },
@@ -510,7 +525,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "ai_transparency_docs",
                 "text": "Máte přehled o tom, jaké AI ve firmě používáte?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Interní tabulka se seznamem AI nástrojů a jejich účelem (IT oddělení). 2) Přehled SaaS služeb včetně AI v portálu dodavatelů. 3) Jednoduchý dokument ‚Které AI používáme‘ pro management.",
+                "help_text": "Příklady:\n1) Interní tabulka se seznamem AI nástrojů a jejich účelem (IT oddělení).\n2) Přehled SaaS služeb včetně AI v portálu dodavatelů.\n3) Jednoduchý dokument ‚Které AI používáme‘ pro management.",
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 49 — registrace vysoce rizikových AI systémů v EU databázi",
             },
@@ -528,7 +543,16 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "has_ai_training",
                 "text": "Proškolili jste zaměstnance o tom, jak bezpečně používat AI nástroje?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Firemní workshop ‚Bezpečné používání ChatGPT‘ pro všechny zaměstnance. 2) Online kurz AI gramotnosti od Seduo / Coursera. 3) Interní prezentace o rizicích AI a pravidlech GDPR (HR / compliance oddělení).",
+                "help_text": "Příklady:\n1) Firemní workshop ‚Bezpečné používání ChatGPT‘ pro všechny zaměstnance.\n2) Online kurz AI gramotnosti od Seduo / Coursera.\n3) Interní prezentace o rizicích AI a pravidlech GDPR.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "training_attendance", "label": "Máte prezenční listinu (podpisy účastníků školení)?", "type": "select",
+                         "options": ["Ano", "Ne"],
+                         "warning": {"Ne": "Pro doložení splnění povinnosti čl. 4 AI Act je vhodné mít prezenční listinu s podpisy účastníků. AIshield.cz vám v rámci služeb dodá kompletní školící prezentaci + šablonu prezenční listiny."}},
+                        {"key": "training_info", "label": "ℹ️ Součástí všech AIshield balíčků je profesionální školící prezentace (PowerPoint) a kompletní dokumentace včetně šablony prezenční listiny.", "type": "info"},
+                    ]
+                },
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 4",
             },
@@ -536,7 +560,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "has_ai_guidelines",
                 "text": "Máte ve firmě pravidla pro používání AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: 1) Interní směrnice ‚Co se smí a nesmí do ChatGPT‘ (IT oddělení). 2) Etický kodex pro používání AI v marketingu. 3) Pravidla pro sdílení firemních dat s AI nástroji (compliance / právní oddělení).",
+                "help_text": "Příklady:\n1) Interní směrnice ‚Co se smí a nesmí do ChatGPT‘ (IT oddělení).\n2) Etický kodex pro používání AI v marketingu.\n3) Pravidla pro sdílení firemních dat s AI nástroji.",
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 4",
             },
