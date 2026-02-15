@@ -1200,9 +1200,9 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
             'Nemáte přehled o tom, jaké AI ve firmě používáte. '
             'Bez tohoto přehledu nelze splnit žádnou povinnost AI Act — '
             'nevíte, které systémy regulovat, registrovat ani dokumentovat. '
-            'Toto je úplně první krok ke compliance: vytvořte jednoduchý registr '
-            'všech AI nástrojů (název, kdo používá, k čemu, jaká data zpracovává). '
-            'AIshield.cz vám tento registr dodá v rámci služby.'
+            'Toto je úplně první krok ke compliance. '
+            'Registr všech AI systémů ve vaší firmě vám vytvoříme my '
+            'v rámci služby AIshield.cz — na základě výsledků skenu a dotazníku.'
         ),
     },
     'has_ai_training': {
@@ -1223,8 +1223,10 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
             'Nemáte ve firmě pravidla pro používání AI. '
             'Bez interní směrnice zaměstnanci nevědí, jaká data smí do AI vkládat, '
             'zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování. '
-            'Doporučujeme vytvořit alespoň jednoduchý dokument „Pravidla pro AI ve firmě". '
-            'AIshield.cz vám tuto směrnici dodá v rámci služby.'
+            'V rámci služby vám dodáme univerzální šablonu směrnice „Pravidla pro AI ve firmě", '
+            'která pokrývá obecné zásady a je použitelná pro jakoukoliv firmu. '
+            'Pozor: konkrétní pravidla šitá na míru vašim procesům a AI nástrojům '
+            'si musíte vytvořit interně — šablona vám k tomu poslouží jako základ.'
         ),
     },
     'ai_data_stored_eu': {
@@ -1232,11 +1234,13 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
         'priority': 'střední',
         'recommendation': (
             'Data vašich AI systémů nejsou uložena v EU. '
-            'Pro soulad s GDPR při přenosu dat do třetích zemí (zejména USA) '
-            'musíte zajistit adekvátní záruky — standardní smluvní doložky (SCC), '
-            'adequacy decision, nebo binding corporate rules. '
-            'Ověřte smlouvy s poskytovateli AI služeb (OpenAI, Google, Anthropic) '
-            'a zajistěte platný Data Processing Agreement.'
+            'Většina velkých AI poskytovatelů (OpenAI, Google, Anthropic) '
+            'ukládá data na serverech v USA. To samo o sobě není zakázané, '
+            'ale musíte mít s poskytovatelem podepsanou smlouvu o zpracování '
+            'osobních údajů, která zaručuje ochranu dat i mimo EU. '
+            'Pokud používáte ChatGPT, Gemini nebo Claude, '
+            'ověřte si v nastavení, zda máte zapnutou firemní verzi '
+            '(Team/Business) — ta obvykle zajišťuje vyšší úroveň ochrany dat.'
         ),
     },
 }
