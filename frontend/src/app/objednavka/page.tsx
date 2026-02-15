@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createCheckout } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
+import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -45,6 +46,7 @@ type Gateway = "stripe" | "bank_transfer";
 function CheckoutInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { track } = useAnalytics();
     const planKey = searchParams.get("plan") || "basic";
     const plan = PLANS[planKey];
 
@@ -152,13 +154,16 @@ function CheckoutInner() {
         }
 
         setLoading(true);
+        track("checkout_started", { plan: planKey, gateway });
 
         try {
             const billing = { company, ico, dic, street, city, zip, phone };
             const data = await createCheckout(planKey, email, gateway, billing);
+            track("checkout_redirected", { plan: planKey, gateway });
             window.location.href = data.gateway_url;
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
+            track("checkout_failed", { plan: planKey, error: err instanceof Error ? err.message : "unknown" });
             setLoading(false);
         }
     }

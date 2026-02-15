@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
+import { useAnalytics } from "@/lib/analytics";
 
 function LoginForm() {
     const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ function LoginForm() {
     const authError = searchParams.get('error');
     const verified = searchParams.get('verified');
     const supabase = createClient();
+    const { track } = useAnalytics();
 
     // Show auth callback errors or verification success
     useEffect(() => {
@@ -61,6 +63,7 @@ function LoginForm() {
         }
 
         router.push(redirect);
+        track("login_completed", { method: "email" });
     }
 
     return (

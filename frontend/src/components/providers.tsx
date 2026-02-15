@@ -1,7 +1,12 @@
 "use client";
 
 import { AuthProvider } from "@/lib/auth-context";
+import { AnalyticsProvider } from "@/lib/analytics";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-    return <AuthProvider>{children}</AuthProvider>;
+    return (
+        <AuthProvider>
+            <AnalyticsProvider>{children}</AnalyticsProvider>
+        </AuthProvider>
+    );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -131,6 +132,10 @@ const INDUSTRY_SVG: Record<string, React.ReactNode> = {
 function QuestionnaireInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { track } = useAnalytics();
+    const questionStartTimeRef = useRef<number>(Date.now());
+    const questionChangeCountRef = useRef<Record<string, number>>({});
+    const questStartTimeRef = useRef<number>(Date.now());
 
     /* ── State ── */
     const [sections, setSections] = useState<Section[]>([]);
@@ -265,6 +270,7 @@ function QuestionnaireInner() {
     /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
         setDirection("forward");
+        questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => {
             // Never go beyond last question via goNext — submit button handles that
             if (p >= totalQuestions - 1) {
@@ -278,18 +284,39 @@ function QuestionnaireInner() {
 
     const goBack = useCallback(() => {
         setDirection("back");
+        questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => Math.max(-1, p - 1));
     }, []);
 
     /* ── Set answer ── */
     const setAnswer = useCallback(
         (key: string, value: string) => {
-            setAnswers((prev) => ({
-                ...prev,
-                [key]: { ...prev[key], answer: value },
-            }));
+            setAnswers((prev) => {
+                const prevAnswer = prev[key]?.answer;
+                // Track answer changes (re-answers)
+                if (prevAnswer && prevAnswer !== "" && prevAnswer !== value) {
+                    questionChangeCountRef.current[key] = (questionChangeCountRef.current[key] || 0) + 1;
+                    track("question_changed", {
+                        question_id: key,
+                        from: prevAnswer,
+                        to: value,
+                        change_count: questionChangeCountRef.current[key],
+                    });
+                }
+                // Track time spent on this question
+                const timeSpent = Date.now() - questionStartTimeRef.current;
+                track("question_answered", {
+                    question_id: key,
+                    answer_type: value,
+                    time_spent_ms: timeSpent,
+                }, timeSpent);
+                return {
+                    ...prev,
+                    [key]: { ...prev[key], answer: value },
+                };
+            });
         },
-        []
+        [track]
     );
 
     /* ── Set detail (single select / text) ── */
@@ -343,6 +370,14 @@ function QuestionnaireInner() {
                 details: Object.keys(a.details).length > 0 ? a.details : null,
                 tool_name: a.tool_name || null,
             }));
+
+        const nevimCount = list.filter((a) => a.answer === "unknown").length;
+        const totalDuration = Date.now() - questStartTimeRef.current;
+        track("questionnaire_completed", {
+            total_answers: list.length,
+            nevim_count: nevimCount,
+            changes: { ...questionChangeCountRef.current },
+        }, totalDuration);
 
         console.log(`[Dotazník] Počet odpovědí: ${list.length}, company_id: ${companyId}`);
 
@@ -549,7 +584,7 @@ function QuestionnaireInner() {
                     </div>
 
                     <button
-                        onClick={() => { setDirection("forward"); setCurrentQuestion(0); }}
+                        onClick={() => { setDirection("forward"); setCurrentQuestion(0); questStartTimeRef.current = Date.now(); questionStartTimeRef.current = Date.now(); track("questionnaire_started", { total_questions: totalQuestions }); }}
                         className="w-full sm:w-auto px-12 py-4 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold text-lg transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
                     >
                         Začít →

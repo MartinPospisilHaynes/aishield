@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useAnalytics } from "@/lib/analytics";
 import {
     getDashboardData,
     startScan,
@@ -147,6 +148,7 @@ function groupFindings(findings: DashboardData["findings"]): Array<{ name: strin
 
 export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
+    const { track, setUserEmail } = useAnalytics();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -180,10 +182,11 @@ export default function DashboardPage() {
 
     const reloadDashboard = useCallback(() => {
         if (!user?.email) return;
+        setUserEmail(user.email);
         getDashboardData(user.email)
             .then(setData)
             .catch(() => { /* silent */ });
-    }, [user?.email]);
+    }, [user?.email, setUserEmail]);
 
     const startStageAnimation = useCallback(() => {
         setScanStage(0);
@@ -233,6 +236,7 @@ export default function DashboardPage() {
 
     const handleStartScan = useCallback(async () => {
         const scanUrl = data?.company?.url || user?.user_metadata?.web_url;
+        track("scan_started", { context: "dashboard", url: scanUrl || "" });
         if (!scanUrl) {
             setScanError("Nemáme URL vašeho webu. Zadejte URL při registraci.");
             setScanActive(true);
@@ -689,7 +693,7 @@ export default function DashboardPage() {
                         {TABS.map((tab) => (
                             <button
                                 key={tab.key}
-                                onClick={() => setActiveTab(tab.key)}
+                                onClick={() => { setActiveTab(tab.key); track("dashboard_tab_clicked", { tab: tab.key }); }}
                                 className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
                                     ? "text-fuchsia-400"
                                     : "text-slate-500 hover:text-slate-300"

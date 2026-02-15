@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { Suspense } from "react";
+import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aishield.cz";
 
@@ -43,6 +44,7 @@ function RegistraceInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = createClient();
+    const { track } = useAnalytics();
 
     useEffect(() => {
         const p = searchParams.get("partner");
@@ -95,6 +97,8 @@ function RegistraceInner() {
         e.preventDefault();
         setLoading(true);
         setError("");
+        track("registration_started", { has_ico: !!ico, has_web: !!webUrl });
+        track("registration_started", { has_ico: !!ico, has_web: !!webUrl });
 
         if (password !== confirmPassword) {
             setError("Hesla se neshodují");
@@ -203,6 +207,7 @@ function RegistraceInner() {
         // 4. Jinak zobrazit hlášku o potvrzení emailu
         setSuccess(true);
         setLoading(false);
+        track("registration_completed", { method: "email" });
     }
 
     // ── TESTOVACÍ ÚČET: reset proběhl úspěšně ──

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import ContactForm from "@/components/contact-form";
+import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -27,6 +28,7 @@ const GATEWAY_NAMES: Record<PaymentGateway, string> = {
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
+    const { track } = useAnalytics();
     const gateway = (searchParams.get("gateway") || "gopay") as PaymentGateway;
     const paymentId = searchParams.get("id") || searchParams.get("session_id");
     const isSubscription = searchParams.get("type") === "subscription";
@@ -85,6 +87,10 @@ function PaymentStatusContent() {
                 if (!res.ok) throw new Error("Nelze ověřit platbu");
                 const data = await res.json();
                 setStatus(data);
+                track(data.is_paid ? "payment_completed" : "payment_pending", {
+                    gateway, state: data.state, order: data.order_number,
+                    is_subscription: isSubscription,
+                });
             } catch {
                 setError("Nepodařilo se ověřit stav platby. Zkuste to znovu za chvíli.");
             } finally {

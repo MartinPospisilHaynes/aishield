@@ -740,3 +740,99 @@ export async function confirmBankPayment(orderNumber: string): Promise<{ status:
     }
     return res.json();
 }
+
+// ── Analytics ──
+
+export interface AnalyticsStats {
+    total_events: number;
+    unique_sessions: number;
+    funnel: Record<string, number>;
+    top_pages: { page: string; views: number }[];
+    daily: { date: string; count: number }[];
+    event_types: Record<string, number>;
+    questionnaire: {
+        avg_time_per_question: Record<string, number>;
+        changes_per_question: Record<string, number>;
+        total_nevim_answers: number;
+    };
+}
+
+export interface AnalyticsSession {
+    session_id: string;
+    device: string;
+    browser: string;
+    os: string;
+    first_seen: string;
+    last_seen: string;
+    user_email: string | null;
+    pages: string[];
+    page_count: number;
+    event_count: number;
+}
+
+export interface AnalyticsEvent {
+    id: string;
+    session_id: string;
+    event_name: string;
+    properties: Record<string, unknown>;
+    page_url: string;
+    referrer: string;
+    user_email: string | null;
+    device: string;
+    browser: string;
+    os: string;
+    duration_ms: number | null;
+    created_at: string;
+}
+
+export async function getAnalyticsStats(days: number = 30): Promise<AnalyticsStats> {
+    const res = await adminFetch(`${API_URL}/api/analytics/stats?days=${days}`);
+    if (!res.ok) throw new Error("Chyba při načítání analytiky");
+    return res.json();
+}
+
+export async function getAnalyticsSessions(limit: number = 50): Promise<{ sessions: AnalyticsSession[]; total: number }> {
+    const res = await adminFetch(`${API_URL}/api/analytics/sessions?limit=${limit}`);
+    if (!res.ok) throw new Error("Chyba při načítání sessions");
+    return res.json();
+}
+
+export async function getAnalyticsEvents(limit: number = 100, eventName?: string): Promise<{ events: AnalyticsEvent[]; count: number }> {
+    let url = `${API_URL}/api/analytics/events?limit=${limit}`;
+    if (eventName) url += `&event_name=${encodeURIComponent(eventName)}`;
+    const res = await adminFetch(url);
+    if (!res.ok) throw new Error("Chyba při načítání eventů");
+    return res.json();
+}
+
+// ── Subscriptions ──
+
+export interface SubscriptionInfo {
+    id: string;
+    company_id: string;
+    company_name: string;
+    company_email: string;
+    plan: string;
+    amount: number;
+    currency: string;
+    status: string;
+    started_at: string;
+    next_payment_date: string | null;
+    last_payment_at: string | null;
+    days_overdue: number;
+    reminder_sent: boolean;
+}
+
+export async function getSubscriptions(): Promise<{ subscriptions: SubscriptionInfo[] }> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/subscriptions`);
+    if (!res.ok) throw new Error("Chyba při načítání předplatných");
+    return res.json();
+}
+
+export async function sendSubscriptionReminder(subscriptionId: string): Promise<{ status: string }> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/subscriptions/${subscriptionId}/reminder`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error("Chyba při odesílání upomínky");
+    return res.json();
+}

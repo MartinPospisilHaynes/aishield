@@ -9,6 +9,7 @@ import {
     type ScanStatus,
     type Finding,
 } from "@/lib/api";
+import { useAnalytics } from "@/lib/analytics";
 
 /* ── Inline SVG Icon helpers ── */
 const IconSearch = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -143,7 +144,9 @@ function RiskTooltip({ level, children }: { level: string; children: React.React
 
 function ScanPageInner() {
     const searchParams = useSearchParams();
+    const { track } = useAnalytics();
     const [url, setUrl] = useState("");
+    const scanStartTimeRef = useRef<number>(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [scanResult, setScanResult] = useState<ScanStatus | null>(null);
@@ -187,7 +190,13 @@ function ScanPageInner() {
                         stageRef.current = null;
                         setCurrentStage(SCAN_STAGES.length);
                         setLoading(false);
-                        if (status.status === "done") await fetchFindings(id);
+                        const duration = Date.now() - scanStartTimeRef.current;
+                        if (status.status === "done") {
+                            track("scan_completed", { scan_id: id, findings_count: status.total_findings || 0 }, duration);
+                            await fetchFindings(id);
+                        } else {
+                            track("scan_error", { scan_id: id, error: "scan_failed" }, duration);
+                        }
                     }
                 } catch { /* keep polling */ }
             }, 3000);
@@ -216,6 +225,8 @@ function ScanPageInner() {
         if (!normalizedUrl.match(/^https?:\/\//i)) normalizedUrl = "https://" + normalizedUrl;
         setUrl(normalizedUrl);
         setLoading(true);
+        scanStartTimeRef.current = Date.now();
+        track("scan_url_entered", { url: normalizedUrl });
         setError(null);
         setScanResult(null);
         setFindings([]);
@@ -229,10 +240,12 @@ function ScanPageInner() {
         try {
             const result = await startScan(normalizedUrl);
             setScanId(result.scan_id);
+            track("scan_started", { url: normalizedUrl, scan_id: result.scan_id });
 
             // Cached result — skip animation, show results immediately
             if (result.status === "cached") {
                 setIsCached(true);
+                track("scan_cached", { url: normalizedUrl, scan_id: result.scan_id });
                 const status = await getScanStatus(result.scan_id);
                 setScanResult(status);
                 setLoading(false);
@@ -253,11 +266,13 @@ function ScanPageInner() {
                 if (status.status === "done") await fetchFindings(result.scan_id);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Nastala neočekávaná chyba");
+            const errMsg = err instanceof Error ? err.message : "Nastala neočekávaná chyba";
+            setError(errMsg);
             setLoading(false);
             if (stageRef.current) clearTimeout(stageRef.current);
+            track("scan_failed", { url: normalizedUrl, error: errMsg });
         }
-    }, [startPolling, fetchFindings, startStageAnimation]);
+    }, [startPolling, fetchFindings, startStageAnimation, track]);
 
     useEffect(() => {
         const urlParam = searchParams.get("url");
@@ -276,6 +291,7 @@ function ScanPageInner() {
     const handleSendReport = async () => {
         if (!reportEmail || !scanId) return;
         setEmailSending(true);
+        track("email_entered", { context: "scan_report" });
         try {
             const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim();
             const resp = await fetch(API + "/api/scan/" + scanId + "/send-report", {
@@ -283,7 +299,10 @@ function ScanPageInner() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: reportEmail }),
             });
-            if (resp.ok) setEmailSent(true);
+            if (resp.ok) {
+                setEmailSent(true);
+                track("report_email_sent", { scan_id: scanId });
+            }
         } catch { /* silent */ }
         setEmailSending(false);
     };

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { createGuestCheckout } from "@/lib/api";
+import { useAnalytics, useScrollTracking } from "@/lib/analytics";
 
 const plans = [
     {
@@ -96,10 +97,15 @@ export default function PricingPage() {
 
     const { user } = useAuth();
     const router = useRouter();
+    const { track } = useAnalytics();
+    useScrollTracking();
 
-
+    useEffect(() => {
+        track("pricing_page_viewed");
+    }, [track]);
 
     async function handleCheckout(planKey: string) {
+        track("plan_selected", { plan: planKey });
         // Coffee = guest checkout, nevyžaduje přihlášení
         if (planKey === "coffee") {
             const emailToUse = user?.email || coffeeEmail;

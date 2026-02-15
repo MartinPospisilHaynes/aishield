@@ -29,6 +29,11 @@ import {
     confirmBankPayment,
     getClientQuestionnaire,
     getClientFindings,
+    getAnalyticsStats,
+    getAnalyticsSessions,
+    getAnalyticsEvents,
+    getSubscriptions,
+    sendSubscriptionReminder,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -48,6 +53,10 @@ import type {
     ClientQuestionnaireData,
     ClientFindingsData,
     FindingDetail,
+    AnalyticsStats,
+    AnalyticsSession,
+    AnalyticsEvent,
+    SubscriptionInfo,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -123,7 +132,9 @@ type Tab =
     | "klienti"
     | "objednavky"
     | "agentura"
-    | "nastroje";
+    | "nastroje"
+    | "analytika"
+    | "predplatne";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -136,6 +147,8 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "monitoring", icon: "🔔", label: "Monitoring" },
     { id: "agentura", icon: "🤝", label: "Agentura" },
     { id: "nastroje", icon: "⚙️", label: "Nástroje" },
+    { id: "analytika", icon: "📉", label: "Analytika" },
+    { id: "predplatne", icon: "💳", label: "Předplatné" },
 ];
 
 const TASKS = [
@@ -361,6 +374,21 @@ export default function AdminPage() {
     const [orderGwFilter, setOrderGwFilter] = useState<"all" | "stripe" | "bank_transfer" | "gopay" | "comgate">("all");
     const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
 
+    // Analytics
+    const [analyticsStats, setAnalyticsStats] = useState<AnalyticsStats | null>(null);
+    const [analyticsSessions, setAnalyticsSessions] = useState<AnalyticsSession[]>([]);
+    const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>([]);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [analyticsDays, setAnalyticsDays] = useState(30);
+    const [analyticsEventFilter, setAnalyticsEventFilter] = useState("");
+    const [analyticsTab, setAnalyticsTab] = useState<"funnel" | "events" | "sessions" | "questionnaire">("funnel");
+
+    // Subscriptions
+    const [subscriptions, setSubscriptions] = useState<SubscriptionInfo[]>([]);
+    const [subscriptionsLoading, setSubscriptionsLoading] = useState(false);
+    const [reminderSending, setReminderSending] = useState<string | null>(null);
+    const [subscriptionFilter, setSubscriptionFilter] = useState<"all" | "active" | "overdue" | "cancelled">("all");
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -471,6 +499,38 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadAnalytics = useCallback(async () => {
+        setAnalyticsLoading(true);
+        try {
+            const [stats, sess, evts] = await Promise.all([
+                getAnalyticsStats(analyticsDays),
+                getAnalyticsSessions(50),
+                getAnalyticsEvents(200),
+            ]);
+            setAnalyticsStats(stats);
+            setAnalyticsSessions(sess.sessions || []);
+            setAnalyticsEvents(evts.events || []);
+        } catch (e) {
+            console.error("Analytics load error:", e);
+            setLoadError(`Analytika: ${e}`);
+        } finally {
+            setAnalyticsLoading(false);
+        }
+    }, [analyticsDays]);
+
+    const loadSubscriptions = useCallback(async () => {
+        setSubscriptionsLoading(true);
+        try {
+            const d = await getSubscriptions();
+            setSubscriptions(d.subscriptions || []);
+        } catch (e) {
+            console.error("Subscriptions load error:", e);
+            setLoadError(`Předplatné: ${e}`);
+        } finally {
+            setSubscriptionsLoading(false);
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -497,7 +557,9 @@ export default function AdminPage() {
         if (tab === "agentura") loadAgency();
         if (tab === "klienti") loadClientManagement();
         if (tab === "objednavky") loadOrders();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders]);
+        if (tab === "analytika") loadAnalytics();
+        if (tab === "predplatne") loadSubscriptions();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -713,6 +775,8 @@ export default function AdminPage() {
                                 if (tab === "agentura") loadAgency();
                                 if (tab === "klienti") loadClientManagement();
                                 if (tab === "objednavky") loadOrders();
+                                if (tab === "analytika") loadAnalytics();
+                                if (tab === "predplatne") loadSubscriptions();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -2345,11 +2409,10 @@ export default function AdminPage() {
                                                                                     finally { setLoadingDetail(false); }
                                                                                 }
                                                                             }}
-                                                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                                                clientDetailTab === t.id
+                                                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${clientDetailTab === t.id
                                                                                     ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                                                                                     : "text-gray-400 border border-white/10 hover:text-white hover:bg-white/5"
-                                                                            }`}
+                                                                                }`}
                                                                         >
                                                                             {t.icon} {t.label}
                                                                         </button>
@@ -2376,11 +2439,10 @@ export default function AdminPage() {
                                                                                                 <div key={i} className="flex flex-col gap-1 bg-black/20 rounded-lg p-3 text-xs">
                                                                                                     <div className="flex items-start justify-between gap-2">
                                                                                                         <span className="text-gray-300 font-medium">{r.question_key.replace(/_/g, " ")}</span>
-                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                                                                                                            r.answer === "yes" ? "bg-green-500/20 text-green-400" :
-                                                                                                            r.answer === "no" ? "bg-gray-500/20 text-gray-400" :
-                                                                                                            "bg-cyan-500/20 text-cyan-400"
-                                                                                                        }`}>
+                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${r.answer === "yes" ? "bg-green-500/20 text-green-400" :
+                                                                                                                r.answer === "no" ? "bg-gray-500/20 text-gray-400" :
+                                                                                                                    "bg-cyan-500/20 text-cyan-400"
+                                                                                                            }`}>
                                                                                                             {r.answer}
                                                                                                         </span>
                                                                                                     </div>
@@ -2423,12 +2485,11 @@ export default function AdminPage() {
                                                                                                 <div className="flex-1">
                                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                                         <span className="text-white font-medium text-sm">{f.name}</span>
-                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                                                                                            f.risk_level === "high" ? "bg-red-500/20 text-red-400" :
-                                                                                                            f.risk_level === "limited" ? "bg-orange-500/20 text-orange-400" :
-                                                                                                            f.risk_level === "minimal" ? "bg-green-500/20 text-green-400" :
-                                                                                                            "bg-gray-500/20 text-gray-400"
-                                                                                                        }`}>
+                                                                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${f.risk_level === "high" ? "bg-red-500/20 text-red-400" :
+                                                                                                                f.risk_level === "limited" ? "bg-orange-500/20 text-orange-400" :
+                                                                                                                    f.risk_level === "minimal" ? "bg-green-500/20 text-green-400" :
+                                                                                                                        "bg-gray-500/20 text-gray-400"
+                                                                                                            }`}>
                                                                                                             {f.risk_level}
                                                                                                         </span>
                                                                                                         <span className="text-[10px] text-gray-500">{f.category}</span>
@@ -2439,11 +2500,10 @@ export default function AdminPage() {
                                                                                                     )}
                                                                                                     <div className="text-xs text-cyan-400/70">{f.action_required}</div>
                                                                                                 </div>
-                                                                                                <span className={`text-[10px] px-2 py-0.5 rounded border shrink-0 ${
-                                                                                                    f.status === "open" ? "border-yellow-500/30 text-yellow-400" :
-                                                                                                    f.status === "resolved" ? "border-green-500/30 text-green-400" :
-                                                                                                    "border-white/10 text-gray-500"
-                                                                                                }`}>
+                                                                                                <span className={`text-[10px] px-2 py-0.5 rounded border shrink-0 ${f.status === "open" ? "border-yellow-500/30 text-yellow-400" :
+                                                                                                        f.status === "resolved" ? "border-green-500/30 text-green-400" :
+                                                                                                            "border-white/10 text-gray-500"
+                                                                                                    }`}>
                                                                                                     {f.status}
                                                                                                 </span>
                                                                                             </div>
@@ -2457,142 +2517,142 @@ export default function AdminPage() {
 
                                                                 {/* Tab: Overview (existing content) */}
                                                                 {clientDetailTab === "overview" && (
-                                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                                    {/* Orders history */}
-                                                                    <Panel className="p-4">
-                                                                        <h4 className="text-xs font-semibold text-cyan-400 mb-3 uppercase tracking-wider">📋 Objednávky</h4>
-                                                                        {client.orders.length === 0 ? (
-                                                                            <div className="text-xs text-gray-500">Žádné objednávky</div>
-                                                                        ) : (
-                                                                            <div className="space-y-2">
-                                                                                {client.orders.map((o) => (
-                                                                                    <div key={o.id} className="flex items-center justify-between text-xs bg-black/20 rounded-lg p-2">
-                                                                                        <div>
-                                                                                            <div className="text-white font-medium">{o.order_number}</div>
-                                                                                            <div className="text-gray-500">
-                                                                                                {o.plan?.toUpperCase()} • {o.order_type === "subscription_recurrence" ? "Opakovaná" : o.order_type === "subscription" ? "Předplatné" : "Jednorázová"}
+                                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                        {/* Orders history */}
+                                                                        <Panel className="p-4">
+                                                                            <h4 className="text-xs font-semibold text-cyan-400 mb-3 uppercase tracking-wider">📋 Objednávky</h4>
+                                                                            {client.orders.length === 0 ? (
+                                                                                <div className="text-xs text-gray-500">Žádné objednávky</div>
+                                                                            ) : (
+                                                                                <div className="space-y-2">
+                                                                                    {client.orders.map((o) => (
+                                                                                        <div key={o.id} className="flex items-center justify-between text-xs bg-black/20 rounded-lg p-2">
+                                                                                            <div>
+                                                                                                <div className="text-white font-medium">{o.order_number}</div>
+                                                                                                <div className="text-gray-500">
+                                                                                                    {o.plan?.toUpperCase()} • {o.order_type === "subscription_recurrence" ? "Opakovaná" : o.order_type === "subscription" ? "Předplatné" : "Jednorázová"}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div className="text-right">
+                                                                                                <div className={`font-bold ${o.status === "PAID" || o.status === "paid" ? "text-green-400" : "text-yellow-400"}`}>
+                                                                                                    {fmtMoney(o.amount)}
+                                                                                                </div>
+                                                                                                <div className="text-gray-500">{fmtDate(o.paid_at || o.created_at)}</div>
                                                                                             </div>
                                                                                         </div>
-                                                                                        <div className="text-right">
-                                                                                            <div className={`font-bold ${o.status === "PAID" || o.status === "paid" ? "text-green-400" : "text-yellow-400"}`}>
-                                                                                                {fmtMoney(o.amount)}
-                                                                                            </div>
-                                                                                            <div className="text-gray-500">{fmtDate(o.paid_at || o.created_at)}</div>
-                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            )}
+                                                                        </Panel>
+
+                                                                        {/* Subscription detail */}
+                                                                        <Panel className="p-4">
+                                                                            <h4 className="text-xs font-semibold text-fuchsia-400 mb-3 uppercase tracking-wider">📆 Předplatné</h4>
+                                                                            {!client.subscription ? (
+                                                                                <div className="text-xs text-gray-500">Žádné aktivní předplatné</div>
+                                                                            ) : (
+                                                                                <div className="space-y-2 text-xs">
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Plán</span>
+                                                                                        <span className="text-white font-medium">
+                                                                                            {client.subscription.plan === "monitoring_plus" ? "Monitoring Plus" : "Monitoring"}
+                                                                                        </span>
                                                                                     </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        )}
-                                                                    </Panel>
-
-                                                                    {/* Subscription detail */}
-                                                                    <Panel className="p-4">
-                                                                        <h4 className="text-xs font-semibold text-fuchsia-400 mb-3 uppercase tracking-wider">📆 Předplatné</h4>
-                                                                        {!client.subscription ? (
-                                                                            <div className="text-xs text-gray-500">Žádné aktivní předplatné</div>
-                                                                        ) : (
-                                                                            <div className="space-y-2 text-xs">
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Plán</span>
-                                                                                    <span className="text-white font-medium">
-                                                                                        {client.subscription.plan === "monitoring_plus" ? "Monitoring Plus" : "Monitoring"}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Částka</span>
-                                                                                    <span className="text-white">{fmtMoney(client.subscription.amount)}/měs</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Stav</span>
-                                                                                    <span className={client.subscription.payment_ok ? "text-green-400" : "text-red-400"}>
-                                                                                        {client.subscription.payment_ok ? "✅ OK" : "🚨 Nezaplaceno"}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Aktivováno</span>
-                                                                                    <span className="text-gray-300">{fmtDate(client.subscription.activated_at)}</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Poslední platba</span>
-                                                                                    <span className="text-gray-300">{fmtDate(client.subscription.last_charged_at)}</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between">
-                                                                                    <span className="text-gray-400">Další platba</span>
-                                                                                    <span className={`font-medium ${client.subscription.payment_ok ? "text-cyan-400" : "text-red-400"
-                                                                                        }`}>
-                                                                                        {fmtDate(client.subscription.next_charge_at)}
-                                                                                    </span>
-                                                                                </div>
-                                                                                <div className="flex justify-between border-t border-white/5 pt-2">
-                                                                                    <span className="text-gray-400">Celkem strženo</span>
-                                                                                    <span className="text-green-400 font-bold">
-                                                                                        {fmtMoney(client.subscription.total_charged)}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                    </Panel>
-
-                                                                    {/* Scan + Fulfillment */}
-                                                                    <Panel className="p-4">
-                                                                        <h4 className="text-xs font-semibold text-green-400 mb-3 uppercase tracking-wider">🛡️ Plnění povinností</h4>
-                                                                        <div className="space-y-2 text-xs">
-                                                                            <div className="flex justify-between">
-                                                                                <span className="text-gray-400">Poslední sken</span>
-                                                                                <span className="text-gray-300">
-                                                                                    {client.last_scan
-                                                                                        ? `${fmtDate(client.last_scan.created_at)} (${client.scan_age_days ?? "?"}d)`
-                                                                                        : "—"
-                                                                                    }
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="flex justify-between">
-                                                                                <span className="text-gray-400">Nálezy</span>
-                                                                                <span className="text-white">{client.last_scan?.total_findings ?? "—"}</span>
-                                                                            </div>
-                                                                            <div className="flex justify-between">
-                                                                                <span className="text-gray-400">Dokumenty</span>
-                                                                                <span className="text-white">{client.documents_count} ks</span>
-                                                                            </div>
-                                                                            <div className="flex justify-between">
-                                                                                <span className="text-gray-400">Dokumenty vygenerovány</span>
-                                                                                <span className="text-gray-300">{fmtDate(client.documents_last_at)}</span>
-                                                                            </div>
-                                                                            <div className="flex justify-between">
-                                                                                <span className="text-gray-400">Dotazník</span>
-                                                                                <span className={client.questionnaire_done ? "text-green-400" : "text-gray-500"}>
-                                                                                    {client.questionnaire_done ? "✅ Vyplněn" : "❌ Nevyplněn"}
-                                                                                </span>
-                                                                            </div>
-                                                                            {client.last_diff && (
-                                                                                <div className="border-t border-white/5 pt-2 mt-2">
-                                                                                    <div className="text-gray-400 mb-1">Poslední porovnání:</div>
-                                                                                    <div className={`rounded-lg p-2 ${client.last_diff.has_changes ? "bg-yellow-500/10" : "bg-green-500/10"}`}>
-                                                                                        {client.last_diff.has_changes ? (
-                                                                                            <span className="text-yellow-400">
-                                                                                                ⚠️ +{client.last_diff.added} / −{client.last_diff.removed}
-                                                                                            </span>
-                                                                                        ) : (
-                                                                                            <span className="text-green-400">✅ Beze změn</span>
-                                                                                        )}
-                                                                                        <div className="text-gray-500 text-[10px] mt-0.5">
-                                                                                            {fmtDate(client.last_diff.created_at)}
-                                                                                        </div>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Částka</span>
+                                                                                        <span className="text-white">{fmtMoney(client.subscription.amount)}/měs</span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Stav</span>
+                                                                                        <span className={client.subscription.payment_ok ? "text-green-400" : "text-red-400"}>
+                                                                                            {client.subscription.payment_ok ? "✅ OK" : "🚨 Nezaplaceno"}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Aktivováno</span>
+                                                                                        <span className="text-gray-300">{fmtDate(client.subscription.activated_at)}</span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Poslední platba</span>
+                                                                                        <span className="text-gray-300">{fmtDate(client.subscription.last_charged_at)}</span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="text-gray-400">Další platba</span>
+                                                                                        <span className={`font-medium ${client.subscription.payment_ok ? "text-cyan-400" : "text-red-400"
+                                                                                            }`}>
+                                                                                            {fmtDate(client.subscription.next_charge_at)}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between border-t border-white/5 pt-2">
+                                                                                        <span className="text-gray-400">Celkem strženo</span>
+                                                                                        <span className="text-green-400 font-bold">
+                                                                                            {fmtMoney(client.subscription.total_charged)}
+                                                                                        </span>
                                                                                     </div>
                                                                                 </div>
                                                                             )}
-                                                                            <div className="border-t border-white/5 pt-2 mt-2">
-                                                                                <div className="flex justify-between items-center">
-                                                                                    <span className="text-gray-400">Stav plnění</span>
-                                                                                    {client.fulfillment === "ok" && <span className="text-green-400 font-medium">✅ Vše splněno</span>}
-                                                                                    {client.fulfillment === "needs_rescan" && <span className="text-orange-400 font-medium">🔍 Potřeba sken</span>}
-                                                                                    {client.fulfillment === "needs_documents" && <span className="text-yellow-400 font-medium">📄 Chybí dokumenty</span>}
-                                                                                    {client.fulfillment === "no_scan" && <span className="text-red-400 font-medium">❌ Bez skenu</span>}
+                                                                        </Panel>
+
+                                                                        {/* Scan + Fulfillment */}
+                                                                        <Panel className="p-4">
+                                                                            <h4 className="text-xs font-semibold text-green-400 mb-3 uppercase tracking-wider">🛡️ Plnění povinností</h4>
+                                                                            <div className="space-y-2 text-xs">
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Poslední sken</span>
+                                                                                    <span className="text-gray-300">
+                                                                                        {client.last_scan
+                                                                                            ? `${fmtDate(client.last_scan.created_at)} (${client.scan_age_days ?? "?"}d)`
+                                                                                            : "—"
+                                                                                        }
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Nálezy</span>
+                                                                                    <span className="text-white">{client.last_scan?.total_findings ?? "—"}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Dokumenty</span>
+                                                                                    <span className="text-white">{client.documents_count} ks</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Dokumenty vygenerovány</span>
+                                                                                    <span className="text-gray-300">{fmtDate(client.documents_last_at)}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-gray-400">Dotazník</span>
+                                                                                    <span className={client.questionnaire_done ? "text-green-400" : "text-gray-500"}>
+                                                                                        {client.questionnaire_done ? "✅ Vyplněn" : "❌ Nevyplněn"}
+                                                                                    </span>
+                                                                                </div>
+                                                                                {client.last_diff && (
+                                                                                    <div className="border-t border-white/5 pt-2 mt-2">
+                                                                                        <div className="text-gray-400 mb-1">Poslední porovnání:</div>
+                                                                                        <div className={`rounded-lg p-2 ${client.last_diff.has_changes ? "bg-yellow-500/10" : "bg-green-500/10"}`}>
+                                                                                            {client.last_diff.has_changes ? (
+                                                                                                <span className="text-yellow-400">
+                                                                                                    ⚠️ +{client.last_diff.added} / −{client.last_diff.removed}
+                                                                                                </span>
+                                                                                            ) : (
+                                                                                                <span className="text-green-400">✅ Beze změn</span>
+                                                                                            )}
+                                                                                            <div className="text-gray-500 text-[10px] mt-0.5">
+                                                                                                {fmtDate(client.last_diff.created_at)}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div className="border-t border-white/5 pt-2 mt-2">
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-gray-400">Stav plnění</span>
+                                                                                        {client.fulfillment === "ok" && <span className="text-green-400 font-medium">✅ Vše splněno</span>}
+                                                                                        {client.fulfillment === "needs_rescan" && <span className="text-orange-400 font-medium">🔍 Potřeba sken</span>}
+                                                                                        {client.fulfillment === "needs_documents" && <span className="text-yellow-400 font-medium">📄 Chybí dokumenty</span>}
+                                                                                        {client.fulfillment === "no_scan" && <span className="text-red-400 font-medium">❌ Bez skenu</span>}
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    </Panel>
-                                                                </div>
+                                                                        </Panel>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         )}
@@ -2684,8 +2744,8 @@ export default function AdminPage() {
                                                         }}
                                                         disabled={confirmingOrder === o.order_number}
                                                         className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${confirmingOrder === o.order_number
-                                                                ? "bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse cursor-wait"
-                                                                : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                                                            ? "bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse cursor-wait"
+                                                            : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
                                                             }`}
                                                     >
                                                         {confirmingOrder === o.order_number ? "⏳ Potvrzuji…" : "✅ Potvrdit platbu"}
@@ -2713,8 +2773,8 @@ export default function AdminPage() {
                                                 key={f}
                                                 onClick={() => setOrderFilter(f)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${orderFilter === f
-                                                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
                                                     }`}
                                             >
                                                 {labels[f]}
@@ -2735,8 +2795,8 @@ export default function AdminPage() {
                                                 key={f}
                                                 onClick={() => setOrderGwFilter(f)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${orderGwFilter === f
-                                                        ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
-                                                        : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
+                                                    ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
+                                                    : "bg-white/5 text-gray-400 border border-white/10 hover:text-white"
                                                     }`}
                                             >
                                                 {labels[f]}
@@ -2788,10 +2848,10 @@ export default function AdminPage() {
                                                                 </td>
                                                                 <td className="px-4 py-3">
                                                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.payment_gateway === "stripe"
-                                                                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                                                                            : o.payment_gateway === "bank_transfer"
-                                                                                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                                                                                : "bg-white/5 text-gray-400 border border-white/10"
+                                                                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                                                        : o.payment_gateway === "bank_transfer"
+                                                                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                                                            : "bg-white/5 text-gray-400 border border-white/10"
                                                                         }`}>
                                                                         {o.payment_gateway === "stripe" ? "💳 Stripe" :
                                                                             o.payment_gateway === "bank_transfer" ? "🏦 Převod" :
@@ -2805,10 +2865,10 @@ export default function AdminPage() {
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center">
                                                                     <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${isPaid
-                                                                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                                                            : isAwaiting
-                                                                                ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
-                                                                                : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                                                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                                        : isAwaiting
+                                                                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                                                            : "bg-red-500/20 text-red-400 border border-red-500/30"
                                                                         }`}>
                                                                         {isPaid ? "✅ Zaplaceno" : isAwaiting ? "⏳ Čeká" : o.status}
                                                                     </span>
@@ -2963,6 +3023,495 @@ export default function AdminPage() {
                                     </div>
                                 </div>
                             </Panel>
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "analytika" && (
+                        <>
+                            {analyticsLoading && !analyticsStats ? (
+                                <Panel className="p-12 text-center">
+                                    <div className="text-2xl animate-spin inline-block mb-3">⏳</div>
+                                    <div className="text-gray-400">Načítám analytiku…</div>
+                                </Panel>
+                            ) : analyticsStats ? (
+                                <>
+                                    {/* Period selector */}
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {[7, 14, 30, 90].map(d => (
+                                            <button
+                                                key={d}
+                                                onClick={() => setAnalyticsDays(d)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${analyticsDays === d ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"}`}
+                                            >
+                                                {d} dní
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={loadAnalytics}
+                                            disabled={analyticsLoading}
+                                            className="ml-auto px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                        >
+                                            {analyticsLoading ? "⏳" : "🔄"} Obnovit
+                                        </button>
+                                    </div>
+
+                                    {/* Overview stats */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <StatCard icon="👁️" label="Celkem eventů" value={fmtNum(Object.values(analyticsStats.event_types).reduce((a, b) => a + b, 0))} accent="cyan" />
+                                        <StatCard icon="🧑" label="Unikátní sessions" value={fmtNum(analyticsSessions.length)} accent="fuchsia" />
+                                        <StatCard icon="📄" label="Page views" value={fmtNum(analyticsStats.event_types["page_view"] || 0)} accent="green" />
+                                        <StatCard icon="🔍" label="Skenů" value={fmtNum((analyticsStats.event_types["scan_started"] || 0))} accent="yellow" />
+                                    </div>
+
+                                    {/* Sub-tabs */}
+                                    <div className="flex gap-2">
+                                        {([
+                                            { id: "funnel" as const, icon: "📊", label: "Konverzní funnel" },
+                                            { id: "events" as const, icon: "📋", label: "Live eventy" },
+                                            { id: "sessions" as const, icon: "🧑", label: "Sessions" },
+                                            { id: "questionnaire" as const, icon: "📝", label: "Dotazník" },
+                                        ]).map(st => (
+                                            <button
+                                                key={st.id}
+                                                onClick={() => setAnalyticsTab(st.id)}
+                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${analyticsTab === st.id ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"}`}
+                                            >
+                                                {st.icon} {st.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Funnel tab */}
+                                    {analyticsTab === "funnel" && (
+                                        <>
+                                            <Panel className="p-6">
+                                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">📊 Konverzní trychtýř</h2>
+                                                <div className="space-y-2">
+                                                    {(() => {
+                                                        const funnelOrder = [
+                                                            "page_view", "scan_url_entered", "scan_started", "scan_completed",
+                                                            "email_entered", "email_verified", "registration_completed",
+                                                            "questionnaire_started", "questionnaire_completed",
+                                                            "pricing_page_viewed", "checkout_started", "payment_completed",
+                                                        ];
+                                                        const funnelLabels: Record<string, string> = {
+                                                            page_view: "Návštěva stránky",
+                                                            scan_url_entered: "Zadání URL",
+                                                            scan_started: "Spuštění skenu",
+                                                            scan_completed: "Dokončení skenu",
+                                                            email_entered: "Zadání emailu",
+                                                            email_verified: "Ověření emailu",
+                                                            registration_completed: "Registrace",
+                                                            questionnaire_started: "Zahájení dotazníku",
+                                                            questionnaire_completed: "Dokončení dotazníku",
+                                                            pricing_page_viewed: "Zobrazení ceníku",
+                                                            checkout_started: "Zahájení objednávky",
+                                                            payment_completed: "Platba dokončena",
+                                                        };
+                                                        const steps = funnelOrder.map(k => ({ stage: funnelLabels[k] || k, count: analyticsStats.funnel[k] || 0 }));
+                                                        const maxCount = Math.max(...steps.map(s => s.count), 1);
+                                                        const colors = [
+                                                            "bg-cyan-500", "bg-blue-500", "bg-indigo-500", "bg-purple-500",
+                                                            "bg-fuchsia-500", "bg-pink-500", "bg-rose-500", "bg-orange-500",
+                                                            "bg-yellow-500", "bg-green-500", "bg-teal-500", "bg-emerald-500",
+                                                        ];
+                                                        return steps.map((step, i) => {
+                                                            const pct = maxCount > 0 ? (step.count / maxCount) * 100 : 0;
+                                                            const convRate = i > 0 && steps[i - 1].count > 0
+                                                                ? ((step.count / steps[i - 1].count) * 100).toFixed(1)
+                                                                : "100";
+                                                            return (
+                                                                <div key={step.stage} className="group">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <span className="text-sm text-gray-300">{step.stage}</span>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <span className="text-sm font-bold text-white">{fmtNum(step.count)}</span>
+                                                                            {i > 0 && (
+                                                                                <span className={`text-xs px-2 py-0.5 rounded-full ${Number(convRate) > 50 ? "bg-green-500/20 text-green-400" : Number(convRate) > 20 ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>
+                                                                                    {convRate}%
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="h-6 bg-white/5 rounded-lg overflow-hidden">
+                                                                        <div
+                                                                            className={`h-full ${colors[i % colors.length]} opacity-60 rounded-lg transition-all duration-500`}
+                                                                            style={{ width: `${Math.max(pct, 2)}%` }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </div>
+                                            </Panel>
+
+                                            {/* Top pages & daily */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <Panel className="p-6">
+                                                    <h3 className="font-semibold text-fuchsia-400 mb-3">🔝 Top stránky</h3>
+                                                    <div className="space-y-2">
+                                                        {analyticsStats.top_pages.slice(0, 10).map(p => (
+                                                            <div key={p.page} className="flex items-center justify-between text-sm">
+                                                                <span className="text-gray-300 truncate max-w-[200px]" title={p.page}>{p.page}</span>
+                                                                <span className="text-white font-mono">{fmtNum(p.views)}</span>
+                                                            </div>
+                                                        ))}
+                                                        {analyticsStats.top_pages.length === 0 && (
+                                                            <div className="text-gray-500 text-sm">Zatím žádná data</div>
+                                                        )}
+                                                    </div>
+                                                </Panel>
+                                                <Panel className="p-6">
+                                                    <h3 className="font-semibold text-green-400 mb-3">📆 Denní aktivita</h3>
+                                                    <div className="space-y-1">
+                                                        {analyticsStats.daily.slice(-14).map(d => {
+                                                            const maxD = Math.max(...analyticsStats.daily.map(x => x.count), 1);
+                                                            const w = (d.count / maxD) * 100;
+                                                            return (
+                                                                <div key={d.date} className="flex items-center gap-2 text-xs">
+                                                                    <span className="text-gray-500 w-16 shrink-0">{d.date.slice(5)}</span>
+                                                                    <div className="flex-1 h-4 bg-white/5 rounded overflow-hidden">
+                                                                        <div className="h-full bg-green-500/50 rounded" style={{ width: `${Math.max(w, 2)}%` }} />
+                                                                    </div>
+                                                                    <span className="text-white font-mono w-8 text-right">{d.count}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        {analyticsStats.daily.length === 0 && (
+                                                            <div className="text-gray-500 text-sm">Zatím žádná data</div>
+                                                        )}
+                                                    </div>
+                                                </Panel>
+                                            </div>
+
+                                            {/* Event types breakdown */}
+                                            <Panel className="p-6">
+                                                <h3 className="font-semibold text-orange-400 mb-3">🏷️ Typy eventů</h3>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                                    {Object.entries(analyticsStats.event_types)
+                                                        .sort(([, a], [, b]) => b - a)
+                                                        .map(([name, count]) => (
+                                                            <button
+                                                                key={name}
+                                                                onClick={() => { setAnalyticsEventFilter(name); setAnalyticsTab("events"); }}
+                                                                className="flex items-center justify-between bg-black/30 rounded-lg px-3 py-2 hover:bg-white/10 transition-all cursor-pointer"
+                                                            >
+                                                                <span className="text-xs text-gray-300 truncate">{name}</span>
+                                                                <span className="text-xs font-bold text-white ml-2">{count}</span>
+                                                            </button>
+                                                        ))}
+                                                </div>
+                                            </Panel>
+                                        </>
+                                    )}
+
+                                    {/* Events tab */}
+                                    {analyticsTab === "events" && (
+                                        <Panel className="p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h2 className="text-lg font-semibold text-cyan-400">📋 Live eventy</h2>
+                                                <div className="flex items-center gap-2">
+                                                    <select
+                                                        value={analyticsEventFilter}
+                                                        onChange={e => setAnalyticsEventFilter(e.target.value)}
+                                                        className="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-gray-300"
+                                                    >
+                                                        <option value="">Všechny eventy</option>
+                                                        {Object.keys(analyticsStats.event_types).sort().map(name => (
+                                                            <option key={name} value={name}>{name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs">
+                                                    <thead>
+                                                        <tr className="text-gray-500 border-b border-white/5">
+                                                            <th className="text-left py-2 pr-4">Čas</th>
+                                                            <th className="text-left py-2 pr-4">Event</th>
+                                                            <th className="text-left py-2 pr-4">Stránka</th>
+                                                            <th className="text-left py-2 pr-4">Session</th>
+                                                            <th className="text-left py-2 pr-4">User</th>
+                                                            <th className="text-left py-2 pr-4">Zařízení</th>
+                                                            <th className="text-left py-2">Properties</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {analyticsEvents
+                                                            .filter(e => !analyticsEventFilter || e.event_name === analyticsEventFilter)
+                                                            .slice(0, 100)
+                                                            .map(ev => (
+                                                                <tr key={ev.id} className="border-b border-white/5 hover:bg-white/5">
+                                                                    <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">{fmtDateTime(ev.created_at)}</td>
+                                                                    <td className="py-2 pr-4">
+                                                                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs">{ev.event_name}</span>
+                                                                    </td>
+                                                                    <td className="py-2 pr-4 text-gray-300 truncate max-w-[150px]" title={ev.page_url}>{ev.page_url?.replace(/https?:\/\/[^/]+/, "") || "—"}</td>
+                                                                    <td className="py-2 pr-4 text-gray-500 font-mono">{ev.session_id?.slice(0, 12) || "—"}</td>
+                                                                    <td className="py-2 pr-4 text-gray-400">{ev.user_email || "—"}</td>
+                                                                    <td className="py-2 pr-4 text-gray-500">{[ev.device, ev.browser].filter(Boolean).join(" / ") || "—"}</td>
+                                                                    <td className="py-2">
+                                                                        {Object.keys(ev.properties || {}).length > 0 ? (
+                                                                            <span className="text-gray-500 cursor-help" title={JSON.stringify(ev.properties, null, 2)}>
+                                                                                {JSON.stringify(ev.properties).slice(0, 60)}{JSON.stringify(ev.properties).length > 60 ? "…" : ""}
+                                                                            </span>
+                                                                        ) : "—"}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                    </tbody>
+                                                </table>
+                                                {analyticsEvents.filter(e => !analyticsEventFilter || e.event_name === analyticsEventFilter).length === 0 && (
+                                                    <div className="text-center text-gray-500 py-8">Zatím žádné eventy</div>
+                                                )}
+                                            </div>
+                                        </Panel>
+                                    )}
+
+                                    {/* Sessions tab */}
+                                    {analyticsTab === "sessions" && (
+                                        <Panel className="p-6">
+                                            <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🧑 Sessions ({analyticsSessions.length})</h2>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs">
+                                                    <thead>
+                                                        <tr className="text-gray-500 border-b border-white/5">
+                                                            <th className="text-left py-2 pr-4">Session ID</th>
+                                                            <th className="text-left py-2 pr-4">Zařízení</th>
+                                                            <th className="text-left py-2 pr-4">Prohlížeč</th>
+                                                            <th className="text-left py-2 pr-4">OS</th>
+                                                            <th className="text-left py-2 pr-4">User</th>
+                                                            <th className="text-right py-2 pr-4">Stránky</th>
+                                                            <th className="text-right py-2 pr-4">Eventy</th>
+                                                            <th className="text-left py-2 pr-4">První</th>
+                                                            <th className="text-left py-2">Poslední</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {analyticsSessions.map(s => (
+                                                            <tr key={s.session_id} className="border-b border-white/5 hover:bg-white/5">
+                                                                <td className="py-2 pr-4 text-cyan-400 font-mono">{s.session_id.slice(0, 16)}</td>
+                                                                <td className="py-2 pr-4 text-gray-300">{s.device || "—"}</td>
+                                                                <td className="py-2 pr-4 text-gray-300">{s.browser || "—"}</td>
+                                                                <td className="py-2 pr-4 text-gray-500">{s.os || "—"}</td>
+                                                                <td className="py-2 pr-4 text-gray-400">{s.user_email || "—"}</td>
+                                                                <td className="py-2 pr-4 text-right text-white font-mono">{s.page_count}</td>
+                                                                <td className="py-2 pr-4 text-right text-white font-mono">{s.event_count}</td>
+                                                                <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">{fmtDateTime(s.first_seen)}</td>
+                                                                <td className="py-2 text-gray-500 whitespace-nowrap">{fmtDateTime(s.last_seen)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                                {analyticsSessions.length === 0 && (
+                                                    <div className="text-center text-gray-500 py-8">Zatím žádné sessions</div>
+                                                )}
+                                            </div>
+                                        </Panel>
+                                    )}
+
+                                    {/* Questionnaire analytics tab */}
+                                    {analyticsTab === "questionnaire" && (
+                                        <>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <StatCard icon="❓" label="Nevím odpovědi" value={fmtNum(analyticsStats.questionnaire.total_nevim_answers)} accent="red" sub="Celkem &apos;Nevím&apos; odpovědí" />
+                                                <StatCard icon="✏️" label="Otázek sledovaných" value={Object.keys(analyticsStats.questionnaire.avg_time_per_question).length.toString()} accent="cyan" sub="Otázek s daty" />
+                                                <StatCard icon="🔄" label="Změn odpovědí" value={fmtNum(Object.values(analyticsStats.questionnaire.changes_per_question).reduce((a, b) => a + b, 0))} accent="yellow" sub="Celkem přehodnocení" />
+                                            </div>
+
+                                            <Panel className="p-6">
+                                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">⏱️ Průměrný čas na otázku (sekundy)</h2>
+                                                <div className="space-y-2">
+                                                    {Object.entries(analyticsStats.questionnaire.avg_time_per_question)
+                                                        .sort(([a], [b]) => Number(a) - Number(b))
+                                                        .map(([q, ms]) => {
+                                                            const sec = (ms / 1000).toFixed(1);
+                                                            const maxMs = Math.max(...Object.values(analyticsStats.questionnaire.avg_time_per_question), 1);
+                                                            const w = (ms / maxMs) * 100;
+                                                            return (
+                                                                <div key={q} className="flex items-center gap-3">
+                                                                    <span className="text-sm text-gray-400 w-20 shrink-0">Otázka {q}</span>
+                                                                    <div className="flex-1 h-5 bg-white/5 rounded overflow-hidden">
+                                                                        <div
+                                                                            className={`h-full rounded transition-all ${Number(sec) > 60 ? "bg-red-500/50" : Number(sec) > 30 ? "bg-yellow-500/50" : "bg-cyan-500/50"}`}
+                                                                            style={{ width: `${Math.max(w, 3)}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-sm font-mono text-white w-16 text-right">{sec}s</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    {Object.keys(analyticsStats.questionnaire.avg_time_per_question).length === 0 && (
+                                                        <div className="text-gray-500 text-sm">Zatím žádná data z dotazníku</div>
+                                                    )}
+                                                </div>
+                                            </Panel>
+
+                                            <Panel className="p-6">
+                                                <h2 className="text-lg font-semibold text-yellow-400 mb-4">🔄 Změny odpovědí na otázku</h2>
+                                                <div className="space-y-2">
+                                                    {Object.entries(analyticsStats.questionnaire.changes_per_question)
+                                                        .sort(([, a], [, b]) => b - a)
+                                                        .map(([q, count]) => {
+                                                            const maxC = Math.max(...Object.values(analyticsStats.questionnaire.changes_per_question), 1);
+                                                            const w = (count / maxC) * 100;
+                                                            return (
+                                                                <div key={q} className="flex items-center gap-3">
+                                                                    <span className="text-sm text-gray-400 w-20 shrink-0">Otázka {q}</span>
+                                                                    <div className="flex-1 h-5 bg-white/5 rounded overflow-hidden">
+                                                                        <div className="h-full bg-yellow-500/50 rounded" style={{ width: `${Math.max(w, 3)}%` }} />
+                                                                    </div>
+                                                                    <span className="text-sm font-mono text-white w-8 text-right">{count}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    {Object.keys(analyticsStats.questionnaire.changes_per_question).length === 0 && (
+                                                        <div className="text-gray-500 text-sm">Zatím žádné změny odpovědí</div>
+                                                    )}
+                                                </div>
+                                            </Panel>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <Panel className="p-12 text-center">
+                                    <div className="text-4xl mb-3">📉</div>
+                                    <div className="text-gray-400">Analytika není k dispozici</div>
+                                    <button onClick={loadAnalytics} className="mt-4 px-4 py-2 bg-cyan-500/10 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition-all text-sm">
+                                        🔄 Zkusit znovu
+                                    </button>
+                                </Panel>
+                            )}
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "predplatne" && (
+                        <>
+                            {subscriptionsLoading && subscriptions.length === 0 ? (
+                                <Panel className="p-12 text-center">
+                                    <div className="text-2xl animate-spin inline-block mb-3">⏳</div>
+                                    <div className="text-gray-400">Načítám předplatné…</div>
+                                </Panel>
+                            ) : (
+                                <>
+                                    {/* Summary cards */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <StatCard icon="💳" label="Celkem" value={subscriptions.length.toString()} accent="cyan" />
+                                        <StatCard icon="✅" label="Aktivní" value={subscriptions.filter(s => s.status === "active").length.toString()} accent="green" />
+                                        <StatCard icon="⚠️" label="Po splatnosti" value={subscriptions.filter(s => s.days_overdue > 0).length.toString()} accent="red" />
+                                        <StatCard icon="💰" label="MRR" value={fmtMoney(subscriptions.filter(s => s.status === "active").reduce((sum, s) => sum + (s.amount || 0), 0))} accent="fuchsia" sub="Měsíční příjem" />
+                                    </div>
+
+                                    {/* Filter */}
+                                    <div className="flex items-center gap-2">
+                                        {(["all", "active", "overdue", "cancelled"] as const).map(f => {
+                                            const labels: Record<string, string> = { all: "Vše", active: "Aktivní", overdue: "Po splatnosti", cancelled: "Zrušené" };
+                                            const counts: Record<string, number> = {
+                                                all: subscriptions.length,
+                                                active: subscriptions.filter(s => s.status === "active").length,
+                                                overdue: subscriptions.filter(s => s.days_overdue > 0).length,
+                                                cancelled: subscriptions.filter(s => s.status === "cancelled").length,
+                                            };
+                                            return (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => setSubscriptionFilter(f)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${subscriptionFilter === f ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"}`}
+                                                >
+                                                    {labels[f]} ({counts[f]})
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Subscriptions table */}
+                                    <Panel className="p-6">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="text-gray-500 border-b border-white/5">
+                                                        <th className="text-left py-2 pr-4">Firma</th>
+                                                        <th className="text-left py-2 pr-4">Email</th>
+                                                        <th className="text-left py-2 pr-4">Plán</th>
+                                                        <th className="text-right py-2 pr-4">Částka</th>
+                                                        <th className="text-left py-2 pr-4">Status</th>
+                                                        <th className="text-left py-2 pr-4">Další platba</th>
+                                                        <th className="text-right py-2 pr-4">Po splatnosti</th>
+                                                        <th className="text-left py-2 pr-4">Upomínka</th>
+                                                        <th className="text-left py-2">Akce</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {subscriptions
+                                                        .filter(s => {
+                                                            if (subscriptionFilter === "active") return s.status === "active";
+                                                            if (subscriptionFilter === "overdue") return s.days_overdue > 0;
+                                                            if (subscriptionFilter === "cancelled") return s.status === "cancelled";
+                                                            return true;
+                                                        })
+                                                        .sort((a, b) => b.days_overdue - a.days_overdue)
+                                                        .map(sub => (
+                                                            <tr key={sub.id} className={`border-b border-white/5 hover:bg-white/5 ${sub.days_overdue > 0 ? "bg-red-500/5" : ""}`}>
+                                                                <td className="py-2 pr-4 text-white font-medium">{sub.company_name || "—"}</td>
+                                                                <td className="py-2 pr-4 text-gray-400">{sub.company_email || "—"}</td>
+                                                                <td className="py-2 pr-4">
+                                                                    <span className="px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 text-xs">{sub.plan || "—"}</span>
+                                                                </td>
+                                                                <td className="py-2 pr-4 text-right text-white font-mono">{fmtMoney(sub.amount)}</td>
+                                                                <td className="py-2 pr-4">
+                                                                    <span className={`px-2 py-0.5 rounded-full text-xs ${sub.status === "active" ? "bg-green-500/20 text-green-400" : sub.status === "cancelled" ? "bg-red-500/20 text-red-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                                                                        {sub.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-2 pr-4 text-gray-400">{fmtDate(sub.next_payment_date)}</td>
+                                                                <td className={`py-2 pr-4 text-right font-mono ${sub.days_overdue > 0 ? "text-red-400 font-bold" : "text-gray-500"}`}>
+                                                                    {sub.days_overdue > 0 ? `${sub.days_overdue} dní` : "—"}
+                                                                </td>
+                                                                <td className="py-2 pr-4">
+                                                                    {sub.reminder_sent ? (
+                                                                        <span className="text-yellow-400 text-xs">✉️ Odesláno</span>
+                                                                    ) : (
+                                                                        <span className="text-gray-500 text-xs">—</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="py-2">
+                                                                    {sub.days_overdue > 0 && (
+                                                                        <button
+                                                                            disabled={reminderSending === sub.id}
+                                                                            onClick={async () => {
+                                                                                setReminderSending(sub.id);
+                                                                                try {
+                                                                                    await sendSubscriptionReminder(sub.id);
+                                                                                    await loadSubscriptions();
+                                                                                } catch (e) {
+                                                                                    console.error("Reminder error:", e);
+                                                                                } finally {
+                                                                                    setReminderSending(null);
+                                                                                }
+                                                                            }}
+                                                                            className="px-3 py-1 rounded-lg text-xs bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            {reminderSending === sub.id ? "⏳" : "📧"} Upomínka
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                </tbody>
+                                            </table>
+                                            {subscriptions.length === 0 && (
+                                                <div className="text-center text-gray-500 py-8">
+                                                    <div className="text-3xl mb-2">💳</div>
+                                                    Zatím žádná předplatná
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Panel>
+                                </>
+                            )}
                         </>
                     )}
                 </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Countdown from "@/components/countdown";
 import ContactForm from "@/components/contact-form";
+import { useScrollTracking } from "@/lib/analytics";
 
 /* ─── Inline SVG icons (no emoji) ─── */
 const ICONS = {
@@ -413,6 +414,7 @@ function TestimonialCarousel() {
    HOMEPAGE
    ═══════════════════════════════════════════ */
 export default function HomePage() {
+    useScrollTracking();
     return (
         <>
             {/* ══════ HERO ══════ */}

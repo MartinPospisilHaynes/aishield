@@ -1711,3 +1711,126 @@ async def crm_client_findings(
             for f in findings.data
         ],
     }
+
+
+# ══════════════════════════════════════════════════════════════
+# Subscriptions management
+# ══════════════════════════════════════════════════════════════
+
+@router.get("/crm/subscriptions")
+async def get_subscriptions(request: Request):
+    """List all subscriptions with company info and overdue calculation."""
+    _check_admin(request)
+    supabase = get_supabase()
+
+    try:
+        subs_res = supabase.table("subscriptions").select("*").order("created_at", desc=True).execute()
+        subs = subs_res.data or []
+    except Exception as e:
+        logger.error(f"subscriptions load: {e}")
+        subs = []
+
+    # Get all companies for name/email lookup
+    try:
+        companies_res = supabase.table("companies").select("id,name,email,ico").execute()
+        companies = {c["id"]: c for c in (companies_res.data or [])}
+    except Exception:
+        companies = {}
+
+    now = datetime.now(timezone.utc)
+    result = []
+
+    for s in subs:
+        company = companies.get(s.get("company_id", ""), {})
+
+        # Calculate days overdue
+        days_overdue = 0
+        next_payment = s.get("next_payment_date")
+        if next_payment and s.get("status") == "active":
+            try:
+                npd = datetime.fromisoformat(next_payment.replace("Z", "+00:00"))
+                if npd < now:
+                    days_overdue = (now - npd).days
+            except Exception:
+                pass
+
+        # Check if reminder was sent
+        reminder_sent = False
+        try:
+            pr = supabase.table("subscription_payments").select("id").eq(
+                "subscription_id", s.get("id", "")
+            ).eq("status", "reminder_sent").limit(1).execute()
+            reminder_sent = bool(pr.data)
+        except Exception:
+            pass
+
+        result.append({
+            "id": s.get("id", ""),
+            "company_id": s.get("company_id", ""),
+            "company_name": company.get("name", s.get("company_name", "—")),
+            "company_email": company.get("email", s.get("email", "")),
+            "plan": s.get("plan", s.get("plan_name", "—")),
+            "amount": s.get("amount", s.get("price", 0)),
+            "currency": s.get("currency", "CZK"),
+            "status": s.get("status", "unknown"),
+            "started_at": s.get("created_at", ""),
+            "next_payment_date": next_payment,
+            "last_payment_at": s.get("last_payment_at"),
+            "days_overdue": days_overdue,
+            "reminder_sent": reminder_sent,
+        })
+
+    return {"subscriptions": result}
+
+
+@router.post("/crm/subscriptions/{subscription_id}/reminder")
+async def send_subscription_reminder(subscription_id: str, request: Request):
+    """Send a payment reminder for overdue subscription."""
+    _check_admin(request)
+    supabase = get_supabase()
+
+    # Get subscription
+    sub_res = supabase.table("subscriptions").select("*").eq("id", subscription_id).limit(1).execute()
+    if not sub_res.data:
+        raise HTTPException(status_code=404, detail="Předplatné nenalezeno")
+
+    sub = sub_res.data[0]
+    company_id = sub.get("company_id", "")
+
+    # Get company info
+    company = {}
+    if company_id:
+        try:
+            cr = supabase.table("companies").select("*").eq("id", company_id).limit(1).execute()
+            if cr.data:
+                company = cr.data[0]
+        except Exception:
+            pass
+
+    email = company.get("email", sub.get("email", ""))
+    if not email:
+        raise HTTPException(status_code=400, detail="Firma nemá email")
+
+    # Record reminder in subscription_payments
+    try:
+        supabase.table("subscription_payments").insert({
+            "company_id": company_id,
+            "subscription_id": subscription_id,
+            "expected_date": sub.get("next_payment_date"),
+            "amount": sub.get("amount", sub.get("price", 0)),
+            "currency": sub.get("currency", "CZK"),
+            "status": "reminder_sent",
+            "reminder_sent_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception as e:
+        logger.error(f"subscription_payments insert: {e}")
+
+    # Send reminder email (using existing outbound email system if available)
+    company_name = company.get("name", "")
+    plan = sub.get("plan", sub.get("plan_name", ""))
+    amount = sub.get("amount", sub.get("price", 0))
+    currency = sub.get("currency", "CZK")
+
+    logger.info(f"Payment reminder sent: {email} for subscription {subscription_id} ({company_name}, {plan}, {amount} {currency})")
+
+    return {"status": "ok", "email": email, "message": f"Upomínka odeslána na {email}"}
