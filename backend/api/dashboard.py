@@ -230,13 +230,24 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                             tool_name = rec.get("tool_name", "")
                             if matching_answer and matching_answer.details:
                                 # Pokusit se zjistit název nástrojů z details
+                                tool_names_list = []
+                                other_texts = []
                                 for dk, dv in matching_answer.details.items():
-                                    if "tool" in dk and dv:
+                                    # Sbírat _other pole (uživatelem zadaný vlastní název)
+                                    if dk.endswith("_other") and isinstance(dv, str) and dv.strip():
+                                        other_texts.append(dv.strip())
+                                    # Sbírat tool/nástroj pole
+                                    elif ("tool" in dk or dk.endswith("_tool")) and dv and not dk.endswith("_other"):
                                         if isinstance(dv, list):
-                                            tool_name = ", ".join(dv)
-                                        elif isinstance(dv, str) and dv:
-                                            tool_name = dv
-                                        break
+                                            # Filtrovat "Jiný"/"Jiné" z výběru
+                                            filtered = [v for v in dv if v not in ("Jiný", "Jiné")]
+                                            tool_names_list.extend(filtered)
+                                        elif isinstance(dv, str) and dv not in ("Jiný", "Jiné"):
+                                            tool_names_list.append(dv)
+                                # Přidat vlastní názvy z _other polí
+                                tool_names_list.extend(other_texts)
+                                if tool_names_list:
+                                    tool_name = ", ".join(tool_names_list)
 
                             questionnaire_findings.append({
                                 "question_key": rec["question_key"],
