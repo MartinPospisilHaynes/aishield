@@ -1833,6 +1833,104 @@ function PricingComparisonTable() {
                     </button>
                 </div>
             </div>
+
+            {/* ═══ Monitoring cards ═══ */}
+            <div className="mt-12" id="monitoring">
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-medium text-cyan-300 mb-3">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Volitelný doplněk
+                    </div>
+                    <h2 className="text-xl font-bold text-white">
+                        Měsíční <span className="neon-text">monitoring</span> webu
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+                        AI systémy se na vašem webu mohou objevit kdykoliv — po aktualizaci pluginu,
+                        upgradu platformy nebo změně služby třetí strany. Monitoring vás ochrání.
+                    </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                    {/* Monitoring */}
+                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 flex flex-col">
+                        <h3 className="text-lg font-bold text-white mb-1">Monitoring</h3>
+                        <div className="mb-3">
+                            <span className="text-2xl font-extrabold text-white">299</span>
+                            <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                        </div>
+                        <ul className="space-y-2 text-sm mb-6 mt-4">
+                            {[
+                                "1× měsíčně automatický sken webu",
+                                "Srovnání s předchozím skenem (diff)",
+                                "Emailové upozornění při nálezu",
+                                "Aktualizovaný Compliance Report",
+                                "Aktualizovaný Registr AI systémů",
+                                "Historie skenů v dashboardu",
+                            ].map((f) => (
+                                <li key={f} className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 mt-0.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span className="text-slate-300">{f}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-auto text-center">
+                            <a
+                                href="mailto:info@aishield.cz?subject=Monitoring%20—%20AIshield.cz&body=Mám%20zájem%20o%20měsíční%20monitoring%20webu%20(299%20Kč/měsíc)."
+                                className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
+                            >
+                                Sjednat Monitoring
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Monitoring Plus */}
+                    <div className="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-b from-fuchsia-500/[0.06] to-transparent p-6 flex flex-col">
+                        <h3 className="text-lg font-bold text-white mb-1">Monitoring Plus</h3>
+                        <div className="mb-3">
+                            <span className="text-2xl font-extrabold neon-text">599</span>
+                            <span className="text-slate-500 ml-1">Kč/měsíc</span>
+                        </div>
+                        <ul className="space-y-2 text-sm mb-6 mt-4">
+                            {[
+                                "2× měsíčně automatický sken webu",
+                                "Vše z Monitoring",
+                                "Aktualizace VŠECH 7 dokumentů",
+                                "Implementace změn na webu klienta",
+                                "Prioritní emailová podpora",
+                                "Čtvrtletní souhrnný přehled",
+                            ].map((f) => (
+                                <li key={f} className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 mt-0.5 text-fuchsia-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span className="text-slate-300">{f}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-auto text-center">
+                            <a
+                                href="mailto:info@aishield.cz?subject=Monitoring%20Plus%20—%20AIshield.cz&body=Mám%20zájem%20o%20Monitoring%20Plus%20(599%20Kč/měsíc)."
+                                className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
+                            >
+                                Sjednat Monitoring Plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4 text-center space-y-1">
+                    <p className="text-xs text-slate-500">
+                        Monitoring je volitelný doplněk — lze aktivovat pouze po zakoupení balíčku BASIC, PRO nebo ENTERPRISE.
+                    </p>
+                    <p className="text-xs text-slate-500">
+                        Minimální doba: 3 měsíce. Výpověď: 1 měsíc. U balíčku ENTERPRISE je 2 roky monitoringu již v ceně.
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createCheckout } from "@/lib/api";
+import { createClient } from "@/lib/supabase-browser";
 
 const PLANS: Record<string, { name: string; price: number; features: string[] }> = {
     basic: {
@@ -62,11 +63,7 @@ function CheckoutInner() {
     useEffect(() => {
         (async () => {
             try {
-                const { createClient } = await import("@supabase/supabase-js");
-                const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-                );
+                const supabase = createClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user?.email) setEmail(user.email);
                 if (!user) {
