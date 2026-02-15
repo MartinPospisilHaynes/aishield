@@ -127,6 +127,35 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
     ).order("created_at", desc=True).execute()
 
     # 6. Dotazník — přes tabulku clients (client.company_id → questionnaire_responses.client_id)
+    # Lidsky čitelné popisy pro dashboard (laik musí pochopit, o co jde)
+    _HUMAN_SUMMARIES = {
+        "develops_own_ai": "Vyvíjíte vlastní AI → musíte dokumentovat svou roli a povinnosti",
+        "uses_social_scoring": "Hodnocení lidí skórem chování → může být zakázaná praktika",
+        "uses_subliminal_manipulation": "AI ovlivňuje lidi bez jejich vědomí → zakázaná praktika",
+        "uses_realtime_biometric": "Rozpoznávání obličeje / otisku prstu → silně regulováno",
+        "uses_chatgpt": "Zaměstnanci používají AI chaty → musíte nastavit pravidla",
+        "uses_copilot": "AI píše kód → zajistěte kontrolu a dokumentaci",
+        "uses_ai_content": "AI generuje texty nebo obrázky → musíte je označit",
+        "uses_deepfake": "Syntetická videa nebo klonování hlasu → povinné označení",
+        "uses_ai_recruitment": "AI třídí životopisy / kandidáty → vysoce rizikový systém",
+        "uses_ai_employee_monitoring": "AI sleduje zaměstnance → vysoce rizikový systém",
+        "uses_emotion_recognition": "AI rozpoznává emoce → na pracovišti zakázáno",
+        "uses_ai_accounting": "AI v účetnictví → dokumentujte a zajistěte transparentnost",
+        "uses_ai_creditscoring": "AI hodnotí bonitu zákazníků → vysoce rizikový systém",
+        "uses_ai_insurance": "AI v pojišťovnictví → vysoce rizikový systém",
+        "uses_ai_chatbot": "Chatbot na webu → zákazník musí vědět, že mluví s AI",
+        "uses_ai_email_auto": "AI odpovídá na emaily → zákazník musí být informován",
+        "uses_ai_decision": "AI rozhoduje o reklamacích / slevách → vyžaduje lidský dohled",
+        "uses_dynamic_pricing": "AI mění ceny podle zákazníka → může být manipulativní",
+        "uses_ai_critical_infra": "AI řídí kritickou infrastrukturu → vysoce rizikový systém",
+        "uses_ai_safety_component": "AI v bezpečnostní komponentě → vyžaduje CE a registraci",
+        "ai_processes_personal_data": "AI zpracovává osobní údaje → nutné posouzení dopadu (DPIA)",
+        "ai_data_stored_eu": "Data AI systémů mimo EU → riziko porušení GDPR",
+        "ai_transparency_docs": "Chybí přehled AI ve firmě → musíte vést interní evidenci",
+        "has_ai_training": "Zaměstnanci neproškoleni v AI → povinnost od února 2025",
+        "has_ai_guidelines": "Chybí firemní pravidla pro AI → doporučeno pro soulad",
+    }
+
     questionnaire_status = "nevyplněn"
     questionnaire_findings = []
     questionnaire_unknowns = []
@@ -213,6 +242,7 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                                 "question_key": rec["question_key"],
                                 "name": tool_name or q_text,
                                 "category": q_def.get("ai_act_article", ""),
+                                "human_summary": _HUMAN_SUMMARIES.get(rec["question_key"], q_text),
                                 "risk_level": rec["risk_level"],
                                 "ai_act_article": rec.get("ai_act_article", ""),
                                 "action_required": rec["recommendation"],

@@ -467,7 +467,7 @@ export default function DashboardPage() {
                     )}
 
                     {/* ═══ STAT CARDS (4 equal panels) ═══ */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 items-start">
                         {/* Panel 1: Sken webu */}
                         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
                             <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Sken webu</p>
@@ -558,11 +558,20 @@ export default function DashboardPage() {
                                         </svg>
                                     </button>
                                     {qCardOpen && (
-                                        <div className="mt-2 space-y-1.5">
+                                        <div className="mt-2 space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
                                             {qFindings.map((f) => (
-                                                <div key={f.question_key} className="rounded-md bg-fuchsia-500/[0.03] border border-fuchsia-500/[0.1] px-3 py-2">
-                                                    <p className="text-xs font-medium text-white">{f.name}</p>
-                                                    <p className="text-[10px] text-slate-400 mt-0.5">{f.category}</p>
+                                                <div key={f.question_key} className={`rounded-md px-3 py-2 border ${f.risk_level === 'high'
+                                                        ? 'bg-red-500/[0.05] border-red-500/[0.15]'
+                                                        : 'bg-fuchsia-500/[0.03] border-fuchsia-500/[0.1]'
+                                                    }`}>
+                                                    <p className={`text-[10px] font-semibold uppercase tracking-wider ${f.risk_level === 'high' ? 'text-red-400' : 'text-fuchsia-400'
+                                                        }`}>
+                                                        {f.risk_level === 'high' ? '⚠ Vysoké riziko' : f.risk_level === 'limited' ? 'Omezené riziko' : 'Minimální riziko'}
+                                                    </p>
+                                                    <p className="text-xs font-medium text-white mt-1">{f.human_summary || f.name}</p>
+                                                    {f.name && f.name !== f.human_summary && (
+                                                        <p className="text-[10px] text-slate-500 mt-0.5">Nástroj: {f.name}</p>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>

@@ -540,6 +540,7 @@ export interface QuestionnaireFinding {
     question_key: string;
     name: string;
     category: string;
+    human_summary?: string;
     risk_level: string;
     ai_act_article: string;
     action_required: string;
