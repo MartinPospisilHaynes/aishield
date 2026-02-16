@@ -526,8 +526,8 @@ function ScanPageInner() {
                                             Teď jen potřebujete mít vše legislativně v pořádku, aby vám tato výhoda
                                             zůstala i po začátku platnosti EU AI Act.{" "}
                                             <strong className="text-white font-bold">A navíc — weby a e-shopy,
-                                            které budou mít tuto zákonnou povinnost splněnou, budou upřednostňovány
-                                            ve vyhledávačích.</strong>
+                                                které budou mít tuto zákonnou povinnost splněnou, budou upřednostňovány
+                                                ve vyhledávačích.</strong>
                                         </p>
                                     </div>
                                 </div>

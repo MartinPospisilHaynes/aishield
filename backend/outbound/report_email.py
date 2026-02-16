@@ -400,16 +400,10 @@ def generate_report_email_html(
 
             <!-- BASIC -->
             <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
-                <table style="width:100%;border-collapse:collapse;"><tr>
-                    <td style="vertical-align:top;">
-                        <div style="font-size:16px;font-weight:700;color:{D["text"]};">BASIC</div>
-                        <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Compliance Kit — dokumenty ke stažení</div>
-                    </td>
-                    <td style="text-align:right;vertical-align:top;">
-                        <div style="font-size:24px;font-weight:800;color:{D["text"]};">4 999 Kč</div>
-                        <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
-                    </td>
-                </tr></table>
+                <div style="font-size:16px;font-weight:700;color:{D["text"]};">BASIC</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Compliance Kit — dokumenty ke stažení</div>
+                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">4&nbsp;999&nbsp;Kč</div>
+                <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
                 <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                     ✓ Sken webu + AI Act report &nbsp;&nbsp;
                     ✓ 7 PDF dokumentů &nbsp;&nbsp;
@@ -427,16 +421,10 @@ def generate_report_email_html(
                             &#11088; Nejoblíbenější
                         </span>
                     </div>
-                    <table style="width:100%;border-collapse:collapse;"><tr>
-                        <td style="vertical-align:top;">
-                            <div style="font-size:16px;font-weight:700;color:{D["text"]};">PRO</div>
-                            <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Vše z BASIC + implementace na klíč</div>
-                        </td>
-                        <td style="text-align:right;vertical-align:top;">
-                            <div style="font-size:24px;font-weight:800;background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">14 999 Kč</div>
-                            <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
-                        </td>
-                    </tr></table>
+                    <div style="font-size:16px;font-weight:700;color:{D["text"]};">PRO</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Vše z BASIC + implementace na klíč</div>
+                    <div style="font-size:28px;font-weight:800;color:{D["accent_fuchsia"]};margin-top:8px;">14&nbsp;999&nbsp;Kč</div>
+                    <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
                     <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                         ✓ Vše z BASIC &nbsp;&nbsp;
                         ✓ Instalace widgetu na web &nbsp;&nbsp;
@@ -450,16 +438,10 @@ def generate_report_email_html(
 
             <!-- ENTERPRISE -->
             <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
-                <table style="width:100%;border-collapse:collapse;"><tr>
-                    <td style="vertical-align:top;">
-                        <div style="font-size:16px;font-weight:700;color:{D["text"]};">ENTERPRISE</div>
-                        <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + monitoring</div>
-                    </td>
-                    <td style="text-align:right;vertical-align:top;">
-                        <div style="font-size:24px;font-weight:800;color:{D["text"]};">49 999+ Kč</div>
-                        <div style="font-size:11px;color:{D["text_muted"]};">individuální</div>
-                    </td>
-                </tr></table>
+                <div style="font-size:16px;font-weight:700;color:{D["text"]};">ENTERPRISE</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + monitoring</div>
+                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">49&nbsp;999+&nbsp;Kč</div>
+                <div style="font-size:11px;color:{D["text_muted"]};">individuální</div>
                 <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                     ✓ Vše z PRO &nbsp;&nbsp;
                     ✓ Konzultace se specialistou &nbsp;&nbsp;

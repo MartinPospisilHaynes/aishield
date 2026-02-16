@@ -748,10 +748,12 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
         return {"is_complete": False, "has_unknowns": False, "total_answers": 0}
 
     total = len(result.data)
-    unknowns = sum(1 for r in result.data if r.get("answer") == "nevim")
-    # 27 questions total in the questionnaire
+    unknowns = sum(1 for r in result.data if r.get("answer") in ("nevim", "unknown"))
+    # Dynamic question count from structure
+    all_question_keys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+    required_count = len(all_question_keys)
     # is_complete = all answered (regardless of unknowns — user still completed the flow)
-    is_complete = total >= 27
+    is_complete = total >= required_count
 
     return {
         "is_complete": is_complete,

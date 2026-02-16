@@ -171,7 +171,15 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                 "client_id", client_id
             ).execute()
             if quest_res.data:
-                questionnaire_status = "dokončen"
+                # Count total required questions dynamically
+                from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
+                all_question_keys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+                required_count = len(all_question_keys)
+                answered_count = len(quest_res.data)
+                if answered_count >= required_count:
+                    questionnaire_status = "dokončen"
+                else:
+                    questionnaire_status = f"rozpracován ({answered_count}/{required_count})"
                 # Analyzovat odpovědi a vygenerovat findings
                 try:
                     from backend.api.questionnaire import (

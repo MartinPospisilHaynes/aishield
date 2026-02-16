@@ -162,6 +162,7 @@ function QuestionnaireInner() {
     const [sectionFlash, setSectionFlash] = useState<string | null>(null);
     const [multiSelections, setMultiSelections] = useState<Record<string, string[]>>({});
     const [isEditMode, setIsEditMode] = useState(false);
+    const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
 
     /* ── Flat question list ── */
     const allQuestions: (Question & { _section: string })[] = sections.flatMap((s) =>
@@ -272,9 +273,12 @@ function QuestionnaireInner() {
     /* ── Jump to specific question via ?q=question_key ── */
     useEffect(() => {
         const jumpTo = searchParams.get("q");
+        const cid = searchParams.get("company_id");
         if (jumpTo && allQuestions.length > 0) {
             const idx = allQuestions.findIndex((aq) => aq.key === jumpTo);
             if (idx >= 0) setCurrentQuestion(idx);
+            // If coming from dashboard with specific question, set flag for auto-return
+            if (cid) setFromDashboard(true);
         }
     }, [searchParams, allQuestions.length]);
 
@@ -816,7 +820,17 @@ function QuestionnaireInner() {
                                     key={opt.value}
                                     onClick={() => {
                                         setAnswer(q.key, opt.value);
-                                        if (isLast) {
+                                        if (fromDashboard) {
+                                            // Came from dashboard for specific question — submit this answer and go back
+                                            if (q.followup && q.followup.condition === opt.value) {
+                                                // Followup triggered — let user fill it, they'll use the "Zpět" button
+                                            } else if (q.followup_no && opt.value === "no") {
+                                                // followup_no triggered — show warning, they'll use the "Zpět" button
+                                            } else {
+                                                // No followup — auto-submit and return to dashboard
+                                                setTimeout(() => { handleSubmit(); }, 400);
+                                            }
+                                        } else if (isLast) {
                                             // LAST QUESTION: auto-submit after visual feedback
                                             console.log('[Dotazník] Poslední otázka zodpovězena, auto-submit za 600ms');
                                             setTimeout(handleSubmit, 600);
@@ -863,8 +877,8 @@ function QuestionnaireInner() {
                                             {/* Info type → informational text */}
                                             {field.type === "info" ? (
                                                 <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${field.key === "manipulation_warning"
-                                                        ? "bg-red-500/[0.12] border-2 border-red-500/40"
-                                                        : "bg-cyan-500/[0.06] border border-cyan-500/15"
+                                                    ? "bg-red-500/[0.12] border-2 border-red-500/40"
+                                                    : "bg-cyan-500/[0.06] border border-cyan-500/15"
                                                     }`}>
                                                     {field.key === "manipulation_warning" ? (
                                                         <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">🚫</span>
@@ -1031,7 +1045,15 @@ function QuestionnaireInner() {
                             ← Zpět
                         </button>
 
-                        {isLast ? (
+                        {fromDashboard && ans?.answer ? (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={submitting}
+                                className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-base transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50"
+                            >
+                                {submitting ? "Ukládám…" : "✓ Uložit a zpět"}
+                            </button>
+                        ) : isLast ? (
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || !ans?.answer}

@@ -819,7 +819,10 @@ async def crm_client_management(
                         .eq("company_id", company_id)
                         .execute()
                     )
-                    questionnaire_done = (qr_res.count or len(qr_res.data or [])) > 0
+                    answered = qr_res.count or len(qr_res.data or [])
+                    from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
+                    all_qkeys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+                    questionnaire_done = answered >= len(all_qkeys)
                 except Exception:
                     pass
 
@@ -1389,7 +1392,16 @@ async def crm_business_overview(
     # Conversion funnel
     total_companies = len(companies)
     scanned_companies = len([c for c in companies if c.get("scan_status") == "scanned"])
-    companies_with_questionnaire = len(set(q.get("company_id") for q in questionnaires if q.get("company_id")))
+    companies_with_questionnaire = 0
+    if questionnaires:
+        from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
+        required_count = len({q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]})
+        responses_per_company: dict[str, int] = {}
+        for q in questionnaires:
+            cid = q.get("company_id")
+            if cid:
+                responses_per_company[cid] = responses_per_company.get(cid, 0) + 1
+        companies_with_questionnaire = sum(1 for cnt in responses_per_company.values() if cnt >= required_count)
     companies_with_orders = len(set(o.get("email") for o in orders))
     companies_paid = len(set(o.get("email") for o in orders if o.get("status") == "PAID"))
     companies_with_docs = len(set(d.get("company_id") for d in documents if d.get("company_id")))
@@ -1718,9 +1730,12 @@ async def crm_client_findings(
 # ══════════════════════════════════════════════════════════════
 
 @router.get("/crm/subscriptions")
-async def get_subscriptions(request: Request):
+async def get_subscriptions(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
     """List all subscriptions with company info and overdue calculation."""
-    _check_admin(request)
     supabase = get_supabase()
 
     try:
@@ -1784,9 +1799,13 @@ async def get_subscriptions(request: Request):
 
 
 @router.post("/crm/subscriptions/{subscription_id}/reminder")
-async def send_subscription_reminder(subscription_id: str, request: Request):
+async def send_subscription_reminder(
+    subscription_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
     """Send a payment reminder for overdue subscription."""
-    _check_admin(request)
     supabase = get_supabase()
 
     # Get subscription

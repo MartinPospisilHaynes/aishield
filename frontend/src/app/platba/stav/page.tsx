@@ -187,6 +187,13 @@ function PaymentStatusContent() {
                                     Vyplnit dotazník
                                 </a>
                             )}
+                            {questionnaireComplete === true && (
+                                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-center">
+                                    <p className="text-xs text-emerald-300">
+                                        ✅ Dotazník máte vyplněný — máte splněno! Ozveme se vám, pokud budeme potřebovat bližší informace.
+                                    </p>
+                                </div>
+                            )}
                             <a href="/dashboard" className="btn-secondary w-full py-3 block text-center">
                                 Přejít na Dashboard
                             </a>
@@ -328,6 +335,13 @@ function PaymentStatusContent() {
                                         <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
                                             Vyplnit dotazník
                                         </a>
+                                    )}
+                                    {questionnaireComplete === true && (
+                                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-center mb-2">
+                                            <p className="text-xs text-emerald-300">
+                                                ✅ Dotazník máte vyplněný — máte splněno! Ozveme se vám, pokud budeme potřebovat bližší informace.
+                                            </p>
+                                        </div>
                                     )}
                                     <a href="/dashboard" className={`${questionnaireComplete === false ? "btn-secondary" : "btn-primary"} w-full py-3 block text-center`}>
                                         Přejít na Dashboard

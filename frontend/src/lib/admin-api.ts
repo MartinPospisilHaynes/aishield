@@ -720,7 +720,8 @@ export async function getAdminOrders(status?: string, gateway?: string): Promise
     if (gateway) params.set("gateway", gateway);
     const res = await adminFetch(`${API_URL}/api/payments/admin/orders?${params}`);
     if (!res.ok) throw new Error("Nepodařilo se načíst objednávky");
-    return res.json();
+    const data = await res.json();
+    return data.orders || [];
 }
 
 export async function getAdminOrderStats(): Promise<AdminOrderStats> {
