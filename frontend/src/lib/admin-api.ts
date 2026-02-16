@@ -730,7 +730,7 @@ export async function getAdminOrderStats(): Promise<AdminOrderStats> {
     return res.json();
 }
 
-export async function confirmBankPayment(orderNumber: string): Promise<{ status: string; order_number: string }> {
+export async function confirmBankPayment(orderNumber: string): Promise<{ status: string; order_number: string; invoice_sent?: boolean; invoice_number?: string }> {
     const res = await adminFetch(`${API_URL}/api/payments/admin/orders/confirm-payment`, {
         method: "POST",
         body: JSON.stringify({ order_number: orderNumber }),

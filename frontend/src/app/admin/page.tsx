@@ -2880,10 +2880,15 @@ export default function AdminPage() {
                                                                     {isAwaiting && (
                                                                         <button
                                                                             onClick={async () => {
-                                                                                if (!confirm(`Potvrdit platbu ${o.order_number}?`)) return;
+                                                                                if (!confirm(`Potvrdit platbu ${o.order_number}?\n\nBude odeslán email s fakturou zákazníkovi.`)) return;
                                                                                 setConfirmingOrder(o.order_number);
                                                                                 try {
-                                                                                    await confirmBankPayment(o.order_number);
+                                                                                    const result = await confirmBankPayment(o.order_number);
+                                                                                    if (result.invoice_sent) {
+                                                                                        alert(`✅ Platba potvrzena!\n📄 Faktura ${result.invoice_number} odeslána emailem.`);
+                                                                                    } else {
+                                                                                        alert(`✅ Platba potvrzena!\n⚠️ Fakturu se nepodařilo vygenerovat — zkontrolujte logy.`);
+                                                                                    }
                                                                                     await loadOrders();
                                                                                 } catch (err) {
                                                                                     alert(err instanceof Error ? err.message : "Chyba");

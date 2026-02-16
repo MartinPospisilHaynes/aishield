@@ -1427,7 +1427,67 @@ async def admin_confirm_bank_payment(req: ConfirmPaymentRequest):
         "activated": True,
     }).eq("order_number", req.order_number).execute()
 
-    # Odeslat email klientovi
+    # Odeslat email klientovi + fakturu PDF
+    invoice_sent = False
+    invoice_number = ""
+    try:
+        # 1) Generate invoice PDF
+        from backend.outbound.invoice_pdf import (
+            generate_invoice_pdf,
+            build_invoice_email_html,
+        )
+        from backend.outbound.payment_emails import generate_variable_symbol
+
+        billing = order.get("billing_data") or {}
+        vs = generate_variable_symbol(order["order_number"])
+        paid_at_str = datetime.utcnow().isoformat()
+
+        pdf_bytes, invoice_number = generate_invoice_pdf(
+            order_number=order["order_number"],
+            plan=order["plan"],
+            amount=order["amount"],
+            buyer_name=billing.get("company", ""),
+            buyer_ico=billing.get("ico", ""),
+            buyer_dic=billing.get("dic", ""),
+            buyer_street=billing.get("street", ""),
+            buyer_city=billing.get("city", ""),
+            buyer_zip=billing.get("zip", ""),
+            buyer_email=order.get("email", ""),
+            paid_at=paid_at_str,
+            created_at=order.get("created_at"),
+            variable_symbol=vs,
+        )
+
+        # 2) Build invoice email with PDF attachment
+        invoice_html = build_invoice_email_html(
+            invoice_number=invoice_number,
+            order_number=order["order_number"],
+            plan=order["plan"],
+            amount=order["amount"],
+        )
+
+        import base64
+        pdf_b64 = base64.b64encode(pdf_bytes).decode("ascii")
+        attachments = [{
+            "filename": f"faktura-{invoice_number}.pdf",
+            "content": pdf_b64,
+        }]
+
+        await send_email(
+            to=order["email"],
+            subject=f"AIshield.cz — Faktura {invoice_number}",
+            html=invoice_html,
+            from_email="info@aishield.cz",
+            from_name="AIshield.cz",
+            attachments=attachments,
+        )
+        invoice_sent = True
+        logger.info(f"[Admin] Invoice {invoice_number} sent to {order['email']} ({len(pdf_bytes)} bytes PDF)")
+
+    except Exception as e:
+        logger.error(f"[Admin] Failed to generate/send invoice: {e}", exc_info=True)
+
+    # 3) Also send payment received email (without invoice)
     try:
         html = build_payment_received_email(
             order_number=order["order_number"],
@@ -1449,7 +1509,8 @@ async def admin_confirm_bank_payment(req: ConfirmPaymentRequest):
         "status": "confirmed",
         "order_number": req.order_number,
         "email_sent": True,
+        "invoice_sent": invoice_sent,
+        "invoice_number": invoice_number,
         "message": f"Objednávka {req.order_number} potvrzena, email odeslán na {order['email']}",
     }
 
-    return {"code": 0, "message": "OK"}
