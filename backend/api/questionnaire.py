@@ -59,7 +59,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "Zemědělství",
                     "Jiné",
                 ],
-                "help_text": "Vyberte všechna odvětví, která se vás týkají. Příklady: e-shop prodávající oblečení, účetní kancelář zpracovávající daňová přiznání, autoservis s online objednávkami.",
+                "help_text": "Vyberte všechna odvětví, která se vás týkají.\nPříklady:\n1) E-shop prodávající oblečení.\n2) Účetní kancelář zpracovávající daňová přiznání.\n3) Autoservis s online objednávkami.",
                 "risk_hint": "none",
                 "ai_act_article": None,
             },
@@ -74,7 +74,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "50–249 zaměstnanců",
                     "250+ zaměstnanců",
                 ],
-                "help_text": "Malé a střední podniky (do 250 zaměstnanců) mají dle AI Act některé úlevy. Příklady: OSVČ grafik, restaurace s 5 zaměstnanci, výrobní firma se 120 lidmi.",
+                "help_text": "Malé a střední podniky (do 250 zaměstnanců) mají dle AI Act některé úlevy.\nPříklady:\n1) OSVČ grafik.\n2) Restaurace s 5 zaměstnanci.\n3) Výrobní firma se 120 lidmi.",
                 "risk_hint": "none",
                 "ai_act_article": "čl. 62 — povinnosti MSP a start-upů",
             },
@@ -82,7 +82,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "develops_own_ai",
                 "text": "Vyvíjíte vlastní AI systémy nebo modely?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady: IT firma trénuje vlastní ML model pro predikci poptávky. Startup vyvíjí AI chatbota pro klienty. E-shop integruje AI doporučovací engine do svého webu.",
+                "help_text": "Příklady:\n1) IT firma trénuje vlastní ML model pro predikci poptávky.\n2) Startup vyvíjí AI chatbota pro klienty.\n3) E-shop integruje AI doporučovací engine do svého webu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -130,7 +130,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "manipulation_type", "label": "O jaký typ ovlivňování jde? (vyberte vše)", "type": "multi_select",
                          "options": ["Dynamické ceny podle emocí/chování", "Cílení na zranitelné skupiny", "Skryté manipulativní UX vzory", "Jiné"]},
-                        {"key": "manipulation_warning", "label": "⚠️ ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem.", "type": "info"},
+                        {"key": "manipulation_warning", "label": "🚫 ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem. V tomto případě nedokážeme pomoct ani my — jedná se o protiprávní jednání.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -317,7 +317,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "accounting_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
                          "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Jiné"]},
                         {"key": "accounting_decisions", "label": "Dělá AI autonomní finanční rozhodnutí?", "type": "select",
-                         "options": ["Ne, pouze asistuje", "Ano, schvaluje platby"]},
+                         "options": ["Ne, pouze asistuje", "Ano, schvaluje platby"],
+                         "warning": {"Ano, schvaluje platby": "AI systém autonomně schvalující platby bez lidského dohledu může spadat do kategorie vysoce rizikových AI systémů. Dle AI Act je nutné zajistit lidský dohled nad finančními rozhodnutími (čl. 14) a transparentnost vůči dotčeným osobám."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -510,7 +511,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Jména a kontakty", "Rodná čísla / OP", "Zdravotní údaje", "Finanční údaje", "Fotografie / video", "Lokační data", "Jiné"]},
                         {"key": "dpia_done", "label": "Provedli jste DPIA (posouzení vlivu na ochranu dat)?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "U AI systémů zpracovávajících osobní údaje se důrazně doporučuje provedení DPIA (posouzení vlivu na ochranu dat) dle GDPR čl. 35."}},
+                         "warning": {"Ne": "U AI systémů zpracovávajících osobní údaje se důrazně doporučuje provedení DPIA (posouzení vlivu na ochranu dat) dle GDPR čl. 35. Zařídíme za Vás."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -535,7 +536,7 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "ai_transparency_docs",
                 "text": "Máte přehled o tom, jaké AI ve firmě používáte?",
-                "type": "yes_no_unknown",
+                "type": "yes_unknown",
                 "help_text": "Příklady:\n1) Interní tabulka se seznamem AI nástrojů a jejich účelem (IT oddělení).\n2) Přehled SaaS služeb včetně AI v portálu dodavatelů.\n3) Jednoduchý dokument ‚Které AI používáme‘ pro management.",
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 49 — registrace vysoce rizikových AI systémů v EU databázi",
@@ -560,7 +561,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "training_attendance", "label": "Máte prezenční listinu (podpisy účastníků školení)?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Pro doložení splnění povinnosti čl. 4 AI Act je vhodné mít prezenční listinu s podpisy účastníků. AIshield.cz vám v rámci služeb dodá kompletní školící prezentaci + šablonu prezenční listiny."}},
+                         "warning": {"Ne": "Pro doložení splnění povinnosti čl. 4 AI Act je vhodné mít prezenční listinu s podpisy účastníků. **AIshield.cz vám v rámci služeb dodá kompletní školící prezentaci + šablonu prezenční listiny.**"}},
                         {"key": "training_info", "label": "ℹ️ Součástí všech AIshield balíčků je profesionální školící prezentace (PowerPoint) a kompletní dokumentace včetně šablony prezenční listiny.", "type": "info"},
                     ]
                 },

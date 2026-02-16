@@ -6,6 +6,16 @@ import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+/* ── Helper: render warning text with **bold** markers as white bold spans ── */
+function renderWarningText(text: string) {
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, i) =>
+        i % 2 === 1
+            ? <span key={i} className="text-white font-bold">{part}</span>
+            : <span key={i}>{part}</span>
+    );
+}
+
 /* ═══════════════════════════════════════════
    TYPES
    ═══════════════════════════════════════════ */
@@ -418,18 +428,18 @@ function QuestionnaireInner() {
             const isLastQ = currentQuestion === totalQuestions - 1;
             if (currentQuestion < totalQuestions) {
                 const q = allQuestions[currentQuestion];
-                if (q.type === "yes_no_unknown") {
+                if (q.type === "yes_no_unknown" || q.type === "yes_unknown") {
                     if (e.key === "1") {
                         setAnswer(q.key, "yes");
                         if (isLastQ) { console.log('[Dotazník] Keyboard 1=yes on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
                         else if (!q.followup) setTimeout(goNext, 300);
                     }
-                    if (e.key === "2") {
+                    if (e.key === "2" && q.type === "yes_no_unknown") {
                         setAnswer(q.key, "no");
                         if (isLastQ) { console.log('[Dotazník] Keyboard 2=no on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
                         else setTimeout(goNext, 300);
                     }
-                    if (e.key === "3") {
+                    if ((e.key === "3" && q.type === "yes_no_unknown") || (e.key === "2" && q.type === "yes_unknown")) {
                         setAnswer(q.key, "unknown");
                         if (isLastQ) { console.log('[Dotazník] Keyboard 3=unknown on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
                         else setTimeout(goNext, 300);
@@ -793,10 +803,10 @@ function QuestionnaireInner() {
                     {!q.help_text && <div className="mb-4" />}
 
                     {/* Answer tiles */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-2" : "grid-cols-3"} gap-3 mb-4`}>
                         {([
                             { value: "yes", label: "Ano", activeClass: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300", icon: "✓" },
-                            { value: "no", label: "Ne", activeClass: "bg-slate-500/15 border-slate-400/30 text-slate-300", icon: "✕" },
+                            ...(q.type !== "yes_unknown" ? [{ value: "no" as const, label: "Ne", activeClass: "bg-slate-500/15 border-slate-400/30 text-slate-300", icon: "✕" }] : []),
                             { value: "unknown", label: "Nevím", activeClass: "bg-amber-500/15 border-amber-500/40 text-amber-300", icon: "?" },
                         ] as const).map((opt) => {
                             const selected = ans?.answer === opt.value;
@@ -851,11 +861,21 @@ function QuestionnaireInner() {
                                         <div key={field.key}>
                                             {/* Info type → informational text */}
                                             {field.type === "info" ? (
-                                                <div className="flex items-start gap-2 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/15 px-4 py-3">
-                                                    <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <p className="text-slate-400 text-xs leading-relaxed">{field.label}</p>
+                                                <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${
+                                                    field.key === "manipulation_warning"
+                                                        ? "bg-red-500/[0.12] border-2 border-red-500/40"
+                                                        : "bg-cyan-500/[0.06] border border-cyan-500/15"
+                                                }`}>
+                                                    {field.key === "manipulation_warning" ? (
+                                                        <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">🚫</span>
+                                                    ) : (
+                                                        <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    )}
+                                                    <p className={`text-xs leading-relaxed ${
+                                                        field.key === "manipulation_warning" ? "text-red-300 font-semibold" : "text-slate-400"
+                                                    }`}>{field.label}</p>
                                                 </div>
                                             ) : (
                                                 <label className="block text-slate-400 text-sm mb-2 font-medium">
@@ -901,7 +921,10 @@ function QuestionnaireInner() {
                                                     {field.warning && ans?.details[field.key] && (field.warning as Record<string, string>)[ans.details[field.key] as string] && (
                                                         <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
                                                             <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
-                                                            <p className="text-xs text-red-300 leading-relaxed">{(field.warning as Record<string, string>)[ans.details[field.key] as string]}</p>
+                                                            <div>
+                                                                <p className="text-xs text-red-300 leading-relaxed">{renderWarningText((field.warning as Record<string, string>)[ans.details[field.key] as string])}</p>
+                                                                <p className="text-xs text-white font-bold mt-2">Nebojte se — my víme jak na to a postaráme se o to!</p>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </>
@@ -953,7 +976,10 @@ function QuestionnaireInner() {
                                                         return msg.length > 0 ? (
                                                             <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
                                                                 <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
-                                                                <p className="text-xs text-red-300 leading-relaxed">{msg.join(" ")}</p>
+                                                                <div>
+                                                                    <p className="text-xs text-red-300 leading-relaxed">{renderWarningText(msg.join(" "))}</p>
+                                                                    <p className="text-xs text-white font-bold mt-2">Nebojte se — my víme jak na to a postaráme se o to!</p>
+                                                                </div>
                                                             </div>
                                                         ) : null;
                                                     })()}
