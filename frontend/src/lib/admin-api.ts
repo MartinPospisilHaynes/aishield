@@ -857,7 +857,7 @@ export interface AdminInvoice {
 }
 
 export async function getAdminInvoices(): Promise<{ invoices: AdminInvoice[] }> {
-    const res = await adminFetch(`${API_URL}/api/admin/crm/invoices`);
+    const res = await adminFetch(`${API_URL}/api/admin/invoices`);
     if (!res.ok) throw new Error("Chyba při načítání faktur");
     return res.json();
 }
