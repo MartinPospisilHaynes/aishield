@@ -524,9 +524,10 @@ function ScanPageInner() {
                                             Používáním AI technologií na svém webu máte významnou konkurenční výhodu.
                                             Chatboty, analytika a doporučovací systémy zlepšují zákaznický zážitek a konverze.
                                             Teď jen potřebujete mít vše legislativně v pořádku, aby vám tato výhoda
-                                            zůstala i po začátku platnosti EU AI Act. A navíc — weby a e-shopy,
+                                            zůstala i po začátku platnosti EU AI Act.{" "}
+                                            <strong className="text-white font-bold">A navíc — weby a e-shopy,
                                             které budou mít tuto zákonnou povinnost splněnou, budou upřednostňovány
-                                            ve vyhledávačích.
+                                            ve vyhledávačích.</strong>
                                         </p>
                                     </div>
                                 </div>
@@ -557,6 +558,12 @@ function ScanPageInner() {
                                             ⚠️ Pokud tyto nedostatky odhalil náš software, mohou je najít i kontrolní orgány EU.
                                             Po nabytí plné účinnosti zákona začnou evropské úřady provádět systematické inspekce
                                             webových stránek a e-shopů.
+                                        </p>
+                                        <p className="mt-3 text-xs text-red-300/70 leading-relaxed">
+                                            <strong className="text-red-300">Upozornění:</strong> Tento výsledek zachycuje stav vašeho webu v okamžiku skenu.
+                                            Moderní weby dynamicky načítají AI skripty na základě geolokace, typu zařízení, denní doby,
+                                            A/B testování nebo cookies — proto se počet nalezených systémů může při opakovaném testu lišit.
+                                            Skutečný počet AI systémů na vašem webu může být vyšší, než kolik jich sken v danou chvíli odhalí.
                                         </p>
                                     </div>
                                 </div>
@@ -754,9 +761,8 @@ function ScanPageInner() {
 
                         {/* ── Info: 3 úrovně rizika EU AI Actu ── */}
                         {hasFindings && (
-                            <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
+                            <div className="py-4">
                                 <div className="flex items-start gap-3">
-                                    <IconInfo className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
                                     <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
                                         <p>
                                             <strong className="text-white">EU AI Act rozlišuje 3 úrovně povinností — všechny vyžadují akci:</strong>
@@ -776,9 +782,8 @@ function ScanPageInner() {
 
                         {/* ── Info: výsledky se mohou lišit ── */}
                         {hasFindings && (
-                            <div className="rounded-xl bg-slate-500/5 border border-slate-500/15 p-4">
+                            <div className="py-4">
                                 <div className="flex items-start gap-3">
-                                    <IconInfo className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
                                     <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
                                         <p>
                                             <strong className="text-slate-300">Výsledky opakovaných skenů se mohou mírně lišit.</strong>{" "}

@@ -73,24 +73,6 @@ function CheckoutInner() {
     const [honeypot, setHoneypot] = useState("");
     const formLoadedAt = useRef(Date.now());
 
-    // Load user email from supabase session
-    useEffect(() => {
-        (async () => {
-            try {
-                const supabase = createClient();
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user?.email) setEmail(user.email);
-                if (!user) {
-                    router.push(`/registrace?redirect=/objednavka&plan=${planKey}`);
-                    return;
-                }
-            } catch {
-                // ignore
-            }
-            setUserLoaded(true);
-        })();
-    }, [planKey, router]);
-
     // ARES lookup when IČO reaches 8 digits
     const lookupAres = useCallback(async (icoValue: string) => {
         const cleaned = icoValue.replace(/\s/g, "");
@@ -107,7 +89,6 @@ function CheckoutInner() {
             }
             const data = await res.json();
             if (data.name) setCompany(data.name);
-            if (data.dic) setDic(data.dic);
             if (data.street) setStreet(data.street);
             if (data.city) setCity(data.city);
             if (data.zip) setZip(data.zip);
@@ -118,6 +99,31 @@ function CheckoutInner() {
             setAresLoading(false);
         }
     }, []);
+
+    // Load user email + IČO from supabase session
+    useEffect(() => {
+        (async () => {
+            try {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user?.email) setEmail(user.email);
+                if (!user) {
+                    router.push(`/registrace?redirect=/objednavka&plan=${planKey}`);
+                    return;
+                }
+                // Pre-fill IČO from onboarding metadata
+                const meta = user.user_metadata;
+                if (meta?.ico) {
+                    setIco(meta.ico);
+                    // Trigger ARES lookup to fill company details
+                    lookupAres(meta.ico);
+                }
+            } catch {
+                // ignore
+            }
+            setUserLoaded(true);
+        })();
+    }, [planKey, router, lookupAres]);
 
     function handleIcoChange(value: string) {
         setIco(value);

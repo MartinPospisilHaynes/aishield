@@ -5,6 +5,7 @@ Endpointy pro jednorázové platby, subscriptions (opakované platby), refundace
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import Response
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import uuid
@@ -22,6 +23,7 @@ from backend.outbound.payment_emails import (
     build_payment_received_email,
     build_payment_confirmation_email,
     generate_variable_symbol,
+    generate_payment_qr_png,
 )
 from backend.outbound.email_engine import send_email
 from backend.api.analytics import track_server_event
@@ -208,6 +210,24 @@ async def _create_payment_via_gateway(
             "state": payment.state,
             "gateway": "gopay",
         }
+
+
+@router.get("/payment-qr/{variable_symbol}.png")
+async def get_payment_qr(variable_symbol: str, amount: float = 4999, order: str = ""):
+    """
+    Generuje platební QR kód jako PNG obrázek.
+    Používáno v emailech pro zobrazení QR kódu (místo data: URI, které blokuje Gmail).
+    """
+    png_bytes = generate_payment_qr_png(int(amount), variable_symbol, order or variable_symbol)
+    if not png_bytes:
+        raise HTTPException(status_code=500, detail="QR code generation not available")
+    return Response(
+        content=png_bytes,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=31536000, immutable",
+        },
+    )
 
 
 @router.get("/gateways")

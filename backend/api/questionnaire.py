@@ -565,6 +565,11 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "training_info", "label": "ℹ️ Součástí všech AIshield balíčků je profesionální školící prezentace (PowerPoint) a kompletní dokumentace včetně šablony prezenční listiny.", "type": "info"},
                     ]
                 },
+                "followup_no": {
+                    "fields": [
+                        {"key": "training_no_warning", "label": "⚠️ Článek 4 AI Act vyžaduje „dostatečnou úroveň AI gramotnosti“ zaměstnanců — tato povinnost platí již od 2. února 2025. Nesplnění může vést k pokutě až 15 milionů EUR. **Nebojte se — součástí všech AIshield balíčků je kompletní školící prezentace (PowerPoint) + šablona prezenční listiny, kterou zaměstnanci podepíšou. Vše zařídíme za vás.**", "type": "info"},
+                    ]
+                },
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 4",
             },
@@ -573,6 +578,11 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Máte ve firmě pravidla pro používání AI?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) Interní směrnice ‚Co se smí a nesmí do ChatGPT‘ (IT oddělení).\n2) Etický kodex pro používání AI v marketingu.\n3) Pravidla pro sdílení firemních dat s AI nástroji.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "guidelines_no_warning", "label": "⚠️ Bez interní směrnice zaměstnanci nevědí, jaká data smí vkládat do AI, zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování předpisů. Dle čl. 4 AI Act musí organizace zajistit odpovědné používání AI. **Nebojte se — v rámci služby AIshield vám dodáme kompletní šablonu směrnice „Pravidla pro používání AI ve firmě“, kterou si snadno přizpůsobíte.**", "type": "info"},
+                    ]
+                },
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 4",
             },
@@ -740,7 +750,8 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
     total = len(result.data)
     unknowns = sum(1 for r in result.data if r.get("answer") == "nevim")
     # 27 questions total in the questionnaire
-    is_complete = total >= 27 and unknowns == 0
+    # is_complete = all answered (regardless of unknowns — user still completed the flow)
+    is_complete = total >= 27
 
     return {
         "is_complete": is_complete,

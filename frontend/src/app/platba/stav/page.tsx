@@ -127,12 +127,12 @@ function PaymentStatusContent() {
                             </p>
                         )}
 
-                        <p className="text-slate-400 text-sm mb-4 leading-relaxed max-w-sm mx-auto">
+                        <p className="text-slate-400 text-sm mb-4 leading-relaxed max-w-md mx-auto">
                             Na váš email jsme odeslali fakturu s platebními údaji pro bankovní převod.
                         </p>
 
                         {/* Steps */}
-                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 mb-4 text-left max-w-sm mx-auto">
+                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 mb-4 text-left max-w-md mx-auto">
                             <h4 className="text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-3">Co bude následovat</h4>
                             <ul className="space-y-2 text-sm text-slate-300">
                                 <li className="flex items-start gap-2">
@@ -155,7 +155,7 @@ function PaymentStatusContent() {
                         </div>
 
                         {/* Email delay notice */}
-                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 mb-6 text-left max-w-sm mx-auto">
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 mb-6 text-left max-w-md mx-auto">
                             <p className="text-xs text-amber-300/80 leading-relaxed">
                                 <strong>Poznámka:</strong> V případě velkého vytížení může e-mail s fakturou dorazit až do 15 minut.
                                 Zkontrolujte prosím i složku <strong>spam</strong> nebo <strong>hromadné</strong>.
@@ -164,7 +164,7 @@ function PaymentStatusContent() {
                         </div>
 
                         {/* Contact info */}
-                        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 max-w-sm mx-auto">
+                        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 max-w-md mx-auto">
                             <p className="text-xs font-semibold text-slate-300 mb-2">V případě jakýchkoliv otázek nás neváhejte kontaktovat:</p>
                             <div className="space-y-1.5">
                                 <a href="tel:+420732716141" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
@@ -260,7 +260,7 @@ function PaymentStatusContent() {
                     <div className="absolute top-[20%] left-[30%] h-[500px] w-[500px] rounded-full bg-green-500/5 blur-[130px]" />
                     <div className="absolute bottom-[20%] right-[30%] h-[300px] w-[300px] rounded-full bg-fuchsia-500/5 blur-[100px]" />
                 </div>
-                <div className="mx-auto max-w-lg px-6 text-center">
+                <div className="mx-auto max-w-xl px-6 text-center">
                     <div className="glass py-12">
                         {/* Success icon */}
                         <div className={`mx-auto mb-6 w-20 h-20 rounded-2xl flex items-center justify-center ${isCoffee ? "bg-amber-500/10 border border-amber-500/20" : "bg-green-500/10 border border-green-500/20"}`}>

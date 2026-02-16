@@ -138,6 +138,33 @@ def generate_payment_qr_base64(amount: int, variable_symbol: str, order_number: 
     return base64.b64encode(buf.read()).decode("ascii")
 
 
+def generate_payment_qr_png(amount: int, variable_symbol: str, order_number: str) -> bytes | None:
+    """
+    Generuje platební QR kód jako raw PNG bytes (pro HTTP endpoint).
+    """
+    if not HAS_QRCODE:
+        return None
+
+    spayd = (
+        f"SPD*1.0"
+        f"*ACC:{AISHIELD_IBAN}"
+        f"*AM:{amount:.2f}"
+        f"*CC:CZK"
+        f"*X-VS:{variable_symbol}"
+        f"*MSG:{order_number}"
+    )
+
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=8, border=2)
+    qr.add_data(spayd)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return buf.read()
+
+
 def build_bank_transfer_email(
     order_number: str,
     plan: str,
@@ -158,13 +185,9 @@ def build_bank_transfer_email(
     qr_html = ""
     attachments: list[dict] = []
     if qr_base64:
-        # Use CID (Content-ID) so email clients actually display the image
-        # data: URIs are blocked by Gmail, Outlook, and most email clients
-        attachments.append({
-            "content": qr_base64,
-            "filename": "qr-platba.png",
-            "content_type": "image/png",
-        })
+        # Use hosted URL so email clients (Gmail, Outlook) display the image
+        # data: URIs and CID are blocked/unreliable in most email clients
+        qr_url = f"https://api.aishield.cz/api/payments/payment-qr/{variable_symbol}.png?amount={amount}&order={order_number}"
         qr_html = f"""
     <!-- QR Payment Code -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.95);border-radius:12px;margin-bottom:24px;">
@@ -172,7 +195,7 @@ def build_bank_transfer_email(
         <p style="margin:0 0 12px 0;font-size:13px;font-weight:700;color:#1e293b;">
             &#128241; Platební QR kód
         </p>
-        <img src="data:image/png;base64,{qr_base64}" alt="Platební QR kód" width="200" height="200" style="display:block;margin:0 auto;border-radius:8px;" />
+        <img src="{qr_url}" alt="Platební QR kód" width="200" height="200" style="display:block;margin:0 auto;border-radius:8px;" />
         <p style="margin:12px 0 0 0;font-size:11px;color:#64748b;line-height:1.5;">
             Naskenujte QR kód v mobilní aplikaci vaší banky.<br>
             Všechny údaje se předvyplní automaticky.

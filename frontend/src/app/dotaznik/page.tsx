@@ -35,6 +35,7 @@ interface Question {
     options?: string[];          // for single_select (industry)
     help_text?: string;
     followup?: { condition: string; fields: FollowupField[] };
+    followup_no?: { fields: FollowupField[] };
     risk_hint: string;
     ai_act_article: string | null;
 }
@@ -861,11 +862,10 @@ function QuestionnaireInner() {
                                         <div key={field.key}>
                                             {/* Info type → informational text */}
                                             {field.type === "info" ? (
-                                                <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${
-                                                    field.key === "manipulation_warning"
+                                                <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${field.key === "manipulation_warning"
                                                         ? "bg-red-500/[0.12] border-2 border-red-500/40"
                                                         : "bg-cyan-500/[0.06] border border-cyan-500/15"
-                                                }`}>
+                                                    }`}>
                                                     {field.key === "manipulation_warning" ? (
                                                         <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">🚫</span>
                                                     ) : (
@@ -873,9 +873,8 @@ function QuestionnaireInner() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                         </svg>
                                                     )}
-                                                    <p className={`text-xs leading-relaxed ${
-                                                        field.key === "manipulation_warning" ? "text-red-300 font-semibold" : "text-slate-400"
-                                                    }`}>{field.label}</p>
+                                                    <p className={`text-xs leading-relaxed ${field.key === "manipulation_warning" ? "text-red-300 font-semibold" : "text-slate-400"
+                                                        }`}>{field.label}</p>
                                                 </div>
                                             ) : (
                                                 <label className="block text-slate-400 text-sm mb-2 font-medium">
@@ -995,6 +994,26 @@ function QuestionnaireInner() {
                                                     value={(ans?.details[field.key] as string) || ""}
                                                     onChange={(e) => setDetail(q.key, field.key, e.target.value)}
                                                 />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Followup_no fields (slides down when "Ne") ── */}
+                    {q.followup_no && ans?.answer === "no" && (
+                        <div className="animate-slide-down mb-6">
+                            <div className="bg-red-500/[0.06] backdrop-blur-xl border border-red-500/25 rounded-2xl p-5">
+                                <div className="space-y-4">
+                                    {q.followup_no.fields.map((field) => (
+                                        <div key={field.key}>
+                                            {field.type === "info" && (
+                                                <div className="flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
+                                                    <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">⚠️</span>
+                                                    <p className="text-xs text-red-300 leading-relaxed">{renderWarningText(field.label.replace(/^⚠️\s*/, ''))}</p>
+                                                </div>
                                             )}
                                         </div>
                                     ))}
