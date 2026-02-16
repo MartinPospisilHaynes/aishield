@@ -4,10 +4,8 @@ Orchestrátor celého procesu skenování:
 1. Playwright skenuje web
 2. Detektor najde AI systémy
 3. Výsledky se uloží do Supabase (scans + findings)
-4. Screenshoty se uloží do Supabase Storage
 """
 
-import base64
 import logging
 from datetime import datetime, timezone
 
@@ -69,13 +67,15 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         findings: list[DetectedAI] = detector.detect(page)
         logger.info(f"[Pipeline] Signaturový detektor: {len(findings)} AI systémů")
 
-        # 3.1 Double-scan consensus — druhý sken s kratším čekáním,
-        #     ponecháme jen findings nalezené v obou skenech
+        # 3.1 Double-scan consensus — druhý sken ověří, že findings jsou stabilní
         if findings:
             logger.info("[Pipeline] Double-scan consensus: spouštím verifikační sken")
+            # Uvolníme paměť: screenshoty z prvního skenu nepotřebujeme pro verifikaci
+            page.screenshot_full = b""
+            # Verifikační sken s kratším čekáním
             scanner2 = WebScanner(
                 timeout_ms=30_000,
-                wait_after_load_ms=2_000,  # Kratší čekání pro druhý sken
+                wait_after_load_ms=2_000,
             )
             page2: ScannedPage = await scanner2.scan(url)
             if not page2.error:
@@ -89,6 +89,8 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                         f"[Pipeline] Double-scan: odstraněno {removed} "
                         f"nestabilních findings (zůstává {len(findings)})"
                     )
+                # Uvolníme paměť z druhého skenu
+                del page2
             else:
                 logger.warning(
                     f"[Pipeline] Double-scan selhalo: {page2.error} — "
@@ -125,14 +127,6 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                 f"[Pipeline] Claude API: {usage['input_tokens']}+{usage['output_tokens']} tokenů, "
                 f"${usage['cost_usd']:.4f}"
             )
-
-        # 4. Nahrát viewport screenshot do Storage
-        screenshot_url = None
-        if page.screenshot_viewport:
-            screenshot_url = _upload_screenshot(
-                supabase, scan_id, page.screenshot_viewport
-            )
-            logger.info(f"[Pipeline] Screenshot nahrán: {screenshot_url is not None}")
 
         # 5. Uložit findings do DB
         # 5a. Nasazené AI systémy (deployed=True)
@@ -179,7 +173,6 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
             "duration_seconds": duration,
             "total_findings": len(deployed),
             "raw_html_hash": page.html_hash,
-            "screenshot_full_url": screenshot_url,
         }).eq("id", scan_id).execute()
 
         # 7. Aktualizovat companies.last_scanned_at
@@ -233,19 +226,3 @@ def _mark_error(supabase, scan_id: str, error_message: str):
         "error_message": error_message[:2000],
         "finished_at": datetime.now(timezone.utc).isoformat(),
     }).eq("id", scan_id).execute()
-
-
-def _upload_screenshot(supabase, scan_id: str, screenshot_bytes: bytes) -> str | None:
-    """Nahraje screenshot do Supabase Storage."""
-    try:
-        path = f"scans/{scan_id}/viewport.png"
-        supabase.storage.from_("screenshots").upload(
-            path=path,
-            file=screenshot_bytes,
-            file_options={"content-type": "image/png"},
-        )
-        # Vrátíme public URL
-        url = supabase.storage.from_("screenshots").get_public_url(path)
-        return url
-    except Exception:
-        return None

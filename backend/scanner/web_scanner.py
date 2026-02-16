@@ -31,8 +31,6 @@ class ScannedPage:
     cookies: list[dict] = field(default_factory=list)
     console_messages: list[str] = field(default_factory=list)
     network_requests: list[str] = field(default_factory=list)  # URL požadavků
-    screenshot_full: bytes = field(default=b"", repr=False)    # Celostránkový PNG
-    screenshot_viewport: bytes = field(default=b"", repr=False) # Viewport PNG
     duration_ms: int = 0
     error: str | None = None
     scanned_at: str = ""
@@ -213,25 +211,6 @@ class WebScanner:
                     {"name": c["name"], "domain": c["domain"], "value": c["value"][:50]}
                     for c in cookies_raw
                 ]
-
-                # ── Screenshoty ──
-
-                # Viewport screenshot (co vidí uživatel)
-                result.screenshot_viewport = await page.screenshot(
-                    type="png",
-                    full_page=False,
-                )
-
-                # Full-page screenshot (celá stránka)
-                try:
-                    result.screenshot_full = await page.screenshot(
-                        type="png",
-                        full_page=True,
-                        timeout=10_000,
-                    )
-                except Exception:
-                    # Některé stránky jsou příliš dlouhé
-                    result.screenshot_full = result.screenshot_viewport
 
             except Exception as e:
                 result.error = str(e)
