@@ -82,9 +82,9 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Drift",
         category="chatbot",
-        signatures=["drift", "driftt", "drift.com"],
+        signatures=["driftt", "drift.com", "js.driftt.com", "drift-frame"],
         script_patterns=["drift.com", "js.driftt.com"],
-        cookie_patterns=["drift"],
+        cookie_patterns=["driftt_"],
         risk_level="limited",
         ai_act_article="čl. 50 odst. 1",
         action_required="Přidat oznámení o AI chatbotu.",
@@ -526,9 +526,9 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Shoptet AI",
         category="recommender",
-        signatures=["shoptet", "shoptet.cz"],
-        script_patterns=["cdn.myshoptet.com"],
-        cookie_patterns=["shoptet"],
+        signatures=["shoptet-ai", "shoptetAiRecommend", "shoptet-personalization"],
+        script_patterns=["cdn.myshoptet.com/ai", "cdn.myshoptet.com/recommender"],
+        cookie_patterns=["shoptet_ai"],
         risk_level="limited",
         ai_act_article="čl. 50 odst. 1",
         action_required="Pokud Shoptet používá AI doporučování produktů, "
@@ -712,7 +712,7 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Help Scout Beacon",
         category="chatbot",
-        signatures=["Beacon(", "helpscout", "beacon-v2"],
+        signatures=["helpscout", "beacon-v2.helpscout", "HS.beacon"],
         script_patterns=["beacon-v2.helpscout.net"],
         network_patterns=["beaconapi.helpscout.net"],
         risk_level="limited",
@@ -736,9 +736,9 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Vercel AI Chatbot",
         category="chatbot",
-        signatures=["ai-chatbot", "useChat", "ai/react"],
+        signatures=["@ai-sdk/react", "sdk.vercel.ai", "vercel-ai-chatbot"],
         script_patterns=["sdk.vercel.ai"],
-        network_patterns=["api/chat", "api/completion"],
+        network_patterns=["sdk.vercel.ai"],
         risk_level="limited",
         ai_act_article="čl. 50 odst. 1",
         action_required="AI chatbot postavený na Vercel AI SDK musí být označen.",
@@ -849,7 +849,7 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Frase.io",
         category="content_gen",
-        signatures=["frase.io", "frase"],
+        signatures=["frase.io", "frase-answer", "frase-widget"],
         risk_level="limited",
         ai_act_article="čl. 50 odst. 2",
         action_required="AI generovaný obsah musí být označen.",
@@ -965,8 +965,8 @@ AI_SIGNATURES: list[AISignature] = [
     AISignature(
         name="Generický AI chatbot",
         category="chatbot",
-        signatures=["ai-chatbot", "ai_chatbot", "chatbot-ai", "virtual-assistant",
-                     "ai-assistant", "ai_assistant"],
+        signatures=["data-ai-chatbot", "id=\"ai-chatbot\"", "class=\"ai-assistant\"",
+                     "data-virtual-assistant"],
         risk_level="limited",
         ai_act_article="čl. 50 odst. 1",
         action_required="Jakýkoli AI chatbot musí být označen jako AI systém.",

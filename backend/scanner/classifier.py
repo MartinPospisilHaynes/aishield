@@ -6,11 +6,14 @@ Ověřuje nálezy z detektoru pomocí Claude AI:
 2. Zpřesní klasifikaci rizika podle AI Act
 3. Vygeneruje doporučení v češtině
 
-Fallback: pokud API klíč není nastaven, vrátí původní nálezy beze změn.
+Fallback v2: pokud API selže → inteligentní degradace (jen high-confidence findings),
+nikdy „vše deployed=true".
 """
 
 import json
 import logging
+import re
+import time
 from dataclasses import dataclass, asdict
 
 import anthropic
@@ -20,6 +23,13 @@ from backend.scanner.detector import DetectedAI
 from backend.monitoring.engine_health import engine_monitor
 
 logger = logging.getLogger(__name__)
+
+# ── Retry konfigurace ──
+MAX_RETRIES = 3
+RETRY_DELAYS = [1.0, 3.0, 9.0]  # Exponential backoff
+
+# ── Confidence threshold pro inteligentní fallback ──
+FALLBACK_CONFIDENCE_THRESHOLD = 0.80
 
 # ── Cena za token (Claude 3.5 Haiku, USD) ──
 COST_PER_INPUT_TOKEN = 0.80 / 1_000_000   # $0.80 / 1M
@@ -139,45 +149,63 @@ class AIClassifier:
     ) -> list[ClassifiedFinding]:
         """
         Klasifikuje nálezy pomocí Claude API.
-        Pokud API není dostupné, vrátí fallback klasifikaci.
+        Pokud API není dostupné, vrátí INTELIGENTNÍ fallback
+        (jen high-confidence findings, nikdy „vše deployed=true").
         """
         if not self.enabled or not findings:
-            return self._fallback_classify(findings)
+            return self._intelligent_fallback(findings, reason="API key not configured")
 
-        try:
-            return await self._claude_classify(url, findings)
-        except anthropic.AuthenticationError as e:
-            logger.error("[Classifier] Neplatný API klíč!")
-            await engine_monitor.report_error(
-                "anthropic_auth", scan_id=None, url=url,
-                details=str(e),
-            )
-            return self._fallback_classify(findings)
-        except anthropic.RateLimitError as e:
-            logger.warning("[Classifier] Rate limit — fallback")
-            await engine_monitor.report_error(
-                "anthropic_rate_limit", scan_id=None, url=url,
-                details=str(e),
-            )
-            return self._fallback_classify(findings)
-        except anthropic.APIStatusError as e:
-            # Catches 529 Overloaded, billing errors, etc.
-            error_type = "anthropic_overloaded" if e.status_code == 529 else "pipeline_error"
-            if "credit" in str(e).lower() or "billing" in str(e).lower():
-                error_type = "anthropic_tokens_depleted"
-            logger.error(f"[Classifier] API status error {e.status_code}: {e}")
-            await engine_monitor.report_error(
-                error_type, scan_id=None, url=url,
-                details=f"Status {e.status_code}: {e}",
-            )
-            return self._fallback_classify(findings)
-        except Exception as e:
-            logger.error(f"[Classifier] Chyba: {e}", exc_info=True)
-            await engine_monitor.report_error(
-                "pipeline_error", scan_id=None, url=url,
-                details=f"Classifier exception: {e}",
-            )
-            return self._fallback_classify(findings)
+        last_error = None
+        for attempt in range(MAX_RETRIES):
+            try:
+                return await self._claude_classify(url, findings)
+            except anthropic.AuthenticationError as e:
+                logger.error("[Classifier] Neplatný API klíč — retry nepomůže")
+                await engine_monitor.report_error(
+                    "anthropic_auth", scan_id=None, url=url,
+                    details=str(e),
+                )
+                return self._intelligent_fallback(findings, reason=f"Auth error: {e}")
+            except anthropic.RateLimitError as e:
+                last_error = e
+                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
+                logger.warning(f"[Classifier] Rate limit — retry {attempt+1}/{MAX_RETRIES} za {delay}s")
+                await engine_monitor.report_error(
+                    "anthropic_rate_limit", scan_id=None, url=url,
+                    details=f"Retry {attempt+1}: {e}",
+                )
+                time.sleep(delay)
+            except anthropic.APIStatusError as e:
+                error_type = "anthropic_overloaded" if e.status_code == 529 else "pipeline_error"
+                if "credit" in str(e).lower() or "billing" in str(e).lower():
+                    error_type = "anthropic_tokens_depleted"
+                    logger.error(f"[Classifier] Billing/credit error — retry nepomůže: {e}")
+                    await engine_monitor.report_error(
+                        error_type, scan_id=None, url=url,
+                        details=f"Status {e.status_code}: {e}",
+                    )
+                    return self._intelligent_fallback(findings, reason=f"Billing error: {e}")
+                last_error = e
+                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
+                logger.warning(f"[Classifier] API error {e.status_code} — retry {attempt+1}/{MAX_RETRIES} za {delay}s")
+                await engine_monitor.report_error(
+                    error_type, scan_id=None, url=url,
+                    details=f"Retry {attempt+1}, Status {e.status_code}: {e}",
+                )
+                time.sleep(delay)
+            except Exception as e:
+                last_error = e
+                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
+                logger.error(f"[Classifier] Chyba (attempt {attempt+1}): {e}", exc_info=True)
+                await engine_monitor.report_error(
+                    "pipeline_error", scan_id=None, url=url,
+                    details=f"Retry {attempt+1}: {e}",
+                )
+                time.sleep(delay)
+
+        # Všechny retry selhaly → INTELIGENTNÍ fallback (NE „vše deployed=true")
+        logger.error(f"[Classifier] Všechny {MAX_RETRIES} pokusy selhaly. Inteligentní fallback.")
+        return self._intelligent_fallback(findings, reason=f"All {MAX_RETRIES} retries failed: {last_error}")
 
     async def _claude_classify(
         self, url: str, findings: list[DetectedAI]
@@ -228,18 +256,9 @@ class AIClassifier:
             f"cena: ${cost:.4f}"
         )
 
-        # Parsování odpovědi
+        # Parsování odpovědi — ROBUSTNÍ (řeší code fences, text kolem JSON, atd.)
         raw_text = response.content[0].text.strip()
-
-        # Odstranění markdown code fences pokud jsou
-        if raw_text.startswith("```"):
-            lines = raw_text.split("\n")
-            raw_text = "\n".join(lines[1:])  # Odstraníme první řádek (```json)
-            if raw_text.endswith("```"):
-                raw_text = raw_text[:-3]
-            raw_text = raw_text.strip()
-
-        classified_data = json.loads(raw_text)
+        classified_data = self._robust_json_parse(raw_text)
 
         # Namapujeme zpět na ClassifiedFinding
         # Potřebujeme zachovat original evidence/signatures
@@ -271,26 +290,98 @@ class AIClassifier:
 
         return results
 
-    def _fallback_classify(self, findings: list[DetectedAI]) -> list[ClassifiedFinding]:
+    def _robust_json_parse(self, raw_text: str) -> list[dict]:
         """
-        Fallback klasifikace bez Claude API.
-        Všechny nálezy označí jako deployed (konzervativní přístup).
+        Robustní JSON parsing — zvládne:
+        1. Čistý JSON
+        2. JSON v markdown code fences (```json ... ```)
+        3. JSON array schovaný v konverzačním textu
+        4. Neplatné JSON → exception (chytá se výše)
         """
-        logger.info(f"[Classifier] Fallback klasifikace pro {len(findings)} nálezů")
+        text = raw_text.strip()
 
-        return [
-            ClassifiedFinding(
+        # 1. Odstraň markdown code fences
+        if "```" in text:
+            # Najdi obsah mezi prvním ``` a posledním ```
+            fence_pattern = r'```(?:json)?\s*\n?(.*?)```'
+            fence_match = re.search(fence_pattern, text, re.DOTALL)
+            if fence_match:
+                text = fence_match.group(1).strip()
+
+        # 2. Zkus přímo parsovat
+        try:
+            data = json.loads(text)
+            if isinstance(data, list):
+                return data
+            # Pokud Claude vrátil dict místo array
+            if isinstance(data, dict):
+                return [data]
+        except json.JSONDecodeError:
+            pass
+
+        # 3. Regex extraction — najdi JSON array v textu
+        array_match = re.search(r'\[[\s\S]*\]', text)
+        if array_match:
+            try:
+                data = json.loads(array_match.group())
+                if isinstance(data, list):
+                    logger.info("[Classifier] JSON extracted via regex from text")
+                    return data
+            except json.JSONDecodeError:
+                pass
+
+        # 4. Nic nefungovalo → raise
+        raise json.JSONDecodeError(
+            f"Cannot parse Claude response as JSON. Raw text: {raw_text[:200]}...",
+            raw_text, 0
+        )
+
+    def _intelligent_fallback(
+        self, findings: list[DetectedAI], reason: str = ""
+    ) -> list[ClassifiedFinding]:
+        """
+        INTELIGENTNÍ fallback — NIKDY neoznačí „vše deployed=true".
+        
+        Logika:
+        - High-confidence findings (≥0.80) → deployed=true (pravděpodobně reálné)
+        - Low-confidence findings (<0.80) → deployed=false (pravděpodobně false-positives)
+        - Vše se označí jako „⚠️ neověřeno AI klasifikátorem"
+        """
+        logger.warning(
+            f"[Classifier] INTELIGENTNÍ FALLBACK: {len(findings)} findings, "
+            f"threshold={FALLBACK_CONFIDENCE_THRESHOLD}, reason={reason}"
+        )
+
+        results = []
+        deployed_count = 0
+        fp_count = 0
+
+        for f in findings:
+            is_deployed = f.confidence >= FALLBACK_CONFIDENCE_THRESHOLD
+            if is_deployed:
+                deployed_count += 1
+            else:
+                fp_count += 1
+
+            results.append(ClassifiedFinding(
                 name=f.name,
-                deployed=True,  # Konzervativně: vše je nasazené
+                deployed=is_deployed,
                 category=f.category,
-                risk_level=f.risk_level,
-                ai_act_article=f.ai_act_article,
-                action_required=f.action_required,
+                risk_level=f.risk_level if is_deployed else "none",
+                ai_act_article=f.ai_act_article if is_deployed else "",
+                action_required=f.action_required if is_deployed else
+                    f"Nízká confidence ({f.confidence:.0%}) — pravděpodobně false positive.",
                 description_cs=f.description_cs,
                 confidence=f.confidence,
-                reason="Automatická detekce (bez AI ověření)",
+                reason=f"⚠️ AI klasifikace selhala ({reason}). "
+                       f"{'Ponecháno' if is_deployed else 'Vyřazeno'} "
+                       f"na základě confidence={f.confidence:.2f} "
+                       f"(threshold={FALLBACK_CONFIDENCE_THRESHOLD}).",
                 matched_signatures=f.matched_signatures,
                 evidence=f.evidence,
-            )
-            for f in findings
-        ]
+            ))
+
+        logger.warning(
+            f"[Classifier] Fallback result: {deployed_count} deployed, {fp_count} false-positives"
+        )
+        return results

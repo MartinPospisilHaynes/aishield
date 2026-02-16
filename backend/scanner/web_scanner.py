@@ -120,6 +120,51 @@ class WebScanner:
                 # Počkáme na dynamický obsah (chatboty, popupy...)
                 await page.wait_for_timeout(self.wait_after_load_ms)
 
+                # ── Cookie consent auto-close ──
+                try:
+                    consent_selectors = [
+                        'button:has-text("Přijmout vše")',
+                        'button:has-text("Přijmout všechny")',
+                        'button:has-text("Souhlasím")',
+                        'button:has-text("Accept all")',
+                        'button:has-text("Accept cookies")',
+                        'button:has-text("Akceptovat")',
+                        'button:has-text("Povolit vše")',
+                        'a:has-text("Přijmout vše")',
+                        'a:has-text("Souhlasím")',
+                        'a:has-text("Accept all")',
+                        'button[id*="accept"]',
+                        '[id*="cookie-accept"]',
+                        '[id*="consent-accept"]',
+                        '[class*="cookie"] button:first-of-type',
+                    ]
+                    for selector in consent_selectors:
+                        try:
+                            btn = page.locator(selector).first
+                            if await btn.is_visible(timeout=500):
+                                await btn.click(timeout=2000)
+                                await page.wait_for_timeout(1000)
+                                break
+                        except Exception:
+                            continue
+                except Exception:
+                    pass  # Cookie consent handling is best-effort
+
+                # ── Scroll to 50% for lazy-loaded content ──
+                try:
+                    total_height = await page.evaluate(
+                        "document.body.scrollHeight"
+                    )
+                    await page.evaluate(
+                        f"window.scrollTo(0, {total_height // 2})"
+                    )
+                    await page.wait_for_timeout(3000)
+                    # Scroll back to top for screenshots
+                    await page.evaluate("window.scrollTo(0, 0)")
+                    await page.wait_for_timeout(1000)
+                except Exception:
+                    pass  # Scroll is best-effort
+
                 # ── Extrakce dat ──
 
                 # Titulek

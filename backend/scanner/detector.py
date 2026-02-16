@@ -156,12 +156,16 @@ class AIDetector:
         evidence: list[str] = []
         html_lower = page.html.lower()
 
-        # 1. Hledáme v HTML
+        # 1. Hledáme v HTML (word boundary + skip comments)
         for pattern in sig.signatures:
             pat_lower = pattern.lower()
-            if pat_lower in html_lower:
+            match = self._word_boundary_search(pat_lower, html_lower)
+            if match:
+                idx = match.start()
+                # Skip matches inside HTML comments
+                if self._is_in_html_comment(html_lower, idx):
+                    continue
                 matched.append(f"html:{pattern}")
-                idx = html_lower.find(pat_lower)
                 start = max(0, idx - 30)
                 end = min(len(page.html), idx + len(pattern) + 30)
                 snippet = page.html[start:end].replace("\n", " ").strip()
@@ -175,13 +179,14 @@ class AIDetector:
                     matched.append(f"script:{pattern}")
                     evidence.append(f"Script: {script_url[:150]}")
 
-        # 3. Hledáme v inline skriptech
+        # 3. Hledáme v inline skriptech (word boundary)
         for inline in page.inline_scripts:
             inline_lower = inline.lower()
             for pattern in sig.signatures:
-                if pattern.lower() in inline_lower:
+                match = self._word_boundary_search(pattern.lower(), inline_lower)
+                if match:
                     matched.append(f"inline:{pattern}")
-                    idx = inline_lower.find(pattern.lower())
+                    idx = match.start()
                     start = max(0, idx - 30)
                     end = min(len(inline), idx + len(pattern) + 30)
                     snippet = inline[start:end].replace("\n", " ").strip()
@@ -216,6 +221,30 @@ class AIDetector:
         matched = list(dict.fromkeys(matched))
         evidence = list(dict.fromkeys(evidence))
         return matched, evidence
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # HELPER METHODS
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    @staticmethod
+    def _word_boundary_search(pattern: str, text: str) -> re.Match | None:
+        """Search for pattern with smart word boundaries to avoid partial matches.
+        E.g. 'frase' won't match 'paraphrase', 'drift' won't match 'adrift'."""
+        if not pattern:
+            return None
+        escaped = re.escape(pattern)
+        prefix = r'\b' if pattern[0].isalnum() or pattern[0] == '_' else ''
+        suffix = r'\b' if pattern[-1].isalnum() or pattern[-1] == '_' else ''
+        return re.search(prefix + escaped + suffix, text)
+
+    @staticmethod
+    def _is_in_html_comment(html: str, idx: int) -> bool:
+        """Check if position idx is inside an HTML comment <!-- ... -->."""
+        comment_start = html.rfind('<!--', 0, idx)
+        if comment_start == -1:
+            return False
+        comment_end = html.find('-->', comment_start)
+        return comment_end == -1 or comment_end > idx
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     # HEURISTICKÁ DETEKCE
@@ -298,7 +327,7 @@ class AIDetector:
                                       "(GPT, Gemini, Claude). Chatbot musí být označen dle čl. 50.",
                         matched_signatures=[f"proxy_heuristic:{pattern}"],
                         evidence=[f"Kód: ...{snippet}..."],
-                        confidence=0.80,
+                        confidence=0.50,
                     ))
                     already_found.add(proxy_name.lower())
                     break  # Jedna proxy detekce stačí
@@ -344,25 +373,25 @@ class AIDetector:
                     results.append(DetectedAI(
                         name=notice_name,
                         category="content_gen",
-                        risk_level="limited",
-                        ai_act_article="čl. 50 odst. 2",
+                        risk_level="minimal",
+                        ai_act_article="čl. 50 odst. 2 (informativní)",
                         action_required="Web otevřeně deklaruje použití AI pro tvorbu obsahu. "
-                                       "Dle čl. 50 odst. 2 AI Act musí být AI generovaný "
-                                       "obsah (text, grafika, audio, video) označen.",
+                                       "Toto je pozitivní zjištění — web již částečně plní "
+                                       "transparentnost dle čl. 50 AI Act.",
                         description_cs="Na webu nalezeno transparenční oznámení o používání AI. "
                                       "Web přiznává, že část obsahu je vytvořena nebo "
                                       "asistována umělou inteligencí.",
                         matched_signatures=[f"transparency:{pattern}"],
                         evidence=[f"Text: ...{snippet}..."],
-                        confidence=0.90,
+                        confidence=0.50,
                     ))
                     already_found.add(notice_name.lower())
                 break  # Stačí jeden transparency match
 
         # ── 2f. Chatbot keyword frequency ──
         chatbot_freq = html_lower.count("chatbot") + all_inline.count("chatbot")
-        # Slovo "chatbot" 10+ krát na stránce = silný indikátor
-        if chatbot_freq >= 10:
+        # Slovo "chatbot" 25+ krát na stránce = silný indikátor
+        if chatbot_freq >= 25:
             generic_name = "Custom AI Chatbot"
             # Ale jen pokud jsme ještě žádný chatbot nenašli
             chatbot_already = any(

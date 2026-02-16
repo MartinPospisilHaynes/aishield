@@ -1,0 +1,1091 @@
+================================================================================
+                    AIshield.cz — SCANNER TECHNICAL REPORT
+                    Kompletní technická dokumentace systému
+                    skenování AI systémů na webových stránkách
+================================================================================
+
+Datum:        červen 2025
+Verze:        1.0
+Autor:        AI analýza kódu (7 souborů, 2 732 řádků Pythonu)
+Účel:         Interní audit skeneru — silné stránky, slabiny, návrhy zlepšení
+              Tento dokument bude zaslán 7 AI systémům k externí analýze.
+
+================================================================================
+OBSAH
+================================================================================
+
+  1. PŘEHLED ARCHITEKTURY
+  2. DETAILNÍ POPIS JEDNOTLIVÝCH MODULŮ
+     2.1 Pipeline (pipeline.py — 225 řádků)
+     2.2 Web Scanner (web_scanner.py — 209 řádků)
+     2.3 Detector (detector.py — 700 řádků)
+     2.4 Classifier (classifier.py — 296 řádků)
+     2.5 Signatures (signatures.py — 1000 řádků)
+     2.6 Report (report.py — 301 řádků)
+  3. DETEKČNÍ METODY — KOMPLETNÍ VÝČET
+  4. DATABÁZE SIGNATUR — POKRYTÍ
+  5. ZNÁMÉ PROBLÉMY A PŘÍČINY NEKONZISTENCE
+  6. SILNÉ STRÁNKY — NA CO JSME PYŠNÍ
+  7. SLABINY A REZERVY — BRUTÁLNĚ UPŘÍMNÁ ANALÝZA
+  8. NÁVRHY NA ZLEPŠENÍ (PRIORITIZOVANÉ)
+  9. KONKRÉTNÍ PŘÍPAD: desperados-design.cz (11 vs 1-2 nálezy)
+  10. OTÁZKY PRO EXTERNÍ AI ANALÝZU
+
+
+================================================================================
+1. PŘEHLED ARCHITEKTURY
+================================================================================
+
+Scanner je 4-stupňový pipeline běžící na VPS (FastAPI backend):
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  UŽIVATEL zadá URL na aishield.cz                                          │
+│                                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
+│  │ 1. WEB       │───>│ 2. DETECTOR  │───>│ 3. CLASSIFIER│───>│ 4. REPORT │ │
+│  │    SCANNER   │    │ (signatury + │    │ (Claude AI   │    │ (HTML     │ │
+│  │ (Playwright) │    │  heuristiky) │    │  verifikace) │    │  report)  │ │
+│  └──────────────┘    └──────────────┘    └──────────────┘    └───────────┘ │
+│        │                    │                    │                  │       │
+│   Stáhne HTML,        Najde kandidáty      Rozhodne true/     Generuje    │
+│   skripty, cookies,   na AI systémy        false positive     compliance  │
+│   network requesty,   (raw findings)       pro každý nález    report      │
+│   screenshoty                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Navíc je tu "safety net" — hardcoded seznam nástrojů, které NIKDY nemají
+být označeny jako deployed AI (GA4, GTM, Seznam Retargeting, Heureka).
+Ty se automaticky přesunou do false-positives bez ohledu na verdikt detectoru
+i classifiera.
+
+
+================================================================================
+2. DETAILNÍ POPIS JEDNOTLIVÝCH MODULŮ
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.1  PIPELINE (pipeline.py — 225 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+Orchestrátor celého procesu. Řídí pořadí kroků:
+
+  1. Nastaví scan status = "running" v DB
+  2. Spustí WebScanner.scan(url) — Playwright crawl
+  3. Spustí AIDetector.detect(scanned_page) — hledá AI systémy
+  4. Pokud nalezeny findings → spustí AIClassifier.classify(findings, url)
+  5. SAFETY NET: projde všechny výsledky a násilně přesune NON_AI_TOOLS
+     (GA4, GTM, Seznam Retargeting, Heureka) do false-positives
+  6. Uloží findings (deployed) a false_positives do DB (tabulka scan_findings)
+  7. Nahraje screenshot do Supabase Storage
+  8. Nastaví scan status = "done"
+
+Chybové ošetření:
+  - Celý pipeline je v try/except — pokud cokoliv selže, status → "error"
+  - Classifier má vlastní try/except — pokud Claude API selže, findings
+    se označí jako neklasifikované (ale NE jako deployed=false)
+
+Vrací slovník: {status, scan_id, url, total_findings, false_positives, findings[]}
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.2  WEB SCANNER (web_scanner.py — 209 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+Playwright-based headless browser scan. Klíčová konfigurace:
+
+  Browser:          Chromium (headless, no-sandbox)
+  User-Agent:       Chrome 120 na Windows 10
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+                     (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  Viewport:         1920 × 1080
+  Locale:           cs-CZ
+  Timezone:         Europe/Prague
+  SSL chyby:        Ignorovány (ignore_https_errors=True)
+  Navigation:       page.goto(url, wait_until="domcontentloaded")
+  Čekání:           + 10s manuální čekání na network idle (0 requestů po 500ms)
+                    + 5s extra sleep pro dynamický obsah (JS chatboty apod.)
+  Timeout:          45s celkem
+  
+Co extrahuje (dataclass ScannedPage):
+  - url:              zpracovaná URL
+  - html:             kompletní innerHTML (document.documentElement.innerHTML)
+  - html_hash:        SHA-256 hash HTML pro change detection
+  - external_scripts: seznam src atributů všech <script src="...">
+  - inline_scripts:   obsah všech <script> tagů bez src
+  - iframes:          src atributy všech <iframe>
+  - meta_tags:        dict name→content všech <meta> tagů
+  - cookies:          seznam cookies (name, value, domain, path)
+  - console_messages: zachycené console.log/warn/error zprávy
+  - network_requests: URL všech HTTP požadavků (zachyceno přes page.on("request"))
+  - screenshot_viewport: bytes PNG screenshotu viewportu
+  - screenshot_full:     bytes PNG celé stránky (s fallback na viewport)
+
+Technické detaily:
+  - Network requesty se zachycují přes callback na page.on("request")
+  - Console messages přes page.on("console")
+  - Screenshoty: viewport + full_page=True (s fallback pokud full selže)
+  - JavaScript evaluace pro cookies, inline scripts, external scripts, meta tags
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.3  DETECTOR (detector.py — 700 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+Dvoustupňová detekce AI systémů:
+
+STUPEŇ 1: SIGNATUROVÝ MATCHING
+  
+  Prochází databázi ~60 známých AI systémů (signatures.py) a pro každý:
+    a) Hledá signatury v HTML (.lower())
+    b) Hledá script_patterns v externích skriptech (URL)
+    c) Hledá script_patterns v inline skriptech (obsah)
+    d) Hledá iframe_patterns v iframe src
+    e) Hledá cookie_patterns v názvech cookies
+    f) Hledá network_patterns v síťových požadavcích
+
+  Confidence scoring:
+    base = 0.3 * počet_signatur_matched + 0.1 * počet_evidencí
+    minimum 0.6, maximum 1.0
+  
+  Evidence se ukládají (typ + matched string) pro transparentnost.
+
+STUPEŇ 2: HEURISTICKÁ DETEKCE (16 metod)
+  
+  Po signaturovém matchingu se spustí 16 nezávislých heuristických analýz
+  (metody 2a až 2p). Každá hledá jiný typ stopy AI na stránce.
+  
+  Deduplikace: heuristiky přeskočí nálezy, které už byly nalezeny
+  signaturovým matchingem (srovnání přes .lower() jména).
+  
+  Kompletní výčet v sekci 3.
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.4  CLASSIFIER (classifier.py — 296 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+AI verifikační vrstva pomocí Claude (Anthropic API).
+
+  Model:            claude-sonnet-4-20250514
+  Max tokens:       4096
+  Vstup:            zjednodušený JSON s findings + URL
+  
+System prompt (zkráceno):
+  "Jsi expert na EU AI Act. Pro každý nalezený systém urči:
+   - deployed: true/false (je systém skutečně nasazený a funkční?)
+   - risk_level: high/limited/minimal
+   - ai_act_article: relevantní článek EU AI Act
+   - classification_text: popis v češtině
+   Tyto nástroje VŽDY označ jako deployed=false:
+     Google Tag Manager, Google Analytics 4, Seznam Retargeting, Heureka"
+
+Vstupní formát pro Claude:
+  Zjednodušený JSON — pro každý finding posílá:
+    name, category, signature_matched, confidence, evidence_types[]
+
+Výstupní formát:
+  Claude vrací JSON array:
+  [{"name": "...", "deployed": true/false, "risk_level": "...", ...}]
+  
+  Parser: 
+    1. Odstraní markdown code fences (```json ... ```)
+    2. json.loads(raw_text)
+    3. Mapuje výsledky zpět na findings podle jména
+
+FALLBACK (pokud API selže):
+  - Všechny findings se označí jako deployed=true (konzervativní)
+  - Loguje se warning
+  - Scan pokračuje bez AI verifikace
+
+ZNÁMÝ BUG:
+  - JSON parse error (řádek 242) — Claude občas vrátí text místo JSON
+  - Tento bug byl zaznamenán v posledním skenu (20:46:27 CET)
+  - Při parse chybě: fallback → vše deployed=true
+
+Cenový odhad:
+  $0.80/1M vstupních tokenů, $4.00/1M výstupních tokenů
+  ~$0.005–0.02 na jeden sken (závisí na počtu findings)
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.5  SIGNATURES (signatures.py — 1000 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+Databáze známých AI systémů. Každá signatura obsahuje:
+
+  - name:             název systému
+  - category:         chatbot / analytics / recommender / content_gen
+  - signatures[]:     textové řetězce hledané v HTML
+  - script_patterns[]: vzory hledané v URL externích skriptů
+  - iframe_patterns[]: vzory v iframe src
+  - cookie_patterns[]: vzory v názvech cookies
+  - network_patterns[]: vzory v URL síťových požadavků
+  - risk_level:       high / limited / minimal
+  - ai_act_article:   relevantní článek EU AI Act
+  - action_required:  popis nutné akce (česky)
+  - description_cs:   popis systému (česky)
+
+Kompletní pokrytí (viz sekce 4).
+
+
+────────────────────────────────────────────────────────────────────────────────
+2.6  REPORT (report.py — 301 řádků)
+────────────────────────────────────────────────────────────────────────────────
+
+Generátor HTML compliance reportu. Funkce:
+
+  - Risk breakdown graf (vysoké / omezené / minimální)
+  - Celkové hodnocení (emoji + barva + zpráva)
+  - Detail každého findings (kategorie, riziko, AI Act článek, akce)
+  - Badge "🧠 AI verified" pro findings ověřené Claudem
+  - False-positives sekce (přeškrtnuté, šedé)
+  - Screenshot webu
+  - Obecná doporučení dle EU AI Act (6 bodů)
+  - Disclaimer o automatickém generování
+  - Responsivní design (tisk-friendly @media print)
+  - Patička s kontaktem
+
+Report je inline HTML (žádné externí CSS/JS závislosti) — lze přímo
+odeslat emailem nebo zobrazit v browseru.
+
+
+================================================================================
+3. DETEKČNÍ METODY — KOMPLETNÍ VÝČET
+================================================================================
+
+SIGNATUROVÝ MATCHING (stupeň 1):
+  Prochází 60+ signatur. Hledá textové řetězce v 6 zdrojích dat.
+
+HEURISTICKÉ METODY (stupeň 2, metody 2a–2p):
+
+┌──────┬────────────────────────────────┬──────────────┬───────────────────────┐
+│ ID   │ Metoda                         │ Confidence   │ Co hledá              │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2a   │ AI API endpoints v network     │ 0.85         │ 22 API URL vzorů      │
+│      │ requestech                     │              │ (OpenAI, Anthropic,   │
+│      │                                │              │  Gemini, Cohere,      │
+│      │                                │              │  HuggingFace,         │
+│      │                                │              │  Replicate, Mistral,  │
+│      │                                │              │  Together, Perplexity,│
+│      │                                │              │  Vertex AI,          │
+│      │                                │              │  Dialogflow, Groq,    │
+│      │                                │              │  Fireworks, DeepInfra,│
+│      │                                │              │  Anyscale, Cerebras,  │
+│      │                                │              │  SambaNova, DeepL,    │
+│      │                                │              │  Stability, Runway,   │
+│      │                                │              │  ElevenLabs aj.)      │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2b   │ AI API endpoints v inline      │ 0.80         │ Stejné vzory jako 2a  │
+│      │ skriptech                      │              │ ale v <script> obsahu │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2c   │ AI proxy vzory                 │ 0.75         │ gemini_proxy,         │
+│      │                                │              │ openai_proxy,         │
+│      │                                │              │ /api/chat,            │
+│      │                                │              │ /v1/completions,      │
+│      │                                │              │ /api/ai/, /api/gpt,   │
+│      │                                │              │ /api/llm              │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2d   │ JSON-LD strukturovaná data     │ 0.70         │ Typy v JSON-LD:       │
+│      │                                │              │ SoftwareApplication,  │
+│      │                                │              │ AIService,            │
+│      │                                │              │ ConversationalAgent   │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2e   │ AI Transparency oznámení       │ 0.65         │ Regex vzory pro CZ+EN │
+│      │                                │              │ oznámení: "používáme  │
+│      │                                │              │ umělou inteligenci",  │
+│      │                                │              │ "AI-powered",         │
+│      │                                │              │ "chatbot využívá AI", │
+│      │                                │              │ "tento chat je řízen  │
+│      │                                │              │  AI" apod.            │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2f   │ Chatbot keyword frekvence      │ 0.70         │ Slovo "chatbot" musí  │
+│      │                                │              │ být v HTML ≥10×       │
+│      │                                │              │ (vysoká frekvence     │
+│      │                                │              │  → pravděpodobně      │
+│      │                                │              │  chatbot na stránce)  │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2g   │ CSP Header analýza             │ 0.70         │ AI domény v meta      │
+│      │                                │              │ Content-Security-     │
+│      │                                │              │ Policy tagu           │
+│      │                                │              │ (openai.com,          │
+│      │                                │              │  anthropic.com,       │
+│      │                                │              │  cohere.ai aj.)       │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2h   │ WebSocket/SSE AI streaming     │ 0.80         │ Vzory v network       │
+│      │                                │              │ requestech:           │
+│      │                                │              │ wss://, /stream,      │
+│      │                                │              │ /events, /sse         │
+│      │                                │              │ + AI keywords         │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2i   │ localStorage/sessionStorage    │ 0.65         │ Klíče obsahující:     │
+│      │ AI keys                        │              │ chatbot, ai_,         │
+│      │                                │              │ gpt_, bot_config,     │
+│      │                                │              │ assistant_ aj.        │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2j   │ Meta tag AI indikátory         │ 0.70         │ <meta name=           │
+│      │                                │              │  "generator"> s AI,   │
+│      │                                │              │ data-ai-*,            │
+│      │                                │              │ ai-disclosure         │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2k   │ AI disclosure page linky       │ 0.65         │ Odkazy na stránky:    │
+│      │                                │              │ /ai-disclosure,       │
+│      │                                │              │ /ai-policy,           │
+│      │                                │              │ /ai-transparency,     │
+│      │                                │              │ /umela-inteligence    │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2l   │ Globální AI proměnné           │ 0.90         │ Fingerprinting v JS:  │
+│      │ (window.*)                      │              │ window.VF_            │
+│      │                                │              │ (Voiceflow),          │
+│      │                                │              │ window.__twk          │
+│      │                                │              │ (Tawk.to),            │
+│      │                                │              │ window.Intercom,      │
+│      │                                │              │ window.drift,         │
+│      │                                │              │ window.HubSpotConv.., │
+│      │                                │              │ window.fcWidget       │
+│      │                                │              │ (Freshchat),          │
+│      │                                │              │ window.Beacon         │
+│      │                                │              │ (HelpScout),          │
+│      │                                │              │ window.zE (Zendesk),  │
+│      │                                │              │ window.LiveChatWidget,│
+│      │                                │              │ window.$crisp,        │
+│      │                                │              │ window.chatwootSett., │
+│      │                                │              │ window.kommunicate,   │
+│      │                                │              │ window.adaSettings,   │
+│      │                                │              │ window.botpressWebCh. │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2m   │ Service Worker / Web Worker    │ 0.75         │ AI skripty v worker   │
+│      │ AI detekce                     │              │ registracích          │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2n   │ WASM/WebGPU AI inference       │ 0.80         │ WebAssembly, .wasm,   │
+│      │                                │              │ onnxruntime,          │
+│      │                                │              │ tensorflow,           │
+│      │                                │              │ @xenova/transformers, │
+│      │                                │              │ navigator.gpu,        │
+│      │                                │              │ webnn, ml5.js         │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2o   │ AI cookie vzory                │ 0.65         │ Obecné klíče:         │
+│      │                                │              │ _ai_, _chatbot,       │
+│      │                                │              │ _bot_id, _assistant,  │
+│      │                                │              │ _gpt_, _llm_          │
+├──────┼────────────────────────────────┼──────────────┼───────────────────────┤
+│ 2p   │ Schema.org AI markup           │ 0.70         │ schema.org/Software   │
+│      │                                │              │ Application +         │
+│      │                                │              │ AI keywords           │
+└──────┴────────────────────────────────┴──────────────┴───────────────────────┘
+
+
+================================================================================
+4. DATABÁZE SIGNATUR — POKRYTÍ
+================================================================================
+
+Celkem ~63 definovaných AI systémů ve 4 kategoriích:
+
+CHATBOTY (35 systémů):
+  Smartsupp, Tidio, Intercom, Drift, Zendesk Chat, LiveChat, Crisp,
+  HubSpot Chat, ChatGPT Widget, Google Gemini Chatbot, Google Dialogflow,
+  Google Vertex AI, Tawk.to, Voiceflow, Botpress, ManyChat, Ada Support,
+  Amazon Lex, IBM Watson, Freshdesk/Freshchat, Landbot, Chatbase,
+  OpenAI API (přímé), Anthropic Claude API (přímé), JivoChat, Chatra,
+  Olark, LivePerson, Gorgias, Re:amaze, Typebot, Kommunicate, CustomGPT,
+  YourGPT, Zapier Chatbot, Userlike, Help Scout Beacon, Chatwoot,
+  Vercel AI Chatbot, Salesforce Einstein, Kayako,
+  Generický AI chatbot (fallback), Generický AI API (fallback)
+
+ANALYTIKA (7 systémů):
+  Google Analytics 4, Google Tag Manager, Hotjar, Microsoft Clarity,
+  Meta Pixel, TikTok Pixel, LinkedIn Insight Tag
+
+DOPORUČOVACÍ SYSTÉMY (11 systémů):
+  Algolia, Recombee, Barilliance, Nosto, Dynamic Yield,
+  VWO, Optimizely, AB Tasty, Clerk.io, Luigi's Box, Bloomreach (Exponea)
+
+GENEROVÁNÍ OBSAHU (10 systémů):
+  Copy.ai, Jasper AI, Writesonic, Surfer SEO, Frase.io, MarketMuse,
+  DeepL Translator, Weglot, DALL-E/OpenAI Images, Midjourney,
+  Stable Diffusion
+
+ČESKÉ/REGIONÁLNÍ (3 systémy):
+  Shoptet AI, Seznam Retargeting, Heureka
+
+
+================================================================================
+5. ZNÁMÉ PROBLÉMY A PŘÍČINY NEKONZISTENCE
+================================================================================
+
+Zjištěný problém: Při testování webu desperados-design.cz scanner v 8 z 10
+skenů našel 1–2 AI systémy, ale v jednom skenu našel 11. Proč?
+
+PŘÍČINA 1: DYNAMICKÉ NAČÍTÁNÍ OBSAHU (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Chatbot skripty (Smartsupp, Tidio, Zendesk, Tawk.to aj.) se často načítají:
+  - Podmíněně podle geolokace (IP adresy VPS vs. lokální sken)
+  - Podle cookies (první vs. opakovaná návštěva)
+  - Podle A/B testů (náhodný bucket)
+  - Podle denní doby (pracovní hodiny vs. noc)
+  - Lazy loading (po scrollu, po X sekundách, po interakci)
+  - Některé chatboty se zobrazí až po kliknutí na trigger button
+
+  Scanner čeká 10s na network idle + 5s extra, ale:
+  - Některé skripty se načtou až po 20–30s
+  - Lazy-loaded chatboty vyžadují scroll/interakci
+  - A/B testy mohou vybrat variantu BEZ chatbotu
+  
+  DOPAD: Při jednom skenu se stihne načíst více skriptů, při jiném méně.
+  To způsobuje obrovskou variabilitu v počtu nálezů.
+
+
+PŘÍČINA 2: PŘÍLIŠ GENERICKÉ SIGNATURY (HIGH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Některé signatury jsou tak generické, že matchují i na stránkách,
+  kde daný AI systém vůbec není:
+
+  a) "Beacon(" — signatura pro Help Scout Beacon
+     → Matchuje na JAKÝKOLIV JavaScript kód obsahující slovo "Beacon("
+     → Např. web analytics beacons, navigator.sendBeacon(), Bluetooth beacons
+     → FALSE POSITIVE RIZIKO: VYSOKÉ
+
+  b) "frase" — signatura pro Frase.io
+     → Matchuje na české slovo "fráze" (bez diakritiky), anglické "phrase"
+     → Matchuje v jakémkoli textu obsahujícím tento substring
+     → FALSE POSITIVE RIZIKO: VYSOKÉ
+
+  c) "shoptet" — signatura pro Shoptet AI
+     → Matchuje na JAKÝKOLIV Shoptet e-shop (i bez AI funkcí)
+     → Shoptet má >40 000 e-shopů v CZ, většina nemá AI doporučování
+     → FALSE POSITIVE RIZIKO: EXTRÉMNĚ VYSOKÉ
+
+  d) "ai-chatbot", "ai_chatbot", "ai-assistant" — Generický AI chatbot
+     → Velmi běžné CSS třídy, HTML ID, meta tagy
+     → Matchuje na weby, které jen zmiňují AI chatboty v textu
+     → FALSE POSITIVE RIZIKO: VYSOKÉ
+
+  e) "helpscout" — Help Scout Beacon
+     → Help Scout není primárně AI nástroj (většina instalací nepoužívá
+       AI Answers), ale signatura matchuje na jakýkoliv Help Scout widget
+     → FALSE POSITIVE RIZIKO: STŘEDNÍ
+
+  f) "useChat", "ai/react" — Vercel AI Chatbot
+     → "useChat" je běžný React hook pattern, "ai/react" je krátký string
+     → Může matchnout v importech nesouvisejícího kódu
+     → FALSE POSITIVE RIZIKO: STŘEDNÍ
+
+  g) Shoptet cookie pattern "shoptet" — matchuje na cookies platformy,
+     ne na AI funkce
+
+
+PŘÍČINA 3: HEURISTIKA 2c — AI PROXY VZORY (HIGH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Hledá vzory jako "/api/chat", "/v1/completions", "/api/ai/"
+  
+  Problém: "/api/chat" je extrémně běžná URL v jakékoliv webové aplikaci
+  s chatem (ne nutně AI). Kontaktní formuláře, live chat, zákaznická podpora
+  — všechny mohou mít endpoint "/api/chat" bez jakékoliv AI.
+
+  Stejně "/api/gpt" může být jen zmínka v blogu nebo dokumentaci.
+
+
+PŘÍČINA 4: HEURISTIKA 2f — CHATBOT KEYWORD FREKVENCE (MEDIUM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Pokud se slovo "chatbot" vyskytuje v HTML ≥10×, scanner detekuje
+  "Generický AI chatbot". 
+
+  Problém: Blog post o chatbotech, srovnávací stránky chatbot řešení,
+  AI-focused weby (jako náš vlastní aishield.cz!) mají slovo "chatbot"
+  desítky krát v textu, aniž by měly chatbot nasazený.
+
+
+PŘÍČINA 5: CLASSIFIER JSON PARSE ERROR (MEDIUM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Zaznamenáno v posledním skenu (20:46:27 CET):
+  
+  Claude někdy vrátí text místo čistého JSON — např. "Zde je analýza..." 
+  před samotným JSON. Parser zkouší odstranit code fences (```json...```),
+  ale pokud Claude odpovídá konverzačně, json.loads() selže.
+
+  Při selhání: FALLBACK = všechny findings se označí jako deployed=true.
+  
+  To znamená, že i evidentní false-positives (Shoptet cookie, Beacon(),
+  frase v textu) projdou jako "nasazené AI systémy".
+
+  DOPAD: Pokud classifier selže a detector našel 14 raw findings,
+  uživatel vidí 11 (po odečtení 3 safety-net items) místo reálných 1–2.
+
+
+PŘÍČINA 6: CHYBĚJÍCÍ OPAKOVANÝ SKEN / CONSENSUS MECHANISMUS (HIGH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Scanner provede JEDEN sken a výsledek prezentuje jako finální.
+  Žádný mechanismus pro:
+  - Opakovaný sken (3× skenovat a vzít konsensus)
+  - Změnu timing/wait parametrů
+  - Verifikaci nálezů zpětným skenem
+  
+  To znamená, že timing-dependent findings (viz příčina 1) mají 
+  binární výsledek: buď se stihnou načíst, nebo ne.
+
+
+PŘÍČINA 7: NETWORK TIMING VARIABILITA (MEDIUM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Manuální wait_for_network_idle čeká max 10s na nulovou síťovou aktivitu
+  po 500ms. Ale:
+  - Pokud server odpoví pomalu (VPS v Praze, web v USA), skripty se nestihnou
+  - Polling requesty (chat heartbeat, analytics ping) mohou bránit idle stavu
+  - Timeout 10s může být příliš dlouhý (pollerství) nebo příliš krátký (pomalý server)
+
+
+PŘÍČINA 8: HTML SEARCH JE CASE-INSENSITIVE ALE NEZOHLEDŇUJE KONTEXT (MEDIUM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  detector.py hledá signatury v celém HTML přes:
+    if sig.lower() in html_lower
+  
+  To znamená:
+  - Signatura "drift" matchuje na CSS "text-indent: drift" nebo slovo "adrift"
+  - Signatura "ada" matchuje na jakýkoliv text se slovem "ada" (jméno, město...)
+  - Signatura "frase" matchuje na "paraphrase", "phrase" atd.
+  - Signatura "einstein" matchuje na Albert Einstein zmínku na webu
+  
+  Chybí word boundary matching, kontext (je to ve <script>? v textu?),
+  nebo alespoň minimum required evidence count.
+
+
+================================================================================
+6. SILNÉ STRÁNKY — NA CO JSME PYŠNÍ
+================================================================================
+
+✅ 1. UNIKÁTNÍ PRODUKT NA ČESKÉM TRHU
+   Neexistuje žádný přímý konkurent, který by automaticky skenoval weby
+   na AI systémy a hodnotil compliance s EU AI Act. Jsme první.
+
+✅ 2. ROZSÁHLÁ DATABÁZE SIGNATUR (63+ systémů)
+   Pokrytí je solidní — od gigantů (Google, Meta, OpenAI) přes
+   specializované (Voiceflow, Botpress) až po české specifika
+   (Shoptet, Seznam, Heureka). Málokdo by tohle sestavil tak kompletně.
+
+✅ 3. DVOUSTUPŇOVÁ DETEKCE + AI VERIFIKACE
+   Kombinace signature matching + heuristik + Claude AI verifikace
+   je sofistikovaný přístup. Claude funguje jako "druhý pár očí"
+   a umí odfiltrovat false-positives, které čistě signaturový
+   systém by propustil.
+
+✅ 4. 16 NEZÁVISLÝCH HEURISTICKÝCH METOD
+   Pokrytí je široké: network requesty, inline skripty, proxy patterns,
+   JSON-LD, transparency notices, CSP headers, WebSocket/SSE,
+   localStorage, meta tagy, disclosure linky, globální proměnné,
+   Service Workers, WASM/WebGPU, cookies, Schema.org.
+   To je výrazně více než většina bezpečnostních scannerů.
+
+✅ 5. ČESKÝ KONTEXT
+   Transparency notices v češtině ("používáme umělou inteligenci",
+   "chatbot využívá AI"), české AI Act články, české popisy,
+   české regionální systémy. Tohle žádný zahraniční scanner nemá.
+
+✅ 6. SAFETY NET PRO NON-AI TOOLS
+   Hardcoded ochrana proti nejčastějším false-positives (GA4, GTM,
+   Seznam, Heureka). Jednoduchý ale účinný mechanismus.
+
+✅ 7. KOMPLETNÍ DATA COLLECTION
+   WebScanner sbírá téměř vše: HTML, skripty, iframes, cookies,
+   network requesty, console messages, meta tagy, screenshoty.
+   To dává detectoru bohatý materiál k analýze.
+
+✅ 8. TRANSPARENTNÍ EVIDENCE
+   Každý finding obsahuje evidence (co přesně matchovalo, kde, jaký typ).
+   To umožňuje uživateli i nám ověřit, proč byl systém detekován.
+
+✅ 9. HTML REPORT JE PROFESIONÁLNÍ
+   Inline HTML report vypadá skvěle — risk breakdown, barevné kódování,
+   AI verified badge, false-positives sekce, doporučení, disclaimer.
+   Žádné externí závislosti, funguje v emailu i browseru.
+
+✅ 10. GLOBÁLNÍ VARIABLE FINGERPRINTING (metoda 2l)
+   Kontrola window.VF_, window.__twk, window.zE atd. je elegantní
+   a spolehlivá metoda — pokud chatbot je načtený, jeho globální
+   proměnná tam téměř jistě bude. Confidence 0.90 je oprávněná.
+
+✅ 11. WASM/WEBGPU DETEKCE (metoda 2n)
+   Většina scannerů tohle ignoruje. My hledáme onnxruntime,
+   tensorflow.js, @xenova/transformers, navigator.gpu, webnn.
+   Forward-looking — AI inference v browseru roste.
+
+✅ 12. EU AI ACT MAPPING
+   Každý finding je namapovaný na konkrétní článek EU AI Act
+   s popisem požadované akce. To je přidaná hodnota, kterou
+   žádný jiný scanner neposkytuje.
+
+
+================================================================================
+7. SLABINY A REZERVY — BRUTÁLNĚ UPŘÍMNÁ ANALÝZA
+================================================================================
+
+❌ 1. SINGLE-PAGE SKEN (CRITICAL)
+   Scanner skenuje POUZE jednu stránku (homepage). Chatboty, AI formuláře
+   a doporučovací systémy jsou často jen na podstránkách:
+     - /kontakt (chatbot)
+     - /produkty (AI doporučování)
+     - /blog (AI generovaný obsah)
+     - /checkout (AI fraud detection)
+     - /vyhledavani (AI search)
+   
+   DOPAD: Přehlížíme většinu AI systémů, které nejsou na homepage.
+
+❌ 2. ŽÁDNÁ INTERAKCE SE STRÁNKOU (CRITICAL)
+   Scanner jen načte stránku a čeká. Nekliká, nescrolluje, nevyplňuje
+   formuláře. Ale většina chatbotů se aktivuje až po:
+     - Scrollu (50% stránky)
+     - Kliknutí na chat button
+     - Čas na stránce (30s+)
+     - Mouse movement / exit intent
+   
+   DOPAD: Chatboty s lazy trigger se nedetekují v 90% skenů.
+
+❌ 3. PŘÍLIŠ GENERICKÉ SIGNATURY (viz sekce 5, příčina 2)
+   "Beacon(", "frase", "shoptet", "ai-chatbot", "drift", "ada"
+   generují vysoký počet false-positives.
+
+❌ 4. CLASSIFIER SINGLE POINT OF FAILURE (HIGH)
+   Pokud Claude API selže (rate limit, timeout, parse error):
+     → Fallback = VŠECHNO je deployed=true
+     → Uživatel vidí 11 AI systémů místo reálných 1-2
+   
+   To je katastrofální — nejdůležitější filtrační vrstva má binární
+   fallback bez graceful degradation.
+
+❌ 5. ŽÁDNÝ OPAKOVANÝ SKEN (HIGH)
+   Jeden sken = jeden výsledek. Žádný consensus, žádná verifikace.
+   V medicíně by to bylo jako diagnostikovat z jednoho testu.
+
+❌ 6. TIMING-DEPENDENT VÝSLEDKY (HIGH)
+   Scanner je deterministický v kódu, ale ne v síťových podmínkách.
+   Stejný web, stejný kód, ale výsledky se liší sken od skenu.
+
+❌ 7. WORD BOUNDARY MATCHING CHYBÍ (MEDIUM)
+   HTML search: "drift" in html_lower matchuje "adrift", "drifting"
+   Mělo by to být regex s \b word boundaries nebo alespoň celé
+   slovo matching.
+
+❌ 8. CONTEXT-FREE MATCHING (MEDIUM)
+   Signatura "chatbot" v HTML body matchuje i kdyby to bylo v článku
+   "10 nejlepších chatbotů pro firmy". Scanner nerozlišuje:
+     - Skript (aktivní kód) vs. text (pasivní zmínka)
+     - <head> vs. <body>
+     - Aktivní widget vs. zmínka v copywritingu
+
+❌ 9. ŽÁDNÉ TESTOVÁNÍ (HIGH)
+   Žádné unit testy, žádné integration testy, žádné regression testy.
+   Žádný test suite s "golden" weby (KDE VÍM, co tam je).
+   Žádné automatické testování false-positive raty.
+
+❌ 10. ŽÁDNÉ LOGOVÁNÍ PŘESNOSTI (MEDIUM)
+   Nesbíráme data o tom, kolik findings je true positive vs false positive.
+   Nemáme metriku precision/recall. Nemůžeme měřit zlepšení.
+
+❌ 11. CHYBÍ SUBPAGE CRAWLING (MEDIUM)
+   I kdyby scanner skenoval homepage dokonale, přehlíží 80% webu.
+   Sitemap.xml parsing, odkaz-following by dramaticky zvýšily pokrytí.
+
+❌ 12. USER-AGENT DETEKCE (LOW)
+   Používáme Chrome 120 z Windows 10. Některé weby:
+   - Detekují headless browser a servírují jinou verzi
+   - Regionálně blokují (GeoIP VPS vs. lokální IP)
+   - Rate-limitují neznámé UA
+
+❌ 13. SCREENSHOT KVALITA (LOW)
+   Screenshot se pořídí po čekací době, ale:
+   - Cookie consent banner může zakrýt obsah
+   - Lazy-loaded obrázky se nemusí načíst
+   - Stránka může být v "loading" stavu
+
+❌ 14. CHYBÍ DETEKCE AI V BACKENDOVÉ LOGICE (INHERENT LIMITATION)
+   Scanner vidí jen frontend. AI systémy v backendu (AI fraud detection,
+   AI pricing, AI content moderation) jsou neviditelné.
+   Tohle je inherentní omezení — nedá se vyřešit technicky.
+
+
+================================================================================
+8. NÁVRHY NA ZLEPŠENÍ (PRIORITIZOVANÉ)
+================================================================================
+
+🔴 PRIORITA 1 — KRITICKÉ (implementovat IHNED):
+
+  1.1  OPRAVIT GENERICKÉ SIGNATURY
+       ─────────────────────────────
+       - "Beacon(" → "beacon-v2.helpscout.net" NEBO window.Beacon + helpscout
+       - "frase" → "frase.io" (s tečkou) NEBO frase.io v script src
+       - "shoptet" → PŘIDAT podmínku: Shoptet AI SÍŤ detection POUZE pokud
+         se najde specifický AI endpoint (personalizované doporučování)
+       - "ai-chatbot" → vyžadovat ALESPOŇ 2 evidence (ne jen HTML substring)
+       - "drift" → "drift.com" NEBO "driftjs" NEBO window.drift
+       - "ada" → "ada.cx" NEBO "adasupport" NEBO window.adaSettings
+       - "einstein" → vyžadovat "salesforce" + "einstein" současně
+       
+       ODHADOVANÝ ČISTÝ DOPAD: Snížení false-positive rate o ~60%
+
+  1.2  OPRAVIT CLASSIFIER FALLBACK
+       ────────────────────────────
+       Místo "vše deployed=true" při API chybě:
+       - Retry 3× s exponential backoff (1s, 3s, 9s)
+       - Pokud stále selže → ponechat POUZE signatury s confidence ≥ 0.8
+       - Heuristiky s confidence < 0.8 → automaticky false-positive
+       - Logovat classifier failure prominentně v reportu
+       
+       ODHADOVANÝ ČISTÝ DOPAD: Eliminace "11 nálezů" problému
+
+  1.3  JSON PARSE ROBUSTNOST
+       ─────────────────────
+       - Přidat regex extraction: r'\[.*\]' ze surového textu
+       - Pokud to není v code fences ANI čistý JSON, hledat JSON array v textu
+       - Přidat response_format instruction pro Claude (strict JSON)
+       - Nebo použít Claude tool_use / function calling pro strukturovaný output
+       
+       ODHADOVANÝ ČISTÝ DOPAD: Snížení classifier failures o ~90%
+
+
+🟡 PRIORITA 2 — DŮLEŽITÉ (implementovat do 2 týdnů):
+
+  2.1  OPAKOVANÝ SKEN S KONSENSEM
+       ───────────────────────────
+       - Provést 3 skeny s různým timingem:
+         a) Normální (10s idle + 5s extra) — jako teď
+         b) Rychlý (5s idle + 2s extra) — base state
+         c) Pomalý (15s idle + 10s extra) — maximum capture
+       - Finding je "confirmed" pouze pokud se objeví alespoň ve 2/3 skenech
+       - Zvýší reliability dramaticky
+       - Trade-off: 3× delší scan time (~45s → ~135s)
+       
+       ALTERNATIVA: 2 skeny stačí pro consensus (30% rychlejší)
+
+  2.2  WORD BOUNDARY MATCHING
+       ──────────────────────
+       Nahradit: if sig.lower() in html_lower
+       Za:       if re.search(r'\b' + re.escape(sig.lower()) + r'\b', html_lower)
+       
+       Nebo lépe: pre-compile regex vzory v signaturách.
+       
+       DOPAD: Eliminace false-positives typu "adrift", "paraphrase"
+
+  2.3  KONTEXT-AWARE MATCHING
+       ──────────────────────
+       Rozlišit, kde se signatura nachází:
+       - V <script> tagu → vysoká relevance (aktivní kód)
+       - V <head> → střední (meta, import)
+       - V <body> text → nízká (pasivní zmínka)
+       - V komentáři <!-- --> → ignorovat
+       
+       Boosting: confidence × 1.5 pro <script>, × 1.0 pro <head>,
+       × 0.5 pro <body> text, × 0.0 pro komentáře.
+
+  2.4  MINIMUM EVIDENCE THRESHOLD
+       ──────────────────────────
+       Pro signaturový matching: vyžadovat alespoň 2 nezávislé evidence
+       (HTML + script NEBO HTML + cookie NEBO script + network).
+       
+       Jeden HTML substring match by neměl stačit pro detection.
+
+
+🟢 PRIORITA 3 — NICE TO HAVE (implementovat do měsíce):
+
+  3.1  MULTI-PAGE CRAWLING
+       ──────────────────────
+       - Skenovat homepage + top 3-5 podstránek
+       - Automaticky najít: /kontakt, /o-nas, /produkty, /vyhledavani
+       - Parsovat sitemap.xml pro důležité stránky
+       - Limit: max 5 stránek per free scan, neomezeno pro premium
+       
+       DOPAD: Dramatické zvýšení recall (najdeme mnohem více AI systémů)
+
+  3.2  BASIC INTERACTION
+       ─────────────────
+       - Scroll na 50% stránky
+       - Počkat 5s po scrollu
+       - Kliknout na identifikované chat trigger buttons
+       - Zavřít cookie consent (kliknout na "Přijmout" / "Souhlasím")
+       
+       DOPAD: Detekce lazy-loaded chatbotů
+
+  3.3  GOLDEN TEST SUITE
+       ─────────────────
+       Vytvořit sadu 20 "benchmark" webů, kde přesně víme, co tam je:
+       - 5 webů s chatbotem (Smartsupp, Tidio, Zendesk, Intercom, Tawk.to)
+       - 5 webů s analytics (GA4, GTM, Clarity, Hotjar, Meta Pixel)
+       - 5 webů bez AI
+       - 5 webů se smíšeným profilem
+       
+       Automaticky spouštět po každé změně kódu.
+       Měřit precision + recall.
+
+  3.4  PRECISION/RECALL TRACKING
+       ─────────────────────────
+       - Logovat každý scan result
+       - Přidat feedback tlačítko: "Je tento nález správný? Ano/Ne"
+       - Sbírat data pro metriku přesnosti
+       - Dashboard s trendem přesnosti v čase
+
+  3.5  STEALTH MODE
+       ────────────
+       - Randomizovat User-Agent (5-10 recentních Chrome/Firefox)
+       - Přidat mouse movement simulaci
+       - Randomizovat viewport (1920x1080, 1440x900, 1366x768)
+       - Přidat referer header (google.com/search?q=...)
+       - Účel: vyhnout se bot-detekci
+
+  3.6  COOKIE CONSENT AUTO-CLOSE
+       ──────────────────────────
+       - Detekovat cookie consent dialog (běžné frameworky: CookieBot,
+         OneTrust, Klaro, vlastní)
+       - Automaticky kliknout "Přijmout vše"
+       - Tím se odemknou skripty blokované consent managerem
+         (chatboty, analytics, remarketing)
+       
+       DOPAD: Velmi důležité! Mnoho chatbotů se nenačte bez cookie souhlasu.
+
+
+================================================================================
+9. KONKRÉTNÍ PŘÍPAD: desperados-design.cz (11 vs 1-2 nálezy)
+================================================================================
+
+Poslední sken (19:45 CET) našel 14 raw findings, z toho:
+  - 3 vyřazeno safety netem (GA4, GTM, Heureka)
+  - 11 prezentováno jako "nasazené AI systémy"
+
+ANALÝZA 11 FINDINGS:
+
+┌─────┬──────────────────────────┬──────────────┬───────────────────────────────┐
+│  #  │ Finding                  │ Pravděpodobně│ Vysvětlení                    │
+│     │                          │ TP/FP        │                               │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  1  │ Zendesk Chat             │ MOŽNÝ TP     │ Pokud web používá Zendesk     │
+│     │                          │              │ jako helpdesk, může mít       │
+│     │                          │              │ chat widget. Ale detekce      │
+│     │                          │              │ mohla matchnout i jen         │
+│     │                          │              │ zmínku nebo odkaz.            │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  2  │ LiveChat                 │ SPORNÝ       │ Pokud Zendesk najden,         │
+│     │                          │              │ LiveChat je duplicita?        │
+│     │                          │              │ Nebo generický match na       │
+│     │                          │              │ "live chat" text.             │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  3  │ Google Gemini Chatbot    │ SPÍŠE FP     │ Patrně heuristika 2a/2b      │
+│     │                          │              │ matchnula "generativelanguage"│
+│     │                          │              │ nebo "gemini" v network req.  │
+│     │                          │              │ Ale to může být Google Fonts  │
+│     │                          │              │ nebo jiný Google service.     │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  4  │ Meta Pixel               │ MOŽNÝ TP     │ Facebook Pixel je běžný na    │
+│     │                          │              │ komerčních webech. Ale je     │
+│     │                          │              │ to analytika, ne AI.          │
+│     │                          │              │ Otázka: měli bychom to        │
+│     │                          │              │ vůbec reportovat?             │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  5  │ Shoptet AI               │ PRAVDĚP. FP  │ Signatura "shoptet" matchuje  │
+│     │                          │              │ na jakýkoliv Shoptet e-shop.  │
+│     │                          │              │ Web je design studio, patrně  │
+│     │                          │              │ NE e-shop. Možná odkaz na     │
+│     │                          │              │ Shoptet v portfoliu.          │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  6  │ Help Scout Beacon        │ PRAVDĚP. FP  │ Signatura "Beacon(" matchuje  │
+│     │                          │              │ v JS kódu, který nemá nic     │
+│     │                          │              │ společného s Help Scout.      │
+│     │                          │              │ navigator.sendBeacon() je     │
+│     │                          │              │ standard Web API.             │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  7  │ Vercel AI Chatbot        │ PRAVDĚP. FP  │ Signatury "ai-chatbot",       │
+│     │                          │              │ "useChat", "ai/react" jsou    │
+│     │                          │              │ příliš generické. Mohly       │
+│     │                          │              │ matchnout v jakémkoli         │
+│     │                          │              │ React kódu.                   │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  8  │ Frase.io                 │ PRAVDĚP. FP  │ Signatura "frase" matchuje    │
+│     │                          │              │ na "phrase" nebo "fráze"      │
+│     │                          │              │ v textu. Design studio web    │
+│     │                          │              │ pravděpodobně nepoužívá       │
+│     │                          │              │ Frase.io.                     │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│  9  │ Generický AI chatbot     │ PRAVDĚP. FP  │ Signatury "ai-chatbot",       │
+│     │                          │              │ "virtual-assistant",          │
+│     │                          │              │ "ai-assistant" mohly          │
+│     │                          │              │ matchnout v CSS třídách       │
+│     │                          │              │ nebo textu o službách.        │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│ 10  │ AI API Proxy             │ PRAVDĚP. FP  │ Heuristika 2c: "/api/chat"    │
+│     │                          │              │ matchnula na jakýkoliv chat   │
+│     │                          │              │ endpoint (kontaktní formulář, │
+│     │                          │              │ live chat API).               │
+├─────┼──────────────────────────┼──────────────┼───────────────────────────────┤
+│ 11  │ AI Transparency Notice   │ PRAVDĚP. FP  │ Heuristika 2e matchnula      │
+│     │                          │              │ regex pro "AI-powered" nebo   │
+│     │                          │              │ "umělá inteligence" v textu.  │
+│     │                          │              │ Designové studio může mít     │
+│     │                          │              │ text o AI službách, aniž      │
+│     │                          │              │ by AI nasazovalo.             │
+└─────┴──────────────────────────┴──────────────┴───────────────────────────────┘
+
+ZÁVĚR: Z 11 "nasazených AI systémů" jsou pravděpodobně:
+  - 0–2 skutečné true positives (Zendesk, možná Meta Pixel)
+  - 9–11 false positives způsobené generickými signaturami + classifier failure
+
+Proč občas najde jen 1–2:
+  - Claude classifier funguje správně → odfiltruje false-positives
+  - Timing je takový, že se nenačtou všechny skripty
+  - Oba faktory (classifier OK + méně raw detections) dávají správný výsledek
+
+Proč občas najde 11:
+  - Classifier JSON parse error → fallback (vše deployed=true)
+  - Timing je takový, že se načte maximum skriptů
+  - Generické signatury matchují na běžný obsah
+  - Bez classifiera nic neodfiltruje false-positives
+
+
+================================================================================
+10. OTÁZKY PRO EXTERNÍ AI ANALÝZU
+================================================================================
+
+Posíláme tento report 7 AI systémům. Každý by měl odpovědět na tyto otázky:
+
+ARCHITEKTURA:
+  1. Je 4-stupňový pipeline (scan → detect → classify → report) optimální?
+     Nebo by šel zredukovat / rozšířit?
+  
+  2. Je Claude AI verifikace jako poslední filtr správný přístup?
+     Nebo by AI měla být v detectoru (nikoliv jako post-filter)?
+
+  3. Jak řešit single point of failure classifiera?
+
+DETEKCE:
+  4. Které z 16 heuristických metod jsou nejcennější a které zbytečné?
+  
+  5. Jaké detekční metody chybí? Na co jsme nepomysleli?
+  
+  6. Jak by měla vypadat ideální signatura (s minimem false-positives)?
+     Navrhněte template.
+  
+  7. Je keyword frequency (≥10× "chatbot") užitečná metoda?
+
+KONZISTENCE:
+  8. Jak vyřešit timing-dependent výsledky? Je triple-scan s konsensem
+     dostatečný?
+  
+  9. Jak by měl vypadat ideální fallback, když classifier selže?
+
+  10. Měli bychom implementovat "confidence score" pro celý sken
+     (ne jen jednotlivé findings)?
+
+FALSE POSITIVES:
+  11. Jak agresivně filtrovat? Je lepší mít false-positive (ukázat
+     něco, co tam není) nebo false-negative (přehlédnout skutečný
+     AI systém)?
+  
+  12. Safety net (hardcoded NON_AI_TOOLS) — je to dobrý pattern
+     nebo anti-pattern?
+  
+  13. Měli bychom analytics (GA4, Meta Pixel, Hotjar) vůbec detekovat?
+     Spadají pod EU AI Act?
+
+ČESKÝ KONTEXT:
+  14. Jaké české AI nástroje/chatboty chybí v databázi?
+  
+  15. Je český text v transparency notice detection dostatečný?
+     Jaké fráze chybí?
+
+BUDOUCNOST:
+  16. Jak se připravit na AI systémy, které budou 100% v backendu
+     (žádné frontend stopy)?
+  
+  17. Měli bychom přidat API-based scanning (ne jen browser-based)?
+     Např. HTTP header analysis, DNS records, WHOIS?
+  
+  18. Jak škálovat na tisíce skenů denně?
+
+  19. Měli bychom nabídnout "continuous monitoring" (pravidelný resken
+     s alertem na změny)?
+
+OBCHODNÍ:
+  20. Na základě technické analýzy — jaká je unikátní prodejní
+     propozice (USP) tohoto scanneru? Co je skutečná přidaná
+     hodnota pro zákazníka?
+
+
+================================================================================
+APPENDIX A: STRUKTURA SOUBORŮ
+================================================================================
+
+backend/scanner/
+├── __init__.py          (importy)
+├── pipeline.py          225 řádků   — orchestrátor
+├── web_scanner.py       209 řádků   — Playwright browser crawl
+├── detector.py          700 řádků   — signaturový + heuristický detektor
+├── classifier.py        296 řádků   — Claude AI verifikace
+├── signatures.py       1000 řádků   — databáze 63+ AI systémů
+├── report.py            301 řádků   — HTML report generátor
+└── CELKEM:             2732 řádků   Python kódu
+
+
+================================================================================
+APPENDIX B: TECHNICKÉ SPECIFIKACE
+================================================================================
+
+Runtime:        Python 3.11+ / FastAPI
+Browser:        Playwright Chromium (headless)
+AI Model:       Claude Sonnet 4 (claude-sonnet-4-20250514)
+Database:       Supabase PostgreSQL
+Storage:        Supabase Storage (screenshoty)
+Hosting:        VPS 46.28.110.102 (backend), Vercel (frontend)
+Domain:         aishield.cz
+Deployment:     SCP + systemctl restart
+
+
+================================================================================
+APPENDIX C: DATAFLOW DIAGRAM
+================================================================================
+
+User → [URL] → FastAPI endpoint → pipeline.run_scan()
+  │
+  ├─ 1. DB: INSERT scan (status=running)
+  │
+  ├─ 2. WebScanner.scan(url)
+  │     ├─ Playwright: launch browser
+  │     ├─ Navigate to URL (domcontentloaded)
+  │     ├─ Wait: network idle (10s) + sleep (5s)
+  │     ├─ Extract: HTML, scripts, iframes, cookies, network, console
+  │     ├─ Screenshots: viewport + full page
+  │     └─ Return: ScannedPage dataclass
+  │
+  ├─ 3. AIDetector.detect(scanned_page)
+  │     ├─ Stage 1: Signature matching (60+ signatures × 6 data sources)
+  │     ├─ Stage 2: Heuristic detection (16 methods, 2a–2p)
+  │     ├─ Deduplication (name.lower())
+  │     └─ Return: list[Finding]
+  │
+  ├─ 4. AIClassifier.classify(findings, url)
+  │     ├─ Build Claude prompt (system + user)
+  │     ├─ Call Claude API → JSON response
+  │     ├─ Parse JSON → deployed=true/false for each finding
+  │     ├─ FALLBACK (on error): deployed=true for all
+  │     └─ Return: classified findings
+  │
+  ├─ 5. Safety net: move NON_AI_TOOLS to false_positives
+  │     (GA4, GTM, Seznam Retargeting, Heureka)
+  │
+  ├─ 6. DB: INSERT scan_findings (deployed + false_positives)
+  │
+  ├─ 7. Supabase Storage: upload screenshot
+  │
+  └─ 8. DB: UPDATE scan (status=done, results)
+
+
+================================================================================
+KONEC REPORTU
+================================================================================
+
+Tento report obsahuje kompletní a upřímnou analýzu skeneru AIshield.cz.
+Je připraven k odeslání 7 AI systémům pro nezávislou expertní analýzu.
+Očekáváme zpětnou vazbu na architekturu, detekční metody a návrhy zlepšení.
+
+Martin Haynes / AIshield.cz

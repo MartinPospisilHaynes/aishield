@@ -69,6 +69,32 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         findings: list[DetectedAI] = detector.detect(page)
         logger.info(f"[Pipeline] Signaturový detektor: {len(findings)} AI systémů")
 
+        # 3.1 Double-scan consensus — druhý sken s kratším čekáním,
+        #     ponecháme jen findings nalezené v obou skenech
+        if findings:
+            logger.info("[Pipeline] Double-scan consensus: spouštím verifikační sken")
+            scanner2 = WebScanner(
+                timeout_ms=30_000,
+                wait_after_load_ms=2_000,  # Kratší čekání pro druhý sken
+            )
+            page2: ScannedPage = await scanner2.scan(url)
+            if not page2.error:
+                findings2: list[DetectedAI] = detector.detect(page2)
+                names2 = {f.name.lower() for f in findings2}
+                original_count = len(findings)
+                findings = [f for f in findings if f.name.lower() in names2]
+                removed = original_count - len(findings)
+                if removed > 0:
+                    logger.info(
+                        f"[Pipeline] Double-scan: odstraněno {removed} "
+                        f"nestabilních findings (zůstává {len(findings)})"
+                    )
+            else:
+                logger.warning(
+                    f"[Pipeline] Double-scan selhalo: {page2.error} — "
+                    "pokračuji s výsledky prvního skenu"
+                )
+
         # 3.5. Claude AI klasifikace — ověří, co je skutečně nasazené
         classifier = AIClassifier()
         classified: list[ClassifiedFinding] = await classifier.classify(url, findings)
