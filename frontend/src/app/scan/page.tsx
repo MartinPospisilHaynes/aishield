@@ -541,7 +541,7 @@ function ScanPageInner() {
                                     <IconExclamation className="w-7 h-7 text-red-400 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <h2 className="text-lg font-bold text-red-400">
-                                            Na vašem webu byly nalezeny AI systémy, které nemáte řádně označeny
+                                            <span className="text-white font-extrabold">ALE</span> na vašem webu byly nalezeny AI systémy, které bohužel zatím nemáte řádně označeny
                                         </h2>
                                         <p className="mt-2 text-sm text-red-300/80 leading-relaxed">
                                             Skenováním jsme na vašem webu identifikovali{" "}
