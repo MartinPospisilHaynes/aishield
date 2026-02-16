@@ -100,6 +100,19 @@ const OBLIGATION_LABEL: Record<string, string> = {
     minimal: "Minimální riziko",
 };
 
+/* ── Human-readable category labels ── */
+const CATEGORY_LABELS: Record<string, string> = {
+    chatbot: "Chatbot / Konverzační AI",
+    analytics: "Analytika / Sledování",
+    recommender: "Doporučovací systém",
+    content_gen: "Generování obsahu",
+    other: "Ostatní AI systém",
+};
+
+function categoryLabel(cat: string): string {
+    return CATEGORY_LABELS[cat] || cat;
+}
+
 /* ── Layman-friendly AI system explanations ── */
 const AI_SYSTEM_EXPLANATIONS: Record<string, string> = {
     "Google Analytics": "Sleduje n\u00e1vštěvnost webu \u2013 Google ho může používat k trénování AI modelů pro cílení reklam.",
@@ -118,6 +131,16 @@ const AI_SYSTEM_EXPLANATIONS: Record<string, string> = {
     "Stripe": "Platební br\u00e1na \u2013 AI detekuje podvodn\u00e9 transakce.",
     "Clarity": "Microsoft Clarity \u2013 AI heatmapy a nahr\u00e1v\u00e1ní sessions.",
     "LinkedIn Insight Tag": "Sledovací k\u00f3d LinkedIn \u2013 AI cílení B2B reklam.",
+    "Google Gemini Chatbot": "AI chatbot od Google \u2013 odpov\u00edd\u00e1 na dotazy n\u00e1v\u0161t\u011bvn\u00edk\u016f p\u0159\u00edmo na webu.",
+    "AI Transparency Notice": "Ozn\u00e1men\u00ed o pou\u017e\u00edv\u00e1n\u00ed AI \u2013 v\u00e1\u0161 web informuje n\u00e1v\u0161t\u011bvn\u00edky, \u017ee pou\u017e\u00edv\u00e1 um\u011blou inteligenci.",
+    "AI API Proxy (geminiproxy)": "Prox\u00ed server pro AI API \u2013 zprost\u0159edkov\u00e1v\u00e1 komunikaci mezi webem a AI modelem (nap\u0159. Google Gemini).",
+    "Zendesk Chat": "Z\u00e1kaznick\u00fd chat od Zendesku \u2013 m\u016f\u017ee obsahovat AI chatbota pro automatick\u00e9 odpov\u011bdi.",
+    "LiveChat": "Live chat s AI funkcemi \u2013 automatick\u00e9 odpov\u011bdi a sm\u011brov\u00e1n\u00ed konverzac\u00ed.",
+    "Shoptet AI": "AI funkce e-shopu Shoptet \u2013 personalizace produkt\u016f a doporu\u010den\u00ed.",
+    "Help Scout Beacon": "Z\u00e1kaznick\u00fd widget Help Scout \u2013 AI navrhuje \u010dl\u00e1nky a odpov\u011bdi.",
+    "Vercel AI Chatbot": "AI chatbot b\u011b\u017e\u00edc\u00ed na platformě Vercel \u2013 generuje odpov\u011bdi pomoc\u00ed jazykov\u00e9ho modelu.",
+    "Frase.io": "AI n\u00e1stroj pro tvorbu obsahu \u2013 generuje a optimalizuje texty pro SEO.",
+    "Generický AI chatbot": "AI chatbot neznámého poskytovatele \u2013 komunikuje s n\u00e1v\u0161t\u011bvn\u00edky automaticky.",
 };
 
 /* ── Count unique AI systems (group by name) ── */
@@ -520,7 +543,7 @@ export default function DashboardPage() {
                                             {groupFindings(data?.findings || []).map((f) => (
                                                 <div key={f.name} className="rounded-md bg-white/[0.03] border border-white/[0.06] px-3 py-2">
                                                     <p className="text-xs font-medium text-white">{f.name}</p>
-                                                    <p className="text-[10px] text-slate-400 mt-0.5">{f.category}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{categoryLabel(f.category)}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -1072,7 +1095,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                         </div>
                                         {(f.category || f.ai_act_article) && (
                                             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-3">
-                                                {f.category && <span>Kategorie: {f.category}</span>}
+                                                {f.category && <span>Kategorie: {categoryLabel(f.category)}</span>}
                                                 {f.ai_act_article && f.ai_act_article !== "—" && <span>Článek AI Act: {f.ai_act_article}</span>}
                                             </div>
                                         )}
