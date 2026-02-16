@@ -1853,3 +1853,15 @@ async def send_subscription_reminder(
     logger.info(f"Payment reminder sent: {email} for subscription {subscription_id} ({company_name}, {plan}, {amount} {currency})")
 
     return {"status": "ok", "email": email, "message": f"Upomínka odeslána na {email}"}
+
+
+# ── Invoices Admin ──────────────────────────────────────────────
+
+@router.get("/invoices", dependencies=[Depends(require_admin), Depends(_check_admin_rate_limit)])
+async def get_admin_invoices(limit: int = 100):
+    """Vrátí seznam všech faktur pro admin panel."""
+    supabase = get_supabase()
+    result = supabase.table("invoices").select("*").order(
+        "created_at", desc=True
+    ).limit(limit).execute()
+    return {"invoices": result.data or []}

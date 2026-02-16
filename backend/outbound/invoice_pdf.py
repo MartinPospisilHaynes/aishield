@@ -20,11 +20,12 @@ FONT_BOLD = os.path.join(FONT_DIR, "DejaVuSans-Bold.ttf")
 
 # -- Seller info --
 SELLER = {
-    "name": "Martin Haynes",
-    "ico": "04291247",
-    "street": "Na P\u0159\u00edkop\u011b 1047/17",
-    "city": "Praha 1",
-    "zip": "110 00",
+    "name": "Bc. Martin Haynes",
+    "ico": "17889251",
+    "street": "Ml\u00fdnsk\u00e1 53",
+    "city": "Velk\u00e1 Byst\u0159ice",
+    "zip": "783 53",
+    "phone": "732 716 141",
     "email": "info@aishield.cz",
     "web": "aishield.cz",
     "bank_account": "2610538018/3030",

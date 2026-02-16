@@ -837,3 +837,27 @@ export async function sendSubscriptionReminder(subscriptionId: string): Promise<
     if (!res.ok) throw new Error("Chyba při odesílání upomínky");
     return res.json();
 }
+
+// ── Invoices ──
+
+export interface AdminInvoice {
+    id: string;
+    invoice_number: string;
+    order_number: string;
+    company_id: string | null;
+    email: string;
+    plan: string;
+    amount: number;
+    buyer_name: string;
+    buyer_ico: string;
+    pdf_url: string;
+    pdf_filename: string;
+    issued_at: string;
+    created_at: string;
+}
+
+export async function getAdminInvoices(): Promise<{ invoices: AdminInvoice[] }> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/invoices`);
+    if (!res.ok) throw new Error("Chyba při načítání faktur");
+    return res.json();
+}

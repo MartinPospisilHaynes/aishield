@@ -600,6 +600,7 @@ export interface DashboardData {
     findings: DashboardFinding[];
     documents: DashboardDocument[];
     orders: DashboardOrder[];
+    invoices?: { invoice_number: string; order_number: string; plan: string; amount: number; pdf_url: string; issued_at: string }[];
     questionnaire_status: string;
     questionnaire_findings: QuestionnaireFinding[];
     questionnaire_unknowns: QuestionnaireUnknown[];

@@ -126,6 +126,11 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
         "email", user_email
     ).order("created_at", desc=True).execute()
 
+    # 5b. Faktury
+    invoices_res = supabase.table("invoices").select("*").eq(
+        "email", user_email
+    ).order("created_at", desc=True).execute()
+
     # 6. Dotazník — přes tabulku clients (client.company_id → questionnaire_responses.client_id)
     # Lidsky čitelné popisy pro dashboard (laik musí pochopit, o co jde)
     _HUMAN_SUMMARIES = {
@@ -349,6 +354,17 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                 "paid_at": o.get("paid_at"),
             }
             for o in (orders_res.data or [])
+        ],
+        "invoices": [
+            {
+                "invoice_number": inv.get("invoice_number", ""),
+                "order_number": inv.get("order_number", ""),
+                "plan": inv.get("plan", ""),
+                "amount": inv.get("amount", 0),
+                "pdf_url": inv.get("pdf_url", ""),
+                "issued_at": inv.get("issued_at", ""),
+            }
+            for inv in (invoices_res.data or [])
         ],
         "questionnaire_status": questionnaire_status,
         "questionnaire_findings": questionnaire_findings,

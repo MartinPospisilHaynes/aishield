@@ -72,7 +72,7 @@ def _email_wrapper(content: str) -> str:
         AIshield.cz — AI Act compliance pro české firmy
     </p>
     <p style="margin:0 0 4px 0;font-size:11px;color:rgba(255,255,255,0.4);">
-        Martin Haynes | IČO: 04291247
+        Bc. Martin Haynes | IČO: 17889251
     </p>
     <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.4);">
         <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a>

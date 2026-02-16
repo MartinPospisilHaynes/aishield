@@ -34,6 +34,7 @@ import {
     getAnalyticsEvents,
     getSubscriptions,
     sendSubscriptionReminder,
+    getAdminInvoices,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -134,7 +135,8 @@ type Tab =
     | "agentura"
     | "nastroje"
     | "analytika"
-    | "predplatne";
+    | "predplatne"
+    | "faktury";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -149,6 +151,7 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "nastroje", icon: "⚙️", label: "Nástroje" },
     { id: "analytika", icon: "📉", label: "Analytika" },
     { id: "predplatne", icon: "💳", label: "Předplatné" },
+    { id: "faktury", icon: "🧾", label: "Faktury" },
 ];
 
 const TASKS = [
@@ -389,6 +392,10 @@ export default function AdminPage() {
     const [reminderSending, setReminderSending] = useState<string | null>(null);
     const [subscriptionFilter, setSubscriptionFilter] = useState<"all" | "active" | "overdue" | "cancelled">("all");
 
+    // Invoices
+    const [adminInvoices, setAdminInvoices] = useState<import("@/lib/admin-api").AdminInvoice[]>([]);
+    const [invoicesLoading, setInvoicesLoading] = useState(false);
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -531,6 +538,19 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadInvoices = useCallback(async () => {
+        setInvoicesLoading(true);
+        try {
+            const d = await getAdminInvoices();
+            setAdminInvoices(d.invoices || []);
+        } catch (e) {
+            console.error("Invoices load error:", e);
+            setLoadError(`Faktury: ${e}`);
+        } finally {
+            setInvoicesLoading(false);
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -559,7 +579,8 @@ export default function AdminPage() {
         if (tab === "objednavky") loadOrders();
         if (tab === "analytika") loadAnalytics();
         if (tab === "predplatne") loadSubscriptions();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions]);
+        if (tab === "faktury") loadInvoices();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -777,6 +798,7 @@ export default function AdminPage() {
                                 if (tab === "objednavky") loadOrders();
                                 if (tab === "analytika") loadAnalytics();
                                 if (tab === "predplatne") loadSubscriptions();
+                                if (tab === "faktury") loadInvoices();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -3543,6 +3565,78 @@ export default function AdminPage() {
                                         </div>
                                     </Panel>
                                 </>
+                            )}
+                        </>
+                    )}
+
+                    {/* ── Invoices Tab ── */}
+                    {tab === "faktury" && (
+                        <>
+                            {invoicesLoading ? (
+                                <div className="text-center py-12 text-gray-400">Načítám faktury…</div>
+                            ) : (
+                                <Panel className="p-6">
+                                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
+                                        📄 Vydané faktury
+                                        <span className="ml-2 inline-flex items-center rounded-full bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 text-xs font-medium">{adminInvoices.length}</span>
+                                    </h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="text-left text-gray-500 border-b border-white/5">
+                                                    <th className="py-2 px-3">Číslo faktury</th>
+                                                    <th className="py-2 px-3">Objednávka</th>
+                                                    <th className="py-2 px-3">Email</th>
+                                                    <th className="py-2 px-3">Odběratel</th>
+                                                    <th className="py-2 px-3">Plán</th>
+                                                    <th className="py-2 px-3 text-right">Částka</th>
+                                                    <th className="py-2 px-3">Datum</th>
+                                                    <th className="py-2 px-3">PDF</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {adminInvoices.map((inv) => (
+                                                    <tr key={inv.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                                                        <td className="py-2.5 px-3 font-mono text-xs text-cyan-400">{inv.invoice_number}</td>
+                                                        <td className="py-2.5 px-3 font-mono text-xs text-slate-400">{inv.order_number}</td>
+                                                        <td className="py-2.5 px-3 text-slate-300">{inv.email}</td>
+                                                        <td className="py-2.5 px-3 text-slate-300">
+                                                            <div>{inv.buyer_name}</div>
+                                                            {inv.buyer_ico && <div className="text-xs text-slate-500">IČO: {inv.buyer_ico}</div>}
+                                                        </td>
+                                                        <td className="py-2.5 px-3">
+                                                            <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-purple-500/10 text-purple-400">
+                                                                {inv.plan?.toUpperCase()}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2.5 px-3 text-right font-medium text-slate-200">
+                                                            {new Intl.NumberFormat("cs-CZ").format(inv.amount)} Kč
+                                                        </td>
+                                                        <td className="py-2.5 px-3 text-slate-400 text-xs">
+                                                            {new Date(inv.issued_at).toLocaleDateString("cs-CZ")}
+                                                        </td>
+                                                        <td className="py-2.5 px-3">
+                                                            {inv.pdf_url ? (
+                                                                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-xs">
+                                                                    📥 Stáhnout
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-gray-600 text-xs">—</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {adminInvoices.length === 0 && (
+                                            <div className="text-center text-gray-500 py-8">
+                                                <div className="text-3xl mb-2">📄</div>
+                                                Zatím žádné faktury
+                                            </div>
+                                        )}
+                                    </div>
+                                </Panel>
                             )}
                         </>
                     )}

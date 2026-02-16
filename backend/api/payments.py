@@ -1484,10 +1484,71 @@ async def admin_confirm_bank_payment(req: ConfirmPaymentRequest):
         invoice_sent = True
         logger.info(f"[Admin] Invoice {invoice_number} sent to {order['email']} ({len(pdf_bytes)} bytes PDF)")
 
+        # 3) Save PDF to Supabase Storage
+        pdf_url = ""
+        pdf_filename = f"faktura-{invoice_number}.pdf"
+        try:
+            from backend.documents.pdf_generator import save_pdf_to_supabase
+            company_id = order.get("company_id") or "no-company"
+            pdf_url = save_pdf_to_supabase(
+                pdf_bytes=pdf_bytes,
+                filename=pdf_filename,
+                client_id=f"invoices/{company_id}",
+                bucket="documents",
+            )
+            logger.info(f"[Admin] Invoice PDF saved to Supabase Storage: {pdf_url}")
+        except Exception as e:
+            logger.error(f"[Admin] Failed to save invoice to Supabase Storage: {e}")
+
+        # 4) Save PDF locally on VPS disk
+        try:
+            import os
+            year = datetime.utcnow().strftime("%Y")
+            local_dir = f"/opt/aishield/invoices/{year}"
+            os.makedirs(local_dir, exist_ok=True)
+            local_path = f"{local_dir}/{pdf_filename}"
+            with open(local_path, "wb") as f:
+                f.write(pdf_bytes)
+            logger.info(f"[Admin] Invoice PDF saved locally: {local_path}")
+        except Exception as e:
+            logger.error(f"[Admin] Failed to save invoice locally: {e}")
+
+        # 5) Insert record into invoices table
+        try:
+            supabase.table("invoices").insert({
+                "invoice_number": invoice_number,
+                "order_number": order["order_number"],
+                "company_id": order.get("company_id"),
+                "email": order.get("email", ""),
+                "plan": order.get("plan", ""),
+                "amount": order.get("amount", 0),
+                "buyer_name": billing.get("company", ""),
+                "buyer_ico": billing.get("ico", ""),
+                "pdf_url": pdf_url,
+                "pdf_filename": pdf_filename,
+            }).execute()
+            logger.info(f"[Admin] Invoice record inserted: {invoice_number}")
+        except Exception as e:
+            logger.error(f"[Admin] Failed to insert invoice record: {e}")
+
+        # 6) Send invoice copy to admin email
+        try:
+            await send_email(
+                to="info@aishield.cz",
+                subject=f"[KOPIE] Faktura {invoice_number} — {order.get('email', '')}",
+                html=invoice_html,
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz",
+                attachments=attachments,
+            )
+            logger.info(f"[Admin] Invoice copy sent to info@aishield.cz")
+        except Exception as e:
+            logger.error(f"[Admin] Failed to send invoice copy to admin: {e}")
+
     except Exception as e:
         logger.error(f"[Admin] Failed to generate/send invoice: {e}", exc_info=True)
 
-    # 3) Also send payment received email (without invoice)
+    # 7) Also send payment received email (without invoice)
     try:
         html = build_payment_received_email(
             order_number=order["order_number"],
