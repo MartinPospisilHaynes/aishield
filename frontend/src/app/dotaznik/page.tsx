@@ -1069,17 +1069,17 @@ function QuestionnaireInner() {
                     </div>
 
                     {/* Nevím hint */}
-                <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
-                    {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
-                </p>
+                    <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
+                        {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
+                    </p>
 
-                {/* Save & Continue Later */}
-                <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
+                    {/* Save & Continue Later */}
+                    <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
+                </div>
             </div>
-        </div>
 
-            {/* Inline animations */ }
-    <style>{`
+            {/* Inline animations */}
+            <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: scale(0.98); }
           to { opacity: 1; transform: scale(1); }

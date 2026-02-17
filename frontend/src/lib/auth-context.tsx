@@ -31,11 +31,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = createClient();
 
     useEffect(() => {
-        // Načíst aktuální session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
+        // Ověřit uživatele serverově (getUser) — ne jen z cookies (getSession)
+        // getSession jen čte JWT z cookies a NEVALIDUJE proti Supabase.
+        // Po smazání uživatelů z DB by getSession stále vracelo "platnou" session.
+        supabase.auth.getUser().then(({ data: { user }, error }) => {
+            if (error || !user) {
+                // Neplatný/smazaný uživatel → vyčistit session
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+                // Vyčistit stale cookies
+                supabase.auth.signOut().catch(() => {});
+                return;
+            }
+            // Uživatel existuje → načíst session pro token
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                setSession(session);
+                setUser(session?.user ?? null);
+                setLoading(false);
+            });
         });
 
         // Poslouchat změny auth stavu
