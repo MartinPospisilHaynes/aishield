@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(null);
                 setLoading(false);
                 // Vyčistit stale cookies
-                supabase.auth.signOut().catch(() => {});
+                supabase.auth.signOut().catch(() => { });
                 return;
             }
             // Uživatel existuje → načíst session pro token
