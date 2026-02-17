@@ -726,7 +726,7 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-5 py-2">
-                                Zobrazit podrobnosti
+                                Doplnit {qUnknowns.length} {cz(qUnknowns.length, 'odpověď', 'odpovědi', 'odpovědí')} →
                             </button>
                         </div>
                     )}
@@ -1361,7 +1361,12 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
     questionnaireUnknowns: QuestionnaireUnknown[];
     companyId: string;
 }) {
-    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    // Auto-expand the first item so user immediately sees the pattern
+    const [expanded, setExpanded] = useState<Record<string, boolean>>(
+        questionnaireUnknowns.length > 0
+            ? { [`plan_unk_${questionnaireUnknowns[0].question_key}`]: true }
+            : {}
+    );
 
     if (questionnaireUnknowns.length === 0) {
         return (
@@ -1377,68 +1382,104 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
         );
     }
 
+    const completedCount = 0; // All items here are "unknown", so 0 completed
+
     return (
-        <div className="space-y-4">
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4">
-                <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <h4 className="text-sm font-semibold text-amber-300 mb-1">Potřebujeme vaši součinnost</h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                            U {questionnaireUnknowns.length} {cz(questionnaireUnknowns.length, 'otázky', 'otázek', 'otázek')} jste v dotazníku zvolili &bdquo;Nevím&ldquo;.
-                            Abychom pro vás mohli připravit kompletní dokumentaci, potřebujeme znát přesné odpovědi.
-                            <strong className="text-amber-300"> Rozklikněte jednotlivé položky — dozvíte se, koho se ve firmě zeptat a co přesně zjistit.</strong>
-                        </p>
+        <div className="space-y-5">
+            {/* Header with progress */}
+            <div className="rounded-xl border border-amber-500/25 bg-gradient-to-r from-amber-500/[0.06] to-orange-500/[0.04] p-5">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-white">Doplňte {questionnaireUnknowns.length} {cz(questionnaireUnknowns.length, 'odpověď', 'odpovědi', 'odpovědí')}</h4>
+                            <p className="text-xs text-slate-400 mt-0.5">Bez těchto informací nemůžeme dokončit vaši dokumentaci</p>
+                        </div>
                     </div>
+                    <div className="text-right">
+                        <span className="text-2xl font-bold text-amber-400">{completedCount}/{questionnaireUnknowns.length}</span>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">doplněno</p>
+                    </div>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                        style={{ width: `${questionnaireUnknowns.length > 0 ? (completedCount / questionnaireUnknowns.length) * 100 : 0}%` }}
+                    />
                 </div>
             </div>
 
-            <div className="space-y-2">
-                {questionnaireUnknowns.map((u) => {
+            {/* Items */}
+            <div className="space-y-3">
+                {questionnaireUnknowns.map((u, idx) => {
                     const dotColor = u.severity_color === "red" ? "bg-red-500" : u.severity_color === "orange" ? "bg-orange-500" : u.severity_color === "yellow" ? "bg-amber-400" : "bg-slate-500";
                     const labelColor = u.severity_color === "red" ? "text-red-400"
                         : u.severity_color === "orange" ? "text-orange-400"
                             : u.severity_color === "yellow" ? "text-amber-400"
                                 : "text-slate-400";
+                    const borderColor = u.severity_color === "red" ? "border-red-500/25 hover:border-red-500/40"
+                        : u.severity_color === "orange" ? "border-orange-500/25 hover:border-orange-500/40"
+                            : u.severity_color === "yellow" ? "border-amber-500/25 hover:border-amber-500/40"
+                                : "border-white/[0.1] hover:border-white/[0.2]";
                     const isExp = expanded[`plan_unk_${u.question_key}`] || false;
                     return (
-                        <div key={u.question_key} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                        <div key={u.question_key} className={`rounded-xl border ${borderColor} bg-white/[0.02] overflow-hidden transition-all duration-200`}>
                             <button
                                 onClick={() => setExpanded(prev => ({ ...prev, [`plan_unk_${u.question_key}`]: !prev[`plan_unk_${u.question_key}`] }))}
-                                className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors"
+                                className="w-full flex items-center gap-3 px-4 sm:px-5 py-4 text-left hover:bg-white/[0.03] transition-colors group"
                             >
-                                <span className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
+                                {/* Number badge */}
+                                <span className="w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-xs font-bold text-amber-400 flex-shrink-0">
+                                    {idx + 1}
+                                </span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-slate-200">{u.question_text}</p>
-                                    <p className={`text-xs mt-0.5 ${labelColor}`}>{u.severity_label}</p>
+                                    <p className="text-sm font-medium text-slate-200">{u.question_text}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
+                                        <p className={`text-xs ${labelColor}`}>{u.severity_label}</p>
+                                    </div>
                                 </div>
-                                <svg className={`w-4 h-4 text-slate-400 flex-shrink-0 mt-1 transition-transform ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {/* CTA visible even when collapsed */}
+                                <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0 ${
+                                    isExp
+                                        ? "bg-white/[0.06] text-slate-400"
+                                        : "bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300 group-hover:bg-fuchsia-500/25"
+                                }`}>
+                                    {isExp ? "Skrýt" : "Zobrazit postup →"}
+                                </span>
+                                <svg className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200 sm:hidden ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
                             {isExp && (
-                                <div className="px-4 pb-4 pt-2 border-t border-white/[0.04]">
+                                <div className="px-4 sm:px-5 pb-5 pt-2 border-t border-white/[0.06]">
                                     {u.checklist && u.checklist.length > 0 && (
-                                        <div className="rounded-lg bg-slate-800/50 p-3 mb-3">
-                                            <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Jak to zjistit:</h5>
-                                            <ul className="space-y-1.5">
-                                                {u.checklist.map((item, idx) => (
-                                                    <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
-                                                        <span className="text-cyan-400 font-mono text-xs mt-0.5 flex-shrink-0">{idx + 1}.</span>
+                                        <div className="rounded-lg bg-slate-800/50 p-4 mb-4">
+                                            <h5 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-3">Jak to zjistit:</h5>
+                                            <ul className="space-y-2">
+                                                {u.checklist.map((item, cidx) => (
+                                                    <li key={cidx} className="flex items-start gap-2.5 text-sm text-slate-200">
+                                                        <span className="w-5 h-5 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] font-bold text-cyan-400 flex-shrink-0 mt-0.5">{cidx + 1}</span>
                                                         <span>{item}</span>
                                                     </li>
                                                 ))}
                                             </ul>
                                         </div>
                                     )}
-                                    <p className="text-xs text-slate-300 mb-3 leading-relaxed">{u.recommendation}</p>
+                                    <p className="text-xs text-slate-300 mb-4 leading-relaxed">{u.recommendation}</p>
                                     <a
                                         href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
-                                        className="btn-primary !text-xs !px-4 !py-2 !rounded-lg"
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
                                     >
-                                        Už vím! Chci změnit odpověď v dotazníku
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        Už vím — změnit odpověď
                                     </a>
                                 </div>
                             )}
