@@ -285,6 +285,105 @@ async def crm_company_detail(
         raise HTTPException(status_code=500, detail=f"Chyba při načítání detailu firmy: {str(e)}")
 
 
+# ── Helper: payment confirmed email ──
+
+async def _send_payment_confirmed_email(
+    to_email: str,
+    company_name: str,
+    company_id: str,
+) -> None:
+    """Send branded email to client when admin marks payment as 'paid'."""
+    from backend.outbound.email_engine import send_email
+    from backend.outbound.payment_emails import _email_wrapper, PLAN_NAMES
+    from backend.database import get_supabase
+
+    supabase = get_supabase()
+
+    # Try to find the latest order for context
+    order_info = ""
+    try:
+        order_res = (
+            supabase.table("orders")
+            .select("order_number, plan, amount")
+            .eq("company_id", company_id)
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if order_res.data:
+            o = order_res.data[0]
+            plan_label = PLAN_NAMES.get(o.get("plan", ""), o.get("plan", ""))
+            order_info = f"""
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px 0;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Objednávka</p>
+        <p style="margin:0 0 16px 0;font-size:16px;font-weight:700;color:#ffffff;font-family:monospace;">{o.get("order_number","")}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Služba:</td>
+            <td style="padding:6px 0;font-size:13px;color:#ffffff;font-weight:600;">{plan_label}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Uhrazeno:</td>
+            <td style="padding:6px 0;font-size:16px;color:#22c55e;font-weight:800;">{o.get("amount",0):,} Kč</td>
+        </tr>
+        </table>
+    </td></tr>
+    </table>
+"""
+    except Exception:
+        pass  # graceful — email works even without order details
+
+    content = f"""
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
+        Platba přijata ✅
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
+        Dobrý den, potvrzujeme přijetí platby{(' pro ' + company_name) if company_name else ''}. Děkujeme!
+    </p>
+
+    {order_info}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Nyní prosím vyplňte dotazník, abychom vám připravili dokumenty přesně na míru.
+        </p>
+        <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Hotové dílo odevzdáváme <strong style="color:#ffffff;">do 7 pracovních dní</strong>.
+        </p>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:8px 0 0 0;">
+        <a href="https://aishield.cz/dotaznik"
+           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#d946ef);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;">
+            Vyplnit dotazník
+        </a>
+    </td></tr>
+    <tr><td align="center" style="padding:12px 0 0 0;">
+        <a href="https://aishield.cz/dashboard"
+           style="display:inline-block;padding:12px 28px;border:1px solid rgba(255,255,255,0.15);color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;border-radius:12px;">
+            Přejít na Dashboard
+        </a>
+    </td></tr>
+    </table>
+    """
+
+    html = _email_wrapper(content)
+
+    await send_email(
+        to=to_email,
+        subject="AIshield.cz — Platba přijata ✅",
+        html=html,
+        from_email="info@aishield.cz",
+        from_name="AIshield.cz",
+    )
+
+
 # ─────────────────────────────────────────────
 # 3. PATCH /crm/company/{company_id}/status — Update workflow status
 # ─────────────────────────────────────────────
@@ -302,7 +401,7 @@ async def crm_update_company_status(
     body = await request.json()
 
     # Ověříme že firma existuje
-    company_res = supabase.table("companies").select("id, name, workflow_status").eq("id", company_id).execute()
+    company_res = supabase.table("companies").select("id, name, email, workflow_status, payment_status").eq("id", company_id).execute()
     if not company_res.data:
         raise HTTPException(status_code=404, detail="Firma nenalezena")
 
@@ -350,6 +449,23 @@ async def crm_update_company_status(
             }).execute()
         except Exception as e:
             logger.warning(f"[CRM] Activity insert error: {e}")
+
+        # ── Send email to client when payment_status changes to "paid" ──
+        old_payment = old_company.get("payment_status", "none")
+        new_payment = update_data.get("payment_status")
+        client_email = old_company.get("email")
+        company_name = old_company.get("name", "")
+
+        if new_payment == "paid" and old_payment != "paid" and client_email:
+            try:
+                await _send_payment_confirmed_email(
+                    to_email=client_email,
+                    company_name=company_name,
+                    company_id=company_id,
+                )
+                logger.info(f"[CRM] Payment confirmed email sent to {client_email} (company: {company_name})")
+            except Exception as e:
+                logger.warning(f"[CRM] Payment confirmed email failed for {client_email}: {e}")
 
         return {
             "status": "updated",
