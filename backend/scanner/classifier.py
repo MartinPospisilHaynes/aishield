@@ -215,12 +215,17 @@ class AIClassifier:
         # Připravíme zjednodušený JSON pro Claude
         findings_for_claude = []
         for f in findings:
+            # Sanitize evidence — ochrana proti indirect prompt injection
+            from backend.security.prompt_guard import sanitize_scanned_content
+            sanitized_evidence = [
+                sanitize_scanned_content(e, max_length=500) for e in f.evidence[:5]
+            ]
             findings_for_claude.append({
                 "name": f.name,
                 "category": f.category,
                 "risk_level": f.risk_level,
                 "matched_signatures": f.matched_signatures[:5],
-                "evidence": f.evidence[:5],
+                "evidence": sanitized_evidence,
                 "confidence": f.confidence,
             })
 

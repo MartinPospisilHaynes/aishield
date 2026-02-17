@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import DOMPurify from "dompurify";
 
 /* ─── Types ─── */
 interface Message {
@@ -46,9 +47,16 @@ function renderContent(text: string) {
         }
     };
 
-    const boldify = (s: string) =>
-        s.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+    const boldify = (s: string) => {
+        const html = s
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
             .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-fuchsia-400 underline hover:text-fuchsia-300">$1</a>');
+        // XSS sanitization — only allow safe tags and attributes
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ["strong", "a", "em", "b", "i", "br", "span"],
+            ALLOWED_ATTR: ["href", "class", "target", "rel"],
+        });
+    };
 
     lines.forEach((line, i) => {
         const trimmed = line.trim();
