@@ -1,11 +1,46 @@
 ================================================================================
 PROMPT: KOMPLETNÍ VÝMAZ VŠECH DAT AISHIELD.CZ — FACTORY RESET
 ================================================================================
+Verze: 3.0 (17.02.2026)
 
 Cíl: Smaž VEŠKERÁ data z projektu AIshield tak, aby stránky byly jako čerstvě
 nainstalované — bez jediného uživatele, bez objednávek, bez skenů, bez 
 dokumentů. Majitel chce otestovat průchod celým procesem se svou firmou
 od nuly.
+
+⚠️  KRITICKÉ UPOZORNĚNÍ — STALE JWT COOKIES:
+    Supabase Auth ukládá JWT access token (1h) a refresh token (7 dní) 
+    do cookies prohlížeče. Po smazání Auth uživatelů z DB tyto cookies 
+    STÁLE EXISTUJÍ a frontend getSession() je čte jako "platné".
+    
+    Frontend auth-context.tsx MUSÍ používat getUser() (serverová validace)
+    místo getSession() (jen čte cookies lokálně). Pokud používá getSession(),
+    uživatel se bude jevit jako přihlášený i po factory resetu!
+    
+    ✅ Aktuální stav (commit 06da58c): auth-context.tsx SPRÁVNĚ volá 
+    getUser() a při chybě volá signOut() pro vyčištění cookies.
+    Pokud bylo cokoliv změněno na auth-context.tsx, OVĚŘ toto před resetem.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 0 — PREREKVIZITY (před samotným výmazem)
+────────────────────────────────────────────────────────────────────────────────
+
+  a) Ověř, že auth-context.tsx používá getUser() (NE getSession()):
+     grep -n "getUser\|getSession" frontend/src/lib/auth-context.tsx
+     → MUSÍ obsahovat: supabase.auth.getUser() jako PRVNÍ volání
+     → MUSÍ obsahovat: supabase.auth.signOut() v error větvi
+     → NESMÍ obsahovat: getSession() jako jediný způsob načtení uživatele
+
+  b) Načti přístupové údaje z ~/Projects/aishield/.env:
+     export SB_URL=$(grep ^SUPABASE_URL .env | cut -d= -f2)
+     export SB_KEY=$(grep ^SUPABASE_SERVICE_ROLE_KEY .env | cut -d= -f2)
+
+  c) Připoj se k DB přes psycopg2 (psql není na Macu):
+     Host: db.rsxwqcrkttlfnqbjgpgc.supabase.co
+     Port: 5432
+     User: postgres
+     Password: hodnota SUPABASE_DB_PASSWORD z .env
+     DB: postgres
 
 ────────────────────────────────────────────────────────────────────────────────
 KROK 1 — Supabase Auth: Smazání VŠECH registrovaných uživatelů
@@ -14,21 +49,17 @@ KROK 1 — Supabase Auth: Smazání VŠECH registrovaných uživatelů
 Supabase Auth uživatelé žijí v schématu auth.users a NEJSOU součástí 
 veřejných tabulek. Musíš je smazat přes Supabase Admin API.
 
-Přístupové údaje:
-  SUPABASE_URL = hodnota z ~/Projects/aishield/.env (klíč SUPABASE_URL)
-  SERVICE_ROLE_KEY = hodnota z ~/Projects/aishield/.env (klíč SUPABASE_SERVICE_ROLE_KEY)
-
 Postup:
   a) Vylistuj všechny uživatele:
-     curl -s -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-       -H "apikey: $SERVICE_ROLE_KEY" \
-       "$SUPABASE_URL/auth/v1/admin/users" | python3 -m json.tool
+     curl -s -H "Authorization: Bearer $SB_KEY" \
+       -H "apikey: $SB_KEY" \
+       "$SB_URL/auth/v1/admin/users?per_page=100" | python3 -m json.tool
 
   b) Pro KAŽDÉHO uživatele zavolej DELETE:
      curl -s -X DELETE \
-       -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-       -H "apikey: $SERVICE_ROLE_KEY" \
-       "$SUPABASE_URL/auth/v1/admin/users/{USER_ID}"
+       -H "Authorization: Bearer $SB_KEY" \
+       -H "apikey: $SB_KEY" \
+       "$SB_URL/auth/v1/admin/users/{USER_ID}"
 
   c) Ověř, že seznam uživatelů je prázdný (opakuj krok a).
 
@@ -39,59 +70,72 @@ POZOR: Nepoužívej Supabase Dashboard GUI — použij API, abys měl jistotu,
 KROK 2 — Supabase DB: Vymazání VŠECH veřejných tabulek (správné pořadí)
 ────────────────────────────────────────────────────────────────────────────────
 
+⚠️  TECHNICKÁ POZNÁMKA — psql na Macu NENÍ dostupný.
+    Supabase REST API vyžaduje RPC funkci exec_sql, která neexistuje.
+    Supabase pooler (port 6543) vrací "Tenant not found".
+    → POUŽIJ Python + psycopg2 s PŘÍMÝM připojením (host: db.xxx.supabase.co, port 5432).
+
 Tabulky mají FK vazby, proto je NUTNÉ mazat ve správném pořadí
-(nejdříve závislé, pak nadřazené). Pořadí:
+(nejdříve závislé, pak nadřazené).
 
-  -- Vrstva 1: Listy (žádné závislosti na ně)
-  DELETE FROM findings;
-  DELETE FROM questionnaire_responses;
-  DELETE FROM documents;
-  DELETE FROM alerts;
-  DELETE FROM scan_diffs;
-  DELETE FROM chat_messages;
-  DELETE FROM company_activities;
-  DELETE FROM data_access_log;
-  DELETE FROM orchestrator_log;
+Vytvoř dočasný Python skript a spusť ho. Po úspěchu ho SMAŽ:
 
-  -- Vrstva 2: Finanční záznamy
-  DELETE FROM subscription_payments;
-  DELETE FROM invoices;
-  DELETE FROM orders;
-  DELETE FROM subscriptions;
+--- factory_reset_db.py ---
+import psycopg2
+conn = psycopg2.connect(
+    host="db.rsxwqcrkttlfnqbjgpgc.supabase.co",
+    port=5432, dbname="postgres", user="postgres",
+    password="<SUPABASE_DB_PASSWORD z .env>"
+)
+conn.autocommit = True
+cur = conn.cursor()
 
-  -- Vrstva 3: Emaily a logy
-  DELETE FROM email_events;
-  DELETE FROM email_log;
-  DELETE FROM email_logs;
-  DELETE FROM email_blacklist;
+# Nejdřív zjisti jaké tabulky vůbec existují
+cur.execute("""SELECT table_name FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+    ORDER BY table_name""")
+existing = {r[0] for r in cur.fetchall()}
+print(f"Nalezeno {len(existing)} tabulek: {sorted(existing)}")
 
-  -- Vrstva 4: Analytika
-  DELETE FROM analytics_events;
-  DELETE FROM analytics_daily_summary;
+# FK-ordered deletion (8 vrstev) — přeskoč neexistující tabulky
+layers = [
+    ["findings", "questionnaire_responses", "documents", "alerts", "scan_diffs",
+     "chat_messages", "company_activities", "data_access_log", "orchestrator_log"],
+    ["subscription_payments", "invoices", "orders", "subscriptions", "payments"],
+    ["email_events", "email_log", "email_logs", "email_blacklist", "outbound_emails"],
+    ["analytics_events", "analytics_daily_summary"],
+    ["contact_submissions", "report_leads"],
+    ["scans", "scan_results", "clients", "widget_configs"],
+    ["companies"],
+    ["agency_batches"],
+]
+for i, layer in enumerate(layers, 1):
+    for table in layer:
+        if table not in existing:
+            print(f"  Layer {i}: {table} — NEEXISTUJE, přeskakuji")
+            continue
+        try:
+            cur.execute(f"DELETE FROM {table}")
+            print(f"  Layer {i}: DELETE FROM {table} — OK ({cur.rowcount} rows)")
+        except Exception as e:
+            print(f"  Layer {i}: DELETE FROM {table} — CHYBA: {e}")
+            conn.rollback(); conn.autocommit = True
 
-  -- Vrstva 5: Kontakty a leady
-  DELETE FROM contact_submissions;
-  DELETE FROM report_leads;
+# Verifikace
+print("\n=== VERIFIKACE ===")
+all_ok = True
+for t in sorted(existing):
+    cur.execute(f"SELECT COUNT(*) FROM {t}")
+    cnt = cur.fetchone()[0]
+    if cnt > 0:
+        print(f"  ❌ {t}: {cnt} rows!")
+        all_ok = False
+print(f"  {'✅' if all_ok else '❌'} {len(existing)} tabulek zkontrolováno")
+conn.close()
+--- konec skriptu ---
 
-  -- Vrstva 6: Klienti a skeny
-  DELETE FROM scans;
-  DELETE FROM scan_results;
-  DELETE FROM clients;
-  DELETE FROM widget_configs;
-
-  -- Vrstva 7: Firmy (nadřazená entita)
-  DELETE FROM companies;
-
-  -- Vrstva 8: Konfigurace (volitelná tabulka)
-  DELETE FROM agency_batches;
-
-Spuštění: Použij Supabase SQL Editor (Dashboard → SQL Editor) nebo
-přes API endpoint supabase.rpc() — jednoduše proveď každý DELETE postupně.
-
-Alternativně můžeš použít TRUNCATE s CASCADE:
-  TRUNCATE companies CASCADE;
-Ale POZOR: CASCADE smaže i řádky v tabulkách, které na companies odkazují,
-takže musíš poté stejně zkontrolovat, zda jsou VŠECHNY tabulky prázdné.
+Spuštění: python3 factory_reset_db.py
+Po úspěchu:  rm factory_reset_db.py
 
 ────────────────────────────────────────────────────────────────────────────────
 KROK 3 — Supabase Storage: Smazání VŠECH souborů v bucketech
@@ -150,53 +194,78 @@ Na VPS (46.28.110.102) zkontroluj:
      — tyto jsou AKTIVNÍ projekty, nesouvisí s AIshield!
 
 ────────────────────────────────────────────────────────────────────────────────
-KROK 6 — Frontend: Vymazání lokálního stavu
+KROK 6 — Frontend: Vymazání stale auth cookies (KRITICKÉ!)
 ────────────────────────────────────────────────────────────────────────────────
 
-V prohlížeči (Chrome DevTools → Application):
-  a) Local Storage → smazat vše pro aishield.cz
-  b) Session Storage → smazat vše
-  c) Cookies → smazat vše pro aishield.cz a supabase.co
-  d) Cache Storage → smazat Service Worker cache (pokud existuje)
+⚠️  BEZ TOHOTO KROKU SE UŽIVATEL BUDE JEVIT JAKO PŘIHLÁŠENÝ I PO RESETU!
+    Supabase JWT cookies přežijí smazání uživatele ze serveru.
 
-Nebo jednoduše: Ctrl+Shift+Delete → Vymazat data procházení pro aishield.cz
+  VARIANTA A — Automatické vyčištění (preferovaná):
+    Pokud auth-context.tsx správně používá getUser() + signOut() fallback
+    (viz Krok 0a), cookies se vyčistí automaticky při první návštěvě.
+    → Stačí otevřít aishield.cz — frontend sám zjistí, že user neexistuje,
+      zavolá signOut() a smaže cookies.
+
+  VARIANTA B — Manuální (záložní, pokud varianta A nefunguje):
+    V prohlížeči (Chrome DevTools → Application):
+      a) Cookies → smazat vše pro aishield.cz a supabase.co  
+      b) Local Storage → smazat vše pro aishield.cz
+      c) Session Storage → smazat vše
+    Nebo: Ctrl+Shift+Delete → Vymazat data procházení pro aishield.cz
+
+  VARIANTA C — Anonymní okno:
+    Otevři https://aishield.cz v anonymním okně — nemá žádné cookies.
 
 ────────────────────────────────────────────────────────────────────────────────
-KROK 7 — Verifikace (POVINNÁ)
+KROK 7 — Deploy na Vercel (POVINNÉ po každém factory resetu!)
+────────────────────────────────────────────────────────────────────────────────
+
+⚠️  Vercel může servírovat cachovanou verzi stránky.
+    Po factory resetu VŽDY proveď nový deploy, aby se cache invalidovala:
+
+  cd ~/Projects/aishield/frontend && \
+    npx --yes vercel --prod --yes \
+    --token=<VERCEL_TOKEN z .env nebo z historie>
+
+  Počkej na "Aliased: https://aishield.cz" — teprve poté testuj.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 8 — Verifikace (POVINNÁ)
 ────────────────────────────────────────────────────────────────────────────────
 
 Po dokončení všech kroků ověř:
 
   a) Auth uživatelé: 0
-     curl -s -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-       -H "apikey: $SERVICE_ROLE_KEY" \
-       "$SUPABASE_URL/auth/v1/admin/users" | python3 -c \
+     curl -s -H "Authorization: Bearer $SB_KEY" \
+       -H "apikey: $SB_KEY" \
+       "$SB_URL/auth/v1/admin/users?per_page=100" | python3 -c \
        "import sys,json; d=json.load(sys.stdin); print(f'Users: {len(d.get(\"users\",[]))}')"
 
-  b) Tabulky: Všechny prázdné
-     Pro každou tabulku ověř COUNT(*) = 0 v Supabase SQL Editor:
-     SELECT 'companies' as tbl, COUNT(*) as cnt FROM companies
-     UNION ALL SELECT 'clients', COUNT(*) FROM clients
-     UNION ALL SELECT 'scans', COUNT(*) FROM scans
-     UNION ALL SELECT 'findings', COUNT(*) FROM findings
-     UNION ALL SELECT 'orders', COUNT(*) FROM orders
-     UNION ALL SELECT 'subscriptions', COUNT(*) FROM subscriptions
-     UNION ALL SELECT 'scan_results', COUNT(*) FROM scan_results
-     UNION ALL SELECT 'analytics_events', COUNT(*) FROM analytics_events;
+  b) Tabulky: Všechny prázdné (verifikace je součástí factory_reset_db.py)
 
   c) Storage: 0 souborů v bucketu "documents"
+     curl -s -H "Authorization: Bearer $SB_KEY" \
+       -H "apikey: $SB_KEY" \
+       -H "Content-Type: application/json" \
+       "$SB_URL/storage/v1/object/list/documents" \
+       -d '{"prefix":"","limit":100}' | python3 -c \
+       "import sys,json; d=json.load(sys.stdin); print(f'Files: {len(d)}')"
 
-  d) API test: 
-     curl -s https://api.aishield.cz/api/admin/dashboard/stats \
-       -H "Authorization: Bearer $ADMIN_TOKEN" | python3 -m json.tool
-     → Všechny countery musí být 0.
+  d) VPS API běží:
+     ssh root@46.28.110.102 "systemctl status aishield-api | head -5"
 
-  e) Frontend test: Otevři https://aishield.cz v anonymním okně prohlížeče.
-     Zkus se registrovat s firemním emailem → musí projít bez chyby
-     "email je už registrovaný".
+  e) Frontend test — ANONYMNÍ OKNO (⚠️ NE normální okno!):
+     Otevři https://aishield.cz v anonymním okně prohlížeče.
+     → Header MUSÍ zobrazovat "Přihlásit se" (NE jméno/email uživatele)
+     → Zkus se registrovat s firemním emailem → musí projít bez chyby
+
+  f) Pokud normální okno stále ukazuje přihlášeného uživatele:
+     → To je OK — auth-context.tsx to vyřeší automaticky (zavolá getUser(),
+       zjistí že user neexistuje, zavolá signOut() a vyčistí cookies)
+     → Stačí refreshnout stránku
 
 ================================================================================
-ANALÝZA: 10 CHYB V PŮVODNÍM PROMPTU A JEJICH OPRAVY
+ANALÝZA: 11 CHYB V PŮVODNÍCH PROMPTECH A JEJICH OPRAVY
 ================================================================================
 
 CHYBA 1 — Chybějící pořadí operací (auth vs. DB)
@@ -250,6 +319,35 @@ CHYBA 10 — Chybějící tabulky orchestrator_log a data_access_log
   o přístupech a workflow akcích, které by měly být smazány pro čistý stav.
   OPRAVA: Přidány do Vrstvy 1 mezi první mazané tabulky.
 
+CHYBA 11 — Stale JWT cookies po smazání Auth uživatelů (ROOT CAUSE v3.0)
+  PŮVODNĚ: Prompt v2.0 neřešil, že Supabase Auth ukládá JWT tokeny 
+  do cookies prohlížeče. Po smazání uživatele z auth.users zůstaly 
+  cookies platné (access token 1h, refresh token 7 dní). Frontend 
+  auth-context.tsx používal getSession(), který čte cookies LOKÁLNĚ 
+  bez serverové validace → uživatel se jevil jako přihlášený i po resetu,
+  a to dokonce i v anonymním okně (Vercel edge cache mohl servírovat 
+  starý SSR obsah).
+  OPRAVA: 
+    1) auth-context.tsx přepsán: getUser() (serverová validace) jako 
+       první volání, signOut() při chybě pro vyčištění cookies
+    2) Přidán Krok 0 (prerekvizity) — ověření auth-context.tsx PŘED resetem
+    3) Přidán Krok 7 — povinný Vercel deploy po resetu (cache invalidace)
+    4) Krok 6 přepsán s vysvětlením cookie problému a 3 variantami řešení
+  REFERENCE: commit 06da58c, auth-context.tsx řádky 36-52
+
 ================================================================================
-KONEC PROMPTU — Verze 2.0 (opravená)
+KONEC PROMPTU — Verze 3.0 (17.02.2026)
 ================================================================================
+
+CHANGELOG:
+  v3.0 (17.02.2026):
+    - NOVÝ Krok 0: Prerekvizity (ověření auth-context.tsx, env vars, DB připojení)
+    - NOVÝ Krok 7: Vercel deploy po resetu (cache invalidace)
+    - Krok 2 přepsán: Python skript místo SQL příkazů (psql není na Macu,
+      Supabase REST API nemá exec_sql, pooler nefunguje)
+    - Krok 6 přepsán: 3 varianty čištění cookies (auto/manuální/anonymní)
+    - Krok 8 (verifikace): přidán frontendový test v anonymním okně
+    - CHYBA 11: Stale JWT cookies — root cause proč user vypadal přihlášený
+    - Sjednoceny proměnné na $SB_URL a $SB_KEY (místo $SUPABASE_URL/$SERVICE_ROLE_KEY)
+  v2.0: Prvních 10 oprav (pořadí operací, chybějící tabulky, storage, stripe, VPS)
+  v1.0: Původní prompt
