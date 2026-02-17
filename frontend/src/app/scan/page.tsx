@@ -426,6 +426,50 @@ function ScanPageInner() {
                             })}
                         </div>
 
+                        {/* Duration warning — kontextová dle uplynulého času */}
+                        {elapsedSeconds >= 10 && elapsedSeconds < 45 && (
+                            <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-3 flex items-start gap-2">
+                                <span className="text-lg shrink-0">⏱️</span>
+                                <div>
+                                    <p className="text-sm font-medium text-amber-800">
+                                        Hloubková analýza trvá 45–90 sekund
+                                    </p>
+                                    <p className="text-xs text-amber-600 mt-0.5">
+                                        Prosím vyčkejte — provádíme síťovou interceptaci, signaturovou detekci,
+                                        AI klasifikaci a verifikační double-sken.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        {elapsedSeconds >= 45 && elapsedSeconds < 90 && (
+                            <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-start gap-2">
+                                <span className="text-lg shrink-0">🔄</span>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-800">
+                                        Finalizujeme analýzu...
+                                    </p>
+                                    <p className="text-xs text-blue-600 mt-0.5">
+                                        Sken probíhá podle plánu. Claude AI právě ověřuje nálezy
+                                        a probíhá verifikační double-sken.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        {elapsedSeconds >= 90 && (
+                            <div className="mt-4 rounded-lg bg-orange-50 border border-orange-200 p-3 flex items-start gap-2">
+                                <span className="text-lg shrink-0">⚠️</span>
+                                <div>
+                                    <p className="text-sm font-medium text-orange-800">
+                                        Sken trvá déle než obvykle
+                                    </p>
+                                    <p className="text-xs text-orange-600 mt-0.5">
+                                        Web může obsahovat hodně obsahu nebo pomalé odpovědi.
+                                        Stále pracujeme — prosím neopouštějte stránku.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Footer */}
                         <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
                             <span>Scan ID: {scanResult.scan_id.slice(0, 8)}...</span>
