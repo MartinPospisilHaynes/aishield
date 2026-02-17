@@ -312,6 +312,8 @@ export default function AdminPage() {
     // Auth
     const [authed, setAuthed] = useState<boolean | null>(null);
     const [saveToast, setSaveToast] = useState<string | null>(null);
+    // Track unsaved inline edits: { [companyId]: { field: newValue } }
+    const [dirtyFields, setDirtyFields] = useState<Record<string, Record<string, string>>>({});
 
     // Navigation
     const [tab, setTab] = useState<Tab>("prehled");
@@ -623,6 +625,50 @@ export default function AdminPage() {
             }
         },
         [loadCompanies]
+    );
+
+    // ── Stage a field change (don't save yet — wait for explicit save button) ──
+    const stageFieldChange = useCallback(
+        (companyId: string, field: string, value: string, originalValue: string) => {
+            setDirtyFields((prev) => {
+                const companyDirty = { ...(prev[companyId] || {}), [field]: value };
+                // If value matches original, remove that field from dirty
+                if (value === originalValue) {
+                    delete companyDirty[field];
+                }
+                // If no dirty fields left for this company, remove entry
+                if (Object.keys(companyDirty).length === 0) {
+                    const next = { ...prev };
+                    delete next[companyId];
+                    return next;
+                }
+                return { ...prev, [companyId]: companyDirty };
+            });
+        },
+        []
+    );
+
+    // ── Save staged changes for a company ──
+    const saveStagedChanges = useCallback(
+        async (companyId: string) => {
+            const fields = dirtyFields[companyId];
+            if (!fields) return;
+            try {
+                await updateCompanyStatus(companyId, fields);
+                setDirtyFields((prev) => {
+                    const next = { ...prev };
+                    delete next[companyId];
+                    return next;
+                });
+                await loadCompanies();
+                setSaveToast("✅ Uloženo");
+                setTimeout(() => setSaveToast(null), 2500);
+            } catch {
+                setSaveToast("❌ Chyba při ukládání");
+                setTimeout(() => setSaveToast(null), 3000);
+            }
+        },
+        [dirtyFields, loadCompanies]
     );
 
     // ── Logout ──
@@ -1248,12 +1294,13 @@ export default function AdminPage() {
                                                 <th className="text-left p-3 text-gray-400 font-medium">Priorita</th>
                                                 <th className="text-left p-3 text-gray-400 font-medium">Emaily</th>
                                                 <th className="text-left p-3 text-gray-400 font-medium">Skóre</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[80px]"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {filteredCompanies.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={8} className="p-12 text-center text-gray-500">
+                                                    <td colSpan={9} className="p-12 text-center text-gray-500">
                                                         {companies.length === 0
                                                             ? "Zatím žádné firmy"
                                                             : "Žádné firmy neodpovídají filtru"}
@@ -1262,13 +1309,16 @@ export default function AdminPage() {
                                             ) : (
                                                 filteredCompanies.map((c) => {
                                                     const cid = (c as any).id || c.ico;
+                                                    const isDirty = !!dirtyFields[cid];
+                                                    const wfValue = dirtyFields[cid]?.workflow_status ?? (c as any).workflow_status;
+                                                    const payValue = dirtyFields[cid]?.payment_status ?? (c as any).payment_status;
                                                     return (
                                                         <tr
                                                             key={cid}
                                                             onClick={() =>
                                                                 (window.location.href = `/admin/company/${cid}`)
                                                             }
-                                                            className="border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
+                                                            className={`border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${isDirty ? "bg-cyan-500/[0.04]" : ""}`}
                                                         >
                                                             <td className="p-3 text-white font-medium max-w-[300px] truncate">
                                                                 {c.name || "—"}
@@ -1282,11 +1332,11 @@ export default function AdminPage() {
                                                             <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                                                 {(c as any).workflow_status ? (
                                                                     <select
-                                                                        value={(c as any).workflow_status || "new"}
+                                                                        value={wfValue || "new"}
                                                                         onChange={(e) =>
-                                                                            handleStatusChange(cid, "workflow_status", e.target.value)
+                                                                            stageFieldChange(cid, "workflow_status", e.target.value, (c as any).workflow_status || "new")
                                                                         }
-                                                                        className="bg-transparent border border-white/10 rounded px-1 py-0.5 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
+                                                                        className={`bg-transparent border rounded px-1 py-0.5 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50 ${dirtyFields[cid]?.workflow_status ? "border-cyan-500/50 ring-1 ring-cyan-500/30" : "border-white/10"}`}
                                                                     >
                                                                         {Object.entries(WORKFLOW_STATUSES).map(([k, v]) => (
                                                                             <option key={k} value={k}>
@@ -1301,11 +1351,11 @@ export default function AdminPage() {
                                                             <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                                                 {(c as any).payment_status ? (
                                                                     <select
-                                                                        value={(c as any).payment_status || "none"}
+                                                                        value={payValue || "none"}
                                                                         onChange={(e) =>
-                                                                            handleStatusChange(cid, "payment_status", e.target.value)
+                                                                            stageFieldChange(cid, "payment_status", e.target.value, (c as any).payment_status || "none")
                                                                         }
-                                                                        className="bg-transparent border border-white/10 rounded px-1 py-0.5 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
+                                                                        className={`bg-transparent border rounded px-1 py-0.5 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50 ${dirtyFields[cid]?.payment_status ? "border-cyan-500/50 ring-1 ring-cyan-500/30" : "border-white/10"}`}
                                                                     >
                                                                         {Object.entries(PAYMENT_STATUSES).map(([k, v]) => (
                                                                             <option key={k} value={k}>
@@ -1345,6 +1395,16 @@ export default function AdminPage() {
                                                                 ) : (
                                                                     <span className="text-gray-500 text-xs">—</span>
                                                                 )}
+                                                            </td>
+                                                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                                                                {isDirty ? (
+                                                                    <button
+                                                                        onClick={() => saveStagedChanges(cid)}
+                                                                        className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-all shadow-lg shadow-cyan-500/25 animate-pulse"
+                                                                    >
+                                                                        💾 Uložit
+                                                                    </button>
+                                                                ) : null}
                                                             </td>
                                                         </tr>
                                                     );
