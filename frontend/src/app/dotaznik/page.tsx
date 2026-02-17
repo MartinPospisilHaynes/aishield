@@ -823,9 +823,9 @@ function QuestionnaireInner() {
                     {/* Answer tiles */}
                     <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-2" : "grid-cols-3"} gap-3 mb-4`}>
                         {([
-                            { value: "yes", label: "Ano", activeClass: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300", icon: "✓" },
-                            ...(q.type !== "yes_unknown" ? [{ value: "no" as const, label: "Ne", activeClass: "bg-slate-500/15 border-slate-400/30 text-slate-300", icon: "✕" }] : []),
-                            { value: "unknown", label: "Nevím", activeClass: "bg-amber-500/15 border-amber-500/40 text-amber-300", icon: "?" },
+                            { value: "yes", label: "Ano", icon: "✓" },
+                            ...(q.type !== "yes_unknown" ? [{ value: "no" as const, label: "Ne", icon: "✕" }] : []),
+                            { value: "unknown", label: "Nevím", icon: "?" },
                         ] as const).map((opt) => {
                             const selected = ans?.answer === opt.value;
                             return (
@@ -850,7 +850,7 @@ function QuestionnaireInner() {
                                     className={`
                     relative py-5 px-4 rounded-2xl border text-center transition-all duration-200 cursor-pointer
                     ${selected
-                                            ? `${opt.activeClass} shadow-lg ring-2 ring-offset-2 ring-offset-slate-950 ${opt.value === 'yes' ? 'ring-emerald-500/60' : opt.value === 'no' ? 'ring-slate-400/40' : 'ring-amber-500/60'}`
+                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
                                         }
                   `}
