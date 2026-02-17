@@ -24,7 +24,7 @@ export async function verifyAdminToken(): Promise<boolean> {
     const token = getAdminToken();
     if (!token) return false;
     try {
-        const res = await adminFetch(`${API_URL}/api/crm/verify`);
+        const res = await adminFetch(`${API_URL}/api/admin/crm/verify`);
         if (!res.ok) {
             clearAdminToken();
             return false;
