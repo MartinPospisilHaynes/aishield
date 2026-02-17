@@ -855,6 +855,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasScans,
             label: "Sken webu",
             desc: "Automatická detekce AI systémů na vašem webu",
+            detail: null as string | null,
             href: null as string | null,
             cta: scanLoading ? "Skenuji..." : "Spustit sken",
             onClick: onStartScan,
@@ -864,7 +865,8 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             label: "Dotazník",
             desc: hasQuest
                 ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
-                : "Sken odhalí jen web — dotazník pokryje i interní AI (ChatGPT, Copilot, HR, účetnictví…)",
+                : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot…)",
+            detail: hasQuest ? null : "EU AI Act se netýká jen toho, co je vidět na webu. Regulace zahrnuje i interní AI systémy — nástroje pro HR, účetnictví, rozhodování, generování obsahu nebo komunikaci se zaměstnanci. Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokrývá celou AI politiku firmy, včetně toho, co zákazník nikdy neuvidí.",
             href: hasScans && !hasQuest ? `/dotaznik?company_id=${data?.company?.id || ''}` : null,
             cta: !hasScans ? "🔒 Nejprve skenujte web" : !hasQuest ? "Vyplnit dotazník" : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
             onClick: (hasScans && hasQuest && qUnknowns.length > 0) ? onShowPlan : undefined as (() => void) | undefined,
@@ -873,6 +875,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasOrder,
             label: "Objednávka",
             desc: hasOrder ? "Objednávka byla přijata" : "Odemkněte compliance dokumenty a školení",
+            detail: null,
             href: hasOrder ? null : "#pricing",
             cta: hasOrder ? "✓ Objednáno" : "Vybrat balíček",
             onClick: undefined as (() => void) | undefined,
@@ -881,6 +884,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasPaidOrder,
             label: "Platba",
             desc: hasPaidOrder ? "Platba byla přijata" : hasOrder ? "Čekáme na připsání platby na účet" : "Po objednání obdržíte platební údaje",
+            detail: null,
             href: null,
             cta: hasPaidOrder ? "✓ Zaplaceno" : hasOrder ? "Čeká na platbu" : "",
             onClick: undefined as (() => void) | undefined,
@@ -889,6 +893,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: isProcessingDocs,
             label: "Tvorba dokumentace",
             desc: isProcessingDocs ? "Pracujeme na vaší dokumentaci" : hasPaidOrder ? "Připravujeme vaše dokumenty" : "Po zaplacení začneme s tvorbou",
+            detail: null,
             href: null,
             cta: isProcessingDocs ? "Zpracováváme" : "",
             onClick: undefined as (() => void) | undefined,
@@ -897,6 +902,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             done: hasDocs,
             label: "Dodání",
             desc: hasDocs ? "Dokumenty jsou připraveny ke stažení" : "7 dokumentů pro splnění AI Act",
+            detail: null,
             href: hasDocs ? "#" : null,
             cta: hasDocs ? "Viz tab Dokumenty" : "",
             onClick: undefined as (() => void) | undefined,
@@ -954,7 +960,13 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                             </span>
                             <h4 className="font-semibold text-fuchsia-300">{currentStep.label}</h4>
                         </div>
-                        <p className="text-sm text-slate-300 mb-4 ml-0 sm:ml-9">{currentStep.desc}</p>
+                        <p className="text-sm text-slate-300 mb-2 ml-0 sm:ml-9">{currentStep.desc}</p>
+                        {currentStep.detail && (
+                            <div className="ml-0 sm:ml-9 mb-4 rounded-lg bg-cyan-500/[0.06] border border-cyan-500/15 p-3">
+                                <p className="text-xs font-semibold text-cyan-400 mb-1">Proč je dotazník potřeba?</p>
+                                <p className="text-xs text-slate-400 leading-relaxed">{currentStep.detail}</p>
+                            </div>
+                        )}
                         {currentStep.onClick ? (
                             <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-0 sm:ml-9 inline-block disabled:opacity-50">
                                 {currentStep.cta}
