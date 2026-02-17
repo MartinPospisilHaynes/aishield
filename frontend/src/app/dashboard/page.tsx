@@ -1445,11 +1445,10 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
                                     </div>
                                 </div>
                                 {/* CTA visible even when collapsed */}
-                                <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0 ${
-                                    isExp
+                                <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0 ${isExp
                                         ? "bg-white/[0.06] text-slate-400"
                                         : "bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300 group-hover:bg-fuchsia-500/25"
-                                }`}>
+                                    }`}>
                                     {isExp ? "Skrýt" : "Zobrazit postup →"}
                                 </span>
                                 <svg className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200 sm:hidden ${isExp ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

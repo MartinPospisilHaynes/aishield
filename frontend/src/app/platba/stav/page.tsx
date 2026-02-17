@@ -147,7 +147,7 @@ function PaymentStatusContent() {
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-cyan-400 font-bold mt-0.5">4.</span>
-                                    Veškeré potřebné materiály dodáme <strong className="text-white">do 7 pracovních dní</strong>
+                                    <span>Veškeré potřebné materiály dodáme <strong className="text-white whitespace-nowrap">do 7 pracovních dní</strong></span>
                                 </li>
                             </ul>
                         </div>
