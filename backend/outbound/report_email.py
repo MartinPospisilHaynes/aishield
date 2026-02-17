@@ -415,7 +415,6 @@ def generate_report_email_html(
                     &#10003; 10 hodin konzultací s compliance specialistou<br>
                     &#10003; Metodická kontrola veškeré dokumentace<br>
                     &#10003; Rozšířený audit interních AI systémů<br>
-                    &#10003; Multi-domain — pokrytí více webů a e-shopů<br>
                     &#10003; 2 roky měsíčního monitoringu — automatický sken, aktualizace dokumentů<br>
                     &#10003; Dedikovaný specialista + SLA s dobou odezvy 4 hodiny
                 </div>
@@ -479,7 +478,6 @@ def generate_report_email_html(
                     ✓ 10h konzultací se specialistou &nbsp;&nbsp;
                     ✓ Metodická kontrola dokumentace &nbsp;&nbsp;
                     ✓ Rozšířený audit interních AI &nbsp;&nbsp;
-                    ✓ Multi-domain (více webů) &nbsp;&nbsp;
                     ✓ 2 roky měsíčního monitoringu &nbsp;&nbsp;
                     ✓ Dedikovaný specialista &nbsp;&nbsp;
                     ✓ SLA 4h odezva

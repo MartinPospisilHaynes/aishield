@@ -409,9 +409,21 @@ export default function DashboardPage() {
                                 {scanLoading ? "Skenuji..." : "Nový sken"}
                             </button>
                             {hasScans ? (
-                                <a href={`/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}`} className="btn-primary text-sm px-4 py-2">
-                                    {hasQuest ? 'Upravit odpovědi' : 'Vyplnit dotazník'}
-                                </a>
+                                hasQuest ? (
+                                    qUnknowns.length > 0 ? (
+                                        <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-4 py-2 animate-pulse">
+                                            Doplnit odpovědi ({qUnknowns.length})
+                                        </button>
+                                    ) : (
+                                        <a href="#pricing" className="btn-primary text-sm px-4 py-2">
+                                            Objednat dokumenty
+                                        </a>
+                                    )
+                                ) : (
+                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
+                                        Vyplnit dotazník
+                                    </a>
+                                )
                             ) : (
                                 <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
                                     🔒 Dotazník
@@ -490,7 +502,7 @@ export default function DashboardPage() {
                                         <button onClick={() => { closeScanPanel(); setActiveTab("findings"); }} className="btn-secondary text-sm px-4 py-2">
                                             Zobrazit nálezy
                                         </button>
-                                        {hasScans && (
+                                        {hasScans && !hasQuest && (
                                             <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
                                                 Vyplnit dotazník
                                             </a>
@@ -732,6 +744,11 @@ export default function DashboardPage() {
                             >
                                 {tab.icon}
                                 {tab.label}
+                                {tab.key === "plan" && qUnknowns.length > 0 && activeTab !== "plan" && (
+                                    <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black animate-pulse">
+                                        {qUnknowns.length}
+                                    </span>
+                                )}
                                 {activeTab === tab.key && (
                                     <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 rounded-full" />
                                 )}
@@ -741,7 +758,7 @@ export default function DashboardPage() {
 
                     {/* Tab content */}
                     <div className="min-h-[400px]">
-                        {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} />}
+                        {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} onShowPlan={() => setActiveTab("plan")} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
                         {activeTab === "plan" && <TabPlan questionnaireUnknowns={qUnknowns} companyId={data?.company?.id || ''} />}
@@ -823,7 +840,7 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
 
 
 /* ── Tab: Přehled ── */
-function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean }) {
+function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride, onShowPlan }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean; onShowPlan: () => void }) {
     const hasScans = hasScansOverride || (data?.scans.length || 0) > 0;
     const hasQuest = data?.questionnaire_status === "dokončen";
     const hasDocs = (data?.documents.length || 0) > 0;
@@ -831,6 +848,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
     const hasPaidOrder = data?.orders.some((o) => o.status === "PAID") || false;
     const ws = data?.company?.workflow_status || 'new';
     const isProcessingDocs = ws === 'processing' || ws === 'documents_sent';
+    const qUnknowns = data?.questionnaire_unknowns || [];
 
     const steps = [
         {
@@ -844,10 +862,12 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         {
             done: hasQuest,
             label: "Dotazník",
-            desc: hasQuest ? "Odpovědi můžete kdykoli upravit" : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
-            href: hasScans ? `/dotaznik?company_id=${data?.company?.id || ''}${hasQuest ? '&edit=true' : ''}` : null,
-            cta: hasScans ? (hasQuest ? "Upravit odpovědi" : "Vyplnit dotazník") : "🔒 Nejprve skenujte web",
-            onClick: undefined as (() => void) | undefined,
+            desc: hasQuest
+                ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
+                : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
+            href: hasScans && !hasQuest ? `/dotaznik?company_id=${data?.company?.id || ''}` : null,
+            cta: !hasScans ? "🔒 Nejprve skenujte web" : !hasQuest ? "Vyplnit dotazník" : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
+            onClick: (hasScans && hasQuest && qUnknowns.length > 0) ? onShowPlan : undefined as (() => void) | undefined,
         },
         {
             done: hasOrder,
@@ -1693,7 +1713,6 @@ const DASHBOARD_PLANS = [
             "10 hodin konzultací s compliance specialistou",
             "Metodická kontrola veškeré dokumentace",
             "Rozšířený audit interních AI systémů",
-            "Multi-domain (více webů / e-shopů)",
             "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Dedikovaný specialista",
             "SLA 4h odezva v pracovní době",
@@ -1727,7 +1746,6 @@ const COMPARISON_FEATURES = [
     { label: "10 hodin konzultací se specialistou", basic: false, pro: false, enterprise: true },
     { label: "Metodická kontrola veškeré dokumentace", basic: false, pro: false, enterprise: true },
     { label: "Rozšířený audit interních AI systémů", basic: false, pro: false, enterprise: true },
-    { label: "Multi-domain (více webů / e-shopů)", basic: false, pro: false, enterprise: true },
     { label: "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace", basic: false, pro: false, enterprise: true },
     { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
     { label: "SLA 4h odezva v pracovní době", basic: false, pro: false, enterprise: true },

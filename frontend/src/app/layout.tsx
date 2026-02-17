@@ -180,7 +180,7 @@ export default function RootLayout({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="font-semibold transition-colors hover:brightness-125"
-                                        style={{ color: "#ff2d95" }}
+                                        style={{ color: "#d946ef" }}
                                     >
                                         Desperados-design.cz
                                     </a>

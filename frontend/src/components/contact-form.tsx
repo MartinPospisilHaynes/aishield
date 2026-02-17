@@ -148,16 +148,28 @@ export default function ContactForm() {
                         <label htmlFor="c-captcha" className="block text-sm font-medium text-slate-300 mb-1.5">
                             Ověření: Kolik je {captcha.a} + {captcha.b}? *
                         </label>
-                        <input
-                            id="c-captcha"
-                            type="text"
-                            inputMode="numeric"
-                            required
-                            value={captchaInput}
-                            onChange={e => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
-                            className={`w-full sm:w-32 rounded-xl bg-white/[0.06] border px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition ${captchaError ? "border-red-500/50" : "border-white/[0.1]"}`}
-                            placeholder="?"
-                        />
+                        <div className="flex items-center">
+                            <button
+                                type="button"
+                                onClick={() => { setCaptchaInput(String(Math.max(0, Number(captchaInput || 0) - 1))); setCaptchaError(false); }}
+                                className="w-10 h-11 rounded-l-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                            >−</button>
+                            <input
+                                id="c-captcha"
+                                type="text"
+                                inputMode="numeric"
+                                required
+                                value={captchaInput}
+                                onChange={e => { setCaptchaInput(e.target.value.replace(/\D/g, '').slice(0, 3)); setCaptchaError(false); }}
+                                className={`w-16 border-y px-2 py-2.5 text-sm text-white text-center placeholder-slate-500 bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${captchaError ? "border-red-500/50" : "border-white/[0.1]"}`}
+                                placeholder="?"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => { setCaptchaInput(String(Number(captchaInput || 0) + 1)); setCaptchaError(false); }}
+                                className="w-10 h-11 rounded-r-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                            >+</button>
+                        </div>
                         {captchaError && (
                             <p className="text-xs text-red-400 mt-1">Špatná odpověď, zkuste to znovu.</p>
                         )}

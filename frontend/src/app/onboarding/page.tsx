@@ -205,14 +205,26 @@ export default function OnboardingPage() {
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
                                 Ověření: Kolik je {captchaA} + {captchaB}? <span className="text-red-400">*</span>
                             </label>
-                            <input
-                                type="text"
-                                value={captchaAnswer}
-                                onChange={e => setCaptchaAnswer(e.target.value)}
-                                placeholder="Zadejte výsledek"
-                                required
-                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
-                            />
+                            <div className="flex items-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setCaptchaAnswer(String(Math.max(0, Number(captchaAnswer || 0) - 1)))}
+                                    className="w-10 h-11 rounded-l-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                >−</button>
+                                <input
+                                    type="text"
+                                    value={captchaAnswer}
+                                    onChange={e => setCaptchaAnswer(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                    placeholder="?"
+                                    required
+                                    className="w-16 border-y border-white/10 bg-white/5 px-2 py-3 text-white text-center placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setCaptchaAnswer(String(Number(captchaAnswer || 0) + 1))}
+                                    className="w-10 h-11 rounded-r-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                >+</button>
+                            </div>
                         </div>
 
                         {/* GDPR */}

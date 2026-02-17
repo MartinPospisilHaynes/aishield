@@ -442,15 +442,12 @@ function QuestionnaireInner() {
                 if (q.type === "yes_no_unknown" || q.type === "yes_unknown") {
                     if (e.key === "1") {
                         setAnswer(q.key, "yes");
-                        if (!isLastQ && !q.followup) setTimeout(goNext, 300);
                     }
                     if (e.key === "2" && q.type === "yes_no_unknown") {
                         setAnswer(q.key, "no");
-                        if (!isLastQ) setTimeout(goNext, 300);
                     }
                     if ((e.key === "3" && q.type === "yes_no_unknown") || (e.key === "2" && q.type === "yes_unknown")) {
                         setAnswer(q.key, "unknown");
-                        if (!isLastQ) setTimeout(goNext, 300);
                     }
                 }
             }
@@ -703,9 +700,6 @@ function QuestionnaireInner() {
                                                 });
                                             } else {
                                                 setAnswer(q.key, opt);
-                                                if (!isLast) {
-                                                    setTimeout(goNext, 350);
-                                                }
                                             }
                                         }}
                                         className={`
@@ -829,19 +823,14 @@ function QuestionnaireInner() {
                                                 // No followup — auto-submit and return to dashboard
                                                 setTimeout(() => { handleSubmit(); }, 400);
                                             }
-                                        } else if (isLast) {
-                                            // LAST QUESTION: user must click submit button manually
-                                        } else if (q.followup && q.followup.condition === opt.value) {
-                                            // This answer triggers followup — don't auto-advance
-                                        } else if (!q.followup || q.followup.condition !== opt.value) {
-                                            // Auto-advance when no followup or answer doesn't trigger followup
-                                            setTimeout(goNext, 350);
                                         }
+                                        // Normal flow: NEVER auto-advance.
+                                        // User must always click "Další →" or "Ukončit" button.
                                     }}
                                     className={`
                     relative py-5 px-4 rounded-2xl border text-center transition-all duration-200 cursor-pointer
                     ${selected
-                                            ? `${opt.activeClass} shadow-lg`
+                                            ? `${opt.activeClass} shadow-lg ring-2 ring-offset-2 ring-offset-slate-950 ${opt.value === 'yes' ? 'ring-emerald-500/60' : opt.value === 'no' ? 'ring-slate-400/40' : 'ring-amber-500/60'}`
                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
                                         }
                   `}
@@ -866,7 +855,7 @@ function QuestionnaireInner() {
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (
                         <div className="animate-slide-down mb-6">
-                            <div className="bg-white/[0.04] backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-5">
+                            <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-5">
                                 <p className="text-cyan-300 text-sm font-semibold mb-4">Upřesněte prosím:</p>
                                 <div className="space-y-4">
                                     {q.followup.fields.map((field) => (
@@ -1016,7 +1005,7 @@ function QuestionnaireInner() {
                     {/* ── Followup_no fields (slides down when "Ne") ── */}
                     {q.followup_no && ans?.answer === "no" && (
                         <div className="animate-slide-down mb-6">
-                            <div className="bg-red-500/[0.06] backdrop-blur-xl border border-red-500/25 rounded-2xl p-5">
+                            <div className="bg-red-500/[0.06] backdrop-blur-xl rounded-2xl p-5">
                                 <div className="space-y-4">
                                     {q.followup_no.fields.map((field) => (
                                         <div key={field.key}>
