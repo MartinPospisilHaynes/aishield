@@ -135,6 +135,110 @@ AVAILABLE_GATEWAYS = {
     # "gopay": "GoPay",  # ZAKOMENTOVÁNO — čekáme na vyjádření
 }
 
+# Příjemci notifikací o nových objednávkách
+ORDER_NOTIFY_EMAILS = ["info@aishield.cz", "bc.pospa@gmail.com"]
+
+
+async def _notify_new_order(
+    order_number: str,
+    plan: str,
+    amount: int,
+    email: str,
+    gateway: str,
+    status: str,
+    order_type: str = "one_time",
+    billing: dict | None = None,
+):
+    """Pošle notifikaci o nové objednávce na provozní emaily."""
+    plan_info = PLANS.get(plan, {})
+    plan_name = plan_info.get("name", plan)
+
+    billing_html = ""
+    if billing:
+        billing_rows = []
+        labels = {
+            "company": "Firma", "ico": "IČO", "dic": "DIČ",
+            "street": "Ulice", "city": "Město", "zip": "PSČ",
+            "phone": "Telefon", "email": "Email",
+        }
+        for key, label in labels.items():
+            val = billing.get(key, "")
+            if val:
+                billing_rows.append(f"<tr><td style='padding:4px 12px 4px 0;color:#94a3b8;'>{label}</td><td style='padding:4px 0;color:#f1f5f9;font-weight:600;'>{val}</td></tr>")
+        if billing_rows:
+            billing_html = f"""
+            <div style="margin-top:20px;">
+                <h3 style="color:#e879f9;font-size:16px;margin:0 0 8px;">Fakturační údaje</h3>
+                <table style="border-collapse:collapse;">{''.join(billing_rows)}</table>
+            </div>"""
+
+    html = f"""
+    <div style="font-family:Inter,system-ui,sans-serif;background:#0f172a;color:#f1f5f9;padding:32px;border-radius:16px;max-width:600px;">
+        <div style="text-align:center;margin-bottom:24px;">
+            <h1 style="color:#e879f9;font-size:24px;margin:0;">🎉 Nová objednávka!</h1>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;">
+            <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Číslo objednávky</td>
+                    <td style="padding:8px 0;color:#f1f5f9;font-weight:700;font-size:16px;">{order_number}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Balíček</td>
+                    <td style="padding:8px 0;color:#e879f9;font-weight:700;font-size:16px;">{plan_name}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Částka</td>
+                    <td style="padding:8px 0;color:#22d3ee;font-weight:700;font-size:18px;">{amount:,} Kč</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Email zákazníka</td>
+                    <td style="padding:8px 0;color:#f1f5f9;font-weight:600;">{email}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Platební brána</td>
+                    <td style="padding:8px 0;color:#f1f5f9;">{AVAILABLE_GATEWAYS.get(gateway, gateway).upper()}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Stav</td>
+                    <td style="padding:8px 0;color:#fbbf24;font-weight:600;">{status}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Typ</td>
+                    <td style="padding:8px 0;color:#f1f5f9;">{order_type}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;color:#94a3b8;">Čas</td>
+                    <td style="padding:8px 0;color:#f1f5f9;">{datetime.utcnow().strftime('%d.%m.%Y %H:%M UTC')}</td>
+                </tr>
+            </table>
+        </div>
+        {billing_html}
+        <div style="margin-top:20px;text-align:center;">
+            <a href="https://aishield.cz/admin" style="display:inline-block;background:linear-gradient(135deg,#c026d3,#7c3aed);color:white;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
+                Otevřít Admin Dashboard →
+            </a>
+        </div>
+        <p style="margin-top:16px;color:#64748b;font-size:12px;text-align:center;">
+            AIshield.cz — automatická notifikace
+        </p>
+    </div>
+    """
+
+    for notify_email in ORDER_NOTIFY_EMAILS:
+        try:
+            await send_email(
+                to=notify_email,
+                subject=f"🎉 Nová objednávka {order_number} — {plan_name} ({amount:,} Kč)",
+                html=html,
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz Notifikace",
+            )
+            logger.info(f"[Payments] Order notification sent to {notify_email} for {order_number}")
+        except Exception as e:
+            logger.error(f"[Payments] Failed to send order notification to {notify_email}: {e}")
+
 
 async def _create_payment_via_gateway(
     gateway: str,
@@ -300,6 +404,13 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
             order_data["billing_data"] = req.billing.model_dump()
         supabase.table("orders").insert(order_data).execute()
 
+        # Notifikace o nové objednávce
+        await _notify_new_order(
+            order_number=order_number, plan=req.plan, amount=amount,
+            email=req.email, gateway="bank_transfer", status="AWAITING_PAYMENT",
+            billing=req.billing.model_dump() if req.billing else None,
+        )
+
         # Odeslat email s platebními údaji + QR kód jako příloha
         try:
             html, qr_attachments = build_bank_transfer_email(
@@ -375,7 +486,12 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
         "created_at": datetime.utcnow().isoformat(),
     }).execute()
 
-    # Odeslat potvrzovací email pro online platby (webhook ho pošle po zaplacení)
+    # Notifikace o nové objednávce
+    await _notify_new_order(
+        order_number=order_number, plan=req.plan, amount=amount,
+        email=req.email, gateway=gateway, status=result["state"],
+        billing=req.billing.model_dump() if req.billing else None,
+    )
 
     return CheckoutResponse(
         payment_id=result["payment_id"],
@@ -454,6 +570,12 @@ async def create_guest_checkout(req: GuestCheckoutRequest):
         "payment_gateway": gateway,
         "created_at": datetime.utcnow().isoformat(),
     }).execute()
+
+    # Notifikace o nové objednávce (guest)
+    await _notify_new_order(
+        order_number=order_number, plan=req.plan, amount=amount,
+        email=guest_email, gateway=gateway, status=result["state"],
+    )
 
     return CheckoutResponse(
         payment_id=result["payment_id"],
