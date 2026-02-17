@@ -24,12 +24,31 @@ export const metadata: Metadata = {
     ],
     authors: [{ name: "AIshield.cz" }],
     openGraph: {
-        title: "AIshield.cz — Váš štít proti pokutám EU",
-        description: "AI Act compliance scanner. Zjistěte stav vašeho webu za 60 sekund.",
+        title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
+        description:
+            "Automatizovaný compliance scanner pro české firmy. Zjistěte za 60 sekund, " +
+            "jestli váš web splňuje zákon EU o AI. Pokuta až 35 mil. €. Deadline: srpen 2026.",
         url: "https://aishield.cz",
         siteName: "AIshield.cz",
         locale: "cs_CZ",
         type: "website",
+        images: [
+            {
+                url: "https://aishield.cz/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "AIshield.cz — AI Act compliance scanner pro české firmy",
+                type: "image/png",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
+        description:
+            "Zjistěte za 60 sekund, jestli váš web splňuje zákon EU o AI. " +
+            "Pokuta až 35 mil. €. Deadline: srpen 2026.",
+        images: ["https://aishield.cz/og-image.png"],
     },
 };
 
