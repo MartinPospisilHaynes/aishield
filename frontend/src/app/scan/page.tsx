@@ -103,6 +103,16 @@ const IconEnvelope = ({ className = "w-5 h-5" }: { className?: string }) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
     </svg>
 );
+const IconLockClosed = ({ className = "w-5 h-5" }: { className?: string }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+);
+const IconGlobeAlt = ({ className = "w-5 h-5" }: { className?: string }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+    </svg>
+);
 
 /* ── Scan progress stages ── */
 const SCAN_STAGES = [
@@ -736,19 +746,63 @@ function ScanPageInner() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {/* Hlavní karta — žádné nálezy */}
-                                <div className="card text-center">
-                                    <div className="flex justify-center mb-3">
-                                        <IconCheckBadge className="w-12 h-12 text-cyan-400" />
+                                {/* Hlavní karta — varování nebo žádné nálezy */}
+                                {scanResult.scan_warning ? (() => {
+                                    const warnType = scanResult.scan_warning.split("|")[0];
+                                    const warnMsg = scanResult.scan_warning.split("|").slice(1).join("|");
+                                    const isLogin = warnType === "LOGIN_WALL";
+                                    const isSpa = warnType === "SPA_APP";
+                                    const isOauth = warnType === "OAUTH_REDIRECT";
+                                    return (
+                                        <div className="card text-center">
+                                            <div className="flex justify-center mb-3">
+                                                {isLogin || isOauth ? (
+                                                    <IconLockClosed className="w-12 h-12 text-amber-400" />
+                                                ) : (
+                                                    <IconGlobeAlt className="w-12 h-12 text-amber-400" />
+                                                )}
+                                            </div>
+                                            <h3 className="text-lg font-bold text-white">
+                                                {isLogin && "Stránka vyžaduje přihlášení"}
+                                                {isOauth && "Stránka přesměrovala na přihlášení"}
+                                                {isSpa && "Detekována webová aplikace"}
+                                            </h3>
+                                            <p className="text-sm text-amber-300/80 mt-2 max-w-lg mx-auto leading-relaxed">
+                                                {warnMsg}
+                                            </p>
+                                            <p className="text-sm text-slate-400 mt-3 max-w-lg mx-auto leading-relaxed">
+                                                {(isLogin || isOauth) ? (
+                                                    <>
+                                                        Náš skener analyzuje pouze <strong className="text-white">veřejně dostupné stránky</strong>.
+                                                        Stránky za přihlášením nelze automaticky skenovat. To ale neznamená,
+                                                        že vaše aplikace nepoužívá AI — právě naopak, webové aplikace často využívají
+                                                        AI systémy intenzivněji než běžné weby.
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Tato adresa vede na <strong className="text-white">webovou aplikaci (SPA)</strong>,
+                                                        jejíž obsah se generuje dynamicky. Automatický sken nemohl analyzovat
+                                                        skutečný obsah aplikace. Webové aplikace typicky využívají AI systémy
+                                                        mnohem intenzivněji než statické weby.
+                                                    </>
+                                                )}
+                                            </p>
+                                        </div>
+                                    );
+                                })() : (
+                                    <div className="card text-center">
+                                        <div className="flex justify-center mb-3">
+                                            <IconCheckBadge className="w-12 h-12 text-cyan-400" />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
+                                        <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
+                                            To ale <strong className="text-white">neznamená, že na vašem webu žádné nepoužíváte</strong>.
+                                            Automatický sken prověřuje pouze veřejně viditelné skripty.
+                                            Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace,
+                                            po interakci uživatele, nebo běží na pozadí přes API.
+                                        </p>
                                     </div>
-                                    <h3 className="text-lg font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
-                                    <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
-                                        To ale <strong className="text-white">neznamená, že na vašem webu žádné nepoužíváte</strong>.
-                                        Automatický sken prověřuje pouze veřejně viditelné skripty.
-                                        Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace,
-                                        po interakci uživatele, nebo běží na pozadí přes API.
-                                    </p>
-                                </div>
+                                )}
 
                                 {/* Co s tím — dotazník */}
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-cyan-500/8 border border-fuchsia-500/25 p-6 text-center">
@@ -903,8 +957,13 @@ function ScanPageInner() {
                         <IconExclamation className="w-10 h-10 text-red-400 mx-auto mb-2" />
                         <h2 className="text-lg font-semibold text-white">Skenování selhalo</h2>
                         <p className="mt-2 text-sm text-slate-500">
-                            Nepodařilo se naskenovat {scanResult.url}. Web může být nedostupný
-                            nebo blokuje automatické přístupy.
+                            {scanResult.error_message?.includes("Timeout") || scanResult.error_message?.includes("timeout") ? (
+                                <>Skenování {scanResult.url} trvalo příliš dlouho a bylo ukončeno. Web může být pomalý nebo blokuje automatické přístupy.</>
+                            ) : scanResult.error_message?.includes("Stale") ? (
+                                <>Skenování {scanResult.url} se zaseklo a bylo automaticky ukončeno. Zkuste to prosím znovu.</>
+                            ) : (
+                                <>Nepodařilo se naskenovat {scanResult.url}. Web může být nedostupný nebo blokuje automatické přístupy.</>
+                            )}
                         </p>
                         <button
                             onClick={() => handleSubmit({ preventDefault: () => { } } as React.FormEvent)}

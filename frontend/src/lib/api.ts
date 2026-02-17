@@ -90,6 +90,8 @@ export interface ScanStatus {
     finished_at: string | null;
     company_name: string | null;
     company_id: string | null;
+    scan_warning?: string;
+    error_message?: string;
 }
 
 export interface HealthResponse {

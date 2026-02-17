@@ -97,6 +97,8 @@ class ScanStatusResponse(BaseModel):
     started_at: str | None
     finished_at: str | None
     company_name: str | None
+    scan_warning: str | None = None
+    error_message: str | None = None
 
 
 # ── Endpointy ──
@@ -234,7 +236,7 @@ async def get_scan_status(scan_id: str):
 
     try:
         result = supabase.table("scans").select(
-            "id, url_scanned, status, total_findings, started_at, finished_at, company_id"
+            "id, url_scanned, status, total_findings, started_at, finished_at, company_id, error_message"
         ).eq("id", scan_id).limit(1).execute()
 
         if not result.data:
@@ -270,6 +272,13 @@ async def get_scan_status(scan_id: str):
         ).limit(1).execute()
         company_name = company.data[0]["name"] if company.data else None
 
+        # Parsuj scan_warning z error_message (formát "WARNING:TYPE|text")
+        scan_warning = None
+        error_message = scan.get("error_message")
+        if error_message and error_message.startswith("WARNING:"):
+            scan_warning = error_message[8:]  # Odstraň "WARNING:" prefix
+            error_message = None  # Není to chyba, jen varovat
+
         return ScanStatusResponse(
             scan_id=scan["id"],
             url=scan["url_scanned"],
@@ -278,6 +287,8 @@ async def get_scan_status(scan_id: str):
             started_at=scan["started_at"],
             finished_at=scan["finished_at"],
             company_name=company_name,
+            scan_warning=scan_warning,
+            error_message=error_message,
         )
 
     except HTTPException:

@@ -62,6 +62,11 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
 
         logger.info(f"[Pipeline] Scan hotový: {len(page.html)} bytes HTML, {len(page.scripts)} skriptů")
 
+        # 2.5. Detekce login stránky / SPA shellu / aplikace za přihlášením
+        scan_warning = _detect_login_or_app(page)
+        if scan_warning:
+            logger.info(f"[Pipeline] Upozornění: {scan_warning}")
+
         # 3. Detekuj AI systémy (signaturový detektor)
         detector = AIDetector()
         findings: list[DetectedAI] = detector.detect(page)
@@ -167,13 +172,16 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         finished = datetime.now(timezone.utc).isoformat()
         duration = page.duration_ms // 1000
 
-        supabase.table("scans").update({
+        update_data = {
             "status": "done",
             "finished_at": finished,
             "duration_seconds": duration,
             "total_findings": len(deployed),
             "raw_html_hash": page.html_hash,
-        }).eq("id", scan_id).execute()
+        }
+        if scan_warning:
+            update_data["error_message"] = f"WARNING:{scan_warning}"
+        supabase.table("scans").update(update_data).eq("id", scan_id).execute()
 
         # 7. Aktualizovat companies.last_scanned_at
         supabase.table("companies").update({
@@ -217,6 +225,85 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         await engine_monitor.report_error(err_type, scan_id, url, str(e))
         _mark_error(supabase, scan_id, str(e))
         return {"status": "error", "error": str(e)}
+
+
+def _detect_login_or_app(page) -> str | None:
+    """
+    Detekuje, zda naskenovaná stránka je:
+    - Login formulář / OAuth redirect
+    - Prázdný SPA shell (React/Vue/Angular app loader)
+    - Aplikace za přihlášením
+    Vrátí upozornění (str) nebo None.
+    """
+    import re
+
+    html_lower = page.html.lower() if page.html else ""
+    url_lower = (page.final_url or page.url or "").lower()
+    text_len = len(re.sub(r'<[^>]+>', '', page.html or '').strip())
+
+    # 1. URL redirect na login/auth stránku
+    login_url_patterns = [
+        r'/login', r'/signin', r'/sign-in', r'/auth', r'/authenticate',
+        r'/prihlaseni', r'/prihlasit', r'/oauth', r'/sso',
+        r'/accounts/login', r'/user/login', r'/admin/login',
+    ]
+    for pat in login_url_patterns:
+        if re.search(pat, url_lower):
+            return (
+                "LOGIN_WALL|Tato stránka přesměrovala na přihlašovací formulář. "
+                "Scanner může analyzovat pouze veřejně přístupné webové stránky, "
+                "ne aplikace za přihlášením."
+            )
+
+    # 2. Login formulář v HTML (password input + form)
+    has_password_input = bool(re.search(r'<input[^>]*type=["\']password["\']', html_lower))
+    has_login_form = bool(re.search(
+        r'(?:přihlásit|přihlášení|login|sign\s*in|log\s*in|heslo|password|uživatel|username|e-mail.*heslo)',
+        html_lower
+    ))
+    if has_password_input and has_login_form:
+        return (
+            "LOGIN_WALL|Stránka obsahuje přihlašovací formulář. "
+            "Pravděpodobně se jedná o aplikaci za přihlášením — "
+            "scanner nemůže analyzovat obsah za login stránkou."
+        )
+
+    # 3. Prázdný SPA shell (velmi málo textu, typické React/Vue/Angular loading)
+    spa_indicators = [
+        r'<div\s+id=["\'](?:root|app|__next|__nuxt)["\'\s][^>]*>\s*</div>',
+        r'<div\s+id=["\'](?:root|app|__next|__nuxt)["\'\s][^>]*>\s*<noscript>',
+        r'loading\.\.\.', r'načítání', r'please wait', r'moment please',
+    ]
+    html_text_ratio = text_len / max(len(page.html or ''), 1)
+    is_spa_shell = (
+        html_text_ratio < 0.02  # Méně než 2% textu vs HTML
+        and len(page.html or '') > 500  # Ale HTML existuje (ne prázdná stránka)
+        and any(re.search(p, html_lower) for p in spa_indicators)
+    )
+    if is_spa_shell:
+        return (
+            "SPA_APP|Stránka vypadá jako webová aplikace (SPA), která se načítá dynamicky. "
+            "Scanner zachytil pouze prázdný shell bez obsahu. "
+            "AI systémy uvnitř aplikace není možné detekovat bez přihlášení."
+        )
+
+    # 4. OAuth/SSO redirect (meta refresh, JS redirect na auth provider)
+    oauth_patterns = [
+        r'accounts\.google\.com/o/oauth',
+        r'login\.microsoftonline\.com',
+        r'github\.com/login/oauth',
+        r'auth0\.com',
+        r'cognito.*amazonaws\.com',
+        r'okta\.com',
+    ]
+    for pat in oauth_patterns:
+        if re.search(pat, html_lower) or re.search(pat, url_lower):
+            return (
+                "OAUTH_REDIRECT|Stránka přesměrovává na externího poskytovatele přihlášení (OAuth/SSO). "
+                "Scanner může analyzovat pouze veřejně přístupné stránky."
+            )
+
+    return None
 
 
 def _mark_error(supabase, scan_id: str, error_message: str):
