@@ -1,0 +1,255 @@
+================================================================================
+PROMPT: KOMPLETNÍ VÝMAZ VŠECH DAT AISHIELD.CZ — FACTORY RESET
+================================================================================
+
+Cíl: Smaž VEŠKERÁ data z projektu AIshield tak, aby stránky byly jako čerstvě
+nainstalované — bez jediného uživatele, bez objednávek, bez skenů, bez 
+dokumentů. Majitel chce otestovat průchod celým procesem se svou firmou
+od nuly.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 1 — Supabase Auth: Smazání VŠECH registrovaných uživatelů
+────────────────────────────────────────────────────────────────────────────────
+
+Supabase Auth uživatelé žijí v schématu auth.users a NEJSOU součástí 
+veřejných tabulek. Musíš je smazat přes Supabase Admin API.
+
+Přístupové údaje:
+  SUPABASE_URL = hodnota z ~/Projects/aishield/.env (klíč SUPABASE_URL)
+  SERVICE_ROLE_KEY = hodnota z ~/Projects/aishield/.env (klíč SUPABASE_SERVICE_ROLE_KEY)
+
+Postup:
+  a) Vylistuj všechny uživatele:
+     curl -s -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+       -H "apikey: $SERVICE_ROLE_KEY" \
+       "$SUPABASE_URL/auth/v1/admin/users" | python3 -m json.tool
+
+  b) Pro KAŽDÉHO uživatele zavolej DELETE:
+     curl -s -X DELETE \
+       -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+       -H "apikey: $SERVICE_ROLE_KEY" \
+       "$SUPABASE_URL/auth/v1/admin/users/{USER_ID}"
+
+  c) Ověř, že seznam uživatelů je prázdný (opakuj krok a).
+
+POZOR: Nepoužívej Supabase Dashboard GUI — použij API, abys měl jistotu,
+že se smažou i metadata (sessions, refresh tokens, MFA faktory).
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 2 — Supabase DB: Vymazání VŠECH veřejných tabulek (správné pořadí)
+────────────────────────────────────────────────────────────────────────────────
+
+Tabulky mají FK vazby, proto je NUTNÉ mazat ve správném pořadí
+(nejdříve závislé, pak nadřazené). Pořadí:
+
+  -- Vrstva 1: Listy (žádné závislosti na ně)
+  DELETE FROM findings;
+  DELETE FROM questionnaire_responses;
+  DELETE FROM documents;
+  DELETE FROM alerts;
+  DELETE FROM scan_diffs;
+  DELETE FROM chat_messages;
+  DELETE FROM company_activities;
+  DELETE FROM data_access_log;
+  DELETE FROM orchestrator_log;
+
+  -- Vrstva 2: Finanční záznamy
+  DELETE FROM subscription_payments;
+  DELETE FROM invoices;
+  DELETE FROM orders;
+  DELETE FROM subscriptions;
+
+  -- Vrstva 3: Emaily a logy
+  DELETE FROM email_events;
+  DELETE FROM email_log;
+  DELETE FROM email_logs;
+  DELETE FROM email_blacklist;
+
+  -- Vrstva 4: Analytika
+  DELETE FROM analytics_events;
+  DELETE FROM analytics_daily_summary;
+
+  -- Vrstva 5: Kontakty a leady
+  DELETE FROM contact_submissions;
+  DELETE FROM report_leads;
+
+  -- Vrstva 6: Klienti a skeny
+  DELETE FROM scans;
+  DELETE FROM scan_results;
+  DELETE FROM clients;
+  DELETE FROM widget_configs;
+
+  -- Vrstva 7: Firmy (nadřazená entita)
+  DELETE FROM companies;
+
+  -- Vrstva 8: Konfigurace (volitelná tabulka)
+  DELETE FROM agency_batches;
+
+Spuštění: Použij Supabase SQL Editor (Dashboard → SQL Editor) nebo
+přes API endpoint supabase.rpc() — jednoduše proveď každý DELETE postupně.
+
+Alternativně můžeš použít TRUNCATE s CASCADE:
+  TRUNCATE companies CASCADE;
+Ale POZOR: CASCADE smaže i řádky v tabulkách, které na companies odkazují,
+takže musíš poté stejně zkontrolovat, zda jsou VŠECHNY tabulky prázdné.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 3 — Supabase Storage: Smazání VŠECH souborů v bucketech
+────────────────────────────────────────────────────────────────────────────────
+
+Projekt používá bucket "documents" pro generované PDF (faktury, reporty).
+
+Postup:
+  a) Vylistuj soubory v bucketu:
+     curl -s -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+       -H "apikey: $SERVICE_ROLE_KEY" \
+       "$SUPABASE_URL/storage/v1/object/list/documents" \
+       -d '{"prefix":"","limit":1000}'
+
+  b) Smaž všechny nalezené soubory:
+     curl -s -X DELETE \
+       -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+       -H "apikey: $SERVICE_ROLE_KEY" \
+       -H "Content-Type: application/json" \
+       "$SUPABASE_URL/storage/v1/object/documents" \
+       -d '{"prefixes":[""]}'
+
+  c) Ověř, že bucket je prázdný.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 4 — Stripe: Kontrola testovacích dat
+────────────────────────────────────────────────────────────────────────────────
+
+Pokud existují testovací zákazníci (customers) nebo platby v Stripe
+Dashboard, smaž je ručně ve Stripe Dashboard → Customers → Select All 
+→ Delete. Nebo přes Stripe CLI:
+  stripe customers list --limit 100 | jq -r '.data[].id' | \
+    xargs -I{} stripe customers delete {}
+
+Pokud Stripe běží v test mode, můžeš použít "Delete all test data"
+v Settings → Business Settings → Test Data.
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 5 — VPS: Vyčištění cache a dočasných souborů
+────────────────────────────────────────────────────────────────────────────────
+
+Na VPS (46.28.110.102) zkontroluj:
+  a) Žádné scan výsledky v /tmp/:
+     ssh root@46.28.110.102 "rm -f /tmp/aishield_* /tmp/scan_*"
+
+  b) Vyčisti Python __pycache__:
+     ssh root@46.28.110.102 "find /opt/aishield/ -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null"
+
+  c) Restartuj službu pro čistý stav:
+     ssh root@46.28.110.102 "systemctl restart aishield-api"
+
+  d) NEDOTÝKEJ SE složek:
+     /root/crypto-bot
+     /root/stock-bot
+     /opt/ares-bot
+     — tyto jsou AKTIVNÍ projekty, nesouvisí s AIshield!
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 6 — Frontend: Vymazání lokálního stavu
+────────────────────────────────────────────────────────────────────────────────
+
+V prohlížeči (Chrome DevTools → Application):
+  a) Local Storage → smazat vše pro aishield.cz
+  b) Session Storage → smazat vše
+  c) Cookies → smazat vše pro aishield.cz a supabase.co
+  d) Cache Storage → smazat Service Worker cache (pokud existuje)
+
+Nebo jednoduše: Ctrl+Shift+Delete → Vymazat data procházení pro aishield.cz
+
+────────────────────────────────────────────────────────────────────────────────
+KROK 7 — Verifikace (POVINNÁ)
+────────────────────────────────────────────────────────────────────────────────
+
+Po dokončení všech kroků ověř:
+
+  a) Auth uživatelé: 0
+     curl -s -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+       -H "apikey: $SERVICE_ROLE_KEY" \
+       "$SUPABASE_URL/auth/v1/admin/users" | python3 -c \
+       "import sys,json; d=json.load(sys.stdin); print(f'Users: {len(d.get(\"users\",[]))}')"
+
+  b) Tabulky: Všechny prázdné
+     Pro každou tabulku ověř COUNT(*) = 0 v Supabase SQL Editor:
+     SELECT 'companies' as tbl, COUNT(*) as cnt FROM companies
+     UNION ALL SELECT 'clients', COUNT(*) FROM clients
+     UNION ALL SELECT 'scans', COUNT(*) FROM scans
+     UNION ALL SELECT 'findings', COUNT(*) FROM findings
+     UNION ALL SELECT 'orders', COUNT(*) FROM orders
+     UNION ALL SELECT 'subscriptions', COUNT(*) FROM subscriptions
+     UNION ALL SELECT 'scan_results', COUNT(*) FROM scan_results
+     UNION ALL SELECT 'analytics_events', COUNT(*) FROM analytics_events;
+
+  c) Storage: 0 souborů v bucketu "documents"
+
+  d) API test: 
+     curl -s https://api.aishield.cz/api/admin/dashboard/stats \
+       -H "Authorization: Bearer $ADMIN_TOKEN" | python3 -m json.tool
+     → Všechny countery musí být 0.
+
+  e) Frontend test: Otevři https://aishield.cz v anonymním okně prohlížeče.
+     Zkus se registrovat s firemním emailem → musí projít bez chyby
+     "email je už registrovaný".
+
+================================================================================
+ANALÝZA: 10 CHYB V PŮVODNÍM PROMPTU A JEJICH OPRAVY
+================================================================================
+
+CHYBA 1 — Chybějící pořadí operací (auth vs. DB)
+  PŮVODNĚ: Kroky nespecifikovaly, že auth uživatelé MUSÍ být smazáni DŘÍVE 
+  než tabulky, protože některé tabulky mohou mít FK na auth.users(id).
+  OPRAVA: Krok 1 je explicitně Auth (auth.users smazání JAKO PRVNÍ),
+  teprve poté se mažou veřejné tabulky v Kroku 2.
+
+CHYBA 2 — Chybějící tabulka "scan_results"
+  PŮVODNĚ: V seznamu tabulek chyběla tabulka scan_results (oddělená od scans).
+  Kód v questionnaire.py explicitně dělá: supabase.table("scan_results")...
+  OPRAVA: Přidána do Vrstvy 6 před clients.
+
+CHYBA 3 — Chybějící tabulka "agency_batches"
+  PŮVODNĚ: Tabulka agency_batches nebyla v seznamu tabulek k mazání.
+  OPRAVA: Přidána do Vrstvy 8 jako samostatná položka.
+
+CHYBA 4 — Nezmíněný Supabase Storage bucket "documents"
+  PŮVODNĚ: Prompt neobsahoval krok pro vymazání PDF souborů ze Storage.
+  Přitom pdf_generator.py uploaduje do bucketu "documents".
+  OPRAVA: Přidán celý Krok 3 pro Supabase Storage cleanup.
+
+CHYBA 5 — Chybějící Stripe cleanup
+  PŮVODNĚ: Prompt nezmiňoval Stripe testovací data (customers, payments).
+  I když v DB se smažou orders, v Stripe Dashboard záznamy zůstanou.
+  OPRAVA: Přidán Krok 4 pro Stripe test data cleanup.
+
+CHYBA 6 — Chybějící varování o VPS aktivních projektech
+  PŮVODNĚ: Při čištění VPS hrozilo nechtěné smazání crypto-bot, stock-bot 
+  nebo ares-bot, protože prompt neobsahoval explicitní varování.
+  OPRAVA: Krok 5d explicitně říká NEDOTÝKEJ SE těchto složek.
+
+CHYBA 7 — Chybějící verifikační krok
+  PŮVODNĚ: Prompt nekontroloval výsledek — nebylo jak ověřit, že je 
+  skutečně vše smazáno. Mohlo se stát, že DELETE selže tiše.
+  OPRAVA: Přidán Krok 7 s konkrétními verifikačními příkazy a SQL dotazem.
+
+CHYBA 8 — Nezmíněné tabulky email_events, email_log, email_logs
+  PŮVODNĚ: Emailové logy (3 tabulky!) nebyly v seznamu. Záznamy o odeslaných 
+  emailech by zůstaly v DB a zkreslily by testování.
+  OPRAVA: Přidány do Vrstvy 3 společně s email_blacklist.
+
+CHYBA 9 — Chybějící krok pro frontend Local/Session Storage
+  PŮVODNĚ: Prompt řešil jen server-side data. Ale prohlížeč může mít 
+  cachované auth tokeny, session data a Supabase refresh tokeny.
+  Bez vymazání by se uživatel mohl ocitnout v nekonzistentním stavu.
+  OPRAVA: Přidán Krok 6 pro vymazání browser storage a cookies.
+
+CHYBA 10 — Chybějící tabulky orchestrator_log a data_access_log
+  PŮVODNĚ: Auditní a orchestrační logy nebyly zahrnuty. Obsahují záznamy
+  o přístupech a workflow akcích, které by měly být smazány pro čistý stav.
+  OPRAVA: Přidány do Vrstvy 1 mezi první mazané tabulky.
+
+================================================================================
+KONEC PROMPTU — Verze 2.0 (opravená)
+================================================================================

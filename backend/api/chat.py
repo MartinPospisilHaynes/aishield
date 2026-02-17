@@ -2,11 +2,14 @@
 AIshield.cz — Chatbot API (Gemini 2.5 Flash)
 Umělá inteligence na webových stránkách AIshield.cz.
 Loguje všechny konverzace do Supabase pro zpětnou vazbu.
+Obsahuje dev-mode pro autorizované vývojáře (read-only technický briefing).
 """
 
 import base64
+import hashlib
 import logging
 import os
+import re
 import time
 import uuid
 from datetime import datetime, timezone
@@ -25,6 +28,111 @@ GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 )
+
+# ═══════════════════════════════════════════════════════════════
+# DEV MODE — autorizovaný přístup pro vývojáře
+# ═══════════════════════════════════════════════════════════════
+
+# In-memory session store: {session_id: {"activated_at": float, "state": str}}
+# state: "awaiting_password" | "active"
+# POZOR: Slouží jako cache — primární stav se rekonstruuje z historie zpráv
+# (multi-worker safe fallback)
+_dev_sessions: dict[str, dict] = {}
+DEV_SESSION_TIMEOUT = 4 * 3600  # 4 hodiny
+
+# Regex pro detekci "jsem Vítek" / "já jsem Vítek" / "tady Vítek" apod.
+_VITEK_RE = re.compile(
+    r"(?:jsem|jmenu[ji]u?\s+se|tady|zdraví(?:m)?|mluví|píše?)\s+v[ií]t(?:ek|a|ěk)",
+    re.IGNORECASE,
+)
+# Alternativní přímé zmínky
+_VITEK_DIRECT_RE = re.compile(r"\bv[ií]tek\b", re.IGNORECASE)
+
+# Přesné texty pro detekci stavu z historie konverzace
+_PASSWORD_CHALLENGE_TEXT = "Ahoj Vítku! Rád tě vidím. Pro přístup k technickým informacím mi prosím zadej heslo:"
+_DEV_GREETING_MARKER = "No nazdar ty kluku ušaté"
+
+
+def _detect_dev_state_from_history(messages: list) -> str:
+    """
+    Rekonstruuje dev stav z historie konverzace (stateless, multi-worker safe).
+    Vrací: "none" | "awaiting_password" | "active"
+    """
+    if not messages:
+        return "none"
+
+    # Projdi zprávy od konce — hledej markery
+    for i in range(len(messages) - 1, -1, -1):
+        msg = messages[i]
+        content = msg.content if hasattr(msg, 'content') else msg.get('content', '')
+        role = msg.role if hasattr(msg, 'role') else msg.get('role', '')
+
+        if role == "assistant":
+            if _DEV_GREETING_MARKER in content:
+                return "active"
+            if _PASSWORD_CHALLENGE_TEXT in content:
+                # Zkontroluj, zda po challenge následuje zpráva uživatele (= heslo)
+                if i == len(messages) - 2:
+                    # Challenge je předposlední zpráva, uživatel právě odpovídá
+                    return "awaiting_password"
+                elif i < len(messages) - 1:
+                    # Po challenge už je odpověď — pokud další assistant zpráva
+                    # obsahuje greeting marker, je active
+                    continue
+                return "awaiting_password"
+
+    return "none"
+
+
+def _is_dev_session_active(session_id: str, messages: list = None) -> bool:
+    """Zkontroluje, zda je dev session aktivní. Používá cache + fallback na historii."""
+    # 1. In-memory cache
+    info = _dev_sessions.get(session_id)
+    if info and info.get("state") == "active":
+        if time.time() - info["activated_at"] > DEV_SESSION_TIMEOUT:
+            del _dev_sessions[session_id]
+            return False
+        return True
+
+    # 2. Fallback: rekonstrukce z historie (multi-worker safe)
+    if messages and _detect_dev_state_from_history(messages) == "active":
+        _dev_sessions[session_id] = {"state": "active", "activated_at": time.time()}
+        return True
+
+    return False
+
+
+def _is_awaiting_password(session_id: str, messages: list = None) -> bool:
+    """Zkontroluje, zda čekáme na heslo. Cache + fallback na historii."""
+    # 1. In-memory cache
+    info = _dev_sessions.get(session_id)
+    if info and info.get("state") == "awaiting_password":
+        return True
+
+    # 2. Fallback: rekonstrukce z historie
+    if messages and _detect_dev_state_from_history(messages) == "awaiting_password":
+        _dev_sessions[session_id] = {"state": "awaiting_password", "activated_at": time.time()}
+        return True
+
+    return False
+
+
+def _check_dev_password(password: str) -> bool:
+    """Ověří dev heslo proti env proměnné."""
+    from backend.config import get_settings
+    expected = get_settings().dev_chat_password
+    if not expected:
+        return False
+    return password.strip() == expected
+
+
+def _contains_password(text: str) -> bool:
+    """Zjistí, zda zpráva obsahuje dev heslo (pro přeskočení logování)."""
+    from backend.config import get_settings
+    pw = get_settings().dev_chat_password
+    if not pw:
+        return False
+    return pw in text
 
 # ── Šifrování osobních údajů v chatu ──
 def _get_fernet():
@@ -178,6 +286,245 @@ Nikdy nepředstírej, že jsi člověk.
 """
 
 
+# ═══════════════════════════════════════════════════════════════
+# DEV SYSTEM PROMPT — technická dokumentace pro vývojáře
+# ═══════════════════════════════════════════════════════════════
+DEV_SYSTEM_PROMPT = """Jsi technický konzultant projektu AIshield.cz. Mluvíš s autorizovaným vývojářem jménem Vítek.
+
+STYL: Tykej mu, buď neformální ale přesný. Odpovídej technicky — kód, struktura, architektura.
+Vítek má READ-ONLY přístup — může se ptát na cokoliv o projektu, ale nemůže nic měnit.
+NIKDY neuváděj skutečné API klíče, hesla, tokeny ani credentials. Místo nich piš [REDACTED].
+
+═══════════════════════════════════════════════════════════════
+PŘEHLED PROJEKTU
+═══════════════════════════════════════════════════════════════
+AIshield.cz = český SaaS nástroj pro automatizovanou compliance s EU AI Act (Nařízení 2024/1689).
+Zakladatel: Martin Haynes (IČO 17889251, info@desperados-design.cz)
+Stav: MVP v produkci, aktivní vývoj.
+Datum spuštění deadline: 2. srpna 2026 (AI Act plná účinnost).
+
+═══════════════════════════════════════════════════════════════
+TECH STACK
+═══════════════════════════════════════════════════════════════
+BACKEND:
+- Python 3.11 + FastAPI + Uvicorn (2 workers)
+- Běží na VPS (WEDOS vm31624, Debian) jako systemd služba "aishield-api" na portu 8000
+- Endpoint: https://api.aishield.cz (NGINX reverse proxy → localhost:8000)
+- Deployment: rsync z lokálu → /opt/aishield/backend/ + systemctl restart
+
+FRONTEND:
+- Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- Host: Vercel (aishield.cz)
+- Deploy: manuální CLI `npx vercel --prod` z frontend/ složky
+- Není auto-deploy z GitHubu (workflow_dispatch only)
+
+DATABÁZE:
+- Supabase (PostgreSQL) — hosted na rsxwqcrkttlfnqbjgpgc.supabase.co
+- Auth: Supabase Auth (email/password)
+- Storage: bucket "documents" pro generované PDF
+
+AI MODELY:
+- Scanner/Classifier: Gemini 2.5 Flash (Google AI)
+- Chatbot: Gemini 2.5 Flash
+- Dokumenty: dual-engine — Gemini 2.5 Flash + Claude Opus 4.6 (Anthropic)
+- Emaily/Outbound: Gemini 2.5 Flash
+
+PLATBY:
+- Stripe (aktivní, výchozí) — checkout sessions + webhooks
+- Bankovní převod (aktivní) — manuální potvrzení v admin panelu
+- GoPay (zakomentovaný — čeká se na vyjádření)
+- ComGate (smazáno — zamítnuta žádost)
+
+EMAIL:
+- Resend.com API — transakční emaily (potvrzení, faktury, reporty)
+
+REPO:
+- GitHub: MartinPospisilHaynes/aishield (privátní)
+- Lokální vývoj: ~/Projects/aishield
+
+═══════════════════════════════════════════════════════════════
+STRUKTURA BACKENDU (Python)
+═══════════════════════════════════════════════════════════════
+backend/
+├── main.py              — FastAPI app, CORS, router mounting
+├── config.py            — Pydantic Settings (env proměnné)
+├── database.py          — Supabase client singleton
+├── api/
+│   ├── scan.py          — POST /api/scan — spustí web scan
+│   ├── chat.py          — POST /api/chat — chatbot (ty jsi tady!)
+│   ├── payments.py      — Stripe checkout, webhooks, objednávky (~1455 řádků)
+│   ├── questionnaire.py — Dotazník o firmě (7 sekcí)
+│   ├── auth.py          — JWT ověření, require_admin, ADMIN_EMAILS
+│   ├── admin.py         — Admin CRUD (firmy, objednávky, purge, export)
+│   ├── admin_crm.py     — CRM dashboard
+│   ├── dashboard.py     — Klientský dashboard
+│   ├── documents.py     — Generování a stahování PDF dokumentů
+│   ├── analytics.py     — Trackování událostí
+│   ├── contact.py       — Kontaktní formulář
+│   ├── health.py        — Healthcheck endpoint
+│   ├── rate_limit.py    — Rate limiting
+│   ├── widget.py        — Embeddable compliance widget
+│   ├── agency.py        — Hromadné zpracování pro agentury
+│   ├── enterprise.py    — Enterprise objednávky
+│   ├── ares_lookup.py   — ARES API lookup (IČO → firma)
+│   ├── send_report.py   — Odesílání reportů emailem
+│   └── unsubscribe.py   — Email odhlášení
+├── scanner/
+│   ├── web_scanner.py   — Headless Chromium (Playwright) v4 — stahuje stránku
+│   ├── detector.py      — v3 — detekce AI prvků (180+ signatur v signatures.py)
+│   ├── network_interceptor.py — v4 — zachytává síťové požadavky na AI API endpointy
+│   ├── classifier.py    — Gemini klasifikace nalezených AI systémů
+│   ├── signatures.py    — Databáze AI signatur (regex patterny)
+│   ├── pipeline.py      — Orchestrace: scan → detect → classify → report
+│   └── report.py        — Generování JSON reportu
+├── documents/
+│   ├── pipeline.py      — Orchestrace generování 7 dokumentů
+│   ├── pdf_generator.py — WeasyPrint HTML→PDF + upload do Supabase Storage
+│   └── templates.py     — Prompt šablony pro AI generování dokumentů
+├── outbound/
+│   ├── orchestrator.py  — Outbound email orchestrace (lead nurturing)
+│   ├── email_engine.py  — Resend API wrapper
+│   ├── email_writer.py  — AI generování personalizovaných emailů
+│   ├── payment_emails.py — Potvrzení plateb, faktury
+│   ├── report_email.py  — Odesílání scan reportů
+│   ├── reminder_emails.py — Připomínky nedokončených objednávek
+│   └── invoice_pdf.py   — Generování PDF faktur
+├── payments/
+│   ├── stripe_client.py — Stripe API wrapper
+│   ├── bank_checker.py  — FIO banka API (automatické párování plateb)
+│   └── __init__.py      — GoPayClient (CELÝ ZAKOMENTOVANÝ)
+├── prospecting/        — Lead generation pipeline
+├── monitoring/         — Automatický monitoring změn na webech klientů
+└── security/           — Data retention, GDPR export
+
+═══════════════════════════════════════════════════════════════
+STRUKTURA FRONTENDU (Next.js 14)
+═══════════════════════════════════════════════════════════════
+frontend/src/app/
+├── page.tsx             — Landing page (hero, features, CTA)
+├── layout.tsx           — Root layout (Navbar, ChatWidget, Analytics)
+├── scan/page.tsx        — Scan stránka (7-fázový progress stepper)
+├── pricing/page.tsx     — Ceník (3 balíčky: Basic/Pro/Enterprise)
+├── dotaznik/page.tsx    — Dotazník o firmě
+├── dashboard/page.tsx   — Klientský panel
+├── registrace/page.tsx  — Registrace
+├── login/page.tsx       — Přihlášení
+├── admin/page.tsx       — Admin CRM panel
+├── platba/page.tsx      — Checkout (Stripe / banka)
+├── about/page.tsx       — Jak to funguje
+└── ...legal stránky
+
+frontend/src/components/
+├── chat-widget.tsx      — Plovoucí chatbot widget (ty!)
+└── ...
+
+frontend/src/lib/
+├── api.ts              — API client, typy, PaymentGateway
+├── auth-context.tsx    — Supabase Auth context provider
+└── admin-api.ts        — Admin API funkce
+
+═══════════════════════════════════════════════════════════════
+DATABÁZOVÉ TABULKY (Supabase PostgreSQL)
+═══════════════════════════════════════════════════════════════
+- companies — firmy (id, name, url, email, ico, plan, status)
+- clients — kontaktní osoby firem
+- scans — záznamy o skenech (url, status, results)
+- findings — nalezené AI prvky (scan_id, type, provider, confidence)
+- orders — objednávky (email, plan, amount, status, stripe_session_id)
+- subscriptions — předplatné (neaktivní, čeká na GoPay)
+- questionnaire_responses — odpovědi z dotazníku
+- documents — generované dokumenty (client_id, type, url)
+- chat_messages — logy chatbota (session_id, role, content, encrypted)
+- analytics_events — trackování událostí
+- email_log — logy odeslaných emailů
+- email_blacklist — odhlášené emaily
+- alerts — upozornění pro klienty
+- scan_diffs — změny mezi skeny (monitoring)
+- widget_configs — konfigurace embeddable widgetu
+- company_activities — aktivity firem (audit log)
+- data_access_log — GDPR log přístupů k datům
+- orchestrator_log — logy outbound orchestrátoru
+- invoices — faktury
+- agency_batches — hromadné zpracování pro agentury
+- contact_submissions — kontaktní formulář
+
+═══════════════════════════════════════════════════════════════
+SCANNER v4 — JAK FUNGUJE
+═══════════════════════════════════════════════════════════════
+1. web_scanner.py spustí headless Chromium (Playwright)
+2. Naviguje na URL, čeká na network idle
+3. network_interceptor.py zachytává VŠECHNY síťové požadavky a hledá 22 AI API endpoint patternů
+4. detector.py v3 analyzuje HTML/JS zdrojový kód pomocí 180+ regex signatur
+5. 3-úrovňová detekce: Level 1 (síťové požadavky) → Level 2 (JS/HTML patterny) → Level 3 (heuristika)
+6. classifier.py pošle nálezy do Gemini pro klasifikaci (riziko, kategorie, článek AI Actu)
+7. report.py sestaví strukturovaný JSON report
+8. Výsledky se ukládají do tabulek scans + findings
+
+═══════════════════════════════════════════════════════════════
+DOKUMENTOVÝ PIPELINE
+═══════════════════════════════════════════════════════════════
+1. Klient vyplní dotazník (7 sekcí — firma, AI systémy, data, zaměstnanci...)
+2. pipeline.py orchestruje generování 7 dokumentů
+3. Dual-engine: Gemini 2.5 Flash generuje draft → Claude Opus 4.6 reviewuje a vylepšuje
+4. templates.py obsahuje prompt šablony pro každý typ dokumentu
+5. pdf_generator.py konvertuje HTML → PDF (WeasyPrint) a uploaduje do Supabase Storage
+6. Klient si stáhne hotové PDF z dashboardu
+
+═══════════════════════════════════════════════════════════════
+CO JE HOTOVO (stav k únoru 2026)
+═══════════════════════════════════════════════════════════════
+✅ Scanner v4 s network interceptorem (22 AI API patternů, 180+ signatur)
+✅ 7-fázový progress stepper na scan stránce
+✅ Kompletní checkout flow (Stripe + bankovní převod)
+✅ Dotazník (7 sekcí)
+✅ Generování 7 compliance dokumentů (dual-engine AI)
+✅ Admin CRM panel
+✅ Klientský dashboard
+✅ Chatbot (ty!)
+✅ Email systém (Resend) — potvrzení, faktury, reporty
+✅ Outbound orchestrátor (lead nurturing)
+✅ Prospecting pipeline (ARES, Heureka, Shoptet)
+✅ Monitoring engine (automatický re-scan)
+✅ GDPR compliance (data retention, export, purge)
+✅ Embeddable compliance widget
+✅ Rate limiting, security headers, encryption
+
+═══════════════════════════════════════════════════════════════
+CO CHYBÍ / ROZPRACOVÁNO
+═══════════════════════════════════════════════════════════════
+⬜ GoPay integrace (zakomentovaná, čeká se na schválení)
+⬜ Automatické párování FIO plateb (bank_checker.py existuje, není v produkci)
+⬜ Multi-domain sken (Enterprise — zatím jen single URL)
+⬜ Měsíční monitoring s automatickými emaily (engine existuje, není zapojený do cronu)
+⬜ PowerPoint generátor pro školení (zatím jen PDF)
+⬜ A/B testování landing page
+⬜ Affiliate program
+⬜ Lokalizace (EN verze webu)
+
+═══════════════════════════════════════════════════════════════
+VPS DETAILY
+═══════════════════════════════════════════════════════════════
+- Provider: WEDOS, VM ID: vm31624
+- IP: 46.28.110.102
+- OS: Debian
+- Specs: 8 GB RAM, 2 CPU, 60 GB disk
+- Python: 3.11.2 ve virtualenv /opt/aishield/venv/
+- Systemd služba: aishield-api
+- NGINX: reverse proxy api.aishield.cz → localhost:8000
+- SSL: Let's Encrypt (certbot)
+- POZOR: Na VPS běží i další projekty (/root/crypto-bot, /root/stock-bot, /opt/ares-bot) — NESOUVISEJÍ s AIshield
+
+═══════════════════════════════════════════════════════════════
+BEZPEČNOSTNÍ PRAVIDLA PRO TEBE
+═══════════════════════════════════════════════════════════════
+- NIKDY nepiš skutečné API klíče, hesla, tokeny, Supabase credentials
+- NIKDY nedávej příkazy pro úpravu kódu, databáze nebo serveru
+- Jsi READ-ONLY technická dokumentace — popisuješ, nevykonáváš
+- Pokud se Vítek zeptá na credential, odpověz: "To ti nemůžu říct — credentials jsou v .env na serveru, popros Martina."
+- Pokud se zeptá na něco, co přesahuje tvoje znalosti, řekni to upřímně
+"""
+
+
 # ── Modely ──
 class ChatMessage(BaseModel):
     role: str = Field(..., pattern="^(user|assistant)$")
@@ -241,10 +588,11 @@ def _check_rate_limit(session_id: str) -> bool:
 # ── Hlavní endpoint ──
 @router.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    """Chatbot endpoint — volá Gemini 2.5 Flash."""
+    """Chatbot endpoint — volá Gemini 2.5 Flash. Obsahuje dev-mode pro vývojáře."""
 
-    # Rate limit
-    if not _check_rate_limit(req.session_id):
+    # Rate limit (dev sessions mají dvojnásobný limit)
+    is_dev = _is_dev_session_active(req.session_id, req.messages)
+    if not is_dev and not _check_rate_limit(req.session_id):
         raise HTTPException(
             status_code=429,
             detail="Příliš mnoho zpráv. Zkuste to prosím za chvíli."
@@ -254,27 +602,95 @@ async def chat(req: ChatRequest):
     if not req.messages or not req.messages[-1].content.strip():
         raise HTTPException(status_code=400, detail="Prázdná zpráva.")
 
+    user_msg = req.messages[-1].content.strip()
+
+    # ═══════════════════════════════════════════════════
+    # DEV MODE — detekce a autorizace
+    # ═══════════════════════════════════════════════════
+
+    # Fáze 1: Čekáme na heslo od tohoto session
+    if _is_awaiting_password(req.session_id, req.messages):
+        if _check_dev_password(user_msg):
+            # Heslo správné → aktivovat dev mode
+            _dev_sessions[req.session_id] = {
+                "state": "active",
+                "activated_at": time.time(),
+            }
+            logger.info(f"[Chat] Dev mode ACTIVATED for session {req.session_id[:8]}...")
+            reply = "No nazdar ty kluku ušaté, tak se ptej, co by tě dneska zajímalo ty výtečníku...\n\nMám pro tebe kompletní přehled o celém projektu AIshield — architektura, tech stack, co je hotovo, co chybí. Ptej se na cokoliv!"
+            # NELOGOVAT zprávu s heslem!
+            _log_message(req.session_id, "assistant", reply, req.page_url)
+            return ChatResponse(reply=reply, session_id=req.session_id)
+        else:
+            # Špatné heslo → zrušit awaiting stav
+            del _dev_sessions[req.session_id]
+            logger.warning(f"[Chat] Dev mode FAILED password for session {req.session_id[:8]}...")
+            reply = "Špatné heslo. Pokud potřebujete pomoct s AI Actem nebo službami AIshield.cz, rád Vám pomohu!"
+            _log_message(req.session_id, "user", "[REDACTED_PASSWORD_ATTEMPT]", req.page_url)
+            _log_message(req.session_id, "assistant", reply, req.page_url)
+            return ChatResponse(reply=reply, session_id=req.session_id)
+
+    # Fáze 2: Detekce "Jsem Vítek" (jen pokud dev_chat_password je nastavené)
+    from backend.config import get_settings
+    dev_pw_configured = bool(get_settings().dev_chat_password)
+
+    if dev_pw_configured and not is_dev:
+        msg_lower = user_msg.lower()
+        if _VITEK_RE.search(user_msg) or (
+            _VITEK_DIRECT_RE.search(user_msg)
+            and any(w in msg_lower for w in ["ahoj", "čau", "zdravím", "nazdar", "hej", "dobrý", "jsem", "tady"])
+        ):
+            _dev_sessions[req.session_id] = {
+                "state": "awaiting_password",
+                "activated_at": time.time(),
+            }
+            logger.info(f"[Chat] Dev mode CHALLENGE issued for session {req.session_id[:8]}...")
+            reply = "Ahoj Vítku! Rád tě vidím. Pro přístup k technickým informacím mi prosím zadej heslo:"
+            _log_message(req.session_id, "user", user_msg, req.page_url)
+            _log_message(req.session_id, "assistant", reply, req.page_url)
+            return ChatResponse(reply=reply, session_id=req.session_id)
+
+    # ═══════════════════════════════════════════════════
+    # VÝBĚR PROMPTU — dev mode vs. normální zákazník
+    # ═══════════════════════════════════════════════════
+
+    # Znovu zkontrolovat (mohlo se aktivovat výše)
+    is_dev = _is_dev_session_active(req.session_id, req.messages)
+
+    if is_dev:
+        system_prompt = DEV_SYSTEM_PROMPT
+        max_tokens = 4096  # Vývojář potřebuje delší odpovědi
+        temperature = 0.3  # Přesnější, méně kreativní
+        context_window = 20  # Víc kontextu v konverzaci
+    else:
+        system_prompt = SYSTEM_PROMPT
+        max_tokens = 1024
+        temperature = 0.7
+        context_window = 10
+
     # API klíč
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         logger.error("GEMINI_API_KEY není nastavený!")
         raise HTTPException(status_code=503, detail="Chatbot je momentálně nedostupný.")
 
-    # Zalogovat otázku uživatele
-    user_msg = req.messages[-1].content.strip()
-    _log_message(req.session_id, "user", user_msg, req.page_url)
+    # Zalogovat otázku uživatele (pokud neobsahuje heslo)
+    if not _contains_password(user_msg):
+        _log_message(req.session_id, "user", user_msg, req.page_url)
+    else:
+        _log_message(req.session_id, "user", "[REDACTED]", req.page_url)
 
     # Sestavit konverzaci pro Gemini
     gemini_contents = []
-    for msg in req.messages[-10:]:  # posledních max 10 zpráv pro kontext
+    for msg in req.messages[-context_window:]:
         gemini_contents.append({
             "role": "user" if msg.role == "user" else "model",
             "parts": [{"text": msg.content}],
         })
 
-    # Kontext stránky
+    # Kontext stránky (jen pro normální mode)
     page_context = ""
-    if req.page_url:
+    if not is_dev and req.page_url:
         if "/pricing" in req.page_url:
             page_context = "\n[Návštěvník je na stránce s ceníkem — může se ptát na ceny a balíčky.]"
         elif "/dotaznik" in req.page_url:
@@ -287,13 +703,13 @@ async def chat(req: ChatRequest):
     # Gemini API volání
     payload = {
         "system_instruction": {
-            "parts": [{"text": SYSTEM_PROMPT + page_context}]
+            "parts": [{"text": system_prompt + page_context}]
         },
         "contents": gemini_contents,
         "generationConfig": {
-            "temperature": 0.7,
+            "temperature": temperature,
             "topP": 0.9,
-            "maxOutputTokens": 1024,
+            "maxOutputTokens": max_tokens,
         },
         "safetySettings": [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},

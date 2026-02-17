@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     # ── Admin ──
     admin_password: str = ""  # Admin heslo pro CRM login (nastavte v .env jako ADMIN_PASSWORD)
 
+    # ── Dev Chat Mode ──
+    dev_chat_password: str = ""  # Heslo pro vývojářský režim chatbota (DEV_CHAT_PASSWORD v .env)
+
     # ── FIO Banka API (pro automatické párování plateb) ──
     fio_api_token: str = ""  # Token z internetového bankovnictví FIO → Nastavení → API
 
