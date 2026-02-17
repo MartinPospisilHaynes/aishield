@@ -384,11 +384,13 @@ def build_payment_confirmation_email(
     gateway: str,
 ) -> str:
     """
-    Build branded HTML email confirming online payment (Stripe/GoPay/Comgate).
+    Build branded HTML email confirming online payment (Stripe).
     Sent automatically after successful online payment.
     """
     plan_name = PLAN_NAMES.get(plan, plan.upper())
-    gateway_name = {"stripe": "Stripe", "gopay": "GoPay", "comgate": "Comgate"}.get(gateway, gateway)
+    gateway_name = {"stripe": "Stripe"}.get(gateway, gateway)
+    # GOPAY: "gopay": "GoPay" — zakomentováno (čekáme na vyjádření)
+    # COMGATE: odstraněno (žádost zamítnuta)
 
     content = f"""
     <!-- Title -->

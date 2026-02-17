@@ -202,16 +202,7 @@ export default function TermsPage() {
                                 <li>
                                     <strong className="text-white">Online platba</strong>{" "}
                                     — platební kartou (Visa, Mastercard), Apple Pay nebo Google Pay
-                                    prostřednictvím zabezpečených platebních bran{" "}
-                                    <a
-                                        href="https://www.gopay.com"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-neon-fuchsia hover:underline"
-                                    >
-                                        GoPay
-                                    </a>
-                                    ,{" "}
+                                    prostřednictvím zabezpečené platební brány{" "}
                                     <a
                                         href="https://stripe.com"
                                         target="_blank"
@@ -219,15 +210,6 @@ export default function TermsPage() {
                                         className="text-neon-fuchsia hover:underline"
                                     >
                                         Stripe
-                                    </a>
-                                    {" "}nebo{" "}
-                                    <a
-                                        href="https://www.comgate.cz"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-neon-fuchsia hover:underline"
-                                    >
-                                        Comgate
                                     </a>
                                     . Uživatel si zvolí preferovanou platební bránu při objednávce.
                                 </li>
@@ -634,7 +616,7 @@ export default function TermsPage() {
                             <p>
                                 14.5. Monitoring je hrazen měsíčně předem formou
                                 automatické opakované platby přes platební bránu
-                                GoPay (případně Stripe či Comgate), nebo ročně předem s uvedenou slevou. Při
+                                Stripe, nebo ročně předem s uvedenou slevou. Při
                                 roční platbě se minimální doba trvání prodlužuje
                                 na 12 měsíců.
                             </p>

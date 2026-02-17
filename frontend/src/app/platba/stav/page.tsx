@@ -9,7 +9,7 @@ import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-type PaymentGateway = "gopay" | "stripe" | "comgate" | "bank_transfer";
+type PaymentGateway = "stripe" | "bank_transfer";
 
 type PaymentStatus = {
     payment_id: string;
@@ -20,16 +20,14 @@ type PaymentStatus = {
 };
 
 const GATEWAY_NAMES: Record<PaymentGateway, string> = {
-    gopay: "GoPay",
     stripe: "Stripe",
-    comgate: "Comgate",
     bank_transfer: "Bankovní převod",
 };
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
     const { track } = useAnalytics();
-    const gateway = (searchParams.get("gateway") || "gopay") as PaymentGateway;
+    const gateway = (searchParams.get("gateway") || "stripe") as PaymentGateway;
     const paymentId = searchParams.get("id") || searchParams.get("session_id");
     const isSubscription = searchParams.get("type") === "subscription";
     const [status, setStatus] = useState<PaymentStatus | null>(null);

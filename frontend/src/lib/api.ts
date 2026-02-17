@@ -345,9 +345,9 @@ export async function getCombinedReport(
     return res.json();
 }
 
-// ── Platby (multi-gateway: GoPay, Stripe, Comgate, Bankovní převod) ──
+// ── Platby (Stripe + Bankovní převod) ──
 
-export type PaymentGateway = "gopay" | "stripe" | "comgate" | "bank_transfer";
+export type PaymentGateway = "stripe" | "bank_transfer";
 
 export interface CheckoutResponse {
     payment_id: string;
@@ -388,7 +388,7 @@ export async function getAvailableGateways(): Promise<GatewayInfo[]> {
 export async function createCheckout(
     plan: string,
     email: string,
-    gateway: PaymentGateway = "gopay",
+    gateway: PaymentGateway = "stripe",
     billing?: {
         company?: string;
         ico?: string;
@@ -419,7 +419,7 @@ export async function createCheckout(
 export async function createGuestCheckout(
     plan: string,
     email?: string,
-    gateway: PaymentGateway = "gopay",
+    gateway: PaymentGateway = "stripe",
 ): Promise<CheckoutResponse> {
     const res = await fetch(`${API_URL}/api/payments/checkout-guest`, {
         method: "POST",
@@ -440,7 +440,7 @@ export async function createGuestCheckout(
  */
 export async function getPaymentStatus(
     paymentId: string,
-    gateway: PaymentGateway = "gopay",
+    gateway: PaymentGateway = "stripe",
 ): Promise<PaymentStatusResponse> {
     const res = await fetch(`${API_URL}/api/payments/status/${paymentId}?gateway=${gateway}`);
 
@@ -482,7 +482,7 @@ export async function getMonitoringEligibility(): Promise<MonitoringEligibility>
 }
 
 /**
- * Vytvoří monitoring subscription v GoPay a vrátí URL pro přesměrování.
+ * Vytvoří monitoring subscription a vrátí URL pro přesměrování.
  */
 export async function createSubscription(
     plan: string,

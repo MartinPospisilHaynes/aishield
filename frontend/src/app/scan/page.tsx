@@ -392,13 +392,12 @@ function ScanPageInner() {
                                 return (
                                     <div
                                         key={phase.id}
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-500 ${
-                                            isCurrent
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-500 ${isCurrent
                                                 ? "bg-blue-50/50"
                                                 : isCompleted
                                                     ? "opacity-60"
                                                     : "opacity-30"
-                                        }`}
+                                            }`}
                                     >
                                         {/* Ikona stavu */}
                                         <div className="w-6 h-6 flex items-center justify-center shrink-0">
@@ -412,13 +411,12 @@ function ScanPageInner() {
                                         </div>
 
                                         {/* Label */}
-                                        <span className={`text-sm ${
-                                            isCurrent
+                                        <span className={`text-sm ${isCurrent
                                                 ? "font-medium text-blue-900"
                                                 : isCompleted
                                                     ? "text-gray-500 line-through"
                                                     : "text-gray-400"
-                                        }`}>
+                                            }`}>
                                             {phase.icon} {phase.label}
                                         </span>
                                     </div>

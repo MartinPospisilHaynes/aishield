@@ -37,7 +37,7 @@ export default function OpakovvanePlatbyPage() {
                                 Při aktivaci monitoringu souhlasíte s&nbsp;pravidelným automatickým
                                 strhováním platby z&nbsp;vaší platební karty jednou měsíčně.
                                 Platba se provádí přes zabezpečenou platební bránu{" "}
-                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay</a>.
+                                <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">Stripe</a>.
                             </p>
                         </div>
                     </div>
@@ -108,7 +108,7 @@ export default function OpakovvanePlatbyPage() {
                             <ul className="list-disc list-inside space-y-1.5 ml-2">
                                 <li><strong className="text-white">Frekvence strhávání:</strong> 1× měsíčně, vždy ve stejný den jako první platba</li>
                                 <li><strong className="text-white">Platební metoda:</strong> Platební karta (Visa, Mastercard, Apple Pay, Google Pay)</li>
-                                <li><strong className="text-white">Zpracovatel plateb:</strong> GoPay s.r.o. — certifikovaná platební brána s PCI DSS</li>
+                                <li><strong className="text-white">Zpracovatel plateb:</strong> Stripe — certifikovaná platební brána s PCI DSS</li>
                                 <li><strong className="text-white">Měna:</strong> CZK (české koruny)</li>
                             </ul>
                             <p>
@@ -205,7 +205,7 @@ export default function OpakovvanePlatbyPage() {
                             </p>
                             <p>
                                 <strong className="text-white">Platební brána:</strong>{" "}
-                                <a href="https://www.gopay.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">GoPay s.r.o.</a>
+                                <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-neon-fuchsia hover:underline">Stripe</a>
                             </p>
                         </div>
                     </div>

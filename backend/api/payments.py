@@ -1,7 +1,8 @@
 """
 AIshield.cz — Payments API
-Multi-gateway: GoPay, Stripe, Comgate.
-Endpointy pro jednorázové platby, subscriptions (opakované platby), refundace.
+Multi-gateway: Stripe + bankovní převod.
+GoPay — zakomentováno (čekáme na vyjádření).
+Comgate — odstraněno (žádost zamítnuta).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -14,9 +15,11 @@ from typing import Literal
 
 from backend.config import get_settings
 from backend.database import get_supabase
-from backend.payments import get_gopay, PaymentState, RecurrenceCycle
+# GOPAY — zakomentováno (čekáme na vyjádření)
+# from backend.payments import get_gopay, PaymentState, RecurrenceCycle
 from backend.payments.stripe_client import get_stripe
-from backend.payments.comgate_client import get_comgate
+# COMGATE — odstraněno (žádost zamítnuta)
+# from backend.payments.comgate_client import get_comgate
 from backend.api.auth import AuthUser, get_current_user, get_optional_user
 from backend.outbound.payment_emails import (
     build_bank_transfer_email,
@@ -56,23 +59,23 @@ PLANS = {
     },
 }
 
-# ── Monitoring předplatné (měsíční) ──
-SUBSCRIPTION_PLANS = {
-    "monitoring": {
-        "name": "Monitoring",
-        "description": "1× měsíčně automatický sken webu + compliance report",
-        "price": 299,  # CZK/měsíc
-        "cycle": RecurrenceCycle.MONTH,
-        "period": 1,
-    },
-    "monitoring_plus": {
-        "name": "Monitoring Plus",
-        "description": "2× měsíčně sken + implementace změn + prioritní podpora",
-        "price": 599,  # CZK/měsíc
-        "cycle": RecurrenceCycle.MONTH,
-        "period": 1,
-    },
-}
+# ── Monitoring předplatné (měsíční) — ZAKOMENTOVÁNO (vyžaduje GoPay) ──
+# SUBSCRIPTION_PLANS = {
+#     "monitoring": {
+#         "name": "Monitoring",
+#         "description": "1× měsíčně automatický sken webu + compliance report",
+#         "price": 299,  # CZK/měsíc
+#         "cycle": RecurrenceCycle.MONTH,
+#         "period": 1,
+#     },
+#     "monitoring_plus": {
+#         "name": "Monitoring Plus",
+#         "description": "2× měsíčně sken + implementace změn + prioritní podpora",
+#         "price": 599,  # CZK/měsíc
+#         "cycle": RecurrenceCycle.MONTH,
+#         "period": 1,
+#     },
+# }
 
 
 class BillingInfo(BaseModel):
@@ -91,16 +94,16 @@ class CheckoutRequest(BaseModel):
     """Request pro vytvoření platby."""
     plan: str  # "basic" nebo "pro"
     email: str
-    gateway: Literal["gopay", "stripe", "comgate", "bank_transfer"] = "stripe"
+    gateway: Literal["stripe", "bank_transfer"] = "stripe"
     billing: BillingInfo | None = None
 
 
 class CheckoutResponse(BaseModel):
     """Response s URL na platební bránu."""
-    payment_id: str  # Může být int (GoPay) nebo string (Stripe/Comgate)
+    payment_id: str  # Stripe session ID nebo interní ID
     gateway_url: str
     order_number: str
-    gateway: str = "gopay"
+    gateway: str = "stripe"
 
 
 class SubscriptionRequest(BaseModel):
@@ -128,9 +131,8 @@ class RefundRequest(BaseModel):
 
 # Dostupné brány a jejich popisky
 AVAILABLE_GATEWAYS = {
-    "gopay": "GoPay",
     "stripe": "Stripe",
-    "comgate": "Comgate",
+    # "gopay": "GoPay",  # ZAKOMENTOVÁNO — čekáme na vyjádření
 }
 
 
@@ -154,7 +156,7 @@ async def _create_payment_via_gateway(
         if not stripe_client.is_configured:
             raise HTTPException(
                 status_code=503,
-                detail="Stripe platby nejsou momentálně nakonfigurované. Použijte GoPay nebo Comgate.",
+                detail="Stripe platby nejsou momentálně nakonfigurované. Použijte bankovní převod.",
             )
         payment = await stripe_client.create_payment(
             amount=amount,
@@ -171,45 +173,29 @@ async def _create_payment_via_gateway(
             "gateway": "stripe",
         }
 
-    elif gateway == "comgate":
-        comgate_client = get_comgate()
-        if not comgate_client.is_configured:
-            raise HTTPException(
-                status_code=503,
-                detail="Comgate platby nejsou momentálně nakonfigurované. Použijte GoPay nebo Stripe.",
-            )
-        payment = await comgate_client.create_payment(
-            amount=amount,
-            order_number=order_number,
-            description=description,
-            email=email,
-            return_url=return_url,
-            notify_url=notify_url,
-        )
-        return {
-            "payment_id": str(payment.payment_id),
-            "gateway_url": payment.gateway_url,
-            "state": payment.state,
-            "gateway": "comgate",
-        }
+    # GOPAY — zakomentováno (čekáme na vyjádření)
+    # else:
+    #     gopay = get_gopay()
+    #     payment = await gopay.create_payment(
+    #         amount=amount,
+    #         order_number=order_number,
+    #         description=description,
+    #         email=email,
+    #         return_url=return_url,
+    #         notify_url=notify_url,
+    #     )
+    #     return {
+    #         "payment_id": str(payment.payment_id),
+    #         "gateway_url": payment.gateway_url,
+    #         "state": payment.state,
+    #         "gateway": "gopay",
+    #     }
 
     else:
-        # Default: GoPay
-        gopay = get_gopay()
-        payment = await gopay.create_payment(
-            amount=amount,
-            order_number=order_number,
-            description=description,
-            email=email,
-            return_url=return_url,
-            notify_url=notify_url,
+        raise HTTPException(
+            status_code=400,
+            detail=f"Nepodporovaná platební brána: {gateway}. Použijte 'stripe' nebo 'bank_transfer'.",
         )
-        return {
-            "payment_id": str(payment.payment_id),
-            "gateway_url": payment.gateway_url,
-            "state": payment.state,
-            "gateway": "gopay",
-        }
 
 
 @router.get("/payment-qr/{variable_symbol}.png")
@@ -239,14 +225,14 @@ async def list_available_gateways():
     settings = get_settings()
     gateways = []
 
-    # GoPay — vždy dostupný (sandbox/production)
-    gateways.append({
-        "id": "gopay",
-        "name": "GoPay",
-        "description": "Karty, bankovní převod, Apple Pay, Google Pay",
-        "available": True,
-        "default": settings.default_payment_gateway == "gopay",
-    })
+    # GOPAY — zakomentováno (čekáme na vyjádření)
+    # gateways.append({
+    #     "id": "gopay",
+    #     "name": "GoPay",
+    #     "description": "Karty, bankovní převod, Apple Pay, Google Pay",
+    #     "available": True,
+    #     "default": settings.default_payment_gateway == "gopay",
+    # })
 
     # Stripe
     stripe_client = get_stripe()
@@ -258,15 +244,7 @@ async def list_available_gateways():
         "default": settings.default_payment_gateway == "stripe",
     })
 
-    # Comgate
-    comgate_client = get_comgate()
-    gateways.append({
-        "id": "comgate",
-        "name": "Comgate",
-        "description": "Karty, bankovní převod, Apple Pay, Google Pay",
-        "available": comgate_client.is_configured,
-        "default": settings.default_payment_gateway == "comgate",
-    })
+    # COMGATE — odstraněno (žádost zamítnuta)
 
     # Bankovní převod — vždy dostupný
     gateways.append({
@@ -283,7 +261,7 @@ async def list_available_gateways():
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_current_user)):
     """
-    Vytvoří jednorázovou platbu přes zvolenou platební bránu (GoPay/Stripe/Comgate)
+    Vytvoří jednorázovou platbu přes Stripe
     nebo objednávku s bankovním převodem.
     Vyžaduje přihlášení.
     """
@@ -352,17 +330,17 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
             gateway="bank_transfer",
         )
 
-    # ── Online platba (Stripe/GoPay/Comgate) ──
-    # Return URL - pro každou bránu jiný formát
+    # ── Online platba (Stripe) ──
+    # Return URL
     if gateway == "stripe":
         return_url = f"{frontend_url}/platba/stav?session_id={{CHECKOUT_SESSION_ID}}&gateway=stripe"
         notify_url = f"{api_url}/api/payments/webhook/stripe"
-    elif gateway == "comgate":
-        return_url = f"{frontend_url}/platba/stav?gateway=comgate"
-        notify_url = f"{api_url}/api/payments/webhook/comgate"
+    # GOPAY — zakomentováno (čekáme na vyjádření)
+    # else:
+    #     return_url = f"{frontend_url}/platba/stav?id={{paymentId}}&gateway=gopay"
+    #     notify_url = f"{api_url}/api/payments/webhook"
     else:
-        return_url = f"{frontend_url}/platba/stav?id={{paymentId}}&gateway=gopay"
-        notify_url = f"{api_url}/api/payments/webhook"
+        raise HTTPException(status_code=400, detail=f"Nepodporovaná brána: {gateway}")
 
     try:
         result = await _create_payment_via_gateway(
@@ -413,14 +391,14 @@ class GuestCheckoutRequest(BaseModel):
     """Request pro guest platbu (bez přihlášení). Pouze coffee."""
     plan: str = "coffee"
     email: str = ""
-    gateway: Literal["gopay", "stripe", "comgate"] = "gopay"
+    gateway: Literal["stripe"] = "stripe"
 
 
 @router.post("/checkout-guest", response_model=CheckoutResponse)
 async def create_guest_checkout(req: GuestCheckoutRequest):
     """
     Vytvoří platbu bez přihlášení — povoleno pouze pro plán 'coffee'.
-    Podporuje GoPay, Stripe i Comgate.
+    Podporuje Stripe.
     """
     if req.plan != "coffee":
         raise HTTPException(status_code=403, detail="Guest checkout je povolen pouze pro plán 'coffee'.")
@@ -440,16 +418,9 @@ async def create_guest_checkout(req: GuestCheckoutRequest):
 
     guest_email = req.email or "guest@aishield.cz"
 
-    # Return URL - pro každou bránu jiný formát
-    if gateway == "stripe":
-        return_url = f"{frontend_url}/platba/stav?session_id={{CHECKOUT_SESSION_ID}}&gateway=stripe"
-        notify_url = f"{api_url}/api/payments/webhook/stripe"
-    elif gateway == "comgate":
-        return_url = f"{frontend_url}/platba/stav?gateway=comgate"
-        notify_url = f"{api_url}/api/payments/webhook/comgate"
-    else:
-        return_url = f"{frontend_url}/platba/stav?id={{paymentId}}&gateway=gopay"
-        notify_url = f"{api_url}/api/payments/webhook"
+    # Return URL
+    return_url = f"{frontend_url}/platba/stav?session_id={{CHECKOUT_SESSION_ID}}&gateway=stripe"
+    notify_url = f"{api_url}/api/payments/webhook/stripe"
 
     try:
         result = await _create_payment_via_gateway(
@@ -618,341 +589,347 @@ async def check_monitoring_eligibility(user: AuthUser = Depends(get_current_user
     return await _check_monitoring_eligibility(user.email)
 
 
-# ────────────────────────────────────────────────────────────
-# SUBSCRIPTIONS (OPAKOVANÉ PLATBY)
-# ────────────────────────────────────────────────────────────
+# ========================================================
+# SUBSCRIPTIONS + REFUNDACE — ZAKOMENTOVANO (vyzaduje GoPay)
+# Po schvaleni GoPay odkomentujte.
+# ========================================================
 
-@router.post("/subscribe", response_model=CheckoutResponse)
-async def create_subscription(req: SubscriptionRequest, user: AuthUser = Depends(get_current_user)):
-    """
-    Vytvoří subscription (opakované platby) v GoPay.
-
-    Zákazník zaplatí první platbu přes gateway.
-    Další platby se strhávají automaticky (ON_DEMAND nebo MONTH).
-
-    Po zaplacení se vytvoří záznam v tabulce 'subscriptions'.
-
-    GUARD: Vyžaduje splnění všech podmínek (zaplacený balíček, sken, dotazník, dokumenty).
-    """
-    if req.plan not in SUBSCRIPTION_PLANS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Neznámý subscription balíček: {req.plan}. "
-                   f"Dostupné: {', '.join(SUBSCRIPTION_PLANS.keys())}",
-        )
-
-    # ── Eligibility guard ──
-    eligibility = await _check_monitoring_eligibility(req.email)
-    if not eligibility["eligible"]:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Monitoring nelze aktivovat: {eligibility['reason']}",
-        )
-
-    settings = get_settings()
-    plan = SUBSCRIPTION_PLANS[req.plan]
-
-    order_number = f"AS-SUB-{req.plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
-
-    frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
-    api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
-
-    gopay = get_gopay()
-
-    try:
-        payment = await gopay.create_subscription(
-            amount=plan["price"],
-            order_number=order_number,
-            description=f"AIshield.cz — {plan['name']}: {plan['description']}",
-            email=req.email,
-            return_url=f"{frontend_url}/platba/stav?id={{paymentId}}&type=subscription",
-            notify_url=f"{api_url}/api/payments/webhook",
-            cycle=plan["cycle"],
-            recurrence_period=plan["period"],
-        )
-    except Exception as e:
-        logger.error(f"[Payments] Chyba při vytváření subscription: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"Chyba při komunikaci s GoPay: {str(e)}",
-        )
-
-    # Uložit do orders
-    supabase = get_supabase()
-    supabase.table("orders").insert({
-        "order_number": order_number,
-        "gopay_payment_id": payment.payment_id,
-        "plan": req.plan,
-        "amount": plan["price"],
-        "email": req.email,
-        "user_email": req.email,
-        "status": payment.state,
-        "order_type": "subscription",
-        "created_at": datetime.utcnow().isoformat(),
-    }).execute()
-
-    # Vytvořit subscription záznam (aktivuje se po zaplacení v webhooku)
-    subscription_id = str(uuid.uuid4())
-    supabase.table("subscriptions").insert({
-        "id": subscription_id,
-        "email": req.email,
-        "plan": req.plan,
-        "gopay_parent_payment_id": payment.payment_id,
-        "amount": plan["price"],
-        "cycle": plan["cycle"].value,
-        "status": "pending",
-        "order_number": order_number,
-        "created_at": datetime.utcnow().isoformat(),
-    }).execute()
-
-    logger.info(f"[Payments] Subscription vytvořena: {subscription_id} ({req.plan})")
-
-    return CheckoutResponse(
-        payment_id=payment.payment_id,
-        gateway_url=payment.gateway_url,
-        order_number=order_number,
-    )
-
-
-@router.post("/subscribe/charge")
-async def charge_subscription(req: SubscriptionChargeRequest, user: AuthUser = Depends(get_current_user)):
-    """
-    Strhne další platbu z existující subscription.
-
-    Používá se pro ON_DEMAND cyklus — tuto metodu volá náš
-    cron job nebo admin manuálně.
-    """
-    supabase = get_supabase()
-
-    # Najít subscription
-    sub = supabase.table("subscriptions").select("*").eq(
-        "id", req.subscription_id
-    ).single().execute()
-
-    if not sub.data:
-        raise HTTPException(status_code=404, detail="Subscription nenalezena")
-
-    if sub.data["status"] != "active":
-        raise HTTPException(
-            status_code=400,
-            detail=f"Subscription není aktivní (status: {sub.data['status']})",
-        )
-
-    amount = req.amount or sub.data["amount"]
-    order_number = f"AS-REC-{uuid.uuid4().hex[:8].upper()}"
-
-    gopay = get_gopay()
-
-    try:
-        payment = await gopay.charge_subscription(
-            parent_payment_id=sub.data["gopay_parent_payment_id"],
-            amount=amount,
-            order_number=order_number,
-            description=f"AIshield.cz — opakovaná platba {sub.data['plan']}",
-        )
-    except Exception as e:
-        logger.error(f"[Payments] Chyba při stržení subscription: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"Chyba při stržení platby: {str(e)}",
-        )
-
-    # Zalogovat platbu
-    supabase.table("orders").insert({
-        "order_number": order_number,
-        "gopay_payment_id": payment.payment_id,
-        "plan": sub.data["plan"],
-        "amount": amount,
-        "email": sub.data["email"],
-        "user_email": sub.data["email"],
-        "status": payment.state,
-        "order_type": "subscription_recurrence",
-        "subscription_id": req.subscription_id,
-        "created_at": datetime.utcnow().isoformat(),
-    }).execute()
-
-    # Aktualizovat subscription
-    supabase.table("subscriptions").update({
-        "last_charged_at": datetime.utcnow().isoformat(),
-        "total_charged": (sub.data.get("total_charged") or 0) + amount,
-    }).eq("id", req.subscription_id).execute()
-
-    logger.info(
-        f"[Payments] Subscription platba stržena: {req.subscription_id} ({amount} CZK)"
-    )
-
-    return {
-        "status": "ok",
-        "payment_id": payment.payment_id,
-        "amount": amount,
-        "order_number": order_number,
-    }
-
-
-@router.post("/subscribe/cancel")
-async def cancel_subscription(subscription_id: str, user: AuthUser = Depends(get_current_user)):
-    """
-    Zruší subscription — přestane strhávat platby.
-    Aktuální předplacené období zůstává platné.
-    """
-    supabase = get_supabase()
-
-    sub = supabase.table("subscriptions").select("*").eq(
-        "id", subscription_id
-    ).single().execute()
-
-    if not sub.data:
-        raise HTTPException(status_code=404, detail="Subscription nenalezena")
-
-    if sub.data["status"] in ("cancelled", "expired"):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Subscription je již {sub.data['status']}",
-        )
-
-    gopay = get_gopay()
-
-    try:
-        await gopay.cancel_subscription(sub.data["gopay_parent_payment_id"])
-    except Exception as e:
-        logger.error(f"[Payments] Chyba při rušení subscription: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"Chyba při rušení subscription: {str(e)}",
-        )
-
-    supabase.table("subscriptions").update({
-        "status": "cancelled",
-        "cancelled_at": datetime.utcnow().isoformat(),
-    }).eq("id", subscription_id).execute()
-
-    logger.info(f"[Payments] Subscription zrušena: {subscription_id}")
-
-    return {"status": "cancelled", "subscription_id": subscription_id}
-
-
-@router.get("/subscribe/{subscription_id}")
-async def get_subscription_detail(subscription_id: str, user: AuthUser = Depends(get_current_user)):
-    """Vrátí detail subscription včetně GoPay recurrence info."""
-    supabase = get_supabase()
-
-    sub = supabase.table("subscriptions").select("*").eq(
-        "id", subscription_id
-    ).single().execute()
-
-    if not sub.data:
-        raise HTTPException(status_code=404, detail="Subscription nenalezena")
-
-    # Volitelně stáhnout stav z GoPay
-    gopay = get_gopay()
-    recurrence_info = None
-    try:
-        recurrence_info = await gopay.get_recurrence_info(
-            sub.data["gopay_parent_payment_id"]
-        )
-    except Exception:
-        pass  # GoPay nedostupné, vrátíme z DB
-
-    return {
-        **sub.data,
-        "gopay_recurrence": {
-            "cycle": recurrence_info.recurrence_cycle,
-            "end_date": recurrence_info.recurrence_date_to,
-            "state": recurrence_info.recurrence_state,
-        } if recurrence_info else None,
-    }
-
-
-# ────────────────────────────────────────────────────────────
-# REFUNDACE
-# ────────────────────────────────────────────────────────────
-
-@router.post("/refund")
-async def refund_payment(req: RefundRequest, user: AuthUser = Depends(get_current_user)):
-    """
-    Vrátí peníze zákazníkovi — plná nebo částečná refundace.
-
-    Pro plnou refundaci nevyplňujte amount.
-    Pro částečnou zadejte konkrétní částku v CZK.
-    """
-    gopay = get_gopay()
-    supabase = get_supabase()
-
-    # Ověřit, že objednávka existuje
-    order = supabase.table("orders").select("*").eq(
-        "gopay_payment_id", req.payment_id
-    ).single().execute()
-
-    if not order.data:
-        raise HTTPException(status_code=404, detail="Objednávka nenalezena")
-
-    if order.data["status"] in ("REFUNDED", "CANCELED"):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Objednávka je již {order.data['status']}",
-        )
-
-    try:
-        result = await gopay.refund_payment(
-            payment_id=req.payment_id,
-            amount=req.amount,
-        )
-    except Exception as e:
-        logger.error(f"[Payments] Chyba při refundaci: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"Chyba při refundaci: {str(e)}",
-        )
-
-    refund_result = result.get("result", "UNKNOWN")
-
-    if refund_result == "FINISHED":
-        # Aktualizovat objednávku
-        new_status = "REFUNDED" if req.amount is None else "PARTIALLY_REFUNDED"
-        supabase.table("orders").update({
-            "status": new_status,
-            "refunded_at": datetime.utcnow().isoformat(),
-            "refund_amount": req.amount or order.data["amount"],
-            "refund_reason": req.reason,
-        }).eq("gopay_payment_id", req.payment_id).execute()
-
-        logger.info(
-            f"[Payments] Refundace úspěšná: payment={req.payment_id}, "
-            f"částka={req.amount or order.data['amount']} CZK"
-        )
-    else:
-        logger.warning(
-            f"[Payments] Refundace neúspěšná: payment={req.payment_id}, "
-            f"result={refund_result}"
-        )
-
-    return {
-        "status": refund_result,
-        "payment_id": req.payment_id,
-        "refund_amount": req.amount or order.data["amount"],
-        "reason": req.reason,
-    }
-
+# # ────────────────────────────────────────────────────────────
+# # SUBSCRIPTIONS (OPAKOVANÉ PLATBY)
+# # ────────────────────────────────────────────────────────────
+#
+# @router.post("/subscribe", response_model=CheckoutResponse)
+# async def create_subscription(req: SubscriptionRequest, user: AuthUser = Depends(get_current_user)):
+#     """
+#     Vytvoří subscription (opakované platby) v GoPay.
+#
+#     Zákazník zaplatí první platbu přes gateway.
+#     Další platby se strhávají automaticky (ON_DEMAND nebo MONTH).
+#
+#     Po zaplacení se vytvoří záznam v tabulce 'subscriptions'.
+#
+#     GUARD: Vyžaduje splnění všech podmínek (zaplacený balíček, sken, dotazník, dokumenty).
+#     """
+#     if req.plan not in SUBSCRIPTION_PLANS:
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Neznámý subscription balíček: {req.plan}. "
+#                    f"Dostupné: {', '.join(SUBSCRIPTION_PLANS.keys())}",
+#         )
+#
+#     # ── Eligibility guard ──
+#     eligibility = await _check_monitoring_eligibility(req.email)
+#     if not eligibility["eligible"]:
+#         raise HTTPException(
+#             status_code=403,
+#             detail=f"Monitoring nelze aktivovat: {eligibility['reason']}",
+#         )
+#
+#     settings = get_settings()
+#     plan = SUBSCRIPTION_PLANS[req.plan]
+#
+#     order_number = f"AS-SUB-{req.plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
+#
+#     frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
+#     api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
+#
+#     gopay = get_gopay()
+#
+#     try:
+#         payment = await gopay.create_subscription(
+#             amount=plan["price"],
+#             order_number=order_number,
+#             description=f"AIshield.cz — {plan['name']}: {plan['description']}",
+#             email=req.email,
+#             return_url=f"{frontend_url}/platba/stav?id={{paymentId}}&type=subscription",
+#             notify_url=f"{api_url}/api/payments/webhook",
+#             cycle=plan["cycle"],
+#             recurrence_period=plan["period"],
+#         )
+#     except Exception as e:
+#         logger.error(f"[Payments] Chyba při vytváření subscription: {e}")
+#         raise HTTPException(
+#             status_code=502,
+#             detail=f"Chyba při komunikaci s GoPay: {str(e)}",
+#         )
+#
+#     # Uložit do orders
+#     supabase = get_supabase()
+#     supabase.table("orders").insert({
+#         "order_number": order_number,
+#         "gopay_payment_id": payment.payment_id,
+#         "plan": req.plan,
+#         "amount": plan["price"],
+#         "email": req.email,
+#         "user_email": req.email,
+#         "status": payment.state,
+#         "order_type": "subscription",
+#         "created_at": datetime.utcnow().isoformat(),
+#     }).execute()
+#
+#     # Vytvořit subscription záznam (aktivuje se po zaplacení v webhooku)
+#     subscription_id = str(uuid.uuid4())
+#     supabase.table("subscriptions").insert({
+#         "id": subscription_id,
+#         "email": req.email,
+#         "plan": req.plan,
+#         "gopay_parent_payment_id": payment.payment_id,
+#         "amount": plan["price"],
+#         "cycle": plan["cycle"].value,
+#         "status": "pending",
+#         "order_number": order_number,
+#         "created_at": datetime.utcnow().isoformat(),
+#     }).execute()
+#
+#     logger.info(f"[Payments] Subscription vytvořena: {subscription_id} ({req.plan})")
+#
+#     return CheckoutResponse(
+#         payment_id=payment.payment_id,
+#         gateway_url=payment.gateway_url,
+#         order_number=order_number,
+#     )
+#
+#
+# @router.post("/subscribe/charge")
+# async def charge_subscription(req: SubscriptionChargeRequest, user: AuthUser = Depends(get_current_user)):
+#     """
+#     Strhne další platbu z existující subscription.
+#
+#     Používá se pro ON_DEMAND cyklus — tuto metodu volá náš
+#     cron job nebo admin manuálně.
+#     """
+#     supabase = get_supabase()
+#
+#     # Najít subscription
+#     sub = supabase.table("subscriptions").select("*").eq(
+#         "id", req.subscription_id
+#     ).single().execute()
+#
+#     if not sub.data:
+#         raise HTTPException(status_code=404, detail="Subscription nenalezena")
+#
+#     if sub.data["status"] != "active":
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Subscription není aktivní (status: {sub.data['status']})",
+#         )
+#
+#     amount = req.amount or sub.data["amount"]
+#     order_number = f"AS-REC-{uuid.uuid4().hex[:8].upper()}"
+#
+#     gopay = get_gopay()
+#
+#     try:
+#         payment = await gopay.charge_subscription(
+#             parent_payment_id=sub.data["gopay_parent_payment_id"],
+#             amount=amount,
+#             order_number=order_number,
+#             description=f"AIshield.cz — opakovaná platba {sub.data['plan']}",
+#         )
+#     except Exception as e:
+#         logger.error(f"[Payments] Chyba při stržení subscription: {e}")
+#         raise HTTPException(
+#             status_code=502,
+#             detail=f"Chyba při stržení platby: {str(e)}",
+#         )
+#
+#     # Zalogovat platbu
+#     supabase.table("orders").insert({
+#         "order_number": order_number,
+#         "gopay_payment_id": payment.payment_id,
+#         "plan": sub.data["plan"],
+#         "amount": amount,
+#         "email": sub.data["email"],
+#         "user_email": sub.data["email"],
+#         "status": payment.state,
+#         "order_type": "subscription_recurrence",
+#         "subscription_id": req.subscription_id,
+#         "created_at": datetime.utcnow().isoformat(),
+#     }).execute()
+#
+#     # Aktualizovat subscription
+#     supabase.table("subscriptions").update({
+#         "last_charged_at": datetime.utcnow().isoformat(),
+#         "total_charged": (sub.data.get("total_charged") or 0) + amount,
+#     }).eq("id", req.subscription_id).execute()
+#
+#     logger.info(
+#         f"[Payments] Subscription platba stržena: {req.subscription_id} ({amount} CZK)"
+#     )
+#
+#     return {
+#         "status": "ok",
+#         "payment_id": payment.payment_id,
+#         "amount": amount,
+#         "order_number": order_number,
+#     }
+#
+#
+# @router.post("/subscribe/cancel")
+# async def cancel_subscription(subscription_id: str, user: AuthUser = Depends(get_current_user)):
+#     """
+#     Zruší subscription — přestane strhávat platby.
+#     Aktuální předplacené období zůstává platné.
+#     """
+#     supabase = get_supabase()
+#
+#     sub = supabase.table("subscriptions").select("*").eq(
+#         "id", subscription_id
+#     ).single().execute()
+#
+#     if not sub.data:
+#         raise HTTPException(status_code=404, detail="Subscription nenalezena")
+#
+#     if sub.data["status"] in ("cancelled", "expired"):
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Subscription je již {sub.data['status']}",
+#         )
+#
+#     gopay = get_gopay()
+#
+#     try:
+#         await gopay.cancel_subscription(sub.data["gopay_parent_payment_id"])
+#     except Exception as e:
+#         logger.error(f"[Payments] Chyba při rušení subscription: {e}")
+#         raise HTTPException(
+#             status_code=502,
+#             detail=f"Chyba při rušení subscription: {str(e)}",
+#         )
+#
+#     supabase.table("subscriptions").update({
+#         "status": "cancelled",
+#         "cancelled_at": datetime.utcnow().isoformat(),
+#     }).eq("id", subscription_id).execute()
+#
+#     logger.info(f"[Payments] Subscription zrušena: {subscription_id}")
+#
+#     return {"status": "cancelled", "subscription_id": subscription_id}
+#
+#
+# @router.get("/subscribe/{subscription_id}")
+# async def get_subscription_detail(subscription_id: str, user: AuthUser = Depends(get_current_user)):
+#     """Vrátí detail subscription včetně GoPay recurrence info."""
+#     supabase = get_supabase()
+#
+#     sub = supabase.table("subscriptions").select("*").eq(
+#         "id", subscription_id
+#     ).single().execute()
+#
+#     if not sub.data:
+#         raise HTTPException(status_code=404, detail="Subscription nenalezena")
+#
+#     # Volitelně stáhnout stav z GoPay
+#     gopay = get_gopay()
+#     recurrence_info = None
+#     try:
+#         recurrence_info = await gopay.get_recurrence_info(
+#             sub.data["gopay_parent_payment_id"]
+#         )
+#     except Exception:
+#         pass  # GoPay nedostupné, vrátíme z DB
+#
+#     return {
+#         **sub.data,
+#         "gopay_recurrence": {
+#             "cycle": recurrence_info.recurrence_cycle,
+#             "end_date": recurrence_info.recurrence_date_to,
+#             "state": recurrence_info.recurrence_state,
+#         } if recurrence_info else None,
+#     }
+#
+#
+# # ────────────────────────────────────────────────────────────
+# # REFUNDACE
+# # ────────────────────────────────────────────────────────────
+#
+# @router.post("/refund")
+# async def refund_payment(req: RefundRequest, user: AuthUser = Depends(get_current_user)):
+#     """
+#     Vrátí peníze zákazníkovi — plná nebo částečná refundace.
+#
+#     Pro plnou refundaci nevyplňujte amount.
+#     Pro částečnou zadejte konkrétní částku v CZK.
+#     """
+#     gopay = get_gopay()
+#     supabase = get_supabase()
+#
+#     # Ověřit, že objednávka existuje
+#     order = supabase.table("orders").select("*").eq(
+#         "gopay_payment_id", req.payment_id
+#     ).single().execute()
+#
+#     if not order.data:
+#         raise HTTPException(status_code=404, detail="Objednávka nenalezena")
+#
+#     if order.data["status"] in ("REFUNDED", "CANCELED"):
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Objednávka je již {order.data['status']}",
+#         )
+#
+#     try:
+#         result = await gopay.refund_payment(
+#             payment_id=req.payment_id,
+#             amount=req.amount,
+#         )
+#     except Exception as e:
+#         logger.error(f"[Payments] Chyba při refundaci: {e}")
+#         raise HTTPException(
+#             status_code=502,
+#             detail=f"Chyba při refundaci: {str(e)}",
+#         )
+#
+#     refund_result = result.get("result", "UNKNOWN")
+#
+#     if refund_result == "FINISHED":
+#         # Aktualizovat objednávku
+#         new_status = "REFUNDED" if req.amount is None else "PARTIALLY_REFUNDED"
+#         supabase.table("orders").update({
+#             "status": new_status,
+#             "refunded_at": datetime.utcnow().isoformat(),
+#             "refund_amount": req.amount or order.data["amount"],
+#             "refund_reason": req.reason,
+#         }).eq("gopay_payment_id", req.payment_id).execute()
+#
+#         logger.info(
+#             f"[Payments] Refundace úspěšná: payment={req.payment_id}, "
+#             f"částka={req.amount or order.data['amount']} CZK"
+#         )
+#     else:
+#         logger.warning(
+#             f"[Payments] Refundace neúspěšná: payment={req.payment_id}, "
+#             f"result={refund_result}"
+#         )
+#
+#     return {
+#         "status": refund_result,
+#         "payment_id": req.payment_id,
+#         "refund_amount": req.amount or order.data["amount"],
+#         "reason": req.reason,
+#     }
+#
+#
 
 # ────────────────────────────────────────────────────────────
 # STATUS + WEBHOOK (multi-gateway)
 # ────────────────────────────────────────────────────────────
 
 @router.get("/status/{payment_id}")
-async def get_payment_status(payment_id: str, gateway: str = "gopay"):
+async def get_payment_status(payment_id: str, gateway: str = "stripe"):
     """
-    Zkontroluje stav platby. Podporuje GoPay, Stripe i Comgate.
-    Query param gateway: gopay (default) | stripe | comgate
+    Zkontroluje stav platby. Podporuje Stripe.
+    GoPay — zakomentovano. Comgate — odstraneno.
     """
     if gateway == "stripe":
         stripe_client = get_stripe()
         try:
             status = await stripe_client.get_payment_status(payment_id)
         except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Chyba při ověření platby (Stripe): {str(e)}")
+            raise HTTPException(status_code=502, detail=f"Chyba pri overeni platby: {str(e)}")
 
         state = status.get("state", "UNKNOWN")
-        is_paid = stripe_client.is_paid(state)
+        is_paid = state == "PAID"
 
         supabase = get_supabase()
         supabase.table("orders").update({
@@ -968,211 +945,180 @@ async def get_payment_status(payment_id: str, gateway: str = "gopay"):
             "gateway": "stripe",
         }
 
-    elif gateway == "comgate":
-        comgate_client = get_comgate()
-        try:
-            status = await comgate_client.get_payment_status(payment_id)
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Chyba při ověření platby (Comgate): {str(e)}")
-
-        state = status.get("state", "UNKNOWN")
-        is_paid = comgate_client.is_paid(state)
-
-        supabase = get_supabase()
-        supabase.table("orders").update({
-            "status": state,
-            "paid_at": datetime.utcnow().isoformat() if is_paid else None,
-        }).eq("gopay_payment_id", payment_id).execute()
-
-        return {
-            "payment_id": payment_id,
-            "state": state,
-            "is_paid": is_paid,
-            "order_number": status.get("order_number", ""),
-            "gateway": "comgate",
-        }
+    # GOPAY — zakomentovano (cekame na vyjadreni)
+    # else:
+    #     gopay = get_gopay()
+    #     try:
+    #         status = await gopay.get_payment_status(int(payment_id))
+    #     except Exception as e:
+    #         raise HTTPException(status_code=502, detail=f"Chyba: {str(e)}")
+    #     state = status.get("state", "UNKNOWN")
+    #     is_paid = gopay.is_paid(state)
+    #     ...
 
     else:
-        # Default: GoPay
-        gopay = get_gopay()
-        try:
-            status = await gopay.get_payment_status(int(payment_id))
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Chyba při ověření platby: {str(e)}")
-
-        state = status.get("state", "UNKNOWN")
-        is_paid = gopay.is_paid(state)
-
-        supabase = get_supabase()
-        supabase.table("orders").update({
-            "status": state,
-            "paid_at": datetime.utcnow().isoformat() if is_paid else None,
-        }).eq("gopay_payment_id", str(int(payment_id))).execute()
-
-        return {
-            "payment_id": payment_id,
-            "state": state,
-            "is_paid": is_paid,
-            "order_number": status.get("order_number", ""),
-            "recurrence": status.get("recurrence"),
-            "gateway": "gopay",
-        }
+        raise HTTPException(status_code=400, detail=f"Nepodporovana brana: {gateway}")
 
 
-# ── GoPay Webhook ──
+# ========================================================
+# GOPAY WEBHOOK — ZAKOMENTOVANO (cekame na vyjadreni)
+# ========================================================
 
-@router.post("/webhook")
-@router.get("/webhook")
-async def gopay_webhook(request: Request):
-    """
-    GoPay webhook — notifikace o změně stavu platby.
-    GoPay posílá GET (s ?id=...) i POST (s id=... v body).
-    Zpracovává jednorázové platby, první subscription platby
-    i automatické opakované platby (recurrence).
-    """
-    # GoPay GET: ?id=123  |  POST: id=123 (form-urlencoded)
-    payment_id = request.query_params.get("id")
-    if not payment_id:
-        body = await request.body()
-        params = dict(x.split("=") for x in body.decode().split("&") if "=" in x)
-        payment_id = params.get("id")
-
-    if not payment_id:
-        raise HTTPException(status_code=400, detail="Chybí id platby")
-
-    gopay = get_gopay()
-
-    try:
-        status = await gopay.get_payment_status(int(payment_id))
-    except Exception:
-        raise HTTPException(status_code=502, detail="Nelze ověřit platbu")
-
-    state = status.get("state", "UNKNOWN")
-    is_paid = gopay.is_paid(state)
-
-    supabase = get_supabase()
-
-    # Zkusíme najít existující order
-    existing_order = supabase.table("orders").select("*").eq(
-        "gopay_payment_id", str(int(payment_id))
-    ).execute()
-
-    if existing_order.data:
-        # ── Známý payment — update existující order ──
-        update_data = {"status": state}
-        if is_paid:
-            update_data["paid_at"] = datetime.utcnow().isoformat()
-
-        supabase.table("orders").update(update_data).eq(
-            "gopay_payment_id", str(int(payment_id))
-        ).execute()
-
-        order = existing_order.data[0]
-
-        if is_paid:
-            supabase.table("orders").update({
-                "activated": True,
-            }).eq("gopay_payment_id", str(int(payment_id))).execute()
-
-            # Server-side analytics: payment_completed (spolehlivější než frontend)
-            track_server_event(
-                "payment_completed_server",
-                properties={
-                    "gateway": "gopay",
-                    "payment_id": str(payment_id),
-                    "amount": order.get("amount"),
-                    "plan": order.get("plan"),
-                    "order_number": order.get("order_number"),
-                    "order_type": order.get("order_type"),
-                    "source": "webhook",
-                },
-                user_email=order.get("email") or order.get("user_email"),
-            )
-
-            # Aktivace první subscription platby
-            if order.get("order_type") == "subscription":
-                now = datetime.utcnow()
-                next_charge = (now + timedelta(days=30)).isoformat()
-                supabase.table("subscriptions").update({
-                    "status": "active",
-                    "activated_at": now.isoformat(),
-                    "last_charged_at": now.isoformat(),
-                    "next_charge_at": next_charge,
-                    "total_charged": order.get("amount", 0),
-                }).eq("gopay_parent_payment_id", str(int(payment_id))).execute()
-
-                logger.info(f"[Payments] Subscription aktivována (payment={payment_id})")
-
-    else:
-        # ── Neznámý payment_id — pravděpodobně automatická recurrence od GoPay ──
-        parent_id = status.get("parent_id") or status.get("preauthorization", {}).get("parent_id")
-
-        if not parent_id:
-            order_number = status.get("order_number", "")
-            logger.info(
-                f"[Payments] Webhook pro neznámý payment {payment_id}, "
-                f"order={order_number}, state={state}"
-            )
-
-        sub = None
-        if parent_id:
-            sub_res = supabase.table("subscriptions").select("*").eq(
-                "gopay_parent_payment_id", str(int(parent_id))
-            ).limit(1).execute()
-            sub = sub_res.data[0] if sub_res.data else None
-
-        if sub and is_paid:
-            rec_order_number = f"AS-REC-{uuid.uuid4().hex[:8].upper()}"
-            supabase.table("orders").insert({
-                "order_number": rec_order_number,
-                "gopay_payment_id": str(int(payment_id)),
-                "plan": sub["plan"],
-                "amount": sub["amount"],
-                "email": sub["email"],
-                "user_email": sub["email"],
-                "status": state,
-                "order_type": "subscription_recurrence",
-                "subscription_id": sub["id"],
-                "payment_gateway": "gopay",
-                "activated": True,
-                "paid_at": datetime.utcnow().isoformat(),
-                "created_at": datetime.utcnow().isoformat(),
-            }).execute()
-
-            now = datetime.utcnow()
-            next_charge = (now + timedelta(days=30)).isoformat()
-            supabase.table("subscriptions").update({
-                "last_charged_at": now.isoformat(),
-                "next_charge_at": next_charge,
-                "total_charged": (sub.get("total_charged") or 0) + sub["amount"],
-            }).eq("id", sub["id"]).execute()
-
-            # Server-side analytics: subscription recurrence
-            track_server_event(
-                "payment_completed_server",
-                properties={
-                    "gateway": "gopay",
-                    "payment_id": str(payment_id),
-                    "amount": sub["amount"],
-                    "plan": sub["plan"],
-                    "order_type": "subscription_recurrence",
-                    "source": "webhook",
-                },
-                user_email=sub.get("email"),
-            )
-
-            logger.info(
-                f"[Payments] Recurrence platba zaznamenána: sub={sub['id']}, "
-                f"payment={payment_id}, amount={sub['amount']} CZK"
-            )
-        elif not sub:
-            logger.warning(
-                f"[Payments] Webhook: neznámý payment {payment_id} "
-                f"bez mapování na order/subscription (state={state})"
-            )
-
-    return {"status": "ok"}
-
+# # ── GoPay Webhook ──
+#
+# @router.post("/webhook")
+# @router.get("/webhook")
+# async def gopay_webhook(request: Request):
+#     """
+#     GoPay webhook — notifikace o změně stavu platby.
+#     GoPay posílá GET (s ?id=...) i POST (s id=... v body).
+#     Zpracovává jednorázové platby, první subscription platby
+#     i automatické opakované platby (recurrence).
+#     """
+#     # GoPay GET: ?id=123  |  POST: id=123 (form-urlencoded)
+#     payment_id = request.query_params.get("id")
+#     if not payment_id:
+#         body = await request.body()
+#         params = dict(x.split("=") for x in body.decode().split("&") if "=" in x)
+#         payment_id = params.get("id")
+#
+#     if not payment_id:
+#         raise HTTPException(status_code=400, detail="Chybí id platby")
+#
+#     gopay = get_gopay()
+#
+#     try:
+#         status = await gopay.get_payment_status(int(payment_id))
+#     except Exception:
+#         raise HTTPException(status_code=502, detail="Nelze ověřit platbu")
+#
+#     state = status.get("state", "UNKNOWN")
+#     is_paid = gopay.is_paid(state)
+#
+#     supabase = get_supabase()
+#
+#     # Zkusíme najít existující order
+#     existing_order = supabase.table("orders").select("*").eq(
+#         "gopay_payment_id", str(int(payment_id))
+#     ).execute()
+#
+#     if existing_order.data:
+#         # ── Známý payment — update existující order ──
+#         update_data = {"status": state}
+#         if is_paid:
+#             update_data["paid_at"] = datetime.utcnow().isoformat()
+#
+#         supabase.table("orders").update(update_data).eq(
+#             "gopay_payment_id", str(int(payment_id))
+#         ).execute()
+#
+#         order = existing_order.data[0]
+#
+#         if is_paid:
+#             supabase.table("orders").update({
+#                 "activated": True,
+#             }).eq("gopay_payment_id", str(int(payment_id))).execute()
+#
+#             # Server-side analytics: payment_completed (spolehlivější než frontend)
+#             track_server_event(
+#                 "payment_completed_server",
+#                 properties={
+#                     "gateway": "gopay",
+#                     "payment_id": str(payment_id),
+#                     "amount": order.get("amount"),
+#                     "plan": order.get("plan"),
+#                     "order_number": order.get("order_number"),
+#                     "order_type": order.get("order_type"),
+#                     "source": "webhook",
+#                 },
+#                 user_email=order.get("email") or order.get("user_email"),
+#             )
+#
+#             # Aktivace první subscription platby
+#             if order.get("order_type") == "subscription":
+#                 now = datetime.utcnow()
+#                 next_charge = (now + timedelta(days=30)).isoformat()
+#                 supabase.table("subscriptions").update({
+#                     "status": "active",
+#                     "activated_at": now.isoformat(),
+#                     "last_charged_at": now.isoformat(),
+#                     "next_charge_at": next_charge,
+#                     "total_charged": order.get("amount", 0),
+#                 }).eq("gopay_parent_payment_id", str(int(payment_id))).execute()
+#
+#                 logger.info(f"[Payments] Subscription aktivována (payment={payment_id})")
+#
+#     else:
+#         # ── Neznámý payment_id — pravděpodobně automatická recurrence od GoPay ──
+#         parent_id = status.get("parent_id") or status.get("preauthorization", {}).get("parent_id")
+#
+#         if not parent_id:
+#             order_number = status.get("order_number", "")
+#             logger.info(
+#                 f"[Payments] Webhook pro neznámý payment {payment_id}, "
+#                 f"order={order_number}, state={state}"
+#             )
+#
+#         sub = None
+#         if parent_id:
+#             sub_res = supabase.table("subscriptions").select("*").eq(
+#                 "gopay_parent_payment_id", str(int(parent_id))
+#             ).limit(1).execute()
+#             sub = sub_res.data[0] if sub_res.data else None
+#
+#         if sub and is_paid:
+#             rec_order_number = f"AS-REC-{uuid.uuid4().hex[:8].upper()}"
+#             supabase.table("orders").insert({
+#                 "order_number": rec_order_number,
+#                 "gopay_payment_id": str(int(payment_id)),
+#                 "plan": sub["plan"],
+#                 "amount": sub["amount"],
+#                 "email": sub["email"],
+#                 "user_email": sub["email"],
+#                 "status": state,
+#                 "order_type": "subscription_recurrence",
+#                 "subscription_id": sub["id"],
+#                 "payment_gateway": "gopay",
+#                 "activated": True,
+#                 "paid_at": datetime.utcnow().isoformat(),
+#                 "created_at": datetime.utcnow().isoformat(),
+#             }).execute()
+#
+#             now = datetime.utcnow()
+#             next_charge = (now + timedelta(days=30)).isoformat()
+#             supabase.table("subscriptions").update({
+#                 "last_charged_at": now.isoformat(),
+#                 "next_charge_at": next_charge,
+#                 "total_charged": (sub.get("total_charged") or 0) + sub["amount"],
+#             }).eq("id", sub["id"]).execute()
+#
+#             # Server-side analytics: subscription recurrence
+#             track_server_event(
+#                 "payment_completed_server",
+#                 properties={
+#                     "gateway": "gopay",
+#                     "payment_id": str(payment_id),
+#                     "amount": sub["amount"],
+#                     "plan": sub["plan"],
+#                     "order_type": "subscription_recurrence",
+#                     "source": "webhook",
+#                 },
+#                 user_email=sub.get("email"),
+#             )
+#
+#             logger.info(
+#                 f"[Payments] Recurrence platba zaznamenána: sub={sub['id']}, "
+#                 f"payment={payment_id}, amount={sub['amount']} CZK"
+#             )
+#         elif not sub:
+#             logger.warning(
+#                 f"[Payments] Webhook: neznámý payment {payment_id} "
+#                 f"bez mapování na order/subscription (state={state})"
+#             )
+#
+#     return {"status": "ok"}
+#
+#
 
 # ── Stripe Webhook ──
 
@@ -1259,76 +1205,8 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-# ── Comgate Webhook/Callback ──
 
-@router.post("/webhook/comgate")
-async def comgate_webhook(request: Request):
-    """
-    Comgate callback — notifikace o změně stavu platby.
-    Comgate posílá POST s form-urlencoded daty:
-    merchant, secret, transId, status, price, curr, label, refId, etc.
-    """
-    body = await request.body()
-    params = dict(x.split("=", 1) for x in body.decode().split("&") if "=" in x)
-
-    merchant = params.get("merchant", "")
-    secret = params.get("secret", "")
-    trans_id = params.get("transId", "")
-    comgate_status = params.get("status", "")
-
-    comgate_client = get_comgate()
-
-    # Ověřit, že callback pochází z Comgate
-    if not comgate_client.verify_callback(merchant, secret):
-        logger.error(f"[Comgate Webhook] Neplatný merchant/secret")
-        raise HTTPException(status_code=403, detail="Neplatné ověření")
-
-    # Mapování Comgate stavů
-    state_map = {
-        "PAID": "PAID",
-        "CANCELLED": "CANCELED",
-        "AUTHORIZED": "AUTHORIZED",
-        "PENDING": "CREATED",
-    }
-    state = state_map.get(comgate_status, "UNKNOWN")
-    is_paid = comgate_client.is_paid(state)
-
-    supabase = get_supabase()
-
-    # Najít order podle trans_id
-    existing = supabase.table("orders").select("*").eq(
-        "gopay_payment_id", trans_id
-    ).execute()
-
-    if existing.data:
-        update_data = {"status": state}
-        if is_paid:
-            update_data["paid_at"] = datetime.utcnow().isoformat()
-            update_data["activated"] = True
-        supabase.table("orders").update(update_data).eq(
-            "gopay_payment_id", trans_id
-        ).execute()
-
-        # Server-side analytics
-        if is_paid:
-            order = existing.data[0]
-            track_server_event(
-                "payment_completed_server",
-                properties={
-                    "gateway": "comgate",
-                    "payment_id": trans_id,
-                    "amount": order.get("amount"),
-                    "plan": order.get("plan"),
-                    "order_number": order.get("order_number"),
-                    "source": "webhook",
-                },
-                user_email=order.get("email") or order.get("user_email"),
-            )
-
-        logger.info(f"[Comgate Webhook] Platba aktualizována: {trans_id} → {state}")
-    else:
-        logger.warning(f"[Comgate Webhook] Order nenalezen pro transId {trans_id}")
-
+# COMGATE WEBHOOK — odstraneno (zadost zamitnuta)
 
 # ────────────────────────────────────────────────────────────
 # ADMIN — správa objednávek a potvrzení plateb

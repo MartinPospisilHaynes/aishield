@@ -374,7 +374,7 @@ export default function AdminPage() {
     const [adminOrders, setAdminOrders] = useState<AdminOrder[]>([]);
     const [orderStats, setOrderStats] = useState<AdminOrderStats | null>(null);
     const [orderFilter, setOrderFilter] = useState<"all" | "PAID" | "AWAITING_PAYMENT" | "EXPIRED">("all");
-    const [orderGwFilter, setOrderGwFilter] = useState<"all" | "stripe" | "bank_transfer" | "gopay" | "comgate">("all");
+    const [orderGwFilter, setOrderGwFilter] = useState<"all" | "stripe" | "bank_transfer">("all");
     const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
 
     // Analytics
@@ -2804,13 +2804,11 @@ export default function AdminPage() {
                                         );
                                     })}
                                     <span className="text-xs text-gray-500 font-medium ml-4">Brána:</span>
-                                    {(["all", "stripe", "bank_transfer", "gopay", "comgate"] as const).map((f) => {
+                                    {(["all", "stripe", "bank_transfer"] as const).map((f) => {
                                         const labels: Record<string, string> = {
                                             all: "Všechny",
                                             stripe: "💳 Stripe",
                                             bank_transfer: "🏦 Převod",
-                                            gopay: "GoPay",
-                                            comgate: "Comgate",
                                         };
                                         return (
                                             <button

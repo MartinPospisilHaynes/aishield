@@ -104,7 +104,7 @@ export default function GdprPage() {
                                         <tr>
                                             <td className="py-3 pr-4">Platby</td>
                                             <td className="py-3 pr-4">
-                                                Fakturační údaje (karta přes GoPay/Stripe/Comgate)
+                                                Fakturační údaje (karta přes Stripe)
                                             </td>
                                             <td className="py-3 pr-4">Zákonná povinnost</td>
                                             <td className="py-3">10 let</td>
@@ -140,19 +140,9 @@ export default function GdprPage() {
                                         location: "EU/USA",
                                     },
                                     {
-                                        name: "GoPay",
-                                        role: "Platební brána",
-                                        location: "Česko",
-                                    },
-                                    {
                                         name: "Stripe",
                                         role: "Platební brána",
                                         location: "EU/USA",
-                                    },
-                                    {
-                                        name: "Comgate",
-                                        role: "Platební brána",
-                                        location: "Česko",
                                     },
                                     {
                                         name: "Resend",

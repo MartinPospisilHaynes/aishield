@@ -56,7 +56,7 @@ export default function PrivacyPage() {
                     </li>
                     <li>
                         <strong className="text-white">Platební údaje</strong> — zpracovává
-                        platební brány GoPay, Stripe a Comgate — my neukládáme čísla karet
+                        platební brána Stripe — my neukládáme čísla karet
                     </li>
                     <li>
                         <strong className="text-white">Technické údaje</strong> — IP adresa,
@@ -116,16 +116,8 @@ export default function PrivacyPage() {
                             webové aplikace
                         </li>
                         <li>
-                            <strong className="text-white">GoPay</strong> — zpracování
-                            plateb (česká společnost)
-                        </li>
-                        <li>
                             <strong className="text-white">Stripe</strong> — zpracování
                             plateb (mezinárodní, sídlo EU/USA)
-                        </li>
-                        <li>
-                            <strong className="text-white">Comgate</strong> — zpracování
-                            plateb (česká společnost)
                         </li>
                         <li>
                             <strong className="text-white">Resend</strong> — odesílání

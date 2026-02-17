@@ -26,24 +26,19 @@ class Settings(BaseSettings):
     # ── Claude API ──
     anthropic_api_key: str = ""
 
-    # ── GoPay ──
-    gopay_go_id: str = ""
-    gopay_client_id: str = ""
-    gopay_client_secret: str = ""
-    gopay_is_production: bool = False
+    # ── GoPay (ZAKOMENTOVÁNO — čekáme na vyjádření) ──
+    # gopay_go_id: str = ""
+    # gopay_client_id: str = ""
+    # gopay_client_secret: str = ""
+    # gopay_is_production: bool = False
 
     # ── Stripe ──
     stripe_secret_key: str = ""          # sk_test_... nebo sk_live_...
     stripe_publishable_key: str = ""     # pk_test_... nebo pk_live_...
     stripe_webhook_secret: str = ""      # whsec_...
 
-    # ── Comgate ──
-    comgate_merchant_id: str = ""        # ID obchodníka z Comgate
-    comgate_secret: str = ""             # Tajný klíč z Comgate
-    comgate_is_production: bool = False  # True = produkce, False = test
-
     # ── Výchozí platební brána ──
-    default_payment_gateway: str = "gopay"  # gopay | stripe | comgate
+    default_payment_gateway: str = "stripe"  # stripe | bank_transfer
 
     # ── Ceny balíčků (CZK) ──
     price_basic: int = 4999
