@@ -451,3 +451,297 @@ def build_payment_confirmation_email(
     """
 
     return _email_wrapper(content)
+
+
+# ══════════════════════════════════════════════════════════════════
+# CRM status-change email builders (triggered from admin Firmy table)
+# ══════════════════════════════════════════════════════════════════
+
+def build_status_pending_email(
+    company_name: str,
+    order_number: str = "",
+    plan: str = "",
+    amount: int = 0,
+    variable_symbol: str = "",
+    due_date: str = "",
+) -> str:
+    """Email when admin sets payment_status → 'pending' (Čeká na platbu)."""
+    plan_name = PLAN_NAMES.get(plan, plan.upper()) if plan else ""
+
+    order_block = ""
+    if order_number:
+        qr_html = ""
+        if variable_symbol and amount:
+            qr_url = f"https://api.aishield.cz/api/payments/payment-qr/{variable_symbol}.png?amount={amount}&order={order_number}"
+            qr_html = f"""
+        <tr><td align="center" style="padding:16px 0 0 0;">
+            <img src="{qr_url}" alt="Platební QR kód" width="160" height="160"
+                 style="display:block;margin:0 auto;border-radius:8px;background:#fff;padding:4px;" />
+            <p style="margin:8px 0 0 0;font-size:11px;color:#64748b;">Naskenujte v mobilní aplikaci banky</p>
+        </td></tr>"""
+
+        order_block = f"""
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:linear-gradient(135deg,rgba(6,182,212,0.08),rgba(124,58,237,0.08));border:1px solid rgba(6,182,212,0.2);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px 0;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Objednávka</p>
+        <p style="margin:0 0 16px 0;font-size:16px;font-weight:700;color:#ffffff;font-family:monospace;">{order_number}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Služba:</td><td style="padding:6px 0;font-size:13px;color:#ffffff;font-weight:600;">' + plan_name + '</td></tr>' if plan_name else ''}
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Částka:</td>
+            <td style="padding:6px 0;font-size:18px;color:#fbbf24;font-weight:800;">{amount:,} Kč</td>
+        </tr>
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Splatnost:</td><td style="padding:6px 0;font-size:13px;color:#fde68a;font-weight:600;">' + due_date + '</td></tr>' if due_date else ''}
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Číslo účtu:</td>
+            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2610538018/3030</td>
+        </tr>
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Variabilní symbol:</td><td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">' + variable_symbol + '</td></tr>' if variable_symbol else ''}
+        </table>
+        {qr_html}
+    </td></tr>
+    </table>
+"""
+
+    content = f"""
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
+        Čekáme na vaši platbu 💳
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
+        Dobrý den{(', ' + company_name) if company_name else ''}, evidujeme vaši objednávku a čekáme na úhradu.
+    </p>
+
+    {order_block}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Po připsání platby na náš účet vám zašleme potvrzení a <strong style="color:#ffffff;">ihned se dáme do práce</strong>.
+        </p>
+        <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Máte dotaz? Napište nám na <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a>
+        </p>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:8px 0;">
+        <a href="https://aishield.cz/dashboard"
+           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#d946ef);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;">
+            Přejít na Dashboard
+        </a>
+    </td></tr>
+    </table>
+    """
+    return _email_wrapper(content)
+
+
+def build_status_overdue_email(
+    company_name: str,
+    order_number: str = "",
+    plan: str = "",
+    amount: int = 0,
+    variable_symbol: str = "",
+) -> str:
+    """Email when admin sets payment_status → 'overdue' (Po splatnosti)."""
+    plan_name = PLAN_NAMES.get(plan, plan.upper()) if plan else ""
+
+    order_block = ""
+    if order_number:
+        order_block = f"""
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px 0;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Objednávka</p>
+        <p style="margin:0 0 16px 0;font-size:16px;font-weight:700;color:#ffffff;font-family:monospace;">{order_number}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Služba:</td><td style="padding:6px 0;font-size:13px;color:#ffffff;font-weight:600;">' + plan_name + '</td></tr>' if plan_name else ''}
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Dlužná částka:</td>
+            <td style="padding:6px 0;font-size:18px;color:#ef4444;font-weight:800;">{amount:,} Kč</td>
+        </tr>
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Variabilní symbol:</td><td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">' + variable_symbol + '</td></tr>' if variable_symbol else ''}
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Číslo účtu:</td>
+            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2610538018/3030</td>
+        </tr>
+        </table>
+    </td></tr>
+    </table>
+"""
+
+    content = f"""
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
+        Upomínka — platba po splatnosti ⏰
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
+        Dobrý den{(', ' + company_name) if company_name else ''}, evidujeme, že vaše platba nebyla dosud uhrazena.
+    </p>
+
+    {order_block}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Prosíme o uhrazení co nejdříve, abychom mohli pokračovat v přípravě vaší dokumentace.
+        </p>
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Pokud jste již platbu odeslali, tento email prosím ignorujte — připsání na účet může trvat 1–2 pracovní dny.
+        </p>
+        <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            V případě dotazů nás kontaktujte na <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a> nebo <a href="tel:+420732716141" style="color:#a78bfa;text-decoration:none;">732 716 141</a>.
+        </p>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:8px 0;">
+        <a href="https://aishield.cz/dashboard"
+           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#d946ef);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;">
+            Přejít na Dashboard
+        </a>
+    </td></tr>
+    </table>
+    """
+    return _email_wrapper(content)
+
+
+def build_status_refunded_email(
+    company_name: str,
+    order_number: str = "",
+    plan: str = "",
+    amount: int = 0,
+) -> str:
+    """Email when admin sets payment_status → 'refunded' (Vráceno)."""
+    plan_name = PLAN_NAMES.get(plan, plan.upper()) if plan else ""
+
+    order_block = ""
+    if order_number:
+        order_block = f"""
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px 0;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Objednávka</p>
+        <p style="margin:0 0 16px 0;font-size:16px;font-weight:700;color:#ffffff;font-family:monospace;">{order_number}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Služba:</td><td style="padding:6px 0;font-size:13px;color:#ffffff;font-weight:600;">' + plan_name + '</td></tr>' if plan_name else ''}
+        <tr>
+            <td style="padding:6px 0;font-size:13px;color:#94a3b8;width:40%;">Vráceno:</td>
+            <td style="padding:6px 0;font-size:18px;color:#a78bfa;font-weight:800;">{amount:,} Kč</td>
+        </tr>
+        </table>
+    </td></tr>
+    </table>
+"""
+
+    content = f"""
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
+        Platba vrácena 💸
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
+        Dobrý den{(', ' + company_name) if company_name else ''}, potvrzujeme, že vaše platba byla vrácena.
+    </p>
+
+    {order_block}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Peníze by měly dorazit na váš účet do <strong style="color:#ffffff;">3–5 pracovních dní</strong> v závislosti na vaší bance.
+        </p>
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Pokud máte jakékoli dotazy k vrácení, neváhejte se na nás obrátit.
+        </p>
+        <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Děkujeme za váš zájem o AIshield.cz. Budeme rádi, pokud se v budoucnu rozhodnete službu využít.
+        </p>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:8px 0;">
+        <a href="mailto:info@aishield.cz"
+           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#d946ef);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;">
+            Kontaktovat nás
+        </a>
+    </td></tr>
+    </table>
+    """
+    return _email_wrapper(content)
+
+
+def build_status_free_trial_email(
+    company_name: str,
+) -> str:
+    """Email when admin sets payment_status → 'free_trial' (Zkušební)."""
+
+    content = f"""
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
+        Zkušební přístup aktivován 🎁
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
+        Dobrý den{(', ' + company_name) if company_name else ''}, aktivovali jsme vám zkušební přístup k AIshield.cz.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:linear-gradient(135deg,rgba(217,70,239,0.08),rgba(6,182,212,0.08));border:1px solid rgba(217,70,239,0.25);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 16px 0;font-size:15px;font-weight:700;color:#ffffff;">
+            🚀 Co můžete nyní udělat?
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="padding:8px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+                <span style="color:#d946ef;font-weight:700;">1.</span>
+                Přihlaste se na <a href="https://aishield.cz/dashboard" style="color:#a78bfa;text-decoration:none;font-weight:600;">Dashboard</a> a podívejte se na přehled vašeho AI Act stavu.
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:8px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+                <span style="color:#d946ef;font-weight:700;">2.</span>
+                Vyplňte <a href="https://aishield.cz/dotaznik" style="color:#a78bfa;text-decoration:none;font-weight:600;">dotazník</a> — získáte personalizovaný přehled rizik.
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:8px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+                <span style="color:#d946ef;font-weight:700;">3.</span>
+                Prohlédněte si vzorové dokumenty a zjistěte, co vše pro vás AIshield připraví.
+            </td>
+        </tr>
+        </table>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin-bottom:24px;">
+    <tr><td style="padding:24px;">
+        <p style="margin:0 0 12px 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Zkušební přístup vám umožní prozkoumat platformu bez závazků.
+        </p>
+        <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+            Pokud budete chtít plnou verzi s kompletní dokumentací, stačí si objednat na
+            <a href="https://aishield.cz/#pricing" style="color:#a78bfa;text-decoration:none;font-weight:600;">aishield.cz</a>.
+        </p>
+    </td></tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:8px 0 0 0;">
+        <a href="https://aishield.cz/dotaznik"
+           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7c3aed,#d946ef);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;">
+            Vyplnit dotazník
+        </a>
+    </td></tr>
+    <tr><td align="center" style="padding:12px 0 0 0;">
+        <a href="https://aishield.cz/dashboard"
+           style="display:inline-block;padding:12px 28px;border:1px solid rgba(255,255,255,0.15);color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;border-radius:12px;">
+            Přejít na Dashboard
+        </a>
+    </td></tr>
+    </table>
+    """
+    return _email_wrapper(content)
