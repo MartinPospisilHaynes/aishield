@@ -19,6 +19,22 @@ export function isAdminLoggedIn(): boolean {
     return !!getAdminToken();
 }
 
+/** Ověří token proti backendu — vrátí true pokud je platný */
+export async function verifyAdminToken(): Promise<boolean> {
+    const token = getAdminToken();
+    if (!token) return false;
+    try {
+        const res = await adminFetch(`${API_URL}/api/crm/verify`);
+        if (!res.ok) {
+            clearAdminToken();
+            return false;
+        }
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // Helper for admin-authenticated requests
 // Sends X-Admin-Token header for CRM authentication (no Supabase needed)
 async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {

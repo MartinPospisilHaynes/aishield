@@ -142,6 +142,18 @@ async def admin_crm_login(request: Request):
 
 
 # ─────────────────────────────────────────────
+# 1b. GET /crm/verify — Ověření platnosti admin tokenu
+# ─────────────────────────────────────────────
+
+@router.get("/crm/verify")
+async def admin_verify_token(
+    user: AuthUser = Depends(require_admin),
+):
+    """Ověří, zda je admin token stále platný."""
+    return {"ok": True, "username": "ADMIN"}
+
+
+# ─────────────────────────────────────────────
 # 2. GET /crm/company/{company_id} — Full company detail
 # ─────────────────────────────────────────────
 

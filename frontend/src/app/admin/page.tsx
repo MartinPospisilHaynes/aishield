@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
     isAdminLoggedIn,
+    verifyAdminToken,
     clearAdminToken,
     getCrmDashboardStats,
     getCrmPipeline,
@@ -310,6 +311,7 @@ function Panel({ children, className = "" }: { children: React.ReactNode; classN
 export default function AdminPage() {
     // Auth
     const [authed, setAuthed] = useState<boolean | null>(null);
+    const [saveToast, setSaveToast] = useState<string | null>(null);
 
     // Navigation
     const [tab, setTab] = useState<Tab>("prehled");
@@ -400,14 +402,21 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
-    // ── Auth check ──
+    // ── Auth check — ověření tokenu proti backendu ──
     useEffect(() => {
-        const ok = isAdminLoggedIn();
-        if (!ok) {
-            window.location.href = "/admin/login";
-            return;
-        }
-        setAuthed(true);
+        const verify = async () => {
+            if (!isAdminLoggedIn()) {
+                window.location.href = "/admin/login";
+                return;
+            }
+            const valid = await verifyAdminToken();
+            if (!valid) {
+                window.location.href = "/admin/login";
+                return;
+            }
+            setAuthed(true);
+        };
+        verify();
     }, []);
 
     // ── Data loaders ──
@@ -606,8 +615,11 @@ export default function AdminPage() {
             try {
                 await updateCompanyStatus(companyId, { [field]: value });
                 await loadCompanies();
+                setSaveToast("✅ Uloženo");
+                setTimeout(() => setSaveToast(null), 2500);
             } catch {
-                // silent
+                setSaveToast("❌ Chyba při ukládání");
+                setTimeout(() => setSaveToast(null), 3000);
             }
         },
         [loadCompanies]
@@ -1178,6 +1190,12 @@ export default function AdminPage() {
                     {/* ══════════════════════════════════════════ */}
                     {tab === "firmy" && (
                         <>
+                            {/* Save toast */}
+                            {saveToast && (
+                                <div className="fixed top-6 right-6 z-50 bg-gray-900 border border-cyan-500/30 rounded-xl px-5 py-3 text-sm text-white shadow-lg shadow-cyan-500/10 animate-pulse">
+                                    {saveToast}
+                                </div>
+                            )}
                             {/* Filters */}
                             <div className="flex flex-wrap gap-3">
                                 <input
@@ -1252,13 +1270,13 @@ export default function AdminPage() {
                                                             }
                                                             className="border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
                                                         >
-                                                            <td className="p-3 text-white font-medium max-w-[200px] truncate">
+                                                            <td className="p-3 text-white font-medium max-w-[300px] truncate">
                                                                 {c.name || "—"}
                                                             </td>
-                                                            <td className="p-3 text-cyan-400 text-xs truncate max-w-[180px]">
+                                                            <td className="p-3 text-cyan-400 text-xs truncate max-w-[280px]">
                                                                 {c.url || "—"}
                                                             </td>
-                                                            <td className="p-3 text-gray-300 text-xs truncate max-w-[180px]">
+                                                            <td className="p-3 text-gray-300 text-xs truncate max-w-[280px]">
                                                                 {c.email || "—"}
                                                             </td>
                                                             <td className="p-3" onClick={(e) => e.stopPropagation()}>
