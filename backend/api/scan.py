@@ -242,6 +242,28 @@ async def get_scan_status(scan_id: str):
 
         scan = result.data[0]
 
+        # Detekce zaseknutého skenu — pokud běží >5 minut, worker zřejmě spadl
+        STALE_SCAN_TIMEOUT_SECONDS = 300  # 5 minut
+        if scan["status"] in ("running", "queued") and scan.get("started_at"):
+            try:
+                started = datetime.fromisoformat(scan["started_at"].replace("Z", "+00:00"))
+                elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+                if elapsed > STALE_SCAN_TIMEOUT_SECONDS:
+                    import logging
+                    logging.getLogger(__name__).warning(
+                        f"[StaleScan] Scan {scan_id} běží {elapsed:.0f}s — označuji jako error"
+                    )
+                    now_iso = datetime.now(timezone.utc).isoformat()
+                    supabase.table("scans").update({
+                        "status": "error",
+                        "error_message": f"Sken vypršel po {int(elapsed)}s — worker proces zřejmě spadl. Zkuste to prosím znovu.",
+                        "finished_at": now_iso,
+                    }).eq("id", scan_id).execute()
+                    scan["status"] = "error"
+                    scan["finished_at"] = now_iso
+            except Exception:
+                pass  # Nepodstatné — neblokujeme odpověď
+
         # Zjistíme jméno firmy
         company = supabase.table("companies").select("name").eq(
             "id", scan["company_id"]

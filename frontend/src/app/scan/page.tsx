@@ -173,6 +173,8 @@ function ScanPageInner() {
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autoStartedRef = useRef(false);
+    const pollCountRef = useRef(0);
+    const MAX_POLL_ATTEMPTS = 70; // 70 × 3s = ~3.5 min
 
     useEffect(() => {
         return () => {
@@ -191,7 +193,21 @@ function ScanPageInner() {
 
     const startPolling = useCallback(
         (id: string) => {
+            pollCountRef.current = 0;
             pollingRef.current = setInterval(async () => {
+                pollCountRef.current += 1;
+                // Timeout ochrana — po MAX_POLL_ATTEMPTS přestaneme pollovat
+                if (pollCountRef.current > MAX_POLL_ATTEMPTS) {
+                    if (pollingRef.current) clearInterval(pollingRef.current);
+                    pollingRef.current = null;
+                    if (stageRef.current) clearTimeout(stageRef.current);
+                    stageRef.current = null;
+                    setCurrentStage(SCAN_STAGES.length);
+                    setLoading(false);
+                    setScanResult((prev) => prev ? { ...prev, status: "error" } : null);
+                    track("scan_error", { scan_id: id, error: "polling_timeout" }, Date.now() - scanStartTimeRef.current);
+                    return;
+                }
                 try {
                     const status = await getScanStatus(id);
                     setScanResult(status);
