@@ -1282,19 +1282,19 @@ export default function AdminPage() {
 
                             {/* Table */}
                             <Panel className="overflow-hidden">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
+                                <div>
+                                    <table className="w-full text-sm table-fixed">
                                         <thead className="bg-white/5">
                                             <tr>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Název</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">URL</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Email</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Stav</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Platba</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Priorita</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Emaily</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium">Skóre</th>
-                                                <th className="text-left p-3 text-gray-400 font-medium w-[80px]"></th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[18%]">Název</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[15%]">URL</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[16%]">Email</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[13%]">Stav</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[13%]">Platba</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[9%]">Priorita</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[4%]">📧</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[4%]">📊</th>
+                                                <th className="text-left p-3 text-gray-400 font-medium w-[8%]"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1320,13 +1320,13 @@ export default function AdminPage() {
                                                             }
                                                             className={`border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${isDirty ? "bg-cyan-500/[0.04]" : ""}`}
                                                         >
-                                                            <td className="p-3 text-white font-medium max-w-[300px] truncate">
+                                                            <td className="p-3 text-white font-medium truncate overflow-hidden">
                                                                 {c.name || "—"}
                                                             </td>
-                                                            <td className="p-3 text-cyan-400 text-xs truncate max-w-[280px]">
+                                                            <td className="p-3 text-cyan-400 text-xs truncate overflow-hidden">
                                                                 {c.url || "—"}
                                                             </td>
-                                                            <td className="p-3 text-gray-300 text-xs truncate max-w-[280px]">
+                                                            <td className="p-3 text-gray-300 text-xs truncate overflow-hidden">
                                                                 {c.email || "—"}
                                                             </td>
                                                             <td className="p-3" onClick={(e) => e.stopPropagation()}>
