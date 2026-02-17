@@ -539,7 +539,7 @@ export default function DashboardPage() {
                                 </>
                             )}
                             {hasScans && uniqueSystemsCount === 0 && !hasQuest && (
-                                <p className="text-[10px] text-amber-400/80 mt-2">100% jistotu budeme mít až po vyplnění dotazníku.</p>
+                                <p className="text-[10px] text-amber-400/80 mt-2">Sken prověřuje jen web — AI Act reguluje i interní systémy. Vyplňte dotazník pro úplný obraz.</p>
                             )}
                             {/* Expandable scan findings */}
                             {hasScans && uniqueSystemsCount > 0 && (
@@ -575,7 +575,7 @@ export default function DashboardPage() {
                             {!hasQuest ? (
                                 <>
                                     <p className="text-2xl font-extrabold mt-1 text-slate-500">—</p>
-                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Dotazník zatím nebyl vyplněn.</p>
+                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Sken prověřuje jen web. AI Act reguluje i interní systémy — vyplňte dotazník.</p>
                                 </>
                             ) : qFindings.length > 0 ? (
                                 <>
@@ -864,7 +864,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             label: "Dotazník",
             desc: hasQuest
                 ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
-                : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot...)",
+                : "Sken odhalí jen web — dotazník pokryje i interní AI (ChatGPT, Copilot, HR, účetnictví…)",
             href: hasScans && !hasQuest ? `/dotaznik?company_id=${data?.company?.id || ''}` : null,
             cta: !hasScans ? "🔒 Nejprve skenujte web" : !hasQuest ? "Vyplnit dotazník" : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
             onClick: (hasScans && hasQuest && qUnknowns.length > 0) ? onShowPlan : undefined as (() => void) | undefined,
@@ -1269,7 +1269,9 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
             {!hasQuest && findings.length > 0 && (
                 <div className="mt-4 rounded-xl border border-fuchsia-500/15 bg-fuchsia-500/[0.03] p-4 text-center">
                     <p className="text-sm text-slate-300 mb-3">
-                        Sken odhalil AI systémy na webu. <strong className="text-slate-300">Vyplňte dotazník</strong> pro odhalení interních AI nástrojů (ChatGPT, AI nábor, rozhodování…).
+                        Sken odhalil AI systémy na webu, ale <strong className="text-white">EU AI Act reguluje i interní nástroje</strong>,
+                        které zákazník nikdy neuvidí — ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR nebo AI rozhodování.
+                        Vyplňte dotazník a pokryjte celou AI politiku firmy.
                     </p>
                     <a href={`/dotaznik?company_id=${companyId}`} className="btn-primary text-sm px-5 py-2 inline-block">
                         Vyplnit dotazník

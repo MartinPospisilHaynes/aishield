@@ -480,7 +480,7 @@ function ScanPageInner() {
                                 <div>
                                     <p className="text-sm font-medium text-amber-300">Neopouštějte prosím tuto stránku</p>
                                     <p className="text-xs text-amber-400/70 mt-0.5">
-                                        Generování compliance reportu může trvat 30–60 sekund. Umělá inteligence právě vyhodnocuje každý nález — prosím vyčkejte.
+                                        Generování reportu může trvat 30–60 sekund. Umělá inteligence právě vyhodnocuje každý nález — prosím vyčkejte.
                                     </p>
                                 </div>
                             </div>
@@ -631,8 +631,9 @@ function ScanPageInner() {
                                     <div className="rounded-xl bg-cyan-500/8 border border-cyan-500/20 p-4 mt-3">
                                         <p className="text-sm text-cyan-200 leading-relaxed">
                                             <strong className="text-white">Sken je první krok.</strong>{" "}
-                                            Pro kompletní posouzení je nutné vyplnit dotazník, který nám dá detailní přehled o všech AI systémech ve vaší firmě
-                                            — včetně těch, které automatický sken neodhalí (interní nástroje, API integrace, backendové systémy).
+                                            EU AI Act ale nekontroluje jen váš web — reguluje i interní AI systémy, které zákazníci nikdy neuvidí:
+                                            ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR nebo generování obsahu.
+                                            Dotazník pokryje celou AI politiku vaší firmy, nejen to, co je vidět navenek.
                                         </p>
                                     </div>
 
@@ -737,9 +738,10 @@ function ScanPageInner() {
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-cyan-500/8 border border-fuchsia-500/25 p-6 text-center">
                                     <h3 className="text-lg font-bold text-white">Jak zjistit, jestli potřebujete řešit AI Act?</h3>
                                     <p className="text-sm text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
-                                        Vyplňte krátký dotazník — na jeho základě vám <strong className="text-white">zdarma vyhodnotíme</strong>,
-                                        zda vaše firma používá AI systémy, které spadají pod regulaci EU AI Act,
-                                        a jaké kroky případně musíte podniknout.
+                                        Sken webu je jen začátek. <strong className="text-white">EU AI Act reguluje i interní AI systémy</strong>,
+                                        které na webu vůbec nejsou vidět — ChatGPT pro zaměstnance, AI v účetnictví, automatizace HR,
+                                        generování obsahu nebo rozhodovací algoritmy. Vyplňte krátký dotazník a my vám <strong className="text-white">zdarma vyhodnotíme</strong>,
+                                        zda vaše firma spadá pod regulaci a jaké kroky musíte podniknout.
                                     </p>
                                     <p className="text-xs text-slate-400 mt-2">
                                         Po registraci získáte přístup do klientské zóny, kde uvidíte výsledky skenu i dotazníku

@@ -573,12 +573,32 @@ function QuestionnaireInner() {
                             </>
                         )}
                     </h1>
-                    <p className="text-slate-400 text-lg mb-10">
+                    <p className="text-slate-400 text-lg mb-6">
                         {isEditMode
                             ? "Vaše předchozí odpovědi jsou předvyplněné. Projděte otázky a upravte, co potřebujete."
                             : `${totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
                         }
                     </p>
+
+                    {/* Why questionnaire matters */}
+                    {!isEditMode && (
+                        <div className="rounded-2xl bg-gradient-to-br from-cyan-500/[0.06] to-fuchsia-500/[0.06] border border-cyan-500/15 p-5 mb-8 text-left max-w-md mx-auto">
+                            <div className="flex items-start gap-3">
+                                <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-semibold text-white mb-1">Proč je dotazník potřeba?</p>
+                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                        EU AI Act se netýká jen toho, co je vidět na webu. Regulace zahrnuje i <strong className="text-cyan-300">interní AI systémy</strong> — nástroje pro HR,
+                                        účetnictví, rozhodování, generování obsahu nebo komunikaci se zaměstnanci.
+                                        Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokrývá <strong className="text-cyan-300">celou AI politiku firmy</strong>,
+                                        včetně toho, co zákazník nikdy neuvidí.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Feature cards */}
                     <div className="grid grid-cols-3 gap-3 mb-10">

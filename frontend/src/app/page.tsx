@@ -184,14 +184,15 @@ const FAQ_ITEMS = [
             "1) Zadáte adresu svého webu — náš robot ho automaticky proskenuje a během minuty identifikuje všechny AI systémy. " +
             "2) Dostanete přehledný report s výsledky — jaké AI nástroje máte, jaké povinnosti z nich plynou a do jaké kategorie spadáte. " +
             "3) Vyberete si balíček služeb podle vašich potřeb — od základního BASIC po kompletní ENTERPRISE s konzultací. " +
-            "4) Vyplníte krátký dotazník o vaší firmě (zabere asi 5 minut, většinou jen klikáte) — díky tomu připravíme dokumenty přesně na míru. " +
+            "4) Vyplníte krátký dotazník o vaší firmě (zabere asi 5 minut, většinou jen klikáte). Dotazník je klíčový, protože EU AI Act se netýká jen vašeho webu — reguluje i interní AI systémy, které zákazník nikdy neuvidí (ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR…). Sken odhalí jen to veřejné; dotazník pokryje celou AI politiku firmy. " +
             "5) Do 7 dnů obdržíte vše, co váš balíček obsahuje — kompletní sadu dokumentů v PDF, implementaci i nastavení. Všechno vyřídime za vás, můžete být v klidu.",
     },
     {
         q: "Co musím vyplnit v dotazníku?",
         a: "Dotazník je navržený tak, aby byl co nejjednodušší — většinou jen klikáte na odpovědi, žádné dlouhé psaní. " +
             "Ptáme se na základní informace: velikost firmy, obor podnikání, jaké AI nástroje používáte interně (ChatGPT, Copilot, AI v účetním softwaru...) a jak je používají vaši zaměstnanci. " +
-            "Tyto informace potřebujeme, abychom vám mohli připravit dokumenty přesně na míru — generická dokumentace by vám k ničemu nebyla. " +
+            "EU AI Act totiž nereguluje jen to, co je vidět na vašem webu — zahrnuje i interní AI systémy, které zákazník nikdy neuvidí: automatizaci HR, generování obsahu, rozhodovací algoritmy nebo AI komunikaci uvnitř firmy. " +
+            "Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokryje celou AI politiku vaší firmy, abychom vám mohli připravit dokumenty přesně na míru. " +
             "Vyplnění trvá asi 5 minut. Odpovědi můžete kdykoliv upravit a dokumenty se automaticky přegenerují podle nových údajů.",
     },
     {
@@ -718,8 +719,8 @@ export default function HomePage() {
                             </div>
                             <h3 className="text-base sm:text-lg font-semibold mb-2">Vyplníte dotazník</h3>
                             <p className="text-xs sm:text-sm text-slate-400">
-                                Krátký dotazník o vaší firmě — většinou jen klikáte.
-                                Díky tomu přípravu dokumentů přesně na míru.
+                                AI Act se netýká jen webu — reguluje i interní nástroje (ChatGPT, účetnictví, HR…).
+                                Dotazník pokryje celou AI politiku firmy. 5 minut, většinou jen klikáte.
                             </p>
                         </div>
 
