@@ -203,16 +203,36 @@ export default function AdminLoginPage() {
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             🔢 Bezpečnostní otázka: <span className="text-cyan-400 font-mono font-bold">{captcha.question}</span>
                         </label>
-                        <input
-                            type="number"
-                            value={captchaAnswer}
-                            onChange={(e) => setCaptchaAnswer(e.target.value)}
-                            className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all"
-                            placeholder="Zadejte odpověď"
-                            required
-                            disabled={isLocked}
-                            autoComplete="off"
-                        />
+                        <div className="flex items-stretch gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setCaptchaAnswer(String((parseInt(captchaAnswer, 10) || 0) - 1))}
+                                disabled={isLocked}
+                                className="w-12 flex items-center justify-center rounded-xl bg-black/30 border border-white/10 text-white text-xl font-bold hover:bg-white/10 hover:border-cyan-500/40 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                                tabIndex={-1}
+                            >
+                                −
+                            </button>
+                            <input
+                                type="number"
+                                value={captchaAnswer}
+                                onChange={(e) => setCaptchaAnswer(e.target.value)}
+                                className="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white text-center text-lg font-mono placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                placeholder="Odpověď"
+                                required
+                                disabled={isLocked}
+                                autoComplete="off"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setCaptchaAnswer(String((parseInt(captchaAnswer, 10) || 0) + 1))}
+                                disabled={isLocked}
+                                className="w-12 flex items-center justify-center rounded-xl bg-black/30 border border-white/10 text-white text-xl font-bold hover:bg-white/10 hover:border-cyan-500/40 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                                tabIndex={-1}
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
 
                     {error && (

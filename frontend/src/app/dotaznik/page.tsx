@@ -436,24 +436,20 @@ function QuestionnaireInner() {
                 if (q.type === "yes_no_unknown" || q.type === "yes_unknown") {
                     if (e.key === "1") {
                         setAnswer(q.key, "yes");
-                        if (isLastQ) { console.log('[Dotazník] Keyboard 1=yes on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
-                        else if (!q.followup) setTimeout(goNext, 300);
+                        if (!isLastQ && !q.followup) setTimeout(goNext, 300);
                     }
                     if (e.key === "2" && q.type === "yes_no_unknown") {
                         setAnswer(q.key, "no");
-                        if (isLastQ) { console.log('[Dotazník] Keyboard 2=no on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
-                        else setTimeout(goNext, 300);
+                        if (!isLastQ) setTimeout(goNext, 300);
                     }
                     if ((e.key === "3" && q.type === "yes_no_unknown") || (e.key === "2" && q.type === "yes_unknown")) {
                         setAnswer(q.key, "unknown");
-                        if (isLastQ) { console.log('[Dotazník] Keyboard 3=unknown on last Q, auto-submit'); setTimeout(handleSubmit, 600); }
-                        else setTimeout(goNext, 300);
+                        if (!isLastQ) setTimeout(goNext, 300);
                     }
                 }
             }
             if (e.key === "Enter") {
-                if (isLastQ) handleSubmit();
-                else goNext();
+                if (!isLastQ) goNext();
             }
         };
         window.addEventListener("keydown", handler);
@@ -701,10 +697,7 @@ function QuestionnaireInner() {
                                                 });
                                             } else {
                                                 setAnswer(q.key, opt);
-                                                if (isLast) {
-                                                    console.log('[Dotazník] Poslední otázka (single-select) zodpovězena, auto-submit');
-                                                    setTimeout(handleSubmit, 600);
-                                                } else {
+                                                if (!isLast) {
                                                     setTimeout(goNext, 350);
                                                 }
                                             }
@@ -831,9 +824,7 @@ function QuestionnaireInner() {
                                                 setTimeout(() => { handleSubmit(); }, 400);
                                             }
                                         } else if (isLast) {
-                                            // LAST QUESTION: auto-submit after visual feedback
-                                            console.log('[Dotazník] Poslední otázka zodpovězena, auto-submit za 600ms');
-                                            setTimeout(handleSubmit, 600);
+                                            // LAST QUESTION: user must click submit button manually
                                         } else if (q.followup && q.followup.condition === opt.value) {
                                             // This answer triggers followup — don't auto-advance
                                         } else if (!q.followup || q.followup.condition !== opt.value) {
@@ -1057,9 +1048,9 @@ function QuestionnaireInner() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || !ans?.answer}
-                                className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed animate-pulse shadow-lg shadow-cyan-500/20"
+                                className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                             >
-                                {submitting ? "Odesílám…" : "Odeslat"}
+                                {submitting ? "Odesílám…" : "✅ Ukončit a odeslat dotazník"}
                             </button>
                         ) : ans?.answer ? (
                             <button
@@ -1072,17 +1063,17 @@ function QuestionnaireInner() {
                     </div>
 
                     {/* Nevím hint */}
-                    <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
-                        {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
-                    </p>
+                <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
+                    {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
+                </p>
 
-                    {/* Save & Continue Later */}
-                    <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
-                </div>
+                {/* Save & Continue Later */}
+                <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
             </div>
+        </div>
 
-            {/* Inline animations */}
-            <style>{`
+            {/* Inline animations */ }
+    <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: scale(0.98); }
           to { opacity: 1; transform: scale(1); }
@@ -1112,7 +1103,7 @@ function QuestionnaireInner() {
           animation: slide-down 0.4s ease-out;
         }
       `}</style>
-        </div>
+        </div >
     );
 }
 
