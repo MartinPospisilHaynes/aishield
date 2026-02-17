@@ -319,8 +319,11 @@ def generate_report_email_html(
 
         <!-- WHAT WE DELIVER -->
         <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
-            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:16px;text-align:center;">
-                Co pro vás připravíme?
+            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:4px;text-align:center;">
+                Co všechno pro vás připravíme?
+            </div>
+            <div style="font-size:13px;color:{D["text_muted"]};margin-bottom:16px;text-align:center;">
+                Kompletní balíček dokumentace na míru pro {company_name}
             </div>
             <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
@@ -329,19 +332,8 @@ def generate_report_email_html(
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="3" stroke="{D['accent_fuchsia']}" stroke-width="1.5"/><path d="M8 12h8M8 8h8M8 16h5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/></svg>
                         </td>
                         <td>
-                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Compliance Report</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Kompletní přehled AI systémů a stavu vašeho webu</div>
-                        </td>
-                    </tr></table>
-                </td></tr>
-                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
-                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
-                        <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="{D['accent_cyan']}" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </td>
-                        <td>
-                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Akční plán</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Co udělat a do kdy — krok za krokem s checkboxy</div>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">AI Act Compliance Report</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Kompletní přehled AI systémů na vašem webu, hodnocení rizik a odkazy na konkrétní články AI Actu</div>
                         </td>
                     </tr></table>
                 </td></tr>
@@ -352,7 +344,7 @@ def generate_report_email_html(
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Registr AI systémů</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Evidence AI nástrojů — připraveno pro úřady</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Evidence všech AI nástrojů na vašem webu — připraveno pro případnou kontrolu úřadů</div>
                         </td>
                     </tr></table>
                 </td></tr>
@@ -363,7 +355,7 @@ def generate_report_email_html(
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Transparenční stránka</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Hotový HTML kód pro váš web — stačí vložit</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Hotový HTML kód podstránky splňující <a href="{AI_ACT_LINKS['čl. 50']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 50 AI Act</a> — stačí vložit na váš web</div>
                         </td>
                     </tr></table>
                 </td></tr>
@@ -373,23 +365,61 @@ def generate_report_email_html(
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="{D['warning']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </td>
                         <td>
-                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Chatbot oznámení + AI politika firmy</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Povinné texty pro zákazníky + interní pravidla pro zaměstnance</div>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Texty oznámení pro AI nástroje</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Povinná oznámení pro chatboty a další AI systémy — v češtině i angličtině</div>
                         </td>
                     </tr></table>
                 </td></tr>
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">AI politika firmy</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Interní pravidla pro zaměstnance ohledně používání AI nástrojů ve vaší firmě</div>
+                        </td>
+                    </tr></table>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:linear-gradient(135deg, {D["bg_section"]}, #1a1040);border-radius:8px;border:1px solid {D['accent_fuchsia']}30;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 14v7" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M21 9v5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M6 11.5V17c0 1 2.7 3 6 3s6-2 6-3v-5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </td>
                         <td>
-                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Školení zaměstnanců</div>
-                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Osnova povinného školení dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a></div>
+                            <div style="font-size:14px;font-weight:600;color:{D['accent_fuchsia']};">Školení zaměstnanců v PowerPointu</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Prezentace na míru přímo pro {company_name} — splnění povinnosti AI gramotnosti dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a></div>
+                        </td>
+                    </tr></table>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
+                        <td style="width:32px;vertical-align:top;padding-right:10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="{D['accent_cyan']}" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </td>
+                        <td>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Záznamový list o proškolení</div>
+                            <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Doklad o splnění povinnosti AI gramotnosti — připraveno k podpisu zaměstnanci</div>
                         </td>
                     </tr></table>
                 </td></tr>
             </table>
+
+            <!-- ENTERPRISE EXTRAS -->
+            <div style="margin-top:16px;padding:16px;background:linear-gradient(135deg, #0f1b3d, #1a1040);border:1px solid {D['accent_purple']}40;border-radius:10px;">
+                <div style="font-size:13px;font-weight:700;color:{D['accent_fuchsia']};margin-bottom:10px;text-align:center;">
+                    A pro firmy, které chtějí kompletní péči:
+                </div>
+                <div style="font-size:13px;color:{D['text_secondary']};line-height:2;">
+                    &#10003; Implementace na klíč — instalace widgetu, transparenční stránky i chatbot oznámení přímo na váš web<br>
+                    &#10003; 10 hodin konzultací s compliance specialistou<br>
+                    &#10003; Metodická kontrola veškeré dokumentace<br>
+                    &#10003; Rozšířený audit interních AI systémů<br>
+                    &#10003; Multi-domain — pokrytí více webů a e-shopů<br>
+                    &#10003; 2 roky měsíčního monitoringu — automatický sken, aktualizace dokumentů<br>
+                    &#10003; Dedikovaný specialista + SLA s dobou odezvy 4 hodiny
+                </div>
+            </div>
         </div>
 
         <!-- PRICING PLANS -->
@@ -408,8 +438,10 @@ def generate_report_email_html(
                     ✓ Sken webu + AI Act report &nbsp;&nbsp;
                     ✓ 7 PDF dokumentů &nbsp;&nbsp;
                     ✓ Transparenční stránka &nbsp;&nbsp;
-                    ✓ Akční plán &nbsp;&nbsp;
-                    ✓ Registr AI systémů
+                    ✓ Registr AI systémů &nbsp;&nbsp;
+                    ✓ AI politika firmy &nbsp;&nbsp;
+                    ✓ Školení v PowerPointu &nbsp;&nbsp;
+                    ✓ Záznamový list o proškolení
                 </div>
             </div>
 
@@ -439,15 +471,18 @@ def generate_report_email_html(
             <!-- ENTERPRISE -->
             <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
                 <div style="font-size:16px;font-weight:700;color:{D["text"]};">ENTERPRISE</div>
-                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + monitoring</div>
-                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">49&nbsp;999+&nbsp;Kč</div>
-                <div style="font-size:11px;color:{D["text_muted"]};">individuální</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + 2 roky monitoringu</div>
+                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">39&nbsp;999&nbsp;Kč</div>
+                <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
                 <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                     ✓ Vše z PRO &nbsp;&nbsp;
-                    ✓ Konzultace se specialistou &nbsp;&nbsp;
-                    ✓ Měsíční monitoring &nbsp;&nbsp;
-                    ✓ Školení AI literacy &nbsp;&nbsp;
-                    ✓ SLA s dobou odezvy
+                    ✓ 10h konzultací se specialistou &nbsp;&nbsp;
+                    ✓ Metodická kontrola dokumentace &nbsp;&nbsp;
+                    ✓ Rozšířený audit interních AI &nbsp;&nbsp;
+                    ✓ Multi-domain (více webů) &nbsp;&nbsp;
+                    ✓ 2 roky měsíčního monitoringu &nbsp;&nbsp;
+                    ✓ Dedikovaný specialista &nbsp;&nbsp;
+                    ✓ SLA 4h odezva
                 </div>
             </div>
         </div>
