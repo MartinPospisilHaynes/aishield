@@ -1,9 +1,9 @@
 """
-AIshield.cz — Web Scanner (Playwright)
+AIshield.cz — Web Scanner v4 (Playwright)
 Hlavní modul pro skenování webových stránek.
 
-Otevře URL v headless Chromium, načte stránku,
-extrahuje HTML, skripty a metadata.
+v4: Enriched network capture — zachytává nejen URL, ale i metodu,
+    resource_type a response hlavičky pro Network Interceptor.
 """
 
 import asyncio
@@ -30,7 +30,8 @@ class ScannedPage:
     meta_tags: dict[str, str] = field(default_factory=dict) # name -> content
     cookies: list[dict] = field(default_factory=list)
     console_messages: list[str] = field(default_factory=list)
-    network_requests: list[str] = field(default_factory=list)  # URL požadavků
+    network_requests: list[str] = field(default_factory=list)  # URL požadavků (zpětná kompatibilita)
+    network_data: list[dict] = field(default_factory=list)     # v4: Enriched [{url, method, resource_type, status, headers}]
     duration_ms: int = 0
     error: str | None = None
     scanned_at: str = ""
@@ -38,10 +39,23 @@ class ScannedPage:
 
 class WebScanner:
     """
-    Playwright-based web scanner.
+    Playwright-based web scanner v4.
     Otevře stránku v headless Chromium a extrahuje vše potřebné
     pro detekci AI systémů.
+
+    v4: Enriched network capture pro Network Interceptor.
     """
+
+    # AI-related domény — pro tyto zachytíme i response headers
+    AI_DOMAINS = {
+        "openai.com", "anthropic.com", "googleapis.com",
+        "mistral.ai", "cohere.ai", "cohere.com", "huggingface.co",
+        "replicate.com", "together.xyz", "perplexity.ai",
+        "groq.com", "elevenlabs.io", "stability.ai",
+        "fireworks.ai", "cerebras.ai", "deepl.com",
+        "azure.com", "amazonaws.com", "tidio.co",
+        "intercom.io", "drift.com", "x.ai", "deepseek.com",
+    }
 
     def __init__(
         self,
@@ -66,6 +80,7 @@ class WebScanner:
         result.scanned_at = start.isoformat()
 
         network_urls: list[str] = []
+        network_enriched: list[dict] = []
         console_msgs: list[str] = []
 
         async with async_playwright() as pw:
@@ -88,8 +103,40 @@ class WebScanner:
 
             page: Page = await context.new_page()
 
-            # Sbíráme network requesty
-            page.on("request", lambda req: network_urls.append(req.url))
+            # ── v4: Enriched request capture ──
+            def on_request(req):
+                network_urls.append(req.url)
+                network_enriched.append({
+                    "url": req.url,
+                    "method": req.method,
+                    "resource_type": req.resource_type,
+                    "status": None,
+                    "headers": {},
+                })
+
+            page.on("request", on_request)
+
+            # ── v4: Response capture — zachytíme status + AI headers ──
+            def on_response(resp):
+                resp_url = resp.url
+                # Najdeme odpovídající request v enriched datech
+                for nd in reversed(network_enriched):
+                    if nd["url"] == resp_url and nd["status"] is None:
+                        nd["status"] = resp.status
+                        # Zachytíme hlavičky pro AI-related domény
+                        try:
+                            resp_url_lower = resp_url.lower()
+                            is_ai_domain = any(
+                                d in resp_url_lower for d in self.AI_DOMAINS
+                            )
+                            if is_ai_domain:
+                                # Async headers — uložíme co máme sync
+                                nd["headers"] = dict(resp.headers)
+                        except Exception:
+                            pass
+                        break
+
+            page.on("response", on_response)
 
             # Sbíráme console messages
             page.on("console", lambda msg: console_msgs.append(
@@ -217,6 +264,7 @@ class WebScanner:
 
             finally:
                 result.network_requests = network_urls
+                result.network_data = network_enriched
                 result.console_messages = console_msgs
 
                 end = datetime.now(timezone.utc)

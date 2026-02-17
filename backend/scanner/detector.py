@@ -1,16 +1,21 @@
 """
-AIshield.cz — AI Detector v2
+AIshield.cz — AI Detector v3
 Porovnává výsledky web scanneru s databází AI signatur.
 Najde AI systémy na stránce.
 
-v2: Přidána heuristická detekce — analyze neznámých AI systémů,
-    JSON-LD structured data, AI transparency notices, API proxy patterns.
+v3: Network Interceptor integration — zachytává REÁLNÉ network requesty
+    na AI API (api.openai.com, api.anthropic.com...) s confidence 0.95.
+    Plus heuristická detekce z v2.
 """
 
 import re
 from dataclasses import dataclass
 from backend.scanner.web_scanner import ScannedPage
 from backend.scanner.signatures import AISignature, get_all_signatures
+from backend.scanner.network_interceptor import NetworkInterceptor, NetworkAnalysisResult
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -135,7 +140,45 @@ class AIDetector:
                 ))
                 found_names.add(sig.name.lower())
 
-        # ── 2. Heuristic detection ──
+        # ── 2. Network Interceptor — zachytí REÁLNÉ API volání ──
+        interceptor = NetworkInterceptor()
+        net_result: NetworkAnalysisResult = interceptor.analyze(
+            network_requests=page.network_requests,
+            response_data=getattr(page, "network_data", None),
+        )
+
+        if net_result.ai_requests:
+            logger.info(
+                f"[Detector] NetworkInterceptor: {len(net_result.ai_requests)} "
+                f"přímých AI API volání zachyceno!"
+            )
+            for evidence in net_result.ai_requests:
+                if evidence.matched_api.lower() not in " ".join(found_names):
+                    results.append(DetectedAI(
+                        name=evidence.matched_api,
+                        category=evidence.category,
+                        risk_level=evidence.risk_level,
+                        ai_act_article=evidence.ai_act_article,
+                        action_required=f"SÍŤOVÝ DŮKAZ: {evidence.description_cs} "
+                                       "AI systém musí být transparentně označen dle AI Act.",
+                        description_cs=evidence.description_cs,
+                        matched_signatures=[f"network_intercept:{evidence.url[:150]}"],
+                        evidence=[
+                            f"Network: {evidence.method} {evidence.url[:200]}",
+                            f"Status: {evidence.response_status}",
+                            f"Resource: {evidence.resource_type}",
+                        ],
+                        confidence=evidence.confidence,
+                    ))
+                    found_names.add(evidence.matched_api.lower())
+
+        if net_result.proxy_suspects:
+            logger.info(
+                f"[Detector] NetworkInterceptor: {len(net_result.proxy_suspects)} "
+                f"podezřelých proxy endpointů"
+            )
+
+        # ── 3. Heuristic detection ──
         heuristic_results = self._heuristic_detect(page, found_names)
         results.extend(heuristic_results)
 
@@ -247,7 +290,7 @@ class AIDetector:
         return comment_end == -1 or comment_end > idx
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # HEURISTICKÁ DETEKCE
+    # HEURISTICKÁ DETEKCE (v2, doplňuje Network Interceptor)
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     def _heuristic_detect(
