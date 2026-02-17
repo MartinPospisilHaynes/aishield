@@ -802,6 +802,49 @@ async def get_questionnaire_results(company_id: str):
     }
 
 
+@router.get("/questionnaire/{company_id}/progress")
+async def get_questionnaire_progress(company_id: str):
+    """Vrátí postup vyplnění dotazníku v procentech."""
+    supabase = get_supabase()
+    total_questions = sum(len(s["questions"]) for s in QUESTIONNAIRE_SECTIONS)
+
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        return {
+            "company_id": company_id,
+            "total_questions": total_questions,
+            "answered": 0,
+            "unknown_count": 0,
+            "percentage": 0,
+            "status": "nezahajeno",
+        }
+
+    result = supabase.table("questionnaire_responses") \
+        .select("question_key, answer") \
+        .eq("client_id", client_id) \
+        .execute()
+
+    answered = len(result.data) if result.data else 0
+    unknown_count = sum(1 for r in (result.data or []) if r.get("answer") == "unknown")
+    pct = round((answered / total_questions) * 100) if total_questions > 0 else 0
+
+    if pct == 0:
+        status = "nezahajeno"
+    elif pct < 100:
+        status = "rozpracovano"
+    else:
+        status = "dokonceno"
+
+    return {
+        "company_id": company_id,
+        "total_questions": total_questions,
+        "answered": answered,
+        "unknown_count": unknown_count,
+        "percentage": pct,
+        "status": status,
+    }
+
+
 @router.get("/questionnaire/{company_id}/combined-report")
 async def get_combined_report(company_id: str, scan_id: Optional[str] = None):
     """

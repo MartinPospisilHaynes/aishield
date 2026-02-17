@@ -147,6 +147,7 @@ function QuestionnaireInner() {
     const questionStartTimeRef = useRef<number>(Date.now());
     const questionChangeCountRef = useRef<Record<string, number>>({});
     const questStartTimeRef = useRef<number>(Date.now());
+    const answersRef = useRef<Record<string, Answer>>({});
 
     /* ── State ── */
     const [sections, setSections] = useState<Section[]>([]);
@@ -303,6 +304,9 @@ function QuestionnaireInner() {
         setCurrentQuestion((p) => Math.max(-1, p - 1));
     }, []);
 
+    // Keep answersRef in sync with answers state
+    useEffect(() => { answersRef.current = answers; }, [answers]);
+
     /* ── Set answer ── */
     const setAnswer = useCallback(
         (key: string, value: string) => {
@@ -376,7 +380,9 @@ function QuestionnaireInner() {
         setSubmitError(null);
         console.log('[Dotazník] Odesílám odpovědi...');
 
-        const list = Object.values(answers)
+        // Use answersRef to always get the latest state (avoids stale closure in setTimeout)
+        const latestAnswers = answersRef.current;
+        const list = Object.values(latestAnswers)
             .filter((a) => a.answer !== "")
             .map((a) => ({
                 question_key: a.question_key,
@@ -424,7 +430,7 @@ function QuestionnaireInner() {
             setSubmitError(err instanceof Error ? err.message : String(err));
             setSubmitting(false);
         }
-    }, [submitting, answers, companyId, scanId, router]);
+    }, [submitting, companyId, scanId, router]);
 
     /* ── Keyboard handler ── */
     useEffect(() => {
