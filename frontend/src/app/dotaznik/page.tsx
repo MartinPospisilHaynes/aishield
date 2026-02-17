@@ -1132,7 +1132,7 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
     companyId: string | null;
 }) {
     return (
-        <div className="flex justify-center mt-3">
+        <div className="flex justify-center mt-6 mb-4">
             <button
                 onClick={() => {
                     const saveData = {
@@ -1147,9 +1147,9 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
                     alert("Odpovědi byly uloženy. Můžete se vrátit kdykoliv a pokračovat.");
                     window.location.href = "/dashboard";
                 }}
-                className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-300 transition-all flex items-center gap-1.5 text-xs"
+                className="px-5 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.15] transition-all flex items-center gap-2 text-sm font-medium"
             >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                 </svg>
                 Uložit a pokračovat později
