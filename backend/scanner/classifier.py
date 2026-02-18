@@ -21,6 +21,8 @@ import anthropic
 from backend.config import get_settings
 from backend.scanner.detector import DetectedAI
 from backend.monitoring.engine_health import engine_monitor
+from backend.ai_engine.llm_client import llm_complete
+from backend.ai_engine.rag import enrich_prompt_with_rag
 
 logger = logging.getLogger(__name__)
 
@@ -148,69 +150,27 @@ class AIClassifier:
         self, url: str, findings: list[DetectedAI]
     ) -> list[ClassifiedFinding]:
         """
-        Klasifikuje nálezy pomocí Claude API.
-        Pokud API není dostupné, vrátí INTELIGENTNÍ fallback
+        Klasifikuje nálezy pomocí LLM (Claude → Gemini fallback).
+        Pokud oba provideři selžou, vrátí INTELIGENTNÍ fallback
         (jen high-confidence findings, nikdy „vše deployed=true").
         """
         if not self.enabled or not findings:
             return self._intelligent_fallback(findings, reason="API key not configured")
 
-        last_error = None
-        for attempt in range(MAX_RETRIES):
-            try:
-                return await self._claude_classify(url, findings)
-            except anthropic.AuthenticationError as e:
-                logger.error("[Classifier] Neplatný API klíč — retry nepomůže")
-                await engine_monitor.report_error(
-                    "anthropic_auth", scan_id=None, url=url,
-                    details=str(e),
-                )
-                return self._intelligent_fallback(findings, reason=f"Auth error: {e}")
-            except anthropic.RateLimitError as e:
-                last_error = e
-                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
-                logger.warning(f"[Classifier] Rate limit — retry {attempt+1}/{MAX_RETRIES} za {delay}s")
-                await engine_monitor.report_error(
-                    "anthropic_rate_limit", scan_id=None, url=url,
-                    details=f"Retry {attempt+1}: {e}",
-                )
-                time.sleep(delay)
-            except anthropic.APIStatusError as e:
-                error_type = "anthropic_overloaded" if e.status_code == 529 else "pipeline_error"
-                if "credit" in str(e).lower() or "billing" in str(e).lower():
-                    error_type = "anthropic_tokens_depleted"
-                    logger.error(f"[Classifier] Billing/credit error — retry nepomůže: {e}")
-                    await engine_monitor.report_error(
-                        error_type, scan_id=None, url=url,
-                        details=f"Status {e.status_code}: {e}",
-                    )
-                    return self._intelligent_fallback(findings, reason=f"Billing error: {e}")
-                last_error = e
-                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
-                logger.warning(f"[Classifier] API error {e.status_code} — retry {attempt+1}/{MAX_RETRIES} za {delay}s")
-                await engine_monitor.report_error(
-                    error_type, scan_id=None, url=url,
-                    details=f"Retry {attempt+1}, Status {e.status_code}: {e}",
-                )
-                time.sleep(delay)
-            except Exception as e:
-                last_error = e
-                delay = RETRY_DELAYS[attempt] if attempt < len(RETRY_DELAYS) else 9.0
-                logger.error(f"[Classifier] Chyba (attempt {attempt+1}): {e}", exc_info=True)
-                await engine_monitor.report_error(
-                    "pipeline_error", scan_id=None, url=url,
-                    details=f"Retry {attempt+1}: {e}",
-                )
-                time.sleep(delay)
-
-        # Všechny retry selhaly → INTELIGENTNÍ fallback (NE „vše deployed=true")
-        logger.error(f"[Classifier] Všechny {MAX_RETRIES} pokusy selhaly. Inteligentní fallback.")
-        return self._intelligent_fallback(findings, reason=f"All {MAX_RETRIES} retries failed: {last_error}")
+        try:
+            return await self._claude_classify(url, findings)
+        except Exception as e:
+            logger.error(f"[Classifier] LLM klasifikace selhala (oba provideři): {e}")
+            await engine_monitor.report_error(
+                "llm_classification_failed", scan_id=None, url=url,
+                details=str(e)[:500],
+            )
+            return self._intelligent_fallback(findings, reason=f"LLM failed: {e}")
 
     async def _claude_classify(
         self, url: str, findings: list[DetectedAI]
     ) -> list[ClassifiedFinding]:
-        """Zavolá Claude API pro klasifikaci."""
+        """Zavolá LLM API pro klasifikaci (Claude → Gemini fallback)."""
 
         # Připravíme zjednodušený JSON pro Claude
         findings_for_claude = []
@@ -234,35 +194,41 @@ class AIClassifier:
             findings_json=json.dumps(findings_for_claude, ensure_ascii=False, indent=2),
         )
 
-        logger.info(f"[Classifier] Posílám {len(findings)} nálezů do Claude ({self.model})")
+        logger.info(f"[Classifier] Posílám {len(findings)} nálezů do LLM (Claude → Gemini fallback)")
 
-        # Volání Claude API (synchronní — v async kontextu to běží v threadpoolu)
-        response = self.client.messages.create(
-            model=self.model,
+        # Obohatíme systémový prompt o relevantní články AI Act (RAG)
+        rag_query = f"AI systémy na webu {url}: " + ", ".join(
+            f.name for f in findings[:10]
+        )
+        enriched_system_prompt = await enrich_prompt_with_rag(
+            SYSTEM_PROMPT, rag_query, top_k=5, threshold=0.40,
+        )
+
+        # Volání přes LLM wrapper s automatickým fallback
+        result = await llm_complete(
+            system=enriched_system_prompt,
+            user=user_message,
             max_tokens=2048,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {"role": "user", "content": user_message},
-            ],
+            model=self.model,
         )
 
         # Statistiky
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
-        cost = (input_tokens * COST_PER_INPUT_TOKEN) + (output_tokens * COST_PER_OUTPUT_TOKEN)
+        self._usage["input_tokens"] += result.input_tokens
+        self._usage["output_tokens"] += result.output_tokens
+        self._usage["cost_usd"] += result.cost_usd
 
-        self._usage["input_tokens"] += input_tokens
-        self._usage["output_tokens"] += output_tokens
-        self._usage["cost_usd"] += cost
+        provider_info = f"{result.provider}/{result.model}"
+        if result.fallback_used:
+            provider_info += f" (fallback: {result.fallback_reason[:80]})"
 
         logger.info(
-            f"[Classifier] Claude odpověděl: "
-            f"{input_tokens} input + {output_tokens} output tokens, "
-            f"cena: ${cost:.4f}"
+            f"[Classifier] {provider_info} odpověděl: "
+            f"{result.input_tokens} input + {result.output_tokens} output tokens, "
+            f"cena: ${result.cost_usd:.4f}"
         )
 
         # Parsování odpovědi — ROBUSTNÍ (řeší code fences, text kolem JSON, atd.)
-        raw_text = response.content[0].text.strip()
+        raw_text = result.text
         classified_data = self._robust_json_parse(raw_text)
 
         # Namapujeme zpět na ClassifiedFinding

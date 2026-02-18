@@ -319,61 +319,38 @@ async def find_email_playwright(url: str) -> EmailFinderResult:
 
 async def find_email_vision(screenshot: bytes, url: str) -> EmailFinderResult:
     """
-    Pošle screenshot kontaktní stránky do Claude Vision.
-    Claude přečte email i když je v obrázku nebo JS obfuskaci.
+    Pošle screenshot kontaktní stránky do LLM Vision (Claude → Gemini fallback).
+    Přečte email i když je v obrázku nebo JS obfuskaci.
     """
     result = EmailFinderResult()
     domain = extract_domain(url)
 
     try:
-        import anthropic
-        from backend.config import get_settings
-
-        settings = get_settings()
-        if not settings.anthropic_api_key:
-            return result
-
-        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        from backend.ai_engine.llm_client import llm_complete_vision
 
         b64_image = base64.b64encode(screenshot).decode("utf-8")
 
-        response = client.messages.create(
-            model="claude-3-5-haiku-20241022",
+        llm_result = await llm_complete_vision(
+            system="Jsi expert na extrakci kontaktních údajů z webových stránek.",
+            user_text=(
+                "Na tomto screenshotu je kontaktní stránka české firmy. "
+                "Najdi všechny emailové adresy viditelné na stránce. "
+                "Odpověz POUZE emailovými adresami, každou na novém řádku. "
+                "Pokud žádný email nenajdeš, odpověz: NONE"
+            ),
+            image_b64=b64_image,
+            media_type="image/png",
             max_tokens=200,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/png",
-                                "data": b64_image,
-                            },
-                        },
-                        {
-                            "type": "text",
-                            "text": (
-                                "Na tomto screenshotu je kontaktní stránka české firmy. "
-                                "Najdi všechny emailové adresy viditelné na stránce. "
-                                "Odpověz POUZE emailovými adresami, každou na novém řádku. "
-                                "Pokud žádný email nenajdeš, odpověz: NONE"
-                            ),
-                        },
-                    ],
-                }
-            ],
         )
 
-        text = response.content[0].text.strip()
+        text = llm_result.text
         if text != "NONE":
             emails = EMAIL_REGEX.findall(text)
             result.all_emails_found = [e.lower() for e in emails]
             best = pick_best_email(result.all_emails_found, domain)
             if best:
                 result.email = best
-                result.source = "vision"
+                result.source = f"vision/{llm_result.provider}"
                 result.confidence = score_email(best, domain) * 0.9  # Mírná penalizace
 
     except Exception as e:

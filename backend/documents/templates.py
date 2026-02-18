@@ -257,10 +257,14 @@ HEADER_HTML = """
 
 DISCLAIMER_HTML = """
     <div class="disclaimer">
-        <strong>Právní upozornění:</strong> Tento dokument je informativního charakteru a nepředstavuje
-        právní poradenství ve smyslu zákona č. 85/1996 Sb. Doporučujeme konzultaci s advokátem
-        specializovaným na právo IT a ochranu osobních údajů. AIshield.cz neodpovídá za škody
-        vzniklé použitím tohoto dokumentu bez odborné právní revize.
+        <strong>⚖️ Právní upozornění:</strong> Dokumenty vygenerované platformou AIshield.cz 
+        jsou vytvořeny na základě automatizované analýzy a informací poskytnutých klientem. 
+        AIshield.cz poskytuje compliance dokumentaci jako technickou pomůcku pro splnění 
+        požadavků Nařízení (EU) 2024/1689 (AI Act), nikoliv jako právní poradenství 
+        ve smyslu zák. č. 85/1996 Sb., o advokacii. AIshield.cz nenese odpovědnost 
+        za případné sankce vzniklé nesprávným nebo neúplným použitím dokumentů. 
+        Klient je odpovědný za správnost poskytnutých údajů a implementaci doporučených opatření.
+        Doporučujeme konzultaci s právním specialistou pro finální validaci.
     </div>
 """
 

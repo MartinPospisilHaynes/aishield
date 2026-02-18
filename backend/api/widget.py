@@ -261,6 +261,47 @@ async def get_widget_embed(company_id: str):
     )
 
 
+@router.get("/widget/{company_id}/bundle.js")
+async def get_widget_bundle(company_id: str):
+    """
+    Vrátí Web Component widget bundle (<3 KB gzipped).
+    Shadow DOM, zero dependencies, chatbot detection.
+
+    Klient vloží:
+      <script src="https://api.aishield.cz/api/widget/{id}/bundle.js" defer></script>
+    
+    Widget se automaticky vytvoří a zobrazí.
+    GDPR: Nepotřebuje cookie souhlas (pouze informační).
+    """
+    import os
+    widget_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "widget", "aishield-widget.js"
+    )
+
+    try:
+        with open(widget_path, "r", encoding="utf-8") as f:
+            js_code = f.read()
+    except FileNotFoundError:
+        # Fallback: jednoduchý inline widget
+        js_code = f"""
+(function(){{
+    var el=document.createElement('div');
+    el.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:#0f172a;border:1px solid rgba(232,121,249,0.3);border-radius:12px;padding:10px 14px;color:#f1f5f9;font-family:-apple-system,sans-serif;font-size:13px;box-shadow:0 4px 24px rgba(0,0,0,0.4);';
+    el.innerHTML='<strong style="color:#e879f9">AI</strong><strong>shield</strong>';
+    document.body.appendChild(el);
+}})();
+"""
+
+    return Response(
+        content=js_code,
+        media_type="application/javascript",
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "Access-Control-Allow-Origin": "*",
+        },
+    )
+
+
 # ── Auto-update po novém skenu ──
 
 

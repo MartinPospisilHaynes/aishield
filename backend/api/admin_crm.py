@@ -534,6 +534,121 @@ async def crm_update_company_status(
 
 
 # ─────────────────────────────────────────────
+# 3b. POST /crm/company/{company_id}/approve-docs — Admin schválí dokumenty k odeslání
+# ─────────────────────────────────────────────
+
+@router.post("/crm/company/{company_id}/approve-docs")
+async def crm_approve_documents(
+    company_id: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    BEZPEČNOSTNÍ GATE: Admin schválí vygenerované dokumenty.
+    Teprve po schválení se klientovi odešle email s oznámením.
+    Žádný dokument se klientovi nedoručí bez admin schválení.
+    """
+    from backend.database import get_supabase
+    from backend.outbound.email_engine import send_email
+
+    supabase = get_supabase()
+
+    # Najdi firmu
+    company_res = supabase.table("companies").select(
+        "id, name, email, workflow_status"
+    ).eq("id", company_id).execute()
+
+    if not company_res.data:
+        raise HTTPException(status_code=404, detail="Firma nenalezena")
+
+    company = company_res.data[0]
+
+    # Najdi objednávku ve stavu awaiting_approval
+    orders_res = supabase.table("orders").select(
+        "id, workflow_status, user_email"
+    ).eq("company_id", company_id).eq(
+        "workflow_status", "awaiting_approval"
+    ).execute()
+
+    if not orders_res.data:
+        raise HTTPException(
+            status_code=400,
+            detail="Žádné dokumenty nečekají na schválení (workflow_status != awaiting_approval)"
+        )
+
+    order = orders_res.data[0]
+    client_email = company.get("email") or order.get("user_email", "")
+    company_name = company.get("name", "")
+
+    # Update workflow → documents_ready
+    supabase.table("orders").update({
+        "workflow_status": "documents_ready",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }).eq("id", order["id"]).execute()
+
+    # Zapiš aktivitu
+    try:
+        supabase.table("company_activities").insert({
+            "company_id": company_id,
+            "activity_type": "documents_approved",
+            "title": "Dokumenty schváleny adminem",
+            "description": f"Admin {user.email} schválil dokumenty k odeslání klientovi.",
+            "actor": user.email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        pass
+
+    # Teď odeslat email klientovi
+    email_sent = False
+    if client_email:
+        try:
+            settings = get_settings()
+            dashboard_url = f"{settings.app_url}/dashboard?company={company_id}"
+
+            html = f"""
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b,#312e81);border-radius:12px 12px 0 0;padding:30px 24px;text-align:center;">
+        <h1 style="color:white;margin:0;font-size:22px;">AIshield.cz</h1>
+    </div>
+    <div style="background:white;padding:28px 24px;border:1px solid #e2e8f0;border-top:none;">
+        <h2 style="color:#1e293b;font-size:18px;margin:0 0 16px;">📄 Vaše dokumenty jsou připraveny</h2>
+        <p style="color:#1e293b;font-size:15px;line-height:1.6;">
+            S radostí vám oznamujeme, že vaše compliance dokumentace pro firmu
+            <strong>{company_name}</strong> byla zkontrolována a je připravena ke stažení.
+        </p>
+        <div style="text-align:center;margin:24px 0;">
+            <a href="{dashboard_url}" style="display:inline-block;background:#7c3aed;color:white;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600;">
+                Otevřít dashboard a stáhnout dokumenty →
+            </a>
+        </div>
+    </div>
+    <div style="background:#0f172a;border-radius:0 0 12px 12px;padding:20px 24px;text-align:center;">
+        <p style="color:#94a3b8;font-size:12px;margin:0;">AIshield.cz — AI compliance pro české firmy</p>
+    </div>
+</div>"""
+
+            await send_email(
+                to=client_email,
+                subject=f"📄 Vaše dokumenty jsou připraveny — {company_name}",
+                html=html,
+                from_email="info@aishield.cz",
+            )
+            email_sent = True
+            logger.info(f"[CRM] Dokumenty schváleny + email odeslán: {client_email} ({company_name})")
+        except Exception as e:
+            logger.error(f"[CRM] Schválení OK, ale email selhal: {e}")
+
+    return {
+        "status": "approved",
+        "company_id": company_id,
+        "company_name": company_name,
+        "email_sent": email_sent,
+        "email": client_email,
+        "workflow_status": "documents_ready",
+    }
+
+
+# ─────────────────────────────────────────────
 # 4. POST /crm/company/{company_id}/note — Add a note/activity
 # ─────────────────────────────────────────────
 

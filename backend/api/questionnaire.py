@@ -588,12 +588,149 @@ QUESTIONNAIRE_SECTIONS = [
             },
         ],
     },
+    # ──────────────────────────────────────────────
+    # Section 9: Lidský dohled (čl. 14, čl. 26)
+    # ──────────────────────────────────────────────
+    {
+        "id": "human_oversight",
+        "title": "Lidský dohled nad AI",
+        "description": "AI Act vyžaduje, aby nad vysoce rizikovými AI systémy dohlížely kompetentní osoby.",
+        "questions": [
+            {
+                "key": "has_oversight_person",
+                "text": "Máte určenou osobu/tým zodpovědný za dohled nad AI systémy?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) IT manažer pověřený dohledem nad AI chatbotem.\n2) Compliance officer monitorující automatizované rozhodovací procesy.\n3) Tým 'AI governance' schvalující nové AI nástroje.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "oversight_warning", "label": "⚠️ Článek 14 AI Act vyžaduje lidský dohled nad vysoce rizikovými AI systémy. I u systémů s omezeným rizikem (chatboty) je vhodné mít odpovědnou osobu. **AIshield vám pomůže definovat role a odpovědnosti v rámci AI governance dokumentace.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 14 — lidský dohled",
+            },
+            {
+                "key": "can_override_ai",
+                "text": "Mohou vaši zaměstnanci přepsat nebo zrušit rozhodnutí AI systému?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) HR manažer může přepsat doporučení AI při výběru kandidátů.\n2) Operátor může ručně změnit automatické třídění zákaznických požadavků.\n3) Schvalovací proces vyžaduje lidský podpis po AI analýze.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "override_warning", "label": "⚠️ Článek 14 odst. 4 písm. d) AI Act vyžaduje, aby osoby pověřené lidským dohledem mohly rozhodnutí AI systému nepoužít, přepsat nebo zrušit. Bez této možnosti hrozí porušení nařízení. **AIshield vám pomůže nastavit procesy pro lidský dohled a přepisování AI rozhodnutí.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 14 odst. 4 písm. d) — možnost nepoužít systém nebo zrušit jeho výstup",
+            },
+            {
+                "key": "ai_decision_logging",
+                "text": "Zaznamenáváte rozhodnutí, která AI systémy dělají nebo doporučují?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Log chatbotových odpovědí pro zpětnou kontrolu.\n2) Archivace AI doporučení v CRM.\n3) Záznam automatizovaných rozhodnutí v interním systému.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "logging_warning", "label": "⚠️ Článek 26 odst. 1 písm. f) AI Act vyžaduje uchovávání automaticky generovaných protokolů po dobu nejméně 6 měsíců. Logování je klíčové pro audit a zpětnou kontrolu.", "type": "info"},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 26 odst. 1 písm. f) — uchovávání protokolů",
+            },
+        ],
+    },
+    # ──────────────────────────────────────────────
+    # Section 10: Role v hodnotovém řetězci AI (poskytovatel vs. zavádějící)
+    # ──────────────────────────────────────────────
+    {
+        "id": "ai_role",
+        "title": "Vaše role v AI ekosystému",
+        "description": "AI Act rozlišuje různé povinnosti pro poskytovatele (výrobce) a zavádějící (uživatele) AI systémů.",
+        "questions": [
+            {
+                "key": "develops_own_ai",
+                "text": "Vyvíjíte vlastní AI modely nebo systémy?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Vlastní ML model pro predikci chování zákazníků.\n2) Interní chatbot trénovaný na firemních datech.\n3) AI algoritmus pro optimalizaci logistiky.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "ai_provider_warning", "label": "⚠️ Jako poskytovatel AI systému (čl. 3 bod 3) máte rozsáhlejší povinnosti: technická dokumentace (příloha IV), posouzení shody (čl. 16), označení CE, systém řízení kvality. **AIshield vám pomůže s kompletní dokumentací.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 3 bod 3 — definice poskytovatele, čl. 16 — povinnosti poskytovatele",
+            },
+            {
+                "key": "modifies_ai_purpose",
+                "text": "Měníte účel nebo podstatně upravujete zakoupený AI systém?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Přetrénování ChatGPT API na vlastních datech pro specifický účel.\n2) Vlastní fine-tuning jazykového modelu.\n3) Změna účelu AI nástroje (např. z marketingu na HR screening).",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "modified_ai_warning", "label": "⚠️ Pokud podstatně měníte účel AI systému, můžete se stát jeho poskytovatelem (čl. 25) a přebíráte odpovídající povinnosti. Doporučujeme konzultaci.", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 25 — další zavádějící, kteří se považují za poskytovatele",
+            },
+        ],
+    },
+    # ──────────────────────────────────────────────
+    # Section 11: Řízení incidentů a rizik
+    # ──────────────────────────────────────────────
+    {
+        "id": "incident_management",
+        "title": "Řízení AI incidentů",
+        "description": "Připravenost na situace, kdy AI systém selže nebo způsobí újmu.",
+        "questions": [
+            {
+                "key": "has_incident_plan",
+                "text": "Máte plán pro případ, že AI systém udělá chybu nebo způsobí škodu?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Postup při chybné AI odpovědi zákazníkovi.\n2) Eskalační proces při diskriminačním výstupu AI.\n3) Plán okamžitého vypnutí AI systému.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "incident_warning", "label": "⚠️ Nařízení vyžaduje sledování závažných incidentů a jejich hlášení (čl. 73). Mít připravený plán je nejen zákonná povinnost, ale i dobrá praxe. **V rámci služby AIshield vám dodáme šablonu plánu řízení AI incidentů.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "čl. 73 — hlášení závažných incidentů",
+            },
+            {
+                "key": "monitors_ai_outputs",
+                "text": "Pravidelně kontrolujete kvalitu a správnost výstupů vašich AI systémů?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Týdenní audit vzorku chatbotových odpovědí.\n2) Měsíční kontrola přesnosti AI doporučení.\n3) Automatický monitoring bias a drift v ML modelech.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "monitoring_warning", "label": "⚠️ Článek 9 AI Act vyžaduje průběžné řízení rizik po celou dobu životního cyklu AI systému, včetně monitoringu výstupů. Pravidelná kontrola kvality je základem pro splnění této povinnosti. **AIshield vám pomůže nastavit efektivní monitoring AI výstupů.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 9 — systém řízení rizik",
+            },
+            {
+                "key": "tracks_ai_changes",
+                "text": "Dokumentujete změny v AI systémech (aktualizace, nové modely, změny promptů)?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Changelog aktualizací chatbota.\n2) Verzování promptů v Git repozitáři.\n3) Dokumentace přechodu na novou verzi AI modelu.",
+                "followup_no": {
+                    "fields": [
+                        {"key": "changes_warning", "label": "⚠️ Příloha IV bod 6 AI Act vyžaduje popis všech změn provedených během životního cyklu AI systému. Bez dokumentace změn nebudete moci prokázat soulad s nařízením. **AIshield vám pomůže zavést jednoduché verzování a evidenci změn vašich AI systémů.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "příloha IV bod 6 — popis změn během životního cyklu",
+            },
+        ],
+    },
 ]
 
 # Pořadí sekcí: od jednoduchých k náročným, zakázané praktiky až ke konci
 _SECTION_ORDER = [
     "industry", "internal_ai", "customer_service", "hr", "finance",
     "prohibited_systems", "infrastructure_safety", "data_protection", "ai_literacy",
+    "human_oversight", "ai_role", "incident_management",
 ]
 QUESTIONNAIRE_SECTIONS.sort(key=lambda s: _SECTION_ORDER.index(s["id"]))
 

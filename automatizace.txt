@@ -1,0 +1,440 @@
+══════════════════════════════════════════════════════════════════════
+AUTOMATIZACE DELIVERY PIPELINE — AIshield.cz
+Dotaz pro AI konzultanty · Únor 2026
+══════════════════════════════════════════════════════════════════════
+
+Jsem technický architekt projektu AIshield.cz — SaaS platformy, která 
+pomáhá českým firmám splnit požadavky EU AI Act (Nařízení EU 2024/1689).
+Potřebuji vaši expertní radu k automatizaci celého delivery procesu — 
+od objednávky po dodání hotového compliance kitu klientovi.
+
+Prosím přečtěte celý kontext a pak odpovězte na otázky na konci.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CO JE AIshield.cz — PŘEHLED SLUŽBY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AIshield.cz je český compliance-as-a-service produkt. Firma si objedná 
+jeden ze tří balíčků a my jí automaticky vygenerujeme kompletní sadu 
+dokumentů potřebných pro soulad s AI Act.
+
+Jak to funguje:
+  1. Klient přijde na aishield.cz
+  2. Náš skener automaticky proskánuje jeho web (Playwright headless 
+     browser + AI klasifikace přes Claude API)
+  3. Skener najde AI systémy na webu (chatboty, analytiku, doporučovací 
+     systémy, generátory obsahu) a klasifikuje je dle AI Act
+  4. Klient vyplní interaktivní dotazník (26 otázek v 9 sekcích) — 
+     zjistíme interní AI nástroje, HR procesy, finance, zákaznický 
+     servis, infrastrukturu, ochranu dat, AI gramotnost
+  5. Klient si objedná balíček (BASIC / PRO / ENTERPRISE)
+  6. My vygenerujeme compliance kit = sadu 7 dokumentů na míru
+  7. Klient si stáhne dokumenty z dashboardu
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. CO SLIBUJEME V JEDNOTLIVÝCH BALÍČCÍCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────┬───────┬───────┬───────┐
+│ Deliverable                             │ BASIC │  PRO  │ ENTER │
+│                                         │ 4999  │ 14999 │ 39999 │
+├─────────────────────────────────────────┼───────┼───────┼───────┤
+│ 1. AI Act Compliance Report (PDF)       │  ✅   │  ✅   │  ✅   │
+│ 2. Transparenční stránka (HTML)         │  ✅   │  ✅   │  ✅   │
+│ 3. Registr AI systémů (PDF)             │  ✅   │  ✅   │  ✅   │
+│ 4. Texty oznámení pro AI nástroje (PDF) │  ✅   │  ✅   │  ✅   │
+│ 5. Interní AI politika firmy (PDF)      │  ✅   │  ✅   │  ✅   │
+│ 6. Školení — prezentace (PPTX)          │  ✅   │  ✅   │  ✅   │
+│ 7. Záznamový list o proškolení (PDF)    │  ✅   │  ✅   │  ✅   │
+├─────────────────────────────────────────┼───────┼───────┼───────┤
+│ Implementace na web klienta (na klíč)   │  ❌   │  ✅   │  ✅   │
+│ Nastavení transparenční stránky na webu │  ❌   │  ✅   │  ✅   │
+│ Úprava cookie lišty a chatbot oznámení  │  ❌   │  ✅   │  ✅   │
+│ Podpora 30 dní po dodání                │  ❌   │  ✅   │  ✅   │
+│ Prioritní zpracování                    │  ❌   │  ✅   │  ✅   │
+├─────────────────────────────────────────┼───────┼───────┼───────┤
+│ 10h konzultací se specialistou          │  ❌   │  ❌   │  ✅   │
+│ Metodická kontrola dokumentace          │  ❌   │  ❌   │  ✅   │
+│ Rozšířený audit interních AI systémů    │  ❌   │  ❌   │  ✅   │
+│ 2 roky měsíčního monitoringu            │  ❌   │  ❌   │  ✅   │
+│ Dedikovaný specialista                  │  ❌   │  ❌   │  ✅   │
+│ SLA 4h odezva v pracovní době           │  ❌   │  ❌   │  ✅   │
+└─────────────────────────────────────────┴───────┴───────┴───────┘
+
+Navíc nabízíme volitelný monitoring jako předplatné:
+  · 299 Kč/měs — 1× měsíční sken, diff porovnání, emailový alert
+  · 599 Kč/měs — 2× měsíční sken, aktualizace všech 7 dokumentů, 
+    implementace změn na web klienta
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. NÁŠ TECHNICKÝ STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend:   Next.js 15 + TypeScript + Tailwind CSS → Vercel
+Backend:    Python 3.12 + FastAPI → VPS (dedicated server, 
+            dostatek RAM a CPU pro náročné operace)
+Databáze:   Supabase (PostgreSQL) + Supabase Storage pro soubory  
+Email:      Resend API (3 sendovací domény)
+AI:         Claude API (Anthropic) — klasifikace, analýza
+Skener:     Playwright (headless Chromium) + vlastní detekční engine
+PDF:        WeasyPrint (HTML→PDF), fpdf2 (faktury)
+Platby:     Stripe (online) + manuální bankovní převod
+
+Servery: Máme pronajaté výkonné VPS servery, nejsme omezeni výkonem.
+API klíče: Claude (Anthropic), Resend, Stripe, Supabase.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. CO UŽ MÁME HOTOVÉ (a funguje)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Web skener — automaticky hledá AI systémy na webu klienta
+✅ Dotazník — 26 interaktivních otázek, ukládá se do Supabase
+✅ 7 HTML šablon pro všech 7 dokumentů (v backend/documents/templates.py)
+✅ PDF generátor — WeasyPrint konvertuje HTML šablony do PDF
+✅ Document pipeline — generate_compliance_kit(client_id) vygeneruje 
+   všech 7 dokumentů najednou z dat skenu + dotazníku
+✅ Upload do Supabase Storage + záznam v DB
+✅ Dashboard pro klienta — přehled stavu, stažení dokumentů
+✅ Admin CRM panel — správa firem, pipeline, statusy
+✅ Platební systém — Stripe + bankovní převod + faktury
+✅ Email systém — branded šablony pro všechny platební stavy
+✅ Resken + diff — porovnání změn mezi skeny
+✅ Automatická regenerace dokumentů při změnách
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CO CHYBÍ — A TADY POTŘEBUJI RADU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────
+5A. POWERPOINT PREZENTACE (ŠKOLENÍ)
+──────────────────────────────────────────
+
+PROBLÉM: Slibujeme klientům „Školení — prezentace v PowerPointu", 
+ale zatím generujeme jen PDF osnovu školení. Potřebujeme generovat 
+plnohodnotnou .pptx prezentaci na míru každé firmě.
+
+MŮJ NÁVRH: Použít knihovnu python-pptx (Python, MIT licence):
+  · Vytvořit branded šablonu s naším designem (fuchsia/cyan gradient)
+  · Claude API vygeneruje personalizovaný obsah slajdů z dat klienta
+  · python-pptx naplní šablonu
+  · Výstup: .pptx ke stažení z dashboardu
+
+Struktura prezentace by měla obsahovat cca 10-15 slajdů:
+  1. Titulní slajd (název firmy, datum, logo)
+  2. Co je AI Act — přehled regulace
+  3. Časová osa a deadliny
+  4. AI systémy nalezené na webu firmy (personalizováno)
+  5. Interní AI nástroje firmy (z dotazníku)
+  6. Riziková klasifikace dle AI Act
+  7. Co se konkrétně týká vaší firmy
+  8. Povinnosti zaměstnanců
+  9. AI gramotnost — čl. 4 (povinné od 2.2.2025)
+  10. Interní pravidla (ze vygenerované AI politiky)
+  11. Co dělat při pochybnostech
+  12. Kontakty a odpovědné osoby
+  13. Q&A
+
+OTÁZKY:
+  · Je python-pptx nejlepší volba pro generování PPTX v Pythonu?
+  · Existují lepší alternativy? (pptx-gen, Slidev, reveal.js export?)
+  · Jaký je váš názor na kvalitu výstupu python-pptx? Je to 
+    na profesionální úrovni pro B2B klienty?
+  · Měli bychom raději generovat Google Slides přes Google API?
+  · Nebo existuje SaaS API pro tvorbu prezentací, které by stálo 
+    za zvážení? (Gamma AI, Beautiful.ai, Canva API, Pitch API?)
+  · Je lepší mít jednu master šablonu a plnit ji daty, nebo 
+    nechat AI vygenerovat celý obsah slajd po slajdu?
+  · Jak řešit vizuální kvalitu? Grafy, ikony, layout?
+
+──────────────────────────────────────────
+5B. TRANSPARENČNÍ STRÁNKA (HTML)
+──────────────────────────────────────────
+
+PROBLÉM: Šablona existuje a generuje se. Ale potřebuji validovat,
+jestli obsahuje všechno, co ze zákona musí. Také potřebuji ji 
+obohatit o data z dotazníku (interní AI nástroje, HR, finance...).
+
+CO ZE ZÁKONA MUSÍ OBSAHOVAT (AI Act):
+  · Čl. 50 odst. 1 — Označení, že obsah je generován AI
+  · Čl. 50 odst. 2 — Informování o interakci s AI systémem
+  · Čl. 50 odst. 4 — Označení deepfake obsahu
+  · Čl. 4 — AI gramotnost (dostatečná úroveň znalostí)
+  · Příloha III — Vysokorizikové systémy — povinnost transparence
+  · Příloha IV — Technická dokumentace pro vysokorizikové systémy
+
+OTÁZKY:
+  · Je můj výčet povinných položek kompletní?
+  · Co dalšího by měla transparenční stránka obsahovat z hlediska 
+    best practice (nad rámec zákona)?
+  · Měla by transparenční stránka být statická HTML stránka, 
+    nebo dynamický widget, který se aktualizuje?
+  · Jaký je váš názor na formát — jedna HTML stránka, nebo 
+    spíše sekce na existujícím webu klienta?
+  · Existují v ČR nebo EU nějaké vzorové transparenční stránky,
+    které bychom měli použít jako referenci?
+  · Měli bychom do transparenční stránky zahrnout i interní AI 
+    nástroje (ChatGPT, Copilot) nebo jen zákaznicky viditelné?
+
+──────────────────────────────────────────
+5C. DELIVERY ENGINE — ORCHESTRACE PROCESU
+──────────────────────────────────────────
+
+PROBLÉM: Nyní je proces poloautomatický. Admin potvrdí platbu, 
+ale generování dokumentů a odeslání klientovi není plně propojené.
+
+MŮJ NÁVRH — automatický pipeline:
+
+  Klient zaplatí (Stripe webhook / admin potvrdí bankovní převod)
+      │
+      ▼
+  [1] Kontrola: Je sken hotový? Je dotazník vyplněný?
+      │         ↓ NE → Pošli reminder "Vyplňte prosím dotazník"
+      │         ↓ ANO → Pokračuj
+      ▼
+  [2] Spusť generate_compliance_kit(client_id)
+      ├── 6× PDF (WeasyPrint)
+      ├── 1× PPTX (python-pptx + Claude)
+      └── 1× HTML (transparenční stránka)
+      │
+      ▼
+  [3] Upload všeho do Supabase Storage
+      │
+      ▼
+  [4] Aktualizuj workflow_status → "documents_ready"
+      │
+      ▼
+  [5] Pošli email: "Vaše dokumenty jsou připraveny!"
+      s přehledem + odkazem na dashboard
+      │
+      ▼
+  [6] Pro PRO/ENTERPRISE: notifikuj programátora
+      "Firma X potřebuje implementaci na web"
+      │
+      ▼
+  [7] Ulož do activity timeline v CRM
+
+OTÁZKY:
+  · Je tento flow správný? Chybí mi nějaký krok?
+  · Jak řešit situaci, kdy klient zaplatil ale nevyplnil dotazník?
+    Generovat jen z dat skenu? Čekat? Jak dlouho?
+  · Měl byste generování dělat synchronně (klient čeká) nebo 
+    asynchronně (background job)? Pokud asynchronně — jaká 
+    technologie? Celery? ARQ? RQ? Dramatiq? Nebo prostý 
+    asyncio.create_task()?
+  · Jak řešit retry logiku při selhání generování?
+  · Měli bychom mít "preview" funkci — klient vidí náhled 
+    dokumentů před finálním stažením?
+
+──────────────────────────────────────────
+5D. MONITORING ENGINE (pro ENTERPRISE + předplatné)
+──────────────────────────────────────────
+
+PROBLÉM: Slibujeme měsíční monitoring — pravidelný resken, 
+porovnání změn, aktualizace dokumentů. Engine existuje (resken + diff),
+ale není napojený na scheduler. Chybí automatický cron.
+
+MŮJ NÁVRH:
+  · Cron job (systemd timer / APScheduler / Celery Beat) 
+    spouští měsíční/14-denní sken pro každého klienta s aktivním 
+    předplatným
+  · Diff porovnání s předchozím skenem
+  · Pokud se něco změnilo → regenerovat dokumenty + email klientovi
+  · Pokud se nic nezměnilo → stručný email "vše v pořádku"
+
+OTÁZKY:
+  · Jaký scheduler doporučujete pro Python/FastAPI stack?
+    (APScheduler, Celery Beat, Huey, systémový cron, 
+    nebo vlastní řešení?)
+  · Jak řešit škálování — co když budeme mít 500 klientů 
+    s předplatným a všichni mají sken ve stejný den?
+  · Je lepší skenovat postupně (queue), nebo paralelně?
+
+──────────────────────────────────────────
+5E. JAVASCRIPT WIDGET (pro PRO klienty)
+──────────────────────────────────────────
+
+PROBLÉM: Slibujeme PRO klientům "widget" na web, který informuje 
+návštěvníky o používání AI. Backend API existuje 
+(GET /widget/{company_id}/config), ale JS bundle neexistuje.
+
+MŮJ NÁVRH:
+  · Malý JS snippet (<5 KB gzip), který klient vloží na web
+  · Načte konfiguraci z našeho API
+  · Zobrazí diskrétní badge/banner: "Tento web používá AI systémy. 
+    Více info →" s odkazem na transparenční stránku
+  · Customizovatelný (barvy, pozice, text)
+
+OTÁZKY:
+  · Jaký formát JS widgetu? Vanilla JS? Web Component? 
+    Preact? Svelte compiled?
+  · Jak řešit GDPR/cookie souhlas vs. informační povinnost?
+    Widget není tracking, je to informace — potřebuje souhlas?
+  · Jak řešit CSP (Content Security Policy) na webech klientů?
+  · Měl by widget mít i "AI chatbot label" — automaticky detekuje 
+    chatbot na stránce a přidá mu AI Act označení?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MŮJ MYŠLENKOVÝ POCHOD — CO SI MYSLÍM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FILOZOFIE: Chci co nejvíc vlastního kódu, co nejméně závislostí na 
+třetích stranách. Máme výkonné servery, máme Claude API, máme 
+schopný tým. Kde můžeme napsat sami, píšeme sami.
+
+CO POVAŽUJI ZA SPRÁVNÉ:
+  · PDF generování přes WeasyPrint — funguje skvěle, máme 
+    plnou kontrolu nad designem, žádná třetí strana
+  · Claude API pro personalizaci obsahu — AI generuje text 
+    na míru firmě z dat skenu a dotazníku
+  · Vlastní skener — nikdo jiný nenabízí AI Act sken pro české firmy
+  · Email přes Resend — spolehlivé, levné, funguje
+
+CO MĚ ZNEPOKOJUJE:
+  · PowerPoint — python-pptx dokáže technicky vytvořit PPTX, 
+    ale vizuální kvalita nemusí být na úrovni B2B klientů, kteří 
+    platí 5-40 tisíc Kč. Potřebuji, aby to vypadalo profesionálně.
+  · Škálování — co když najednou přijde 50 objednávek? Generování
+    7 dokumentů + 1 PPTX pro každého klienta může trvat minuty. 
+    Musíme mít job queue.
+  · Kvalita AI obsahu — Claude generuje skvělý text, ale musím 
+    zajistit konzistenci. Každý dokument musí mít stejnou strukturu, 
+    jen personalizovaná data se mění.
+  · Právní správnost — jsme tech firma, ne advokátní kancelář. 
+    Dokumenty musí být právně validní z hlediska AI Act. Měli bychom 
+    mít právní validaci šablon? Nebo stačí, že kopírujeme požadavky 
+    přímo z textu nařízení?
+
+CO POVAŽUJI ZA ŠPATNÉ / RISKANTNÍ:
+  · Přílišná závislost na jednom AI poskytovateli (Claude). 
+    Měli bychom mít fallback na GPT-4 nebo Gemini?
+  · Slibujeme "implementaci na klíč" v PRO balíčku — to je manuální 
+    práce programátora. To se špatně škáluje. Měli bychom navrhnout 
+    způsob, jak i toto co nejvíc automatizovat.
+  · ENTERPRISE balíček je náročný — 10h konzultací, dedikovaný 
+    specialista, SLA 4h. To vyžaduje lidské zdroje. Je cena 39 999 Kč 
+    adekvátní? Nebo bychom měli zvýšit?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. KONKRÉTNÍ TECHNICKÉ OTÁZKY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7.1 PYTHON KNIHOVNY PRO PPTX — SROVNÁNÍ
+  · python-pptx — nejpoužívanější, stabilní, ale low-level
+  · pptx-gen (JS) — lepší API, ale Node.js
+  · Existuje nějaká Python knihovna, která generuje hezčí prezentace 
+    než python-pptx? S lepším layoutem, smart art, grafy?
+  · Dá se nějak použít LibreOffice Impress API headless?
+  · Nebo bychom mohli generovat reveal.js / Slidev prezentaci 
+    (HTML-based) a pak ji exportovat do PPTX?
+
+7.2 AI-POWERED DOCUMENT GENERATION
+  · Jaký je nejlepší prompt engineering pattern pro generování 
+    konzistentních dokumentů? Chain of thought? Few-shot s příklady?
+  · Měli bychom mít "document generation prompt" uložený v DB 
+    a iterovat na něm, nebo hardcoded v kódu?
+  · Jak zajistit, že AI negeneruje fakticky chybné informace 
+    o AI Act? Grounding? RAG přes text nařízení?
+  · Měli bychom celý text AI Act (česká verze) mít jako kontext 
+    pro Claude při generování dokumentů?
+
+7.3 JOB QUEUE & ORCHESTRACE
+  · Pro FastAPI backend — co doporučujete?
+    a) Celery + Redis
+    b) ARQ (async Redis queue pro Python)  
+    c) Dramatiq
+    d) Huey
+    e) Prostý asyncio.create_task() s vlastním retry
+    f) Něco jiného?
+  · Potřebujeme vizuální přehled queue (dashboard pro admina)?
+
+7.4 STORAGE & DELIVERY
+  · Dokumenty ukládáme do Supabase Storage. Je to ok pro produkci?
+  · Měli bychom mít expiring download links (signed URLs)?
+  · Nebo spíš ZIP archiv se vším + email s přímým downloadem?
+
+7.5 COMPLIANCE & PRÁVNÍ OTÁZKY
+  · Měli bychom nechat naše šablony dokumentů zkontrolovat 
+    advokátem specializovaným na AI Act?
+  · Existují v ČR certifikační autority nebo orgány, které by 
+    mohly naše dokumenty "požehnat"?
+  · Jak se dívat na odpovědnost — pokud náš vygenerovaný dokument 
+    nebude dostatečný a klient dostane pokutu?
+  · Měli bychom mít disclaimer? Jaký?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. DATA, KTERÁ MÁME K DISPOZICI PRO GENEROVÁNÍ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Z WEBOVÉHO SKENU (automaticky):
+  · Seznam AI systémů na webu (chatboty, analytika, doporučovače...)
+  · Pro každý systém: název, kategorie, risk level, relevantní 
+    článek AI Act, požadovaná akce, důkaz (HTML snippet)
+  · Screenshot celé stránky
+  · Technologie (JS knihovny, trackovací skripty)
+
+Z DOTAZNÍKU (klient vyplní):
+  · Odvětví firmy (14 možností)
+  · Velikost firmy (5 kategorií)
+  · Vyvíjí vlastní AI? (ano/ne)
+  · Používané interní AI nástroje (ChatGPT, Claude, Copilot...)
+  · HR procesy s AI (nábor, monitoring, emoce)
+  · Finance s AI (účetnictví, credit scoring, pojištění)
+  · Zákaznický servis s AI (chatbot, auto-reply, pricing)
+  · Kritická infrastruktura, bezpečnostní komponenty
+  · Zpracování osobních údajů, úložiště dat
+  · Stav AI gramotnosti a interních pokynů
+
+Z OBJEDNÁVKY:
+  · Číslo objednávky, zvolený plán, částka
+  · Kontaktní email, název firmy, URL webu
+  · Datum platby
+
+OTÁZKA: Jaká další data bychom měli od klienta sbírat, abychom 
+mohli generovat lepší/úplnější dokumenty? Chybí nám něco v dotazníku?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. VIZIONÁŘSKÁ OTÁZKA — KAM TO CELÉ SMĚŘUJE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AIshield.cz má potenciál být vedoucí AI Act compliance platforma 
+v České republice. Už teď máme technicky vyspělý produkt, který 
+nikdo jiný v ČR nenabízí v takové míře automatizace.
+
+Otázky na strategické úrovni:
+  · Jaké další dokumenty nebo služby bychom měli přidat do nabídky?
+  · Měli bychom nabízet i NIS2 compliance? DORA? GDPR audit?
+  · Existují podobné platformy v zahraničí, ze kterých se můžeme 
+    inspirovat? (EU AI Act compliance tools)
+  · Měli bychom expandovat do dalších zemí EU? 
+    (Slovensko, Polsko, Německo?)
+  · Jak se bude vyvíjet trh AI Act compliance v příštích 2 letech?
+  · Měli bychom usilovat o partnerství s advokátními kancelářemi?
+  · Měli bychom budovat certifikační program?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. SHRNUTÍ — CO ODE MNE POTŘEBUJI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prosím odpovězte na výše uvedené otázky a zároveň:
+
+  1. ZHODNOŤTE náš celkový přístup — děláme to správně?
+  2. DOPORUČTE konkrétní nástroje, knihovny a extenze pro:
+     · Generování PPTX prezentací
+     · Job queue / task orchestrace
+     · Monitoring scheduler
+     · JS widget framework
+  3. IDENTIFIKUJTE rizika, která jsme přehlédli
+  4. NAVRHNĚTE vylepšení, na která jsme nemysleli
+  5. POSUĎTE naši cenovou politiku — je 4 999 / 14 999 / 39 999 Kč 
+     adekvátní pro to, co nabízíme?
+  6. DOPORUČTE, co by měl obsahovat náš dotazník navíc
+  7. ŘEKNĚTE, jaké konkrétní Python/JS extenze bychom měli 
+     nainstalovat a proč
+
+Děkuji za váš čas a expertizu. Výstupy od více AI konzultantů 
+budou porovnány a na základě konsensu vytvoříme finální 
+implementační plán.
+
+══════════════════════════════════════════════════════════════════════
+Konec dotazu · AIshield.cz · Únor 2026
+══════════════════════════════════════════════════════════════════════

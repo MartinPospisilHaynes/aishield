@@ -256,6 +256,38 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
     logger.info(
         f"Compliance Kit hotov: {result.success_count} OK, {result.error_count} chyb"
     )
+
+    # 5. Generovat PPTX prezentaci (školení AI Literacy)
+    try:
+        from backend.documents.pptx_generator import generate_training_pptx
+        from backend.documents.pdf_generator import save_pdf_to_supabase
+
+        pptx_bytes = generate_training_pptx(template_data)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        pptx_filename = f"training_presentation_{timestamp}.pptx"
+
+        download_url = save_pdf_to_supabase(
+            pptx_bytes, pptx_filename, client_id,
+        )
+
+        pptx_info = {
+            "template_key": "training_presentation",
+            "template_name": "Školení AI Literacy — Prezentace (PPTX)",
+            "filename": pptx_filename,
+            "download_url": download_url,
+            "size_bytes": len(pptx_bytes),
+            "format": "pptx",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        result.documents.append(pptx_info)
+        _save_document_record(client_id, pptx_info)
+        logger.info(f"  ✓ PPTX prezentace ({len(pptx_bytes)} bytes)")
+
+    except Exception as e:
+        error_msg = f"training_presentation: {str(e)}"
+        result.errors.append(error_msg)
+        logger.error(f"  ✗ PPTX: {error_msg}")
+
     return result
 
 

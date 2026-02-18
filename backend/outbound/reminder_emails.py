@@ -298,3 +298,149 @@ async def send_reminder_emails(reminder_type: str = "14_days") -> dict:
     result = {"sent": sent_count, "skipped": skipped_count, "errors": errors}
     logger.info(f"[Reminder] {reminder_type} hotovo: {result}")
     return result
+
+
+# ═══════════════════════════════════════════════════════════════
+# Questionnaire Reminders (D+1, D+3, D+7 po zaplacení)
+# ═══════════════════════════════════════════════════════════════
+
+def build_questionnaire_reminder_email(
+    email: str,
+    company_id: str,
+    day: int,
+) -> str:
+    """
+    Sestaví HTML pro reminder email — klient zaplatil ale nevyplnil dotazník.
+    Volá se z ARQ job queue (worker.py).
+
+    Args:
+        email: Email klienta
+        company_id: ID firmy
+        day: Kolikátý den po zaplacení (1, 3, 7)
+
+    Returns:
+        HTML string emailu
+    """
+    dotaznik_url = f"https://aishield.cz/dotaznik?company_id={company_id}&edit=true"
+    dashboard_url = "https://aishield.cz/dashboard"
+
+    # Tón se stupňuje s dny
+    if day == 1:
+        subject_line = "Dokončete dotazník"
+        headline = "Vaše platba proběhla úspěšně!"
+        body = (
+            "Děkujeme za důvěru. Abychom mohli začít připravovat vaši compliance "
+            "dokumentaci, potřebujeme od vás vyplnit krátký dotazník. "
+            "Zabere to přibližně <strong>5–10 minut</strong>."
+        )
+        cta_text = "Vyplnit dotazník →"
+        urgency_box = ""
+    elif day == 3:
+        subject_line = "Připomínka"
+        headline = "Čekáme na vaše odpovědi"
+        body = (
+            "Všechny nálezy z analýzy vašeho webu máme připravené. "
+            "Pro vygenerování kompletní dokumentace potřebujeme jen "
+            "vaše odpovědi v dotazníku. <strong>Bez nich nemůžeme pokračovat.</strong>"
+        )
+        cta_text = "Vyplnit dotazník teď →"
+        urgency_box = """
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:14px 18px;margin:16px 0;">
+            <p style="color:#92400e;font-size:13px;margin:0;line-height:1.5;">
+                ⏰ Dotazník čeká na vyplnění už 3 dny. Čím dříve odpovíte,
+                tím dříve obdržíte kompletní Compliance Kit.
+            </p>
+        </div>
+        """
+    else:  # day == 7
+        subject_line = "Rádi vám pomůžeme"
+        headline = "Stále jsme tu pro vás"
+        body = (
+            "Uplynul týden od vaší objednávky a chtěli bychom se ujistit, "
+            "že je vše v pořádku. Dotazník je stále připravený k vyplnění "
+            "a my se na vaše odpovědi těšíme — jakmile je obdržíme, "
+            "<strong>ihned začneme připravovat vaši dokumentaci</strong>."
+        )
+        cta_text = "Vyplnit dotazník →"
+        urgency_box = """
+        <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:14px 18px;margin:16px 0;">
+            <p style="color:#1e40af;font-size:13px;margin:0;line-height:1.5;">
+                💡 Pokud máte jakékoli otázky k dotazníku nebo potřebujete pomoc
+                s vyplněním, neváhejte se na nás obrátit na
+                <a href="mailto:podpora@aishield.cz" style="color:#2563eb;">podpora@aishield.cz</a>.
+                Rádi vám personally poradíme.
+            </p>
+        </div>
+        """
+
+    return f"""
+<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:600px;margin:0 auto;padding:20px;">
+
+<!-- Header -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b,#312e81);border-radius:12px 12px 0 0;padding:30px 24px;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:22px;font-weight:700;">AIshield.cz</h1>
+    <p style="color:#a78bfa;margin:8px 0 0;font-size:13px;">{subject_line}</p>
+</div>
+
+<!-- Body -->
+<div style="background:white;padding:28px 24px;border:1px solid #e2e8f0;border-top:none;">
+
+    <h2 style="color:#1e293b;font-size:18px;margin:0 0 16px;">{headline}</h2>
+
+    <p style="color:#1e293b;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        {body}
+    </p>
+
+    {urgency_box}
+
+    <!-- What we need -->
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px 20px;margin:20px 0;">
+        <p style="color:#166534;font-size:14px;margin:0 0 8px;font-weight:600;">
+            Co potřebujeme:
+        </p>
+        <ul style="color:#166534;font-size:13px;margin:0;padding-left:18px;line-height:1.8;">
+            <li>Jaké AI nástroje ve firmě používáte</li>
+            <li>Zda máte interní směrnice pro AI</li>
+            <li>Informace o školení zaměstnanců</li>
+            <li>Údaje o ochraně dat</li>
+        </ul>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{dotaznik_url}" style="display:inline-block;background:#7c3aed;color:white;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600;">
+            {cta_text}
+        </a>
+    </div>
+
+    <div style="text-align:center;margin:12px 0 24px;">
+        <a href="{dashboard_url}" style="color:#7c3aed;text-decoration:none;font-size:13px;">
+            Přejít na dashboard →
+        </a>
+    </div>
+
+    <div style="background:#f1f5f9;border-radius:8px;padding:14px 18px;margin:16px 0 0;">
+        <p style="color:#64748b;font-size:12px;line-height:1.5;margin:0;">
+            Tento email jste obdrželi, protože jste provedli objednávku na aishield.cz.
+            V případě dotazů nás kontaktujte na podpora@aishield.cz.
+        </p>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<div style="background:#0f172a;border-radius:0 0 12px 12px;padding:20px 24px;text-align:center;">
+    <p style="color:#94a3b8;font-size:12px;margin:0;line-height:1.5;">
+        AIshield.cz — AI compliance pro české firmy<br>
+        Provozovatel: Desperados Design s.r.o.
+    </p>
+</div>
+
+</div>
+</body>
+</html>
+"""
