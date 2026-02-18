@@ -36,6 +36,7 @@ import {
     getSubscriptions,
     sendSubscriptionReminder,
     getAdminInvoices,
+    factoryReset,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -3094,6 +3095,45 @@ export default function AdminPage() {
                                         className="w-full px-4 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-xl hover:bg-orange-500/20 transition-all text-sm font-medium"
                                     >
                                         📢 Přejít na Monitoring
+                                    </button>
+                                </Panel>
+
+                                {/* FACTORY RESET */}
+                                <Panel className="p-6 border-2 border-red-500/30 bg-red-950/20">
+                                    <div className="text-3xl mb-3">💣</div>
+                                    <h3 className="font-semibold text-red-400 mb-2">Factory Reset</h3>
+                                    <p className="text-xs text-red-300/70 mb-4">
+                                        Smaže VŠECHNA data: uživatele, firmy, objednávky, skeny, emaily, dokumenty. Ponechá RAG knowledge base.
+                                    </p>
+                                    <button
+                                        onClick={async () => {
+                                            const typed = window.prompt(
+                                                "⚠️ POZOR: Toto smaže VŠECHNA data!\n\nPro potvrzení napište VYMAZ:"
+                                            );
+                                            if (typed !== "VYMAZ") {
+                                                if (typed !== null) setToolResult("❌ Factory reset zrušen — nesprávné potvrzení.");
+                                                return;
+                                            }
+                                            setToolResult("⏳ Factory reset probíhá...");
+                                            try {
+                                                const r = await factoryReset("VYMAZ");
+                                                const lines = [
+                                                    `${r.status === "ok" ? "✅" : "⚠️"} ${r.message}`,
+                                                    `Auth: ${r.results.auth}`,
+                                                    `DB: ${typeof r.results.db === "string" ? r.results.db : `${r.results.db.tables} tabulek — ${r.results.db.verification}`}`,
+                                                    `Storage: ${r.results.storage}`,
+                                                ];
+                                                if (r.results.errors?.length) {
+                                                    lines.push(`\nChyby: ${r.results.errors.join(", ")}`);
+                                                }
+                                                setToolResult(lines.join("\n"));
+                                            } catch (e) {
+                                                setToolResult(`❌ Chyba: ${e}`);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 bg-red-600 text-white border border-red-500 rounded-xl hover:bg-red-700 transition-all text-sm font-bold"
+                                    >
+                                        💣 FACTORY RESET — Vymazat vše
                                     </button>
                                 </Panel>
 

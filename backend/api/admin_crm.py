@@ -2161,3 +2161,149 @@ async def get_admin_invoices(limit: int = 100):
         "created_at", desc=True
     ).limit(limit).execute()
     return {"invoices": result.data or []}
+
+
+# ═══════════════════════════════════════════════════════════════
+# FACTORY RESET — Kompletní výmaz všech dat (pouze pro testování)
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/crm/factory-reset")
+async def crm_factory_reset(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Kompletní výmaz VŠECH dat — factory reset.
+    Smaže Auth uživatele, všechny tabulky, Storage soubory.
+    Ponechá ai_act_chunks (RAG knowledge base).
+    Vyžaduje potvrzení: body {"confirm": "VYMAZ"}
+    """
+    body = await request.json()
+    confirm = body.get("confirm", "")
+    if confirm != "VYMAZ":
+        raise HTTPException(
+            status_code=400,
+            detail="Pro potvrzení factory resetu odešlete {\"confirm\": \"VYMAZ\"}"
+        )
+
+    import httpx
+    import psycopg2
+    from backend.database import get_supabase
+
+    settings = get_settings()
+    results = {"auth": None, "db": None, "storage": None, "errors": []}
+
+    # ── 1. Smazání Auth uživatelů ──
+    try:
+        sb_url = settings.supabase_url
+        sb_key = settings.supabase_service_role_key
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(
+                f"{sb_url}/auth/v1/admin/users?per_page=100",
+                headers={"Authorization": f"Bearer {sb_key}", "apikey": sb_key},
+            )
+            resp.raise_for_status()
+            users = resp.json().get("users", [])
+            deleted_users = 0
+            for u in users:
+                uid = u["id"]
+                del_resp = await client.delete(
+                    f"{sb_url}/auth/v1/admin/users/{uid}",
+                    headers={"Authorization": f"Bearer {sb_key}", "apikey": sb_key},
+                )
+                if del_resp.status_code < 300:
+                    deleted_users += 1
+            results["auth"] = f"Smazáno {deleted_users}/{len(users)} uživatelů"
+    except Exception as e:
+        results["auth"] = f"CHYBA: {e}"
+        results["errors"].append(f"auth: {e}")
+
+    # ── 2. Výmaz DB tabulek (FK pořadí) ──
+    try:
+        import os
+        db_pass = os.environ.get("SUPABASE_DB_PASSWORD", "")
+        sb_url_raw = settings.supabase_url  # https://xxx.supabase.co
+        project_ref = sb_url_raw.split("//")[1].split(".")[0]
+        db_host = f"db.{project_ref}.supabase.co"
+
+        conn = psycopg2.connect(
+            host=db_host, port=5432, dbname="postgres",
+            user="postgres", password=db_pass,
+        )
+        conn.autocommit = True
+        cur = conn.cursor()
+
+        # Zjisti existující tabulky
+        cur.execute("""SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_type = 'BASE TABLE'""")
+        existing = {r[0] for r in cur.fetchall()}
+
+        # FK-ordered deletion — ai_act_chunks záměrně VYNECHÁNO
+        layers = [
+            ["findings", "questionnaire_responses", "documents", "alerts", "scan_diffs",
+             "chat_messages", "company_activities", "data_access_log", "orchestrator_log"],
+            ["subscription_payments", "invoices", "orders", "subscriptions", "payments"],
+            ["email_events", "email_log", "email_logs", "email_blacklist", "outbound_emails"],
+            ["analytics_events", "analytics_daily_summary"],
+            ["contact_submissions", "report_leads"],
+            ["scans", "scan_results", "clients", "widget_configs"],
+            ["companies"],
+            ["agency_batches"],
+        ]
+        db_report = []
+        for layer in layers:
+            for table in layer:
+                if table not in existing:
+                    continue
+                try:
+                    cur.execute(f"DELETE FROM {table}")
+                    if cur.rowcount > 0:
+                        db_report.append(f"{table}: {cur.rowcount}")
+                except Exception as e:
+                    db_report.append(f"{table}: CHYBA {e}")
+                    conn.rollback()
+                    conn.autocommit = True
+
+        # Verifikace
+        non_empty = []
+        for t in sorted(existing):
+            if t == "ai_act_chunks":
+                continue
+            cur.execute(f"SELECT COUNT(*) FROM {t}")
+            cnt = cur.fetchone()[0]
+            if cnt > 0:
+                non_empty.append(f"{t}:{cnt}")
+        conn.close()
+
+        results["db"] = {
+            "tables": len(existing),
+            "deleted": db_report if db_report else "Všechny tabulky již prázdné",
+            "verification": "OK" if not non_empty else f"NEPRÁZDNÉ: {non_empty}",
+        }
+    except Exception as e:
+        results["db"] = f"CHYBA: {e}"
+        results["errors"].append(f"db: {e}")
+
+    # ── 3. Storage cleanup ──
+    try:
+        supabase = get_supabase()
+        files_resp = supabase.storage.from_("documents").list(path="", options={"limit": 1000})
+        if files_resp:
+            paths = [f["name"] for f in files_resp]
+            if paths:
+                supabase.storage.from_("documents").remove(paths)
+            results["storage"] = f"Smazáno {len(paths)} souborů"
+        else:
+            results["storage"] = "Bucket prázdný"
+    except Exception as e:
+        results["storage"] = f"CHYBA: {e}"
+        results["errors"].append(f"storage: {e}")
+
+    success = len(results["errors"]) == 0
+    logger.warning(f"[FACTORY RESET] {'OK' if success else 'ERRORS'}: {results}")
+
+    return {
+        "status": "ok" if success else "partial",
+        "message": "Factory reset dokončen" if success else "Factory reset s chybami",
+        "results": results,
+    }

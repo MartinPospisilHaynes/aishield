@@ -877,3 +877,26 @@ export async function getAdminInvoices(): Promise<{ invoices: AdminInvoice[] }> 
     if (!res.ok) throw new Error("Chyba při načítání faktur");
     return res.json();
 }
+
+// ── Factory Reset ──
+
+export async function factoryReset(confirm: string): Promise<{
+    status: string;
+    message: string;
+    results: {
+        auth: string;
+        db: { tables: number; deleted: string | string[]; verification: string } | string;
+        storage: string;
+        errors: string[];
+    };
+}> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/factory-reset`, {
+        method: "POST",
+        body: JSON.stringify({ confirm }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při factory resetu");
+    }
+    return res.json();
+}
