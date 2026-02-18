@@ -2,7 +2,7 @@
 AIshield.cz — RAG over AI Act (Regulation EU 2024/1689)
 
 Retrieval-Augmented Generation pro přesné citace z AI Act.
-Využívá pgvector v Supabase + Gemini text-embedding-004.
+Využívá pgvector v Supabase + Gemini gemini-embedding-001.
 
 Funkce:
 - embed_ai_act_chunks() — jednorázový import AI Actu do vektorové DB
@@ -59,7 +59,7 @@ from backend.database import get_supabase
 logger = logging.getLogger(__name__)
 
 # ── Gemini Embedding config ──
-EMBEDDING_MODEL = "text-embedding-004"
+EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_DIM = 768
 EMBEDDING_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{EMBEDDING_MODEL}:embedContent"
@@ -71,7 +71,7 @@ EMBEDDING_API_URL = (
 # ═══════════════════════════════════════════════════════════════
 
 async def _get_embedding(text: str) -> list[float]:
-    """Získá embedding vektory přes Gemini text-embedding-004."""
+    """Získá embedding vektory přes Gemini gemini-embedding-001."""
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY není nastavený — nelze generovat embeddingy")
@@ -79,6 +79,7 @@ async def _get_embedding(text: str) -> list[float]:
     payload = {
         "model": f"models/{EMBEDDING_MODEL}",
         "content": {"parts": [{"text": text}]},
+        "outputDimensionality": EMBEDDING_DIM,
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
