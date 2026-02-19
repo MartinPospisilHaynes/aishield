@@ -1018,13 +1018,13 @@ def _get_industry_bubbles() -> list[str]:
     for section in QUESTIONNAIRE_SECTIONS:
         if section["id"] == "industry":
             for q in section["questions"]:
-                if q["key"] == "industry":
+                if q["key"] == "company_industry":
                     common = [
-                        "E-commerce / Maloobchod",
-                        "IT / Software / SaaS",
-                        "Služby (právní, účetní, poradenské)",
+                        "E-shop / Online obchod",
+                        "IT / Technologie",
+                        "Účetnictví / Finance",
                         "Výroba / Průmysl",
-                        "Marketing / Reklama / Média",
+                        "Právní služby",
                     ]
                     return [o for o in common if o in q.get("options", [])][:5]
     return []
