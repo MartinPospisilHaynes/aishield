@@ -813,66 +813,46 @@ def _get_scan_context(company_id: str) -> str:
 
 def _get_client_context(company_id: str) -> str:
     """
-    Load company registration data (name, IČO, URL, category)
-    to personalize the conversation. Also loads registration info
-    from clients table if available.
+    Load company data from registration/scan.
+    Registration collects: IČO (→ ARES lookup → company name), email, web URL.
+    Odvětví and role are NOT collected — chatbot must ask.
     """
     try:
         sb = get_supabase()
 
-        # Try to load company data from companies table
+        # Load company data from companies table
         comp_res = sb.table("companies") \
-            .select("name, ico, url, email, category, nace_code, employee_count") \
+            .select("name, ico, url, email") \
             .eq("id", company_id) \
             .limit(1) \
             .execute()
 
-        # Also try clients table for contact info
-        client_res = sb.table("clients") \
-            .select("email, contact_name, contact_role") \
-            .eq("company_id", company_id) \
-            .limit(1) \
-            .execute()
-
         comp = comp_res.data[0] if comp_res.data else {}
-        client = client_res.data[0] if client_res.data else {}
 
         name = comp.get("name") or ""
         ico = comp.get("ico") or ""
         url = comp.get("url") or ""
-        category = comp.get("category") or ""
-        nace = comp.get("nace_code") or ""
-        employee_count = comp.get("employee_count")
-        contact_name = client.get("contact_name") or ""
-        contact_role = client.get("contact_role") or ""
-        email = client.get("email") or comp.get("email") or ""
+        email = comp.get("email") or ""
 
-        # Only build context if we have any meaningful data
-        if not any([name, ico, url, category, contact_name]):
+        # Only build context if we have at least a URL or IČO
+        if not url and not ico:
             return ""
 
-        lines = ["\n<client_info>", "ÚDAJE O KLIENTOVI Z REGISTRACE:"]
-        if name:
+        lines = ["\n<client_info>", "ÚDAJE O KLIENTOVI (z registrace/skenu):"]
+        if name and name != url and "." not in name:
+            # Real company name from ARES lookup
             lines.append(f"- Název firmy: {name}")
         if ico:
             lines.append(f"- IČO: {ico}")
-        if category:
-            lines.append(f"- Odvětví/kategorie: {category}")
-        if nace:
-            lines.append(f"- NACE kód: {nace}")
         if url:
             lines.append(f"- Web: {url}")
-        if employee_count:
-            lines.append(f"- Počet zaměstnanců: {employee_count}")
-        if contact_name:
-            lines.append(f"- Kontaktní osoba: {contact_name}")
-        if contact_role:
-            lines.append(f"- Pozice: {contact_role}")
         if email:
             lines.append(f"- Email: {email}")
         lines.append(
-            "\nTyto údaje už ZNÁŠ — nemusíš se na ně ptát znovu. "
-            "Oslovuj klienta názvem firmy, pokud je k dispozici."
+            "\nNa tyto údaje se NEPTEJ znovu — už je znáš. "
+            "Pokud máš název firmy, oslovuj klienta jménem firmy. "
+            "ALE MUSÍŠ se zeptat na: odvětví firmy (pokud neznáš), "
+            "kontaktní osobu a její roli ve firmě."
         )
         lines.append("</client_info>")
         return "\n".join(lines)
