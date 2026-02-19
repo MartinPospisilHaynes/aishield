@@ -766,8 +766,8 @@ export default function DashboardPage() {
                                                     <p className="text-xs font-semibold text-green-300">Výborně! Hloubkový test běží</p>
                                                 </div>
                                                 <p className="text-[10px] text-slate-400 leading-relaxed">
-                                                    Za <strong className="text-white">~24 hodin</strong> vám napíšeme e-mail s agregovanými výsledky
-                                                    z <strong className="text-white">24 skenů ze 7 zemí</strong> (6 kol × 4 země — střídavě desktop a mobil).
+                                                    Za <strong className="text-white">~24 hodin</strong> vám napíšeme e-mail s výsledky
+                                                    z <strong className="text-white">24 nezávislých skenů ze 7 zemí</strong> — desktop i mobil, přes rezidenční proxy.
                                                 </p>
                                             </div>
                                         )}
