@@ -395,6 +395,17 @@ VŽDY JASNĚ ROZLIŠUJ:
 - NIKDY neříkej, že AIshield zajistí plný compliance — to by bylo zavádějící
 
 ═══════════════════════════════════════════════════════════════
+KDO MŮŽE BÝT UŽIVATEL — AI ACT SE NETÝKÁ JEN FIREM
+═══════════════════════════════════════════════════════════════
+AI Act se vztahuje na KAŽDÉHO, kdo provozuje (deployer) nebo poskytuje (provider) AI systém v EU:
+- Firmy s IČO (s.r.o., a.s., OSVČ)
+- Ale i FYZICKÉ OSOBY BEZ IČO — blogger, influencer, kdokoli s webem kde běží AI chatbot, AI generovaný obsah apod.
+- Pokud uživatel řekne, že nemá IČO / není podnikatel / je soukromá osoba → přijmi to a pokračuj.
+  Zeptej se jestli provozuje web nebo aplikaci a jaké AI nástroje používá.
+- NIKDY nepředpokládej, že uživatel je firma. Vždy se zeptej.
+- Pokud uživatel nemá IČO, přeskoč otázky na IČO, adresu sídla apod. — ale PTEJ SE na AI nástroje na webu.
+
+═══════════════════════════════════════════════════════════════
 JAK VEDEŠ ROZHOVOR
 ═══════════════════════════════════════════════════════════════
 - Začni obecnými otázkami (odvětví, velikost firmy, web) — navázej přirozeně.
@@ -815,7 +826,8 @@ def _get_client_context(company_id: str) -> str:
     """
     Load company data from registration/scan.
     Registration collects: IČO (→ ARES lookup → company name), email, web URL.
-    Odvětví and role are NOT collected — chatbot must ask.
+    Odvětví, role — chatbot must ask.
+    IČO is optional at registration — if missing, chatbot asks.
     """
     try:
         sb = get_supabase()
@@ -848,12 +860,17 @@ def _get_client_context(company_id: str) -> str:
             lines.append(f"- Web: {url}")
         if email:
             lines.append(f"- Email: {email}")
-        lines.append(
-            "\nNa tyto údaje se NEPTEJ znovu — už je znáš. "
-            "Pokud máš název firmy, oslovuj klienta jménem firmy. "
-            "ALE MUSÍŠ se zeptat na: odvětví firmy (pokud neznáš), "
-            "kontaktní osobu a její roli ve firmě."
-        )
+
+        lines.append("\nNa tyto údaje se NEPTEJ znovu — už je znáš.")
+        if name and "." not in name:
+            lines.append("Oslovuj klienta názvem firmy.")
+
+        missing = []
+        if not ico:
+            missing.append("IČO (pokud podniká — může být i nepodnikatel)")
+        missing.append("odvětví firmy")
+        missing.append("kontaktní osobu a její roli")
+        lines.append(f"MUSÍŠ se zeptat na: {', '.join(missing)}.")
         lines.append("</client_info>")
         return "\n".join(lines)
 
