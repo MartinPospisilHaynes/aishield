@@ -1025,13 +1025,23 @@ def _get_intro_phase(db_history: list[dict]) -> int:
     """
     Detect intro phase from conversation history.
     Returns:
-      0 — first user message (responding to Uršula greeting) → jump to first question
-     -1 — intro complete, normal Claude flow
+      -1 — always normal Claude flow (intro + first question handled in /init)
     """
-    user_count = sum(1 for m in db_history if m["role"] == "user")
-    if user_count == 0:
-        return 0
     return -1
+
+
+# Intro messages logged to DB on first user message (so Claude has context)
+_INTRO_CONTEXT = (
+    "Ahoj, já jsem **Uršula** a budu vašim průvodcem spletitým světem Euro nařízení.\n\n"
+    "**Nařízení Evropského parlamentu a Rady (EU) 2024/1689 (akt o umělé inteligenci)** "
+    "— mi nařizuje, abych Vás hned ze začátku naší konverzace informovala o tom, že jsem "
+    "oproti té pravé Uršule pouze chatbot poháněný umělou inteligencí.\n\n"
+    "I když je otázka, co je lepší, že? 😉\n\n"
+    "Všechny informace, které si tady řekneme, zůstávají **výhradně mezi námi** — nikomu "
+    "je nepředáváme. Kdyby nám to někdo prokázal, hrozí nám pokuta **až 20 milionů EUR** "
+    "(GDPR, čl. 83 odst. 5, Nařízení EU 2016/679).\n\n"
+    "Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**"
+)
 
 
 def _get_industry_bubbles() -> list[str]:
@@ -1558,14 +1568,10 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
         # Load conversation history from DB (server is source of truth)
         _, db_history, _ = _load_session_history(req.company_id)
 
-        # ── Uršula intro phase (scripted, no Claude call) ──
-        intro_phase = _get_intro_phase(db_history)
-        if intro_phase >= 0:
-            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
-            result = _build_intro_response(req.session_id)
-            combined = "\n\n".join(m.text for m in result.multi_messages)
-            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=0)
-            return result
+        # ── First message? Inject intro context into DB ──
+        if not db_history:
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", _INTRO_CONTEXT, progress=0)
+            db_history = [{"role": "assistant", "content": _INTRO_CONTEXT}]
 
         # ── Post FATAL ERROR → closing monologue ──
         if _is_post_fatal_error(db_history):
@@ -1844,18 +1850,10 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
 
         _, db_history, _ = _load_session_history(req.company_id)
 
-        # ── Scripted responses (no Claude call) → send as 'full' event ──
-        intro_phase = _get_intro_phase(db_history)
-        if intro_phase >= 0:
-            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
-            result = _build_intro_response(req.session_id)
-            combined = "\n\n".join(m.text for m in result.multi_messages)
-            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=0)
-            async def _gen_full():
-                yield _sse_event("full", result.model_dump_json())
-                yield _sse_event("done", "{}")
-            return StreamingResponse(_gen_full(), media_type="text/event-stream",
-                                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+        # ── First message? Inject intro context into DB ──
+        if not db_history:
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", _INTRO_CONTEXT, progress=0)
+            db_history = [{"role": "assistant", "content": _INTRO_CONTEXT}]
 
         if _is_post_fatal_error(db_history):
             _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
@@ -2124,6 +2122,8 @@ async def mart1n_init():
     Returns initial greeting for Uršula.
     Frontend calls this when the page loads to get the opening message.
     """
+    industry_bubbles = _get_industry_bubbles()
+
     return {
         "message": "",
         "bubbles": [],
@@ -2140,12 +2140,12 @@ async def mart1n_init():
                     "ze začátku naší konverzace informovala o tom, že jsem oproti "
                     "té pravé Uršule pouze chatbot poháněný umělou inteligencí."
                 ),
-                "delay_ms": 3000,
+                "delay_ms": 5000,
                 "bubbles": [],
             },
             {
                 "text": "I když je otázka, co je lepší, že? 😉",
-                "delay_ms": 3000,
+                "delay_ms": 5000,
                 "bubbles": [],
             },
             {
@@ -2155,13 +2155,18 @@ async def mart1n_init():
                     "Kdyby nám to někdo prokázal, hrozí nám pokuta "
                     "**až 20 milionů EUR** (GDPR, čl. 83 odst. 5, Nařízení EU 2016/679)."
                 ),
-                "delay_ms": 3000,
+                "delay_ms": 5000,
                 "bubbles": [],
+            },
+            {
+                "text": "Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**",
+                "delay_ms": 5000,
+                "bubbles": industry_bubbles,
             },
         ],
         "bubble_overrides": {},
         "progress": 0,
-        "current_section": "",
+        "current_section": "industry",
         "session_id": str(uuid.uuid4()),
     }
 
