@@ -13,7 +13,7 @@ import {
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
 /* ── ScrollReveal — triggers CSS keyframe animation on scroll into view ── */
-/* Scan-page version: slower (1.2s), bigger stagger (0.3s/unit), inline styles */
+/* Scan-page version: snappy (0.7s), tight stagger (0.12s/unit), inline styles */
 const SCAN_KEYFRAME_MAP: Record<string, string> = {
     "fade-up": "revealUp",
     "slide-left": "revealLeft",
@@ -58,8 +58,8 @@ function ScrollReveal({
 
     const animStyle: React.CSSProperties = visible
         ? {
-            animation: `${SCAN_KEYFRAME_MAP[variant]} 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
-            animationDelay: `${delay * 0.3}s`,
+            animation: `${SCAN_KEYFRAME_MAP[variant]} 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+            animationDelay: `${delay * 0.12}s`,
         }
         : { opacity: 0 };
 
@@ -654,7 +654,7 @@ function ScanPageInner() {
 
                         {/* ── ZELENÝ POZITIVNÍ BANNER ── */}
                         {hasFindings && (
-                            <ScrollReveal variant="scale-up">
+                            <ScrollReveal variant="fade-up">
                                 <div className="rounded-2xl bg-green-500/10 border-2 border-green-500/40 p-5">
                                     <div className="flex items-start gap-3">
                                         <IconCheckCircle className="w-7 h-7 text-green-400 flex-shrink-0 mt-0.5" />
@@ -678,7 +678,7 @@ function ScanPageInner() {
                         )}
 
                         {/* ── HLAVNÍ VÝSLEDKOVÁ KARTA ── */}
-                        <ScrollReveal delay={1}>
+                        <ScrollReveal delay={1} variant="fade-up">
                             <div className="rounded-2xl border-2 border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                 {/* Status bar */}
                                 <div className={"px-5 py-3 flex items-center justify-between " + (hasFindings ? "bg-red-500/10 border-b border-red-500/20" : "bg-green-500/8 border-b border-green-500/15")}>
@@ -754,7 +754,7 @@ function ScanPageInner() {
 
                         {/* ── Non-AI trackery (pro důvěryhodnost) ── */}
                         {trackers.length > 0 && (
-                            <ScrollReveal variant="slide-left" delay={2}>
+                            <ScrollReveal variant="fade-up" delay={2}>
                                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                     <div className="px-5 py-3 bg-slate-500/8 border-b border-slate-500/15">
                                         <div className="flex items-center justify-between">
@@ -776,8 +776,7 @@ function ScanPageInner() {
                                     <div className="p-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {trackers.map((t, idx) => (
-                                                <ScrollReveal key={idx} variant="fade-up" delay={idx}>
-                                                    <div className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
+                                                    <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
                                                         <span className="text-lg flex-shrink-0">{t.icon}</span>
                                                         <div className="min-w-0">
                                                             <p className="text-sm font-medium text-white truncate">{t.name}</p>
@@ -787,7 +786,6 @@ function ScanPageInner() {
                                                             {t.category}
                                                         </span>
                                                     </div>
-                                                </ScrollReveal>
                                             ))}
                                         </div>
                                     </div>
@@ -797,7 +795,7 @@ function ScanPageInner() {
 
                         {/* ── CTA: 24h hloubkový scan — ZDARMA ── */}
                         {hasFindings && (
-                            <ScrollReveal variant="scale-up" delay={3}>
+                            <ScrollReveal variant="fade-up" delay={3}>
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-fuchsia-500/8 border-2 border-fuchsia-500/25 p-6 text-center relative overflow-hidden">
                                     <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-fuchsia-500/10 blur-3xl" />
                                     <h3 className="font-bold text-white text-lg">
@@ -827,7 +825,7 @@ function ScanPageInner() {
                         {/* ── Seznam nálezů ── */}
                         {hasFindings ? (
                             <div>
-                                <ScrollReveal variant="slide-right" delay={4}>
+                                <ScrollReveal variant="fade-up" delay={4}>
                                     <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                                         <IconCpu className="w-5 h-5 text-fuchsia-400" />
                                         Nalezené AI systémy
@@ -835,7 +833,7 @@ function ScanPageInner() {
                                 </ScrollReveal>
                                 <div className="space-y-3">
                                     {findings.map((f, fIdx) => (
-                                        <ScrollReveal key={f.id} variant="fade-up" delay={5 + fIdx}>
+                                        <ScrollReveal key={f.id} variant="fade-up" delay={5 + Math.min(fIdx, 5)}>
                                             <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex items-center gap-2.5 min-w-0">
@@ -928,7 +926,7 @@ function ScanPageInner() {
                         )}
 
                         {/* ── Odeslat report / Dashboard redirect ── */}
-                        <ScrollReveal delay={5}>
+                        <ScrollReveal variant="fade-up" delay={8}>
                             {isLoggedIn ? (
                                 <div className="rounded-xl border border-green-500/15 bg-green-500/5 p-5 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -981,7 +979,7 @@ function ScanPageInner() {
                         </ScrollReveal>
 
                         {/* ── CTA ceník ── */}
-                        <ScrollReveal variant="scale-up" delay={2}>
+                        <ScrollReveal variant="fade-up" delay={9}>
                             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
                                 <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
                                 <p className="text-sm text-slate-400 mt-1">
