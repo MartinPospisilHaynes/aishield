@@ -13,6 +13,14 @@ import {
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
 /* ── ScrollReveal — triggers CSS keyframe animation on scroll into view ── */
+/* Scan-page version: slower (1.2s), bigger stagger (0.3s/unit), inline styles */
+const SCAN_KEYFRAME_MAP: Record<string, string> = {
+    "fade-up": "revealUp",
+    "slide-left": "revealLeft",
+    "slide-right": "revealRight",
+    "scale-up": "revealScale",
+};
+
 function ScrollReveal({
     children,
     className = "",
@@ -25,39 +33,38 @@ function ScrollReveal({
     delay?: number;
 }) {
     const ref = useRef<HTMLDivElement>(null);
-    const [animClass, setAnimClass] = useState("");
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
 
-        const animName = `anim-${variant}`;
-
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    // Double-rAF ensures the browser has painted opacity:0 first,
-                    // so the keyframe animation is always visible to the user.
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
-                            setAnimClass(animName);
+                            setVisible(true);
                         });
                     });
                     observer.unobserve(el);
                 }
             },
-            { threshold: 0.05, rootMargin: "0px 0px -30px 0px" }
+            { threshold: 0.08, rootMargin: "0px 0px -60px 0px" }
         );
         observer.observe(el);
         return () => observer.disconnect();
     }, [variant]);
 
+    const animStyle: React.CSSProperties = visible
+        ? {
+              animation: `${SCAN_KEYFRAME_MAP[variant]} 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+              animationDelay: `${delay * 0.3}s`,
+          }
+        : { opacity: 0 };
+
     return (
-        <div
-            ref={ref}
-            className={`scroll-reveal ${animClass} ${className}`}
-            data-delay={delay}
-        >
+        <div ref={ref} className={className} style={animStyle}>
             {children}
         </div>
     );
@@ -769,16 +776,18 @@ function ScanPageInner() {
                                     <div className="p-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {trackers.map((t, idx) => (
-                                                <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
-                                                    <span className="text-lg flex-shrink-0">{t.icon}</span>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium text-white truncate">{t.name}</p>
-                                                        <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
+                                                <ScrollReveal key={idx} variant="fade-up" delay={idx}>
+                                                    <div className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
+                                                        <span className="text-lg flex-shrink-0">{t.icon}</span>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium text-white truncate">{t.name}</p>
+                                                            <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
+                                                        </div>
+                                                        <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
+                                                            {t.category}
+                                                        </span>
                                                     </div>
-                                                    <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
-                                                        {t.category}
-                                                    </span>
-                                                </div>
+                                                </ScrollReveal>
                                             ))}
                                         </div>
                                     </div>
@@ -817,15 +826,17 @@ function ScanPageInner() {
 
                         {/* ── Seznam nálezů ── */}
                         {hasFindings ? (
-                            <ScrollReveal variant="slide-right" delay={4}>
-                                <div>
+                            <div>
+                                <ScrollReveal variant="slide-right" delay={4}>
                                     <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                                         <IconCpu className="w-5 h-5 text-fuchsia-400" />
                                         Nalezené AI systémy
                                     </h3>
-                                    <div className="space-y-3">
-                                        {findings.map((f) => (
-                                            <div key={f.id} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                                </ScrollReveal>
+                                <div className="space-y-3">
+                                    {findings.map((f, fIdx) => (
+                                        <ScrollReveal key={f.id} variant="fade-up" delay={5 + fIdx}>
+                                            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         {categoryIcon(f.category)}
@@ -862,10 +873,10 @@ function ScanPageInner() {
                                                     </div>
                                                 )}
                                             </div>
-                                        ))}
-                                    </div>
+                                        </ScrollReveal>
+                                    ))}
                                 </div>
-                            </ScrollReveal>
+                            </div>
                         ) : (
                             <ScrollReveal>
                                 <div className="space-y-4">
@@ -970,7 +981,7 @@ function ScanPageInner() {
                         </ScrollReveal>
 
                         {/* ── CTA ceník ── */}
-                        <ScrollReveal variant="scale-up" delay={6}>
+                        <ScrollReveal variant="scale-up" delay={2}>
                             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
                                 <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
                                 <p className="text-sm text-slate-400 mt-1">
