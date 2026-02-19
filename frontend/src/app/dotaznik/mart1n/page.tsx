@@ -175,6 +175,32 @@ function PrivacyBadge() {
 }
 
 /* ═══════════════════════════════════════════
+   SMART DISCLAIMER BANNER
+   ═══════════════════════════════════════════ */
+
+function DisclaimerBanner() {
+    return (
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-neon-purple/5 to-neon-cyan/5 border border-white/[0.06]">
+            <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-neon-cyan flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+                <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
+                    <p>
+                        <strong className="text-slate-300">MART1N Vám pomůže připravit kompletní dokumentaci k EU AI Act.</strong>{" "}
+                        Naše výstupy jsou nejlepší podklady, které můžete svému právnímu oddělení poskytnout — šetří čas i peníze.
+                    </p>
+                    <p>
+                        Na konci analýzy objektivně zhodnotíme, zda je ve Vašem konkrétním případě nutné i právní poradenství.
+                        Ve většině případů to <strong className="text-emerald-400">nutné není</strong> — naše dokumenty pokrývají vše potřebné.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════
    PROGRESS BAR
    ═══════════════════════════════════════════ */
 
@@ -215,6 +241,7 @@ function Mart1nPageInner() {
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [initLoading, setInitLoading] = useState(true);
+    const [isResuming, setIsResuming] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -260,10 +287,57 @@ function Mart1nPageInner() {
         })();
     }, [searchParams]);
 
-    // Load initial greeting from API
+    // Load session: check for existing conversation, then init or resume
     useEffect(() => {
         if (!companyId) return;
         (async () => {
+            try {
+                // 1. Check for existing conversation (server-side)
+                const sessionRes = await fetch(`${API_URL}/api/mart1n/session/${companyId}`);
+                const sessionData = await sessionRes.json();
+
+                if (sessionData.has_session && sessionData.messages?.length > 0) {
+                    // RESUMPTION: Load existing conversation from server
+                    setSessionId(sessionData.session_id);
+                    setProgress(sessionData.progress || 0);
+                    setIsResuming(true);
+
+                    // Convert server messages to frontend format
+                    const loadedMessages: Mart1nMessage[] = sessionData.messages.map(
+                        (m: { role: string; content: string }) => ({
+                            role: m.role as "user" | "assistant",
+                            content: m.content,
+                            timestamp: Date.now(),
+                        })
+                    );
+
+                    // Add resumption greeting
+                    const pct = sessionData.progress || 0;
+                    const unknownCount = sessionData.answered_keys
+                        ? (sessionData.answered_keys.length)
+                        : 0;
+                    loadedMessages.push({
+                        role: "assistant",
+                        content: `Vítejte zpět! Vidím, že Váš dotazník je na **${pct}%** `
+                            + `(${unknownCount} zodpovězených otázek). `
+                            + `Chcete pokračovat tam, kde jste skončili, nebo doplnit odpovědi na některé otázky?`,
+                        bubbles: [
+                            "Pokračovat kde jsem skončil/a",
+                            "Doplnit přeskočené otázky",
+                            "Začít od začátku",
+                        ],
+                        timestamp: Date.now(),
+                    });
+
+                    setMessages(loadedMessages);
+                    setInitLoading(false);
+                    return;
+                }
+            } catch {
+                // Session check failed — continue to fresh init
+            }
+
+            // 2. No existing session — fresh start with init greeting
             try {
                 const res = await fetch(`${API_URL}/api/mart1n/init`);
                 const data = await res.json();
@@ -288,7 +362,7 @@ function Mart1nPageInner() {
         })();
     }, [companyId]);
 
-    // Send message to MART1N API
+    // Send message to MART1N API (server-side mode — sends single message)
     const sendMessage = useCallback(async (text: string) => {
         if (!text.trim() || sending || isComplete) return;
 
@@ -298,16 +372,10 @@ function Mart1nPageInner() {
             timestamp: Date.now(),
         };
 
-        const newMessages = [...messages, userMsg];
-        setMessages(newMessages);
+        setMessages(prev => [...prev, userMsg]);
         setInput("");
         setSending(true);
-
-        // Build messages payload for API (only role + content)
-        const apiMessages = newMessages.map(m => ({
-            role: m.role,
-            content: m.content,
-        }));
+        setIsResuming(false);
 
         try {
             const res = await fetch(`${API_URL}/api/mart1n/chat`, {
@@ -316,7 +384,7 @@ function Mart1nPageInner() {
                 body: JSON.stringify({
                     session_id: sessionId,
                     company_id: companyId,
-                    messages: apiMessages,
+                    message: text.trim(),   // NEW: single message (server loads history)
                 }),
             });
 
@@ -354,7 +422,7 @@ function Mart1nPageInner() {
             setSending(false);
             inputRef.current?.focus();
         }
-    }, [messages, sending, isComplete, sessionId, companyId]);
+    }, [sending, isComplete, sessionId, companyId]);
 
     // Handle bubble click
     const handleBubbleClick = useCallback((bubble: string) => {
@@ -418,6 +486,21 @@ function Mart1nPageInner() {
                 <div className="max-w-3xl mx-auto px-4 py-6 space-y-1">
                     {/* Privacy badge at top */}
                     <PrivacyBadge />
+
+                    {/* Disclaimer: positive framing */}
+                    <DisclaimerBanner />
+
+                    {/* Resumption badge */}
+                    {isResuming && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neon-cyan/5 border border-neon-cyan/20 mb-2">
+                            <svg className="w-4 h-4 text-neon-cyan flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                            </svg>
+                            <span className="text-xs text-slate-400">
+                                Pokračujete v rozpracovaném dotazníku — <span className="text-neon-cyan font-medium">{progress}% dokončeno</span>
+                            </span>
+                        </div>
+                    )}
 
                     {initLoading ? (
                         <TypingIndicator />

@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import anthropic
+import redis
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
@@ -45,10 +46,36 @@ MAX_CONVERSATION_TURNS = 60  # Max turns in one session
 MAX_MESSAGE_LENGTH = 3000
 CLAUDE_TIMEOUT = 90  # seconds — timeout for Claude API call
 
-# ── Rate limiting (dual: per company_id AND per IP) ──
-_rate_limits: dict[str, list[float]] = {}
+# ── Rate limiting (Redis with in-memory fallback) ──
+_rate_limits: dict[str, list[float]] = {}   # in-memory fallback
 RATE_LIMIT_WINDOW = 60
 RATE_LIMIT_MAX = 20  # msgs per minute per key
+
+_redis_client: redis.Redis | None = None
+_redis_available: bool | None = None  # None = not checked yet
+
+
+def _get_redis() -> redis.Redis | None:
+    """Lazy Redis connection — db=1 (separate from ARQ on db=0)."""
+    global _redis_client, _redis_available
+    if _redis_available is False:
+        return None
+    if _redis_client is not None:
+        return _redis_client
+    try:
+        _redis_client = redis.Redis(
+            host="localhost", port=6379, db=1,
+            decode_responses=True, socket_timeout=2,
+        )
+        _redis_client.ping()
+        _redis_available = True
+        logger.info("[MART1N] Redis rate limiter connected (db=1)")
+        return _redis_client
+    except (redis.ConnectionError, redis.TimeoutError, Exception) as e:
+        logger.warning(f"[MART1N] Redis not available, using in-memory fallback: {e}")
+        _redis_available = False
+        _redis_client = None
+        return None
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -482,7 +509,8 @@ class Mart1nMessage(BaseModel):
 class Mart1nRequest(BaseModel):
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     company_id: str = Field(..., min_length=1, max_length=100)
-    messages: list[Mart1nMessage] = Field(..., max_length=MAX_CONVERSATION_TURNS)
+    messages: list[Mart1nMessage] | None = None  # Legacy: full history from client
+    message: str | None = None                    # New: single message (server loads history)
     page_url: str | None = None
 
 
@@ -505,11 +533,37 @@ class Mart1nResponse(BaseModel):
 
 
 # ═══════════════════════════════════════════════════════════════
-# RATE LIMITER (dual: per company_id AND per IP)
+# RATE LIMITER (Redis with in-memory fallback, dual: IP + company)
 # ═══════════════════════════════════════════════════════════════
 
 def _check_rate_limit(key: str) -> bool:
-    """Check rate limit for a given key (company_id or IP hash)."""
+    """Check rate limit — uses Redis if available, in-memory fallback."""
+    r = _get_redis()
+    if r is not None:
+        return _check_rate_limit_redis(r, key)
+    return _check_rate_limit_memory(key)
+
+
+def _check_rate_limit_redis(r: redis.Redis, key: str) -> bool:
+    """Redis-based rate limit using sorted sets (survives restarts)."""
+    try:
+        redis_key = f"mart1n:rate:{key}"
+        now = time.time()
+        pipe = r.pipeline()
+        pipe.zremrangebyscore(redis_key, 0, now - RATE_LIMIT_WINDOW)
+        pipe.zadd(redis_key, {str(now): now})
+        pipe.zcard(redis_key)
+        pipe.expire(redis_key, RATE_LIMIT_WINDOW + 10)
+        results = pipe.execute()
+        count = results[2]
+        return count <= RATE_LIMIT_MAX
+    except Exception as e:
+        logger.warning(f"[MART1N] Redis rate limit error, fallback to memory: {e}")
+        return _check_rate_limit_memory(key)
+
+
+def _check_rate_limit_memory(key: str) -> bool:
+    """In-memory rate limit fallback (resets on restart)."""
     now = time.time()
     if key not in _rate_limits:
         _rate_limits[key] = []
@@ -565,6 +619,148 @@ def _log_mart1n_message(
         }).execute()
     except Exception as e:
         logger.warning(f"[MART1N] Log error: {e}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# SESSION RETRIEVAL — server-side conversation history
+# ═══════════════════════════════════════════════════════════════
+
+def _load_session_history(company_id: str) -> tuple[str, list[dict], int]:
+    """
+    Load existing conversation from DB for this company.
+    Returns (session_id, messages_for_claude, last_progress).
+    Messages are [{role: str, content: str}, ...] ready for Claude API.
+    """
+    try:
+        sb = get_supabase()
+        result = sb.table("mart1n_conversations") \
+            .select("session_id, role, content, progress, created_at") \
+            .eq("company_id", company_id) \
+            .order("created_at") \
+            .execute()
+
+        if not result.data:
+            return "", [], 0
+
+        # Group by session_id, find latest session
+        sessions: dict[str, list] = {}
+        for row in result.data:
+            sid = row["session_id"]
+            if sid not in sessions:
+                sessions[sid] = []
+            sessions[sid].append(row)
+
+        # Pick the session with the most recent message
+        latest_sid = max(
+            sessions.keys(),
+            key=lambda s: sessions[s][-1]["created_at"]
+        )
+        session_msgs = sessions[latest_sid]
+
+        messages = [
+            {"role": m["role"], "content": m["content"]}
+            for m in session_msgs
+        ]
+        last_progress = max(
+            (m.get("progress") or 0 for m in session_msgs), default=0
+        )
+
+        return latest_sid, messages, last_progress
+    except Exception as e:
+        logger.warning(f"[MART1N] Session load error: {e}")
+        return "", [], 0
+
+
+def _get_answered_keys(company_id: str) -> list[str]:
+    """
+    Get list of already-answered question keys for this company.
+    Used by MART1N to know which questions to skip or offer for completion.
+    """
+    try:
+        sb = get_supabase()
+        # Find client for this company
+        client_res = sb.table("clients").select("id").eq(
+            "company_id", company_id
+        ).limit(1).execute()
+        if not client_res.data:
+            return []
+        client_id = client_res.data[0]["id"]
+
+        answers = sb.table("questionnaire_responses") \
+            .select("question_key, answer") \
+            .eq("client_id", client_id) \
+            .execute()
+
+        return [
+            r["question_key"] for r in (answers.data or [])
+            if r.get("answer") and r["answer"] != "unknown"
+        ]
+    except Exception as e:
+        logger.warning(f"[MART1N] Answered keys error: {e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════════
+# SCAN CONTEXT — inject company scan findings into conversation
+# ═══════════════════════════════════════════════════════════════
+
+def _get_scan_context(company_id: str) -> str:
+    """
+    Load scan findings for this company to personalize MART1N's conversation.
+    Returns a text block to append to the system prompt.
+    """
+    try:
+        sb = get_supabase()
+        # Get latest completed scan for this company
+        scans = sb.table("scans") \
+            .select("id, url_scanned, total_findings") \
+            .eq("company_id", company_id) \
+            .eq("status", "done") \
+            .order("finished_at", desc=True) \
+            .limit(1) \
+            .execute()
+
+        if not scans.data:
+            return ""
+
+        scan = scans.data[0]
+        scan_id = scan["id"]
+        url = scan.get("url_scanned", "")
+
+        # Load findings
+        findings = sb.table("findings") \
+            .select("name, category, risk_level, ai_act_article") \
+            .eq("scan_id", scan_id) \
+            .neq("source", "ai_classified_fp") \
+            .execute()
+
+        if not findings.data:
+            return ""
+
+        lines = [
+            f"\n<scan_results>",
+            f"VÝSLEDKY AUTOMATICKÉHO SKENU WEBU ({url}):",
+            f"Celkem nalezeno {len(findings.data)} AI systémů/nástrojů na webu klienta:",
+        ]
+        for f in findings.data:
+            article = f.get("ai_act_article", "")
+            article_info = f" — {article}" if article else ""
+            lines.append(
+                f"- {f['name']} (kategorie: {f['category']}, "
+                f"riziko: {f['risk_level']}{article_info})"
+            )
+        lines.append(
+            "\nPoužij tyto informace k personalizaci rozhovoru — VÍŠ, jaké "
+            "AI nástroje firma používá na webu. Nemusíš se ptát na nástroje, "
+            "které jsi už detekoval. Můžeš říct: 'Na Vašem webu jsme "
+            "detekovali [nástroj] — o tomto AI systému se Vás zeptám podrobněji.'"
+        )
+        lines.append("</scan_results>")
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.warning(f"[MART1N] Scan context error: {e}")
+        return ""
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -782,9 +978,11 @@ def _detect_prompt_injection(text: str) -> bool:
 async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     """
     MART1N chatbot endpoint — fullscreen questionnaire replacement.
+    Supports two modes:
+      - NEW (server-side): req.message = single user text, history loaded from DB
+      - LEGACY: req.messages = full history from client (backward compat)
     Uses Claude (Anthropic) API with timeout protection.
-    Validates extracted answers against QUESTIONNAIRE_SECTIONS.
-    Rate limits by both company_id AND client IP.
+    Injects scan results into system prompt for personalized conversation.
     """
 
     settings = get_settings()
@@ -801,16 +999,39 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             detail="Příliš mnoho zpráv. Zkuste to prosím za chvíli.",
         )
 
-    # Validate input
-    if not req.messages or not req.messages[-1].content.strip():
+    # ── Determine user message and build Claude messages ──
+    if req.message is not None:
+        # NEW: Server-side session mode
+        user_msg = req.message.strip()
+        if not user_msg:
+            raise HTTPException(status_code=400, detail="Prázdná zpráva.")
+        if len(user_msg) > MAX_MESSAGE_LENGTH:
+            raise HTTPException(status_code=400, detail="Zpráva je příliš dlouhá.")
+
+        # Load conversation history from DB (server is source of truth)
+        _, db_history, _ = _load_session_history(req.company_id)
+        # Append new user message
+        claude_messages = db_history[-28:] + [{"role": "user", "content": user_msg}]
+        server_mode = True
+
+    elif req.messages:
+        # LEGACY: Client sends full history
+        if not req.messages[-1].content.strip():
+            raise HTTPException(status_code=400, detail="Prázdná zpráva.")
+        if len(req.messages) > MAX_CONVERSATION_TURNS:
+            raise HTTPException(status_code=400, detail="Konverzace je příliš dlouhá.")
+
+        user_msg = req.messages[-1].content.strip()
+        if len(user_msg) > MAX_MESSAGE_LENGTH:
+            raise HTTPException(status_code=400, detail="Zpráva je příliš dlouhá.")
+
+        claude_messages = [
+            {"role": msg.role, "content": msg.content}
+            for msg in req.messages[-30:]
+        ]
+        server_mode = False
+    else:
         raise HTTPException(status_code=400, detail="Prázdná zpráva.")
-
-    if len(req.messages) > MAX_CONVERSATION_TURNS:
-        raise HTTPException(status_code=400, detail="Konverzace je příliš dlouhá.")
-
-    user_msg = req.messages[-1].content.strip()
-    if len(user_msg) > MAX_MESSAGE_LENGTH:
-        raise HTTPException(status_code=400, detail="Zpráva je příliš dlouhá.")
 
     # Code-level prompt injection detection (log only — Claude handles response)
     if _detect_prompt_injection(user_msg):
@@ -819,25 +1040,21 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     # Log user message
     _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
 
-    # Build Claude messages from conversation history
-    claude_messages = []
-    for msg in req.messages[-30:]:  # Last 30 turns for context
-        claude_messages.append({
-            "role": msg.role,
-            "content": msg.content,
-        })
+    # Build enriched system prompt (base + scan results)
+    scan_context = _get_scan_context(req.company_id)
+    full_system_prompt = SYSTEM_PROMPT + scan_context if scan_context else SYSTEM_PROMPT
 
     # Call Claude API with timeout protection
     try:
         client = anthropic.Anthropic(
             api_key=settings.anthropic_api_key,
-            timeout=CLAUDE_TIMEOUT,  # Fix #4: explicit timeout
+            timeout=CLAUDE_TIMEOUT,
         )
         response = client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=2048,
             temperature=0.4,
-            system=SYSTEM_PROMPT,
+            system=full_system_prompt,
             messages=claude_messages,
         )
 
@@ -1010,3 +1227,47 @@ async def mart1n_progress(company_id: str):
     except Exception as e:
         logger.error(f"[MART1N] Progress error: {e}")
         return {"answered": 0, "total": len(ALL_QUESTION_KEYS), "progress": 0}
+
+
+# ═══════════════════════════════════════════════════════════════
+# SESSION ENDPOINT — retrieve existing conversation for resumption
+# ═══════════════════════════════════════════════════════════════
+
+@router.get("/mart1n/session/{company_id}")
+async def mart1n_get_session(company_id: str):
+    """
+    Returns existing MART1N conversation for a company.
+    Used by frontend to resume conversation after page reload,
+    device switch, or returning days later.
+    """
+    try:
+        session_id, messages, last_progress = _load_session_history(company_id)
+
+        if not messages:
+            return {
+                "messages": [],
+                "session_id": "",
+                "progress": 0,
+                "answered_keys": [],
+                "has_session": False,
+            }
+
+        # Also get answered question keys for context
+        answered_keys = _get_answered_keys(company_id)
+
+        return {
+            "messages": messages,
+            "session_id": session_id,
+            "progress": last_progress,
+            "answered_keys": answered_keys,
+            "has_session": True,
+        }
+    except Exception as e:
+        logger.error(f"[MART1N] Session retrieval error: {e}")
+        return {
+            "messages": [],
+            "session_id": "",
+            "progress": 0,
+            "answered_keys": [],
+            "has_session": False,
+        }
