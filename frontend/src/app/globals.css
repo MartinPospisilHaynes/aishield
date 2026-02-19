@@ -139,54 +139,81 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+}
 
-    /* ── Scroll Reveal Animations ── */
-    .scroll-reveal {
+/* ═══════════════════════════════════════════
+   Scroll Reveal Animations
+   OUTSIDE @layer to avoid Tailwind cascade issues
+   ═══════════════════════════════════════════ */
+
+@keyframes revealUp {
+    from {
         opacity: 0;
-        transform: translateY(32px);
-        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(40px);
     }
-
-    .scroll-reveal.slide-left {
-        transform: translateX(-40px) translateY(0);
-    }
-
-    .scroll-reveal.slide-right {
-        transform: translateX(40px) translateY(0);
-    }
-
-    .scroll-reveal.scale-up {
-        transform: scale(0.92);
-    }
-
-    .scroll-reveal.visible {
+    to {
         opacity: 1;
-        transform: translateY(0) translateX(0) scale(1);
-    }
-
-    /* Stagger delays via CSS custom property */
-    .scroll-reveal[data-delay="1"] {
-        transition-delay: 0.08s;
-    }
-
-    .scroll-reveal[data-delay="2"] {
-        transition-delay: 0.16s;
-    }
-
-    .scroll-reveal[data-delay="3"] {
-        transition-delay: 0.24s;
-    }
-
-    .scroll-reveal[data-delay="4"] {
-        transition-delay: 0.32s;
-    }
-
-    .scroll-reveal[data-delay="5"] {
-        transition-delay: 0.40s;
-    }
-
-    .scroll-reveal[data-delay="6"] {
-        transition-delay: 0.48s;
+        transform: translateY(0);
     }
 }
+
+@keyframes revealLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes revealRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes revealScale {
+    from {
+        opacity: 0;
+        transform: scale(0.88);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.scroll-reveal {
+    opacity: 0;
+}
+
+.scroll-reveal.anim-fade-up {
+    animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scroll-reveal.anim-slide-left {
+    animation: revealLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scroll-reveal.anim-slide-right {
+    animation: revealRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scroll-reveal.anim-scale-up {
+    animation: revealScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays — clearly perceptible cascade */
+.scroll-reveal[data-delay="1"] { animation-delay: 0.15s; }
+.scroll-reveal[data-delay="2"] { animation-delay: 0.30s; }
+.scroll-reveal[data-delay="3"] { animation-delay: 0.45s; }
+.scroll-reveal[data-delay="4"] { animation-delay: 0.60s; }
+.scroll-reveal[data-delay="5"] { animation-delay: 0.75s; }
+.scroll-reveal[data-delay="6"] { animation-delay: 0.90s; }

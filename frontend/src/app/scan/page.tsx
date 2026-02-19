@@ -12,7 +12,7 @@ import {
 } from "@/lib/api";
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
-/* ── ScrollReveal — Intersection Observer animation wrapper ── */
+/* ── ScrollReveal — triggers CSS keyframe animation on scroll into view ── */
 function ScrollReveal({
     children,
     className = "",
@@ -25,30 +25,37 @@ function ScrollReveal({
     delay?: number;
 }) {
     const ref = useRef<HTMLDivElement>(null);
-    const [visible, setVisible] = useState(false);
+    const [animClass, setAnimClass] = useState("");
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
+
+        const animName = `anim-${variant}`;
+
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    setVisible(true);
+                    // Double-rAF ensures the browser has painted opacity:0 first,
+                    // so the keyframe animation is always visible to the user.
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            setAnimClass(animName);
+                        });
+                    });
                     observer.unobserve(el);
                 }
             },
-            { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+            { threshold: 0.05, rootMargin: "0px 0px -30px 0px" }
         );
         observer.observe(el);
         return () => observer.disconnect();
-    }, []);
-
-    const variantClass = variant === "fade-up" ? "" : variant;
+    }, [variant]);
 
     return (
         <div
             ref={ref}
-            className={`scroll-reveal ${variantClass} ${visible ? "visible" : ""} ${className}`}
+            className={`scroll-reveal ${animClass} ${className}`}
             data-delay={delay}
         >
             {children}
