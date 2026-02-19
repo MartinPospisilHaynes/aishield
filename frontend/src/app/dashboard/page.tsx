@@ -1231,7 +1231,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         {
             done: hasDocs,
             label: "Dodání",
-            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení" : "8 dokumentů pro splnění AI Act",
+            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení — tištěnou verzi doručíme do 14 dnů" : "Až 12 dokumentů v PDF + tištěná verze v profesionální vazbě",
             detail: null,
             href: hasDocs ? "#" : null,
             cta: hasDocs ? "Viz tab Dokumenty" : "",
@@ -1767,6 +1767,7 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
                         <h4 className="text-sm font-semibold text-cyan-300 mb-1">Doba zpracování</h4>
                         <p className="text-xs text-slate-300 leading-relaxed">
                             Kompletní dokumenty připravujeme do <strong className="text-cyan-300">7 pracovních dnů</strong> od zaplacení balíčku.
+                            Do 14 dnů vám vše doručíme i v tištěné podobě v profesionální vazbě — připravené na kontrolu.
                             Pro přípravu dokumentů je nutné mít vyplněný dotazník — čím přesněji odpovíte, tím kvalitnější dokumenty obdržíte.
                         </p>
                     </div>
@@ -2410,6 +2411,7 @@ const DASHBOARD_PLANS = [
             "Školení — prezentace v PowerPointu",
             "Záznamový list o proškolení",
             "Plán řízení AI incidentů",
+            "Tištěná dokumentace v profesionální vazbě do 14 dnů",
         ],
         notIncluded: [
             "Implementace na klíč",
@@ -2439,6 +2441,7 @@ const DASHBOARD_PLANS = [
             "Podpora po dobu 30 dní",
             "WordPress, Shoptet i custom",
             "Prioritní zpracování",
+            "Tištěná dokumentace v profesionální vazbě do 14 dnů",
         ],
         notIncluded: [],
         cta: "Objednat PRO",
@@ -2464,6 +2467,7 @@ const DASHBOARD_PLANS = [
             "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Dedikovaný specialista",
             "SLA 4h odezva v pracovní době",
+            "Tištěná dokumentace v profesionální vazbě do 14 dnů",
         ],
         notIncluded: [],
         cta: "Objednat ENTERPRISE",
@@ -2487,6 +2491,7 @@ const COMPARISON_FEATURES = [
     { label: "Školení — prezentace v PowerPointu", basic: true, pro: true, enterprise: true },
     { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
     { label: "Plán řízení AI incidentů", basic: true, pro: true, enterprise: true },
+    { label: "Tištěná dokumentace v profesionální vazbě (do 14 dnů)", basic: true, pro: true, enterprise: true },
     { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
     { label: "Nastavení transparenční stránky na webu", basic: false, pro: true, enterprise: true },
     { label: "Úprava cookie lišty a chatbot oznámení", basic: false, pro: true, enterprise: true },

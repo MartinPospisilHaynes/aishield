@@ -985,7 +985,7 @@ function ScanPageInner() {
                             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
                                 <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    Kompletní dokumentaci, transparenční stránku a vše potřebné pro soulad s AI Act.
+                                    Kompletní dokumentaci, tištěnou verzi v profesionální vazbě a vše potřebné pro soulad s AI Act.
                                 </p>
                                 <a href="/pricing" className="inline-block mt-3 btn-primary text-sm px-6 py-2.5">
                                     Zobrazit ceník služeb →

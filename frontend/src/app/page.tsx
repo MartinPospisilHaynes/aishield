@@ -254,7 +254,7 @@ const FAQ_ITEMS = [
             "2) Dostanete přehledný report s výsledky — jaké AI nástroje máte, jaké povinnosti z nich plynou a do jaké kategorie spadáte. " +
             "3) Vyberete si balíček služeb podle vašich potřeb — od základního BASIC po kompletní ENTERPRISE s konzultací. " +
             "4) Vyplníte krátký dotazník o vaší firmě (zabere asi 5 minut, většinou jen klikáte). Dotazník je klíčový, protože EU AI Act se netýká jen vašeho webu — reguluje i interní AI systémy, které zákazník nikdy neuvidí (ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR…). Sken odhalí jen to veřejné; dotazník pokryje celou AI politiku firmy. " +
-            "5) Do 7 dnů obdržíte vše, co váš balíček obsahuje — kompletní sadu dokumentů v PDF, implementaci i nastavení. Všechno vyřídime za vás, můžete být v klidu.",
+            "5) Do 7 dnů obdržíte kompletní sadu dokumentů v PDF a do 14 dnů vám vše doručíme i v tištěné podobě v profesionální vazbě — připravené pro případnou kontrolu. Všechno vyřídíme za vás, můžete být v klidu.",
     },
     {
         q: "Co musím vyplnit v dotazníku?",
@@ -588,7 +588,7 @@ export default function HomePage() {
                                     bullets: [
                                         "Dozorový orgán může kdykoliv požádat o dokumenty",
                                         "Přehled AI systémů, hodnocení rizik, přijatá opatření",
-                                        "Dokumenty musí být v češtině a ve formátu k tisku",
+                                        "Dokumenty musí být v češtině a ve formátu k tisku — do 14 dnů je dostanete i v tištěné vazbě",
                                     ],
                                     solution: "Vygenerujeme sadu dokumentů přesně podle vašeho rizikového profilu",
                                 },
@@ -962,8 +962,8 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="text-base sm:text-lg font-semibold mb-2">Dostanete dokumenty</h3>
                                 <p className="text-xs sm:text-sm text-slate-400">
-                                    Do 7 dnů obdržíte vše, co váš balíček obsahuje.
-                                    Kompletní servis — máte vyřešeno, můžete být v klidu.
+                                    Do 7 dnů obdržíte kompletní dokumentaci v PDF. Do 14 dnů vám doručíme
+                                    vše i v tištěné podobě v profesionální vazbě — připravené na kontrolu.
                                 </p>
                             </div>
                         </ScrollReveal>
@@ -981,7 +981,7 @@ export default function HomePage() {
                             </h2>
                             <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
                                 Generujeme jen dokumenty, které vaše firma skutečně potřebuje — podle rizikového profilu.
-                                Klikněte na položku pro podrobný popis.
+                                Vše obdržíte v PDF i v tištěné podobě v profesionální vazbě do 14 dnů. Klikněte na položku pro podrobný popis.
                             </p>
                         </div>
                     </ScrollReveal>

@@ -424,6 +424,7 @@ export default function PricingPage() {
                             { label: "Interní AI politika firmy", basic: true, pro: true, enterprise: true },
                             { label: "Školení — prezentace v PPT", basic: true, pro: true, enterprise: true },
                             { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
+                            { label: "Tištěná dokumentace v profesionální vazbě (do 14 dnů)", basic: true, pro: true, enterprise: true },
                             { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
                             { label: "Nastavení transparenční stránky", basic: false, pro: true, enterprise: true },
                             { label: "Úprava cookie lišty a chatbotů", basic: false, pro: true, enterprise: true },
@@ -583,7 +584,7 @@ export default function PricingPage() {
                             },
                             {
                                 q: "Co dostanu po zaplacení?",
-                                a: "Po zaplacení se vám okamžitě odemkne Dashboard. Než obdržíte dokumenty, provedeme hloubkový 24hodinový sken vašeho webu — 24 nezávislých skenů v 6 kolech ze 7 zemí světa (CZ, GB, US, BR, JP, ZA, AU), střídavě z desktopu i mobilu přes rezidenční proxy. Poté naše dokumenty projdou interní kontrolou kvality (obvykle do 48 hodin, max. 7 pracovních dnů). Výsledkem je sada až 12 compliance dokumentů v PDF přizpůsobená vašemu rizikovému profilu."
+                                a: "Po zaplacení se vám okamžitě odemkne Dashboard. Něž obdržíte dokumenty, provedeme hloubkový 24hodinový sken vašeho webu — 24 nezávislých skenů v 6 kolech ze 7 zemí světa (CZ, GB, US, BR, JP, ZA, AU), střídavě z desktopu i mobilu přes rezidenční proxy. Poté naše dokumenty projdou interní kontrolou kvality (obvykle do 48 hodin, max. 7 pracovních dnů). Výsledkem je sada až 12 compliance dokumentů v PDF přizpůsobená vašemu rizikovému profilu. Do 14 dnů vám navíc všechny dokumenty doručíme v tištěné podobě v profesionální vazbě — připravené na případnou kontrolu."
                             },
                             {
                                 q: "Proč potřebuji měsíční monitoring?",

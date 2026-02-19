@@ -112,6 +112,7 @@ export default function AboutPage() {
                             <li>Vygeneruje kompletní dokumentační podklady (AI Act Compliance Kit)</li>
                             <li>Připraví hotovou HTML šablonu transparenční stránky pro váš web</li>
                             <li>U balíčku PRO: technická asistence s implementací na váš web</li>
+                            <li>Vše doručíme i v tištěné podobě v profesionální vazbě do 14 dnů</li>
                         </ol>
                         <p className="text-slate-500 text-sm mt-3">
                             Volitelně: měsíční monitoring webu — automaticky hlídáme,

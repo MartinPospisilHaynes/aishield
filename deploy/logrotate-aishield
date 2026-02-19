@@ -1,0 +1,19 @@
+# AIshield — logrotate config for cron job logs
+# Install: cp deploy/logrotate-aishield /etc/logrotate.d/aishield
+
+/var/log/aishield-orchestrator.log
+/var/log/aishield-monitoring.log
+/var/log/aishield-scoring.log
+/var/log/aishield-cleanup.log
+{
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    dateext
+    dateformat -%Y%m%d
+    maxsize 50M
+}
