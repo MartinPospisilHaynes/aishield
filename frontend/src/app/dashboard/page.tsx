@@ -635,15 +635,13 @@ export default function DashboardPage() {
                                         <>
                                             <p className="text-2xl font-extrabold mt-1 text-amber-400">{deepTotal}</p>
                                             <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                                                Hloubkový 24hodinový scan byl úspěšně dokončen. Celkový počet nalezených systémů umělé inteligence je <strong className="text-white">{deepTotal}</strong>.
+                                                Hloubkový 24h scan dokončen — nalezeno <strong className="text-white">{deepTotal}</strong> AI {deepTotal === 1 ? 'systém' : deepTotal >= 2 && deepTotal <= 4 ? 'systémy' : 'systémů'}.
                                             </p>
                                             <div className="mt-2 flex items-center gap-1.5">
                                                 <span className="inline-block w-2 h-2 rounded-full bg-green-400" />
-                                                <span className="text-[10px] text-green-400 font-medium">24h hloubkový scan dokončen</span>
+                                                <span className="text-[10px] text-green-400 font-medium">Dokončeno</span>
+                                                {scannedFlags && <span className="text-[10px] text-slate-500 ml-1">· {scannedFlags}</span>}
                                             </div>
-                                            {scannedFlags && (
-                                                <p className="text-[10px] text-slate-500 mt-1">Skenováno z: {scannedFlags}</p>
-                                            )}
                                         </>
                                     ) : (
                                         /* ═══ Quick scan results ═══ */
@@ -665,49 +663,47 @@ export default function DashboardPage() {
                                                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                                                         Rychlý scan na webu nezjistil žádné AI systémy spadající pod EU AI Act.
                                                     </p>
-                                                    <p className="text-[10px] text-slate-500 mt-1.5 leading-relaxed">
-                                                        To neznamená, že žádné nepoužíváte. Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace, nebo po interakci uživatele. Proto doporučujeme spustit 24h hloubkový scan a vyplnit dotazník pro kompletní obraz.
+                                                    <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                                                        Řada AI nástrojů se načítá dynamicky. Doporučujeme 24h hloubkový scan a dotazník.
                                                     </p>
                                                 </>
                                             )}
                                         </>
                                     )}
-                                    {/* Deep scan running indicator */}
+                                    {/* Deep scan running — compact indicator */}
                                     {hasScans && deepRunning && (
-                                        <div className="mt-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
-                                            <div className="flex items-center gap-2">
-                                                <span className="relative flex h-2.5 w-2.5">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500" />
-                                                </span>
-                                                <span className="text-[11px] font-semibold text-purple-300">Probíhá 24h hloubkový scan</span>
+                                        <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-purple-500/[0.07] px-3 py-2.5">
+                                            <span className="relative flex h-2 w-2 mt-0.5 shrink-0">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                                            </span>
+                                            <div>
+                                                <p className="text-[11px] font-semibold text-purple-300">Hloubkový scan probíhá</p>
+                                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                                    24 skenů ze 7 zemí · zbývá {deepEta || '~24 h'}
+                                                    {scannedFlags && <span className="text-slate-500"> · {scannedFlags}</span>}
+                                                </p>
                                             </div>
-                                            <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed">
-                                                Provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech</strong> ze 7 zemí (CZ, GB, US, BR, JP, ZA, AU) — střídavě z desktopu i mobilu přes rezidenční proxy. Výsledky zde budou za <strong className="text-white">{deepEta || '~24 hodin'}</strong>.
-                                            </p>
-                                            {scannedFlags && (
-                                                <p className="text-[10px] text-slate-500 mt-1">Dosud prověřeno: {scannedFlags}</p>
-                                            )}
                                         </div>
                                     )}
                                     {hasScans && uniqueSystemsCount === 0 && !deepDone && !hasQuest && (
-                                        <p className="text-[10px] text-amber-400/80 mt-2">Sken prověřuje jen web — AI Act reguluje i interní systémy. Vyplňte dotazník pro úplný obraz.</p>
+                                        <p className="text-[10px] text-amber-400/80 mt-2">Scan prověřuje jen web — AI Act se týká i interních nástrojů.</p>
                                     )}
                                     {/* Expandable scan findings */}
                                     {hasScans && uniqueSystemsCount > 0 && !deepDone && (
-                                        <div className="mt-3 border-t border-white/[0.06] pt-3">
-                                            <button onClick={() => setAiCardOpen(!aiCardOpen)} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
-                                                {aiCardOpen ? 'Skrýt nálezy' : 'Zobrazit nálezy'}
+                                        <div className="mt-3 border-t border-white/[0.06] pt-2.5">
+                                            <button onClick={() => setAiCardOpen(!aiCardOpen)} className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                                {aiCardOpen ? 'Skrýt nálezy' : `Zobrazit nálezy (${uniqueSystemsCount})`}
                                                 <svg className={`w-3 h-3 transition-transform ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                                 </svg>
                                             </button>
                                             {aiCardOpen && (
-                                                <div className="mt-2 space-y-1.5">
+                                                <div className="mt-2 space-y-1">
                                                     {groupFindings(data?.findings || []).map((f) => (
-                                                        <div key={f.name} className="rounded-md bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                                                            <p className="text-xs font-medium text-white">{f.name}</p>
-                                                            <p className="text-[10px] text-slate-400 mt-0.5">{categoryLabel(f.category)}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
+                                                        <div key={f.name} className="flex items-baseline justify-between px-2.5 py-1.5 rounded bg-white/[0.03]">
+                                                            <p className="text-xs text-white">{f.name}</p>
+                                                            <p className="text-[10px] text-slate-500 shrink-0 ml-2">{categoryLabel(f.category)}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -715,12 +711,9 @@ export default function DashboardPage() {
                                         </div>
                                     )}
                                     <div className="mt-auto pt-3 space-y-2">
-                                        {/* Pulsating button to trigger deep scan — hidden when quest is done (focus shifts to Objednávka) */}
+                                        {/* Deep scan CTA — quest not done */}
                                         {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !hasQuest && (
                                             <div className="space-y-2">
-                                                <p className="text-[10px] text-cyan-300/80 leading-relaxed">
-                                                    Rychlý scan zachytil jen to, co bylo vidět v okamžiku testu.
-                                                </p>
                                                 <button
                                                     onClick={handleTriggerDeepScan}
                                                     disabled={deepScanLoading}
@@ -731,67 +724,42 @@ export default function DashboardPage() {
                                                         {deepScanLoading ? (
                                                             <>
                                                                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                                                                Spouštím...
+                                                                Spouštím…
                                                             </>
-                                                        ) : (
-                                                            <>
-                                                                🔍 Spustit hloubkový test
-                                                            </>
-                                                        )}
+                                                        ) : '🔍 Spustit 24h hloubkový scan'}
                                                     </span>
                                                 </button>
+                                                <p className="text-[10px] text-slate-500 text-center">24 skenů ze 7 zemí za 24 hodin</p>
                                                 {deepScanError && (
                                                     <p className="text-[10px] text-red-400">{deepScanError}</p>
                                                 )}
                                             </div>
                                         )}
-                                        {/* Subtle deep scan link when quest done but deep scan not started */}
+                                        {/* Deep scan CTA — quest done, subtle */}
                                         {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && hasQuest && (
-                                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
-                                                <button
-                                                    onClick={handleTriggerDeepScan}
-                                                    disabled={deepScanLoading}
-                                                    className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50"
-                                                >
-                                                    {deepScanLoading ? 'Spouštím...' : '🔍 Volitelné: Spustit 24h hloubkový test'}
-                                                </button>
-                                                <p className="text-[10px] text-slate-500 mt-0.5">24 skenů ze 7 zemí za 24 hodin — není nutné pro objednávku</p>
-                                            </div>
-                                        )}
-                                        {/* Deep scan running — success */}
-                                        {hasScans && !deepDone && deepRunning && (
-                                            <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-green-400 text-base">✅</span>
-                                                    <p className="text-xs font-semibold text-green-300">Výborně! Hloubkový test běží</p>
-                                                </div>
-                                                <p className="text-[10px] text-slate-400 leading-relaxed">
-                                                    Za <strong className="text-white">~24 hodin</strong> vám napíšeme e-mail s výsledky
-                                                    z <strong className="text-white">24 nezávislých skenů ze 7 zemí</strong> — desktop i mobil, přes rezidenční proxy.
-                                                </p>
-                                            </div>
+                                            <button
+                                                onClick={handleTriggerDeepScan}
+                                                disabled={deepScanLoading}
+                                                className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50"
+                                            >
+                                                {deepScanLoading ? 'Spouštím…' : '🔍 Volitelné: 24h hloubkový scan'}
+                                            </button>
                                         )}
 
-                                        {/* Cooldown info */}
+                                        {/* Cooldown */}
                                         {deepStatus === 'cooldown' && (
-                                            <div className="rounded-lg border border-slate-500/15 bg-slate-500/5 p-2.5">
-                                                <p className="text-[10px] text-slate-400 leading-relaxed">
-                                                    <strong className="text-slate-300">24h hloubkový scan byl proveden v posledních 7 dnech.</strong>{' '}
-                                                    Další bude dostupný za týden.
-                                                </p>
-                                            </div>
+                                            <p className="text-[10px] text-slate-500">
+                                                24h scan proveden v posledních 7 dnech — další bude dostupný za týden.
+                                            </p>
                                         )}
-                                        {/* Opakovat rychlý sken — po dokončení deep scanu */}
+                                        {/* Re-scan */}
                                         {(deepDone || deepStatus === 'cooldown') && !scanLocked && (
-                                            <div className="flex items-center gap-2">
-                                                <button onClick={handleStartScan} disabled={scanLoading || scanLocked} className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
-                                                    {scanLoading ? 'Skenuji...' : 'Opakovat rychlý sken'}
-                                                </button>
-                                                <span className="text-[9px] text-slate-600">orientační</span>
-                                            </div>
+                                            <button onClick={handleStartScan} disabled={scanLoading || scanLocked} className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
+                                                {scanLoading ? 'Skenuji…' : 'Opakovat rychlý sken'}
+                                            </button>
                                         )}
                                         {(deepDone || deepStatus === 'cooldown') && scanLocked && (
-                                            <p className="text-[10px] text-amber-400/80">Další sken bude možný za {Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000)} min.</p>
+                                            <p className="text-[10px] text-amber-400/80">Další sken za {Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000)} min.</p>
                                         )}
                                     </div>
                                 </div>
