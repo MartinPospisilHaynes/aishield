@@ -81,43 +81,15 @@ function renderInlineMarkdown(text: string) {
 function Mart1nAvatar({ size = 40 }: { size?: number }) {
     return (
         <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Shield body */}
-            <path
-                d="M24 3L6 10v12c0 11 8 20 18 23 10-3 18-12 18-23V10L24 3z"
-                fill="url(#mart1n-grad)"
-                fillOpacity="0.2"
-                stroke="url(#mart1n-grad)"
-                strokeWidth="2"
-                strokeLinejoin="round"
-            />
-            {/* Inner glow */}
-            <path
-                d="M24 8L10 13.5v9c0 8.5 6.2 15.8 14 18 7.8-2.2 14-9.5 14-18v-9L24 8z"
-                fill="url(#mart1n-grad)"
-                fillOpacity="0.1"
-                stroke="url(#mart1n-grad)"
-                strokeWidth="0.5"
-                opacity="0.5"
-            />
-            {/* "M" letter — stylized */}
-            <path
-                d="M15 30V18l4.5 7 4.5-7 4.5 7 4.5-7v12"
-                stroke="url(#mart1n-grad)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-            />
-            {/* "1" accent — small */}
-            <path
-                d="M35 14l-2 1v5"
-                stroke="#22d3ee"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                opacity="0.8"
-            />
+            {/* Circle background */}
+            <circle cx="24" cy="24" r="22" fill="url(#face-grad)" fillOpacity="0.15" stroke="url(#face-grad)" strokeWidth="2" />
+            {/* Eyes */}
+            <circle cx="17" cy="21" r="2.5" fill="url(#face-grad)" />
+            <circle cx="31" cy="21" r="2.5" fill="url(#face-grad)" />
+            {/* Smile */}
+            <path d="M16 30c2.5 4 13.5 4 16 0" stroke="url(#face-grad)" strokeWidth="2" strokeLinecap="round" fill="none" />
             <defs>
-                <linearGradient id="mart1n-grad" x1="6" y1="3" x2="42" y2="45" gradientUnits="userSpaceOnUse">
+                <linearGradient id="face-grad" x1="2" y1="2" x2="46" y2="46" gradientUnits="userSpaceOnUse">
                     <stop stopColor="#e879f9" />
                     <stop offset="0.5" stopColor="#a855f7" />
                     <stop offset="1" stopColor="#22d3ee" />
@@ -285,13 +257,35 @@ function Mart1nPageInner() {
                 const res = await fetch(`${API_URL}/api/mart1n/init`);
                 const data = await res.json();
                 setSessionId(data.session_id || crypto.randomUUID());
-                setMessages([{
-                    role: "assistant",
-                    content: data.message,
-                    bubbles: data.bubbles || [],
-                    progress: 0,
-                    timestamp: Date.now(),
-                }]);
+
+                // Handle multi_messages (sequential bubbles with delays)
+                if (data.multi_messages && data.multi_messages.length > 0) {
+                    setInitLoading(false);
+                    for (let i = 0; i < data.multi_messages.length; i++) {
+                        const mm = data.multi_messages[i] as MultiMessage;
+                        if (mm.delay_ms > 0) {
+                            setSending(true);
+                            await new Promise(resolve => setTimeout(resolve, mm.delay_ms));
+                        }
+                        setSending(false);
+                        setMessages(prev => [...prev, {
+                            role: "assistant" as const,
+                            content: mm.text,
+                            bubbles: mm.bubbles || [],
+                            progress: 0,
+                            timestamp: Date.now(),
+                        }]);
+                    }
+                } else {
+                    setMessages([{
+                        role: "assistant",
+                        content: data.message,
+                        bubbles: data.bubbles || [],
+                        progress: 0,
+                        timestamp: Date.now(),
+                    }]);
+                    setInitLoading(false);
+                }
             } catch {
                 setMessages([{
                     role: "assistant",

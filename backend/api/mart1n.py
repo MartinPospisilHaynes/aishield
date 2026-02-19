@@ -1799,19 +1799,31 @@ async def mart1n_init():
     Returns initial greeting for Uršula.
     Frontend calls this when the page loads to get the opening message.
     """
-    greeting = (
-        "Ahoj, já jsem **Uršula** a budu vašim průvodcem spletitým světem Euro nařízení. "
-        "Nový zákon — **Nařízení Evropského parlamentu a Rady (EU) 2024/1689 ze dne 13. června 2024, "
-        "kterým se stanoví harmonizovaná pravidla pro umělou inteligenci (akt o umělé inteligenci)** — "
-        "mi nařizuje, abych Vás hned ze začátku naší konverzace informovala o tom, že jsem oproti "
-        "té pravé Uršule pouze chatbot poháněný umělou inteligencí.\n\n"
-        "I když je otázkou, co je lepší, že?"
-    )
-
     return {
-        "message": greeting,
+        "message": "",
         "bubbles": [],
-        "multi_messages": [],
+        "multi_messages": [
+            {
+                "text": "Ahoj, já jsem **Uršula** a budu vašim průvodcem spletitým světem Euro nařízení.",
+                "delay_ms": 0,
+                "bubbles": [],
+            },
+            {
+                "text": (
+                    "**Nařízení Evropského parlamentu a Rady (EU) 2024/1689 "
+                    "(akt o umělé inteligenci)** — mi nařizuje, abych Vás hned "
+                    "ze začátku naší konverzace informovala o tom, že jsem oproti "
+                    "té pravé Uršule pouze chatbot poháněný umělou inteligencí."
+                ),
+                "delay_ms": 3000,
+                "bubbles": [],
+            },
+            {
+                "text": "I když je otázka, co je lepší, že? 😉",
+                "delay_ms": 3000,
+                "bubbles": [],
+            },
+        ],
         "bubble_overrides": {},
         "progress": 0,
         "current_section": "",

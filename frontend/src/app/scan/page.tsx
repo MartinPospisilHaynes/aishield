@@ -810,16 +810,16 @@ function ScanPageInner() {
                                     <div className="p-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {trackers.map((t, idx) => (
-                                                    <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
-                                                        <span className="text-lg flex-shrink-0">{t.icon}</span>
-                                                        <div className="min-w-0">
-                                                            <p className="text-sm font-medium text-white truncate">{t.name}</p>
-                                                            <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
-                                                        </div>
-                                                        <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
-                                                            {t.category}
-                                                        </span>
+                                                <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
+                                                    <span className="text-lg flex-shrink-0">{t.icon}</span>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-medium text-white truncate">{t.name}</p>
+                                                        <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
                                                     </div>
+                                                    <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
+                                                        {t.category}
+                                                    </span>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
