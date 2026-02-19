@@ -561,7 +561,7 @@ export default function HomePage() {
                                 Co zákon vyžaduje od webů a e-shopů
                             </h3>
                         </ScrollReveal>
-                        <div className="grid sm:grid-cols-2 gap-3">
+                        <div className="grid sm:grid-cols-2 gap-3 sm:auto-rows-[1fr]">
                             {[
                                 {
                                     icon: (
@@ -649,8 +649,8 @@ export default function HomePage() {
                                     solution: "Vytvoříme AI Policy na míru vaší firmě",
                                 },
                             ].map((item, i) => (
-                                <ScrollReveal key={i} variant={i % 2 === 0 ? "slide-left" : "slide-right"} delay={i + 1}>
-                                    <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
+                                <ScrollReveal key={i} variant={i % 2 === 0 ? "slide-left" : "slide-right"} delay={i + 1} className="h-full">
+                                    <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 h-full">
                                         <span className="mt-0.5 flex-shrink-0">{item.icon}</span>
                                         <div>
                                             <p className="text-sm font-semibold text-slate-200">{item.title}</p>
