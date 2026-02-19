@@ -191,7 +191,7 @@ function ScanPageInner() {
                     setIsLoggedIn(true);
                 }
             }
-        } catch {}
+        } catch { }
     }, []);
     const [reportEmail, setReportEmail] = useState("");
     const [emailSent, setEmailSent] = useState(false);
@@ -868,40 +868,40 @@ function ScanPageInner() {
                                 </a>
                             </div>
                         ) : (
-                        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                                <IconEnvelope className="w-5 h-5 text-fuchsia-400" />
-                                <h3 className="font-semibold text-white">Pošleme vám report na e-mail</h3>
-                            </div>
-                            <p className="text-xs text-slate-400 mb-3">
-                                Podrobný přehled nálezů, doporučení a ceník — vše v jednom e-mailu.
-                            </p>
+                            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-center">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                    <IconEnvelope className="w-5 h-5 text-fuchsia-400" />
+                                    <h3 className="font-semibold text-white">Pošleme vám report na e-mail</h3>
+                                </div>
+                                <p className="text-xs text-slate-400 mb-3">
+                                    Podrobný přehled nálezů, doporučení a ceník — vše v jednom e-mailu.
+                                </p>
 
-                            {emailSent ? (
-                                <div className="inline-flex items-center gap-2 text-green-400 font-medium text-sm">
-                                    <IconCheckCircle className="w-4 h-4" /> Report odeslán na {reportEmail}
-                                </div>
-                            ) : (
-                                <div className="flex gap-2 max-w-sm mx-auto">
-                                    <input
-                                        type="email"
-                                        value={reportEmail}
-                                        onChange={(e) => setReportEmail(e.target.value)}
-                                        placeholder="vas@email.cz"
-                                        className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 transition text-sm"
-                                        required
-                                    />
-                                    <button
-                                        onClick={handleSendReport}
-                                        disabled={emailSending || !reportEmail}
-                                        className="btn-primary text-sm disabled:opacity-50 px-4"
-                                    >
-                                        {emailSending ? "..." : "Odeslat"}
-                                    </button>
-                                </div>
-                            )}
-                            <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
-                        </div>
+                                {emailSent ? (
+                                    <div className="inline-flex items-center gap-2 text-green-400 font-medium text-sm">
+                                        <IconCheckCircle className="w-4 h-4" /> Report odeslán na {reportEmail}
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2 max-w-sm mx-auto">
+                                        <input
+                                            type="email"
+                                            value={reportEmail}
+                                            onChange={(e) => setReportEmail(e.target.value)}
+                                            placeholder="vas@email.cz"
+                                            className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 transition text-sm"
+                                            required
+                                        />
+                                        <button
+                                            onClick={handleSendReport}
+                                            disabled={emailSending || !reportEmail}
+                                            className="btn-primary text-sm disabled:opacity-50 px-4"
+                                        >
+                                            {emailSending ? "..." : "Odeslat"}
+                                        </button>
+                                    </div>
+                                )}
+                                <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
+                            </div>
                         )}
 
                         {/* ── CTA ceník ── */}

@@ -230,7 +230,7 @@ export default function DashboardPage() {
                     localStorage.removeItem('aishield_scan_cooldown');
                 }
             }
-        } catch {}
+        } catch { }
     }, []);
 
     // Clean up timers on unmount
@@ -328,7 +328,7 @@ export default function DashboardPage() {
             // Zamknout tlačítko na 1 hodinu po spuštění
             const lockUntil = Date.now() + 60 * 60 * 1000;
             setScanCooldownUntil(lockUntil);
-            try { localStorage.setItem('aishield_scan_cooldown', String(lockUntil)); } catch {}
+            try { localStorage.setItem('aishield_scan_cooldown', String(lockUntil)); } catch { }
 
             const status = await getScanStatus(result.scan_id);
             setScanResult(status);
@@ -507,7 +507,7 @@ export default function DashboardPage() {
                                         </a>
                                     )
                                 ) : (
-                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
+                                    <a href={`/dotaznik/mart1n?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
                                         Vyplnit dotazník
                                     </a>
                                 )
@@ -590,7 +590,7 @@ export default function DashboardPage() {
                                             Zobrazit nálezy
                                         </button>
                                         {hasScans && !hasQuest && (
-                                            <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
+                                            <a href={`/dotaznik/mart1n?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
                                                 Vyplnit dotazník
                                             </a>
                                         )}
@@ -860,7 +860,7 @@ export default function DashboardPage() {
                             )}
                             <div className="mt-auto pt-3">
                                 {hasScans && !hasQuest && (
-                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                    <a href={`/dotaznik/mart1n?company_id=${data?.company?.id || ''}`}
                                         className="text-xs px-3 py-1.5 rounded-lg bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all inline-block">
                                         Vyplnit dotazník
                                     </a>
@@ -1197,7 +1197,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                 ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
                 : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot…)",
             detail: hasQuest ? null : "EU AI Act se netýká jen toho, co je vidět na webu. Regulace zahrnuje i interní AI systémy — nástroje pro HR, účetnictví, rozhodování, generování obsahu nebo komunikaci se zaměstnanci. Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokrývá celou AI politiku firmy, včetně toho, co zákazník nikdy neuvidí.",
-            href: hasScans && !hasQuest ? `/dotaznik?company_id=${data?.company?.id || ''}` : null,
+            href: hasScans && !hasQuest ? `/dotaznik/mart1n?company_id=${data?.company?.id || ''}` : null,
             cta: !hasScans ? "🔒 Nejprve skenujte web" : !hasQuest ? "Vyplnit dotazník" : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
             onClick: (hasScans && hasQuest && qUnknowns.length > 0) ? onShowPlan : undefined as (() => void) | undefined,
         },
@@ -1378,7 +1378,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                         </div>
                                         {!hasQuest && (
                                             <a
-                                                href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                                href={`/dotaznik/mart1n?company_id=${data?.company?.id || ''}`}
                                                 className="relative overflow-hidden inline-flex items-center justify-center w-full sm:w-auto rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-4 text-base font-bold text-white shadow-lg shadow-fuchsia-500/30 hover:shadow-fuchsia-500/50 hover:from-fuchsia-500 hover:to-purple-500 transition-all"
                                             >
                                                 <span className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-fuchsia-400/20 to-purple-400/20" />
@@ -1699,7 +1699,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                                         )}
                                         <p className="text-xs text-slate-300 mt-3 leading-relaxed">{u.recommendation}</p>
                                         <a
-                                            href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
+                                            href={`/dotaznik/mart1n?company_id=${companyId}`}
                                             className="btn-primary !text-xs !px-4 !py-2 !rounded-lg mt-3 inline-block"
                                         >
                                             Už vím! Chci změnit odpověď v dotazníku
@@ -1709,7 +1709,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                             </div>
                         );
                     })}
-                    <a href={`/dotaznik?company_id=${companyId}&edit=true`}
+                    <a href={`/dotaznik/mart1n?company_id=${companyId}`}
                         className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 mt-1 transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -1727,7 +1727,7 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
                         které zákazník nikdy neuvidí — ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR nebo AI rozhodování.
                         Vyplňte dotazník a pokryjte celou AI politiku firmy.
                     </p>
-                    <a href={`/dotaznik?company_id=${companyId}`} className="btn-primary text-sm px-5 py-2 inline-block">
+                    <a href={`/dotaznik/mart1n?company_id=${companyId}`} className="btn-primary text-sm px-5 py-2 inline-block">
                         Vyplnit dotazník
                     </a>
                 </div>
@@ -1914,7 +1914,7 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
                                     )}
                                     <p className="text-xs text-slate-300 mb-4 leading-relaxed">{u.recommendation}</p>
                                     <a
-                                        href={`/dotaznik?company_id=${companyId}&edit=true&q=${u.question_key}`}
+                                        href={`/dotaznik/mart1n?company_id=${companyId}`}
                                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1983,7 +1983,7 @@ function TabDotaznik({ companyId, questResults, questResultsLoading, setQuestRes
                 <p className="text-white font-semibold text-lg mb-2">Dotazník zatím nebyl dokončen</p>
                 <p className="text-slate-400 text-sm mb-6">Po vyplnění dotazníku zde uvidíte přehled vašich odpovědí.</p>
                 <a
-                    href={`/dotaznik?company_id=${companyId}`}
+                    href={`/dotaznik/mart1n?company_id=${companyId}`}
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-400 text-white font-semibold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-fuchsia-500/25"
                 >
                     📝 Vyplnit dotazník
@@ -2137,13 +2137,13 @@ function TabDotaznik({ companyId, questResults, questResultsLoading, setQuestRes
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a
-                    href={`/dotaznik?company_id=${companyId}`}
+                    href={`/dotaznik/mart1n?company_id=${companyId}`}
                     className="inline-flex items-center justify-center gap-2 bg-white/[0.05] border border-white/[0.1] hover:bg-white/[0.08] text-white font-medium py-2.5 px-6 rounded-xl transition-all text-sm"
                 >
                     ✏️ Upravit odpovědi
                 </a>
                 <a
-                    href={`/dotaznik?company_id=${companyId}&reset=1`}
+                    href={`/dotaznik/mart1n?company_id=${companyId}`}
                     className="inline-flex items-center justify-center gap-2 text-sm text-fuchsia-400 hover:text-fuchsia-300 transition-colors py-2.5 px-6"
                 >
                     🔄 Vyplnit dotazník znovu

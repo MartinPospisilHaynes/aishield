@@ -191,7 +191,7 @@ function PaymentStatusContent() {
                         <div className="space-y-3">
                             {/* Conditional questionnaire button — only show when explicitly incomplete */}
                             {questionnaireComplete === false && (
-                                <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                <a href="/dotaznik/mart1n" className="btn-primary w-full py-3.5 block text-center">
                                     Vyplnit dotazník
                                 </a>
                             )}
@@ -340,7 +340,7 @@ function PaymentStatusContent() {
                             ) : (
                                 <>
                                     {questionnaireComplete === false && (
-                                        <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
+                                        <a href="/dotaznik/mart1n" className="btn-primary w-full py-3.5 block text-center">
                                             Vyplnit dotazník
                                         </a>
                                     )}
