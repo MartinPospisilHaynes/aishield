@@ -1,4 +1,7 @@
+"use client";
+
 import ContactForm from "@/components/contact-form";
+import ScrollReveal from "@/components/scroll-reveal";
 
 export default function AboutPage() {
     return (
@@ -9,9 +12,12 @@ export default function AboutPage() {
             </div>
 
             <div className="mx-auto max-w-3xl px-6">
-                <h1 className="text-3xl font-bold text-white">Jak to funguje</h1>
+                <ScrollReveal variant="fade-up" delay={0}>
+                    <h1 className="text-3xl font-bold text-white">Jak to funguje</h1>
+                </ScrollReveal>
 
                 <div className="mt-8 max-w-none space-y-8 text-slate-300 leading-relaxed">
+                    <ScrollReveal variant="fade-up" delay={1}>
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Co je AI Act?</h2>
                         <p className="text-slate-400 mb-3">
@@ -35,7 +41,9 @@ export default function AboutPage() {
                             </p>
                         </div>
                     </div>
+                    </ScrollReveal>
 
+                    <ScrollReveal variant="slide-left" delay={1}>
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Týká se to mé firmy?</h2>
                         <p className="text-slate-400 mb-3">Pokud máte na webu cokoliv z tohoto, tak <strong className="text-white">ANO</strong>:</p>
@@ -66,7 +74,9 @@ export default function AboutPage() {
                             </li>
                         </ul>
                     </div>
+                    </ScrollReveal>
 
+                    <ScrollReveal variant="slide-right" delay={1}>
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Jaké jsou pokuty?</h2>
                         <ul className="space-y-2 text-slate-400">
@@ -75,7 +85,9 @@ export default function AboutPage() {
                             <li><strong className="text-white">7,5 milionu EUR / 1% obratu</strong> — nepravdivé informace</li>
                         </ul>
                     </div>
+                    </ScrollReveal>
 
+                    <ScrollReveal variant="fade-up" delay={1}>
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Klíčové deadliny</h2>
                         <ul className="space-y-2 text-slate-400">
@@ -89,7 +101,9 @@ export default function AboutPage() {
                             </li>
                         </ul>
                     </div>
+                    </ScrollReveal>
 
+                    <ScrollReveal variant="slide-left" delay={1}>
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Co AIshield dělá?</h2>
                         <ol className="space-y-2 text-slate-400 list-decimal list-inside">
@@ -105,8 +119,10 @@ export default function AboutPage() {
                             <a href="/pricing" className="text-neon-fuchsia hover:underline">Více v ceníku →</a>
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     {/* Právní upozornění */}
+                    <ScrollReveal variant="scale-up" delay={1}>
                     <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">Důležité upozornění</h2>
                         <p className="text-slate-400 mb-3">
@@ -129,8 +145,10 @@ export default function AboutPage() {
                             <a href="/terms" className="text-neon-fuchsia hover:underline">obchodních podmínkách</a>.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     {/* Kontaktní CTA */}
+                    <ScrollReveal variant="fade-up" delay={1}>
                     <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6">
                         <h2 className="text-xl font-semibold text-white mb-2 text-center">Nejste si jistí? Ozvěte se nám</h2>
                         <p className="text-slate-400 text-sm text-center mb-5">
@@ -153,8 +171,10 @@ export default function AboutPage() {
                             </a>
                         </div>
                     </div>
+                    </ScrollReveal>
 
                     {/* CTA sekce */}
+                    <ScrollReveal variant="scale-up" delay={1}>
                     <div className="rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-6 text-center space-y-4">
                         <h2 className="text-xl font-semibold text-white">Chcete zjistit, jak jste na tom?</h2>
                         <p className="text-slate-400 text-sm">
@@ -179,9 +199,12 @@ export default function AboutPage() {
                             </a>
                         </div>
                     </div>
+                    </ScrollReveal>
 
                     {/* Konzultační formulář */}
+                    <ScrollReveal variant="fade-up" delay={1}>
                     <ContactForm />
+                    </ScrollReveal>
                 </div>
             </div>
         </section>

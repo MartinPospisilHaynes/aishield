@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { createGuestCheckout } from "@/lib/api";
 import { useAnalytics, useScrollTracking } from "@/lib/analytics";
+import ScrollReveal from "@/components/scroll-reveal";
 
 const plans = [
     {
@@ -148,6 +149,7 @@ export default function PricingPage() {
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 {/* Header */}
+                <ScrollReveal variant="fade-up" delay={0}>
                 <div className="text-center max-w-2xl mx-auto">
                     <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 px-4 py-1.5 text-xs font-medium text-fuchsia-300 mb-6">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,6 +166,7 @@ export default function PricingPage() {
                         Platba kartou, Apple Pay nebo Google Pay. Bezpečně přes Stripe.
                     </p>
                 </div>
+                </ScrollReveal>
 
                 {/* Error */}
                 {error && (
@@ -174,10 +177,10 @@ export default function PricingPage() {
 
                 {/* Plans grid */}
                 <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {plans.map((plan) => (
+                    {plans.map((plan, idx) => (
+                        <ScrollReveal key={plan.key} variant="fade-up" delay={idx + 1}>
                         <div
-                            key={plan.key}
-                            className={`relative rounded-2xl border p-5 sm:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
+                            className={`relative rounded-2xl border p-5 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 ${plan.highlighted
                                 ? "border-fuchsia-500/30 bg-gradient-to-b from-fuchsia-500/[0.08] to-transparent shadow-[0_0_40px_rgba(232,121,249,0.08)]"
                                 : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"
                                 }`}
@@ -254,12 +257,14 @@ export default function PricingPage() {
                                 {loading === plan.key ? "Přesměrování na platbu..." : plan.cta}
                             </button>
                         </div>
+                        </ScrollReveal>
                     ))}
                 </div>
 
 
 
                 {/* Payment methods */}
+                <ScrollReveal variant="fade-up" delay={1}>
                 <div className="mt-10 text-center">
                     <p className="text-xs text-slate-500 mb-4">Akceptujeme</p>
                     <div className="flex items-center justify-center gap-6 text-slate-500 flex-wrap">
@@ -289,11 +294,13 @@ export default function PricingPage() {
                         </div>
                     </div>
                 </div>
+                </ScrollReveal>
 
 
 
                 {/* Monitoring */}
                 <div className="mt-20">
+                    <ScrollReveal variant="fade-up" delay={0}>
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-medium text-cyan-300 mb-4">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,7 +316,9 @@ export default function PricingPage() {
                             upgradu platformy nebo změně služby třetí strany. Monitoring vás ochrání.
                         </p>
                     </div>
+                    </ScrollReveal>
 
+                    <ScrollReveal variant="slide-left" delay={1}>
                     <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                         {/* Monitoring BASIC */}
                         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 flex flex-col">
@@ -379,6 +388,7 @@ export default function PricingPage() {
                             </div>
                         </div>
                     </div>
+                    </ScrollReveal>
 
                     <div className="mt-6 text-center space-y-1">
                         <p className="text-xs text-slate-500">
@@ -392,6 +402,7 @@ export default function PricingPage() {
 
                 {/* Comparison Table */}
                 <div className="mt-20">
+                    <ScrollReveal variant="fade-up" delay={0}>
                     <div className="text-center mb-10">
                         <h2 className="text-2xl font-bold">
                             Podrobné <span className="neon-text">srovnání</span> balíčků
@@ -400,8 +411,9 @@ export default function PricingPage() {
                             Co přesně obsahuje každý balíček — na jednom místě.
                         </p>
                     </div>
+                    </ScrollReveal>
 
-                    {/* ── Feature data ── */}
+                    <ScrollReveal variant="slide-right" delay={1}>
                     {(() => {
                         const FEATURES = [
                             { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
@@ -552,9 +564,11 @@ export default function PricingPage() {
                             </>
                         );
                     })()}
+                    </ScrollReveal>
                 </div>
 
                 {/* FAQ */}
+                <ScrollReveal variant="fade-up" delay={0}>
                 <div className="mt-20 max-w-2xl mx-auto">
                     <h2 className="text-2xl font-bold text-center mb-8">Časté dotazy k platbám</h2>
                     <div className="space-y-3">
@@ -605,8 +619,10 @@ export default function PricingPage() {
                         ))}
                     </div>
                 </div>
+                </ScrollReveal>
 
                 {/* ── Pozvi mě na kafé ── */}
+                <ScrollReveal variant="scale-up" delay={1}>
                 <div className="mt-20 max-w-md mx-auto">
                     <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-amber-500/[0.06] to-transparent p-8 text-center">
                         <div className="mx-auto w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4">
@@ -660,8 +676,10 @@ export default function PricingPage() {
                         </p>
                     </div>
                 </div>
+                </ScrollReveal>
 
                 {/* Powered by */}
+                <ScrollReveal variant="fade-up" delay={1}>
                 <div className="mt-12 text-center">
                     <p className="text-xs text-slate-600">
                         Platby zpracovává{" "}
@@ -671,6 +689,7 @@ export default function PricingPage() {
                         {" "}— globální platební brána s PCI DSS certifikací
                     </p>
                 </div>
+                </ScrollReveal>
             </div>
 
         </section>
