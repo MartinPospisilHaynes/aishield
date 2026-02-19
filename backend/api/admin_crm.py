@@ -2032,6 +2032,7 @@ async def get_subscriptions(
     _rl=Depends(_check_admin_rate_limit),
 ):
     """List all subscriptions with company info and overdue calculation."""
+    from backend.database import get_supabase
     supabase = get_supabase()
 
     try:
@@ -2102,6 +2103,7 @@ async def send_subscription_reminder(
     _rl=Depends(_check_admin_rate_limit),
 ):
     """Send a payment reminder for overdue subscription."""
+    from backend.database import get_supabase
     supabase = get_supabase()
 
     # Get subscription
@@ -2156,6 +2158,7 @@ async def send_subscription_reminder(
 @router.get("/invoices", dependencies=[Depends(require_admin), Depends(_check_admin_rate_limit)])
 async def get_admin_invoices(limit: int = 100):
     """Vrátí seznam všech faktur pro admin panel."""
+    from backend.database import get_supabase
     supabase = get_supabase()
     result = supabase.table("invoices").select("*").order(
         "created_at", desc=True
@@ -2241,7 +2244,8 @@ async def crm_factory_reset(
         # FK-ordered deletion — ai_act_chunks záměrně VYNECHÁNO
         layers = [
             ["findings", "questionnaire_responses", "documents", "alerts", "scan_diffs",
-             "chat_messages", "company_activities", "data_access_log", "orchestrator_log"],
+             "chat_messages", "company_activities", "data_access_log", "orchestrator_log",
+             "mart1n_conversations"],
             ["subscription_payments", "invoices", "orders", "subscriptions", "payments"],
             ["email_events", "email_log", "email_logs", "email_blacklist", "outbound_emails"],
             ["analytics_events", "analytics_daily_summary"],
