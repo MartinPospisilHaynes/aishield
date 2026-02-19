@@ -2726,3 +2726,81 @@ async def admin_preview_report(
     except Exception as e:
         logger.error(f"[Admin] Preview report error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/crm/scans/stop-all")
+async def admin_stop_all_scans(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Zastaví VŠECHNY probíhající a čekající 24h deep scany.
+    Vyžaduje potvrzení: { "confirm": "STOP" }
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    try:
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+
+        if body.get("confirm") != "STOP":
+            raise HTTPException(status_code=400, detail="Vyžadováno potvrzení: confirm=STOP")
+
+        # Najít všechny running/pending deep scany
+        active = supabase.table("scans").select(
+            "id, url_scanned, deep_scan_status, company_id"
+        ).in_("deep_scan_status", ["pending", "running"]).execute()
+
+        active_scans = active.data or []
+
+        if not active_scans:
+            return {
+                "status": "ok",
+                "message": "Žádné aktivní deep scany k zastavení.",
+                "stopped_count": 0,
+                "scans": [],
+            }
+
+        finished = datetime.now(timezone.utc).isoformat()
+        stopped = []
+        errors = []
+
+        for scan in active_scans:
+            try:
+                supabase.table("scans").update({
+                    "deep_scan_status": "cancelled",
+                    "deep_scan_finished_at": finished,
+                }).eq("id", scan["id"]).execute()
+
+                stopped.append({
+                    "id": scan["id"],
+                    "url": scan.get("url_scanned", "?"),
+                    "previous_status": scan.get("deep_scan_status", "?"),
+                })
+                logger.info(f"[Admin] STOP-ALL: cancelled scan {scan['id']} ({scan.get('url_scanned')})")
+            except Exception as e:
+                errors.append(f"{scan['id']}: {e}")
+                logger.error(f"[Admin] STOP-ALL: error cancelling {scan['id']}: {e}")
+
+        logger.warning(
+            f"[Admin] STOP ALL SCANS by {user.email}: "
+            f"{len(stopped)} stopped, {len(errors)} errors"
+        )
+
+        return {
+            "status": "ok",
+            "message": f"Zastaveno {len(stopped)} deep scanů.",
+            "stopped_count": len(stopped),
+            "scans": stopped,
+            "errors": errors if errors else None,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Admin] Stop all scans error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

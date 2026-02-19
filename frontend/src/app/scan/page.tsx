@@ -58,9 +58,9 @@ function ScrollReveal({
 
     const animStyle: React.CSSProperties = visible
         ? {
-              animation: `${SCAN_KEYFRAME_MAP[variant]} 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
-              animationDelay: `${delay * 0.3}s`,
-          }
+            animation: `${SCAN_KEYFRAME_MAP[variant]} 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+            animationDelay: `${delay * 0.3}s`,
+        }
         : { opacity: 0 };
 
     return (

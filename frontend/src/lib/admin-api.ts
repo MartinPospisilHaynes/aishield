@@ -1027,6 +1027,24 @@ export async function resendScanReport(scanId: string, email?: string): Promise<
     return res.json();
 }
 
+export async function stopAllScans(): Promise<{
+    status: string;
+    message: string;
+    stopped_count: number;
+    scans: { id: string; url: string; previous_status: string }[];
+    errors?: string[];
+}> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scans/stop-all`, {
+        method: "POST",
+        body: JSON.stringify({ confirm: "STOP" }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při zastavování scanů");
+    }
+    return res.json();
+}
+
 export async function previewScanReport(scanId: string): Promise<void> {
     const res = await adminFetch(`${API_URL}/api/admin/crm/scan/${scanId}/preview-report`);
     if (!res.ok) {

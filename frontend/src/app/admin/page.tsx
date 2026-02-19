@@ -37,6 +37,7 @@ import {
     sendSubscriptionReminder,
     getAdminInvoices,
     factoryReset,
+    stopAllScans,
     getScanMonitor,
     getScanFindings,
     resendScanReport,
@@ -3129,6 +3130,45 @@ export default function AdminPage() {
                                         className="w-full px-4 py-2 bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 rounded-xl hover:bg-fuchsia-500/20 transition-all text-sm font-medium"
                                     >
                                         📤 Exportovat CSV
+                                    </button>
+                                </Panel>
+
+                                {/* STOP ALL SCANS */}
+                                <Panel className="p-6 border-2 border-orange-500/30 bg-orange-950/20">
+                                    <div className="text-3xl mb-3">🛑</div>
+                                    <h3 className="font-semibold text-orange-400 mb-2">Zastavit všechny 24h scany</h3>
+                                    <p className="text-xs text-orange-300/70 mb-4">
+                                        Okamžitě zastaví VŠECHNY probíhající a čekající 24h deep scany. Workers se zastaví při dalším checku (do ~5 min).
+                                    </p>
+                                    <button
+                                        onClick={async () => {
+                                            const typed = window.prompt(
+                                                "⚠️ POZOR: Toto zastaví VŠECHNY aktivní 24h deep scany!\n\nPro potvrzení napište STOP:"
+                                            );
+                                            if (typed !== "STOP") {
+                                                if (typed !== null) setToolResult("❌ Zastavení zrušeno — nesprávné potvrzení.");
+                                                return;
+                                            }
+                                            setToolResult("⏳ Zastavuji všechny scany...");
+                                            try {
+                                                const r = await stopAllScans();
+                                                const lines = [
+                                                    `${r.status === "ok" ? "✅" : "⚠️"} ${r.message}`,
+                                                    ...r.scans.map(s => `  🔴 ${s.url} (${s.previous_status} → cancelled)`),
+                                                ];
+                                                if (r.errors?.length) {
+                                                    lines.push(`\nChyby: ${r.errors.join(", ")}`);
+                                                }
+                                                setToolResult(lines.join("\n"));
+                                                // Refresh scan monitor
+                                                await loadScanMonitor();
+                                            } catch (e) {
+                                                setToolResult(`❌ Chyba: ${e}`);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 bg-orange-600 text-white border border-orange-500 rounded-xl hover:bg-orange-700 transition-all text-sm font-bold"
+                                    >
+                                        🛑 STOP ALL — Zastavit vše
                                     </button>
                                 </Panel>
 
