@@ -397,7 +397,8 @@ VŽDY JASNĚ ROZLIŠUJ:
 JAK VEDEŠ ROZHOVOR
 ═══════════════════════════════════════════════════════════════
 - Začni obecnými otázkami (odvětví, velikost firmy, web) — navázej přirozeně.
-- NEPTEJ SE NA VŠE NAJEDNOU. Maximálně 1–2 otázky na jednu zprávu.
+- **STRIKTNĚ JEDNA OTÁZKA NA JEDNU ZPRÁVU.** Nikdy nepokládej dvě otázky v jedné zprávě — uživatel neví, na kterou odpovídat.
+- **ODDĚLUJ UPOZORNĚNÍ OD OTÁZEK.** Když chceš reagovat upozorněním/varováním na odpověď uživatele A ZÁROVEŇ položit další otázku, ROZDĚL je do DVOU samostatných zpráv pomocí multi_messages. První zpráva = upozornění/komentář (bez bublinek). Druhá zpráva = nová otázka (s bublinkami). NIKDY nesmíš dát upozornění a otázku do jedné bubliny.
 - Když uživatel odpoví, reaguj na jeho odpověď (potvrď, upozorni na riziko, vysvětli kontext).
 - Nabízej BUBLINY (tlačítka pro rychlou odpověď) — viz formát odpovědi.
 - Pokud uživatel říká „nevím" nebo „nejsem si jistý":
@@ -419,6 +420,7 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
 {{
   "message": "Text tvé odpovědi (markdown)",
   "bubbles": ["Možnost 1", "Možnost 2", "Možnost 3"],
+  "multi_messages": [],
   "extracted_answers": [
     {{
       "question_key": "uses_chatgpt",
@@ -435,8 +437,9 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
 }}
 
 PRAVIDLA PRO JSON:
-- "message": Tvá odpověď ve formátu markdown. Piš krátce (max 3 odstavce). Používej odrážky.
-- "bubbles": Pole řetězců — tlačítka pro rychlou odpověď (max 5). Vždy nabídni relevantní odpovědi. Pro ano/ne otázky: ["Ano", "Ne", "Nevím / nejsem si jistý"]. Prázdné pole [] pokud nepotřeba.
+- "message": Tvá odpověď ve formátu markdown. Piš krátce (max 3 odstavce). Používej odrážky. POKUD používáš multi_messages, nastav message na prázdný řetězec "".
+- "bubbles": Pole řetězců — tlačítka pro rychlou odpověď (max 5). Bubliny se zobrazí POUZE u poslední zprávy. Pokud používáš multi_messages, nastav bubbles na [] a bubliny dej do poslední multi_message.
+- "multi_messages": Pole objektů pro postupné zobrazení více bublin. POUŽÍVEJ KDYKOLI potřebuješ oddělit upozornění/komentář od následné otázky. Formát: [{{"text": "upozornění...", "delay_ms": 0, "bubbles": []}}, {{"text": "otázka...", "delay_ms": 1500, "bubbles": ["Ano", "Ne"]}}]. Pokud máš jen jednu zprávu bez potřeby oddělení, nech prázdné [] a použij "message".
 - "extracted_answers": Pole extrahovaných odpovědí z aktuální zprávy uživatele. Prázdné [] pokud uživatel ještě neodpovídá na otázku. Každá odpověď má:
   - question_key: klíč otázky z dotazníku — MUSÍ být jeden z klíčů v ZNALOSTNÍ BÁZI
   - section: ID sekce — MUSÍ odpovídat sekci, do které klíč patří
@@ -447,6 +450,23 @@ PRAVIDLA PRO JSON:
 - "current_section": ID aktuální sekce dotazníku, o které mluvíte.
 - "is_complete": true pouze když jste probrali všechny relevantní sekce a uživatel potvrdil.
 - "humor_off": nastav na true pokud klient jasně dává najevo, že nechce vtipy (formální, krátké odpovědi, napomínání). Jednou nastaveno na true, zůstane true.
+
+PŘÍKLAD ODDĚLENÍ UPOZORNĚNÍ A OTÁZKY (multi_messages):
+Uživatel: "Používáme ChatGPT a vkládáme tam jména zákazníků"
+Správná odpověď:
+{{
+  "message": "",
+  "bubbles": [],
+  "multi_messages": [
+    {{"text": "**Pozor** — vkládání jmen zákazníků do ChatGPT je zpracování osobních údajů podle GDPR. ChatGPT ukládá data na serverech v USA, což vyžaduje zvláštní opatření. Doporučuji používat pouze obecné popisy bez jmen, nebo získat písemný souhlas.", "delay_ms": 0, "bubbles": []}},
+    {{"text": "Používáte ještě nějaký jiný AI nástroj kromě ChatGPT?", "delay_ms": 2000, "bubbles": ["Ne, jen ChatGPT", "Ano, používáme i další", "Nevím / nejsem si jistý"]}}
+  ],
+  "extracted_answers": [...],
+  "progress": 30,
+  "current_section": "internal_ai",
+  "is_complete": false,
+  "humor_off": false
+}}
 </format_odpovedi>
 
 ═══════════════════════════════════════════════════════════════
@@ -1706,15 +1726,37 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             joke_msgs = _build_q10_jokes()
 
     # Build response
-    result = Mart1nResponse(
-        message=parsed.get("message", reply_text),
-        bubbles=parsed.get("bubbles", [])[:5],
-        extracted_answers=extracted,
-        progress=min(100, max(0, parsed.get("progress", 0))),
-        current_section=parsed.get("current_section", ""),
-        is_complete=False,
-        session_id=req.session_id,
-    )
+    claude_multi = parsed.get("multi_messages", [])
+    if claude_multi and isinstance(claude_multi, list) and len(claude_multi) > 0:
+        # Claude sent multi_messages (e.g. warning + question separated)
+        mm_list = [
+            MultiMessage(
+                text=mm.get("text", ""),
+                delay_ms=mm.get("delay_ms", 1500),
+                bubbles=mm.get("bubbles", [])[:5],
+            )
+            for mm in claude_multi if isinstance(mm, dict) and mm.get("text")
+        ]
+        result = Mart1nResponse(
+            message="",
+            bubbles=[],
+            multi_messages=mm_list,
+            extracted_answers=extracted,
+            progress=min(100, max(0, parsed.get("progress", 0))),
+            current_section=parsed.get("current_section", ""),
+            is_complete=False,
+            session_id=req.session_id,
+        )
+    else:
+        result = Mart1nResponse(
+            message=parsed.get("message", reply_text),
+            bubbles=parsed.get("bubbles", [])[:5],
+            extracted_answers=extracted,
+            progress=min(100, max(0, parsed.get("progress", 0))),
+            current_section=parsed.get("current_section", ""),
+            is_complete=False,
+            session_id=req.session_id,
+        )
 
     # If jokes triggered, prepend them as multi_messages
     if joke_msgs:
@@ -1775,6 +1817,16 @@ async def mart1n_init():
             },
             {
                 "text": "I když je otázka, co je lepší, že? 😉",
+                "delay_ms": 3000,
+                "bubbles": [],
+            },
+            {
+                "text": (
+                    "Všechny informace, které si tady řekneme, zůstávají "
+                    "**výhradně mezi námi** — nikomu je nepředáváme. "
+                    "Kdyby nám to někdo prokázal, hrozí nám pokuta "
+                    "**až 20 milionů EUR** (GDPR, čl. 83 odst. 5, Nařízení EU 2016/679)."
+                ),
                 "delay_ms": 3000,
                 "bubbles": [],
             },

@@ -397,9 +397,17 @@ function Mart1nPageInner() {
             }]);
         } finally {
             setSending(false);
-            inputRef.current?.focus();
         }
     }, [sending, isComplete, sessionId, companyId]);
+
+    // Re-focus input after sending finishes
+    useEffect(() => {
+        if (!sending && !isComplete && !initLoading) {
+            // Small delay to ensure disabled prop is cleared after React render
+            const t = setTimeout(() => inputRef.current?.focus(), 50);
+            return () => clearTimeout(t);
+        }
+    }, [sending, isComplete, initLoading]);
 
     // Handle bubble click (with optional text override for NE→ANO swap)
     const handleBubbleClick = useCallback((bubble: string) => {
