@@ -2166,6 +2166,24 @@ async def get_admin_invoices(limit: int = 100):
     return {"invoices": result.data or []}
 
 
+# ── LLM Usage Monitoring ──────────────────────────────────────────────
+
+@router.get("/llm-usage", dependencies=[Depends(require_admin), Depends(_check_admin_rate_limit)])
+async def get_llm_usage():
+    """Vrátí souhrn spotřeby LLM API (tokeny, náklady, stav klíčů)."""
+    from backend.monitoring.llm_usage_tracker import usage_tracker
+    return await usage_tracker.get_usage_summary()
+
+
+@router.post("/llm-usage/check-keys", dependencies=[Depends(require_admin), Depends(_check_admin_rate_limit)])
+async def check_llm_keys():
+    """Ověří funkčnost API klíčů (Anthropic, Gemini) a vrátí stav."""
+    from backend.monitoring.llm_usage_tracker import usage_tracker
+    # Force fresh check
+    usage_tracker._last_health_check = 0
+    return await usage_tracker.check_api_keys()
+
+
 # ═══════════════════════════════════════════════════════════════
 # FACTORY RESET — Kompletní výmaz všech dat (pouze pro testování)
 # ═══════════════════════════════════════════════════════════════
@@ -2249,6 +2267,7 @@ async def crm_factory_reset(
             ["subscription_payments", "invoices", "orders", "subscriptions", "payments"],
             ["email_events", "email_log", "email_logs", "email_blacklist", "outbound_emails"],
             ["analytics_events", "analytics_daily_summary"],
+            ["llm_usage_daily"],
             ["contact_submissions", "report_leads"],
             ["scans", "scan_results", "clients", "widget_configs"],
             ["companies"],

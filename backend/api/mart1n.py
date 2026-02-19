@@ -1392,6 +1392,15 @@ async def _summarize_and_save_feedback(
                 messages=[{"role": "user", "content": conversation_text}],
             )
             summary_raw = response.content[0].text.strip()
+            # Track usage
+            try:
+                from backend.monitoring.llm_usage_tracker import usage_tracker
+                _in = response.usage.input_tokens
+                _out = response.usage.output_tokens
+                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                await usage_tracker.record("claude", _in, _out, _cost, caller="mart1n_feedback")
+            except Exception:
+                pass
             try:
                 summary_data = json.loads(summary_raw)
                 summary_text = summary_data.get("summary", summary_raw)
@@ -1629,6 +1638,16 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
         )
 
         reply_text = response.content[0].text.strip()
+
+        # Track usage
+        try:
+            from backend.monitoring.llm_usage_tracker import usage_tracker
+            _in = response.usage.input_tokens
+            _out = response.usage.output_tokens
+            _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+            await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_chat")
+        except Exception:
+            pass
 
     except anthropic.APIStatusError as e:
         logger.error(f"[MART1N] Claude API error: {e.status_code} — {e.message}")
@@ -1972,6 +1991,17 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             # Flush any remaining message buffer
             if message_buffer:
                 yield _sse_event("token", json.dumps(message_buffer))
+
+            # Track streaming usage
+            try:
+                from backend.monitoring.llm_usage_tracker import usage_tracker
+                final_msg = stream.get_final_message()
+                _in = final_msg.usage.input_tokens
+                _out = final_msg.usage.output_tokens
+                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_stream")
+            except Exception:
+                pass
 
             # Parse complete response
             parsed = _parse_claude_response(full_text)

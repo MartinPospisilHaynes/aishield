@@ -878,6 +878,62 @@ export async function getAdminInvoices(): Promise<{ invoices: AdminInvoice[] }> 
     return res.json();
 }
 
+// ── LLM Usage ──
+
+export interface LLMProviderUsage {
+    input_tokens: number;
+    output_tokens: number;
+    cost_usd: number;
+    calls: number;
+}
+
+export interface LLMApiHealth {
+    status: "ok" | "error" | "depleted" | "missing" | "rate_limited";
+    message: string;
+    key_prefix?: string;
+}
+
+export interface LLMUsageSummary {
+    monthly: Record<string, LLMProviderUsage>;
+    today: Record<string, LLMProviderUsage>;
+    daily_trend: {
+        date: string;
+        provider: string;
+        cost_usd: number;
+        calls: number;
+        input_tokens: number;
+        output_tokens: number;
+    }[];
+    budgets: Record<string, number>;
+    memory_stats: {
+        total_calls: number;
+        claude_calls: number;
+        gemini_calls: number;
+        fallback_count: number;
+        total_cost_usd: number;
+        total_input_tokens: number;
+        total_output_tokens: number;
+    };
+    api_health: Record<string, LLMApiHealth>;
+    month: string;
+    timestamp: string;
+    error?: string;
+}
+
+export async function getLLMUsage(): Promise<LLMUsageSummary> {
+    const res = await adminFetch(`${API_URL}/api/admin/llm-usage`);
+    if (!res.ok) throw new Error("Chyba při načítání LLM usage");
+    return res.json();
+}
+
+export async function checkLLMKeys(): Promise<Record<string, LLMApiHealth>> {
+    const res = await adminFetch(`${API_URL}/api/admin/llm-usage/check-keys`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error("Chyba při ověřování klíčů");
+    return res.json();
+}
+
 // ── Factory Reset ──
 
 export async function factoryReset(confirm: string): Promise<{

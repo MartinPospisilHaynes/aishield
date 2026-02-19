@@ -80,6 +80,22 @@ class _UsageStats:
 _stats = _UsageStats()
 
 
+async def _record_usage(provider: str, result: "LLMResult", caller: str = ""):
+    """Persist usage to Supabase via tracker (fire-and-forget)."""
+    try:
+        from backend.monitoring.llm_usage_tracker import usage_tracker
+        await usage_tracker.record(
+            provider=provider,
+            input_tokens=result.input_tokens,
+            output_tokens=result.output_tokens,
+            cost_usd=result.cost_usd,
+            model=result.model,
+            caller=caller,
+        )
+    except Exception as e:
+        logger.warning(f"[LLM] Usage tracking failed: {e}")
+
+
 def get_usage_stats() -> dict:
     """Vrátí globální statistiky použití LLM."""
     return {
@@ -372,6 +388,9 @@ async def llm_complete(
                 _stats.total_input_tokens += result.input_tokens
                 _stats.total_output_tokens += result.output_tokens
 
+                # Persist to Supabase
+                await _record_usage(provider_name, result, caller="llm_complete")
+
                 if result.fallback_used:
                     logger.warning(
                         f"[LLM] Fallback na {provider_name}: {result.fallback_reason}"
@@ -458,6 +477,7 @@ async def llm_complete_vision(
         _stats.total_cost_usd += result.cost_usd
         _stats.total_input_tokens += result.input_tokens
         _stats.total_output_tokens += result.output_tokens
+        await _record_usage("claude", result, caller="llm_vision")
         logger.info(f"[LLM] Claude Vision OK — ${result.cost_usd:.4f}")
         return result
     except Exception as e:
@@ -477,6 +497,7 @@ async def llm_complete_vision(
         _stats.total_cost_usd += result.cost_usd
         _stats.total_input_tokens += result.input_tokens
         _stats.total_output_tokens += result.output_tokens
+        await _record_usage("gemini", result, caller="llm_vision")
         logger.warning(f"[LLM] Gemini Vision fallback OK — ${result.cost_usd:.4f}")
         return result
     except Exception as e:

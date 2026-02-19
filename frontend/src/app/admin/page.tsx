@@ -36,6 +36,8 @@ import {
     getSubscriptions,
     sendSubscriptionReminder,
     getAdminInvoices,
+    getLLMUsage,
+    checkLLMKeys,
     factoryReset,
     stopAllScans,
     getScanMonitor,
@@ -74,6 +76,8 @@ import type {
     ScanFinding,
     ChatFeedbackEntry,
     ChatFeedbackStats,
+    LLMUsageSummary,
+    LLMApiHealth,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -152,7 +156,8 @@ type Tab =
     | "analytika"
     | "predplatne"
     | "testy24h"
-    | "zpetnavazba";
+    | "zpetnavazba"
+    | "llm";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -168,6 +173,7 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "analytika", icon: "📉", label: "Analytika" },
     { id: "predplatne", icon: "💳", label: "Předplatné" },
     { id: "zpetnavazba", icon: "💬", label: "Zpětná vazba" },
+    { id: "llm", icon: "🧠", label: "LLM API" },
 ];
 
 const TASKS = [
@@ -430,6 +436,11 @@ export default function AdminPage() {
     const [feedbackLoading, setFeedbackLoading] = useState(false);
     const [feedbackFilter, setFeedbackFilter] = useState<string>("all");
 
+    // LLM Usage
+    const [llmUsage, setLlmUsage] = useState<LLMUsageSummary | null>(null);
+    const [llmLoading, setLlmLoading] = useState(false);
+    const [llmCheckingKeys, setLlmCheckingKeys] = useState(false);
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -622,6 +633,31 @@ export default function AdminPage() {
         }
     }, [feedbackFilter]);
 
+    const loadLLMUsage = useCallback(async () => {
+        setLlmLoading(true);
+        try {
+            const d = await getLLMUsage();
+            setLlmUsage(d);
+        } catch (e) {
+            console.error("LLM usage load error:", e);
+            setLoadError(`LLM API: ${e}`);
+        } finally {
+            setLlmLoading(false);
+        }
+    }, []);
+
+    const handleCheckKeys = useCallback(async () => {
+        setLlmCheckingKeys(true);
+        try {
+            const health = await checkLLMKeys();
+            setLlmUsage(prev => prev ? { ...prev, api_health: health } : prev);
+        } catch (e) {
+            console.error("LLM key check error:", e);
+        } finally {
+            setLlmCheckingKeys(false);
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -652,7 +688,8 @@ export default function AdminPage() {
         if (tab === "predplatne") loadSubscriptions();
         if (tab === "testy24h") loadScanMonitor();
         if (tab === "zpetnavazba") loadChatFeedback();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadChatFeedback]);
+        if (tab === "llm") loadLLMUsage();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadChatFeedback, loadLLMUsage]);
 
     // Reload feedback when filter changes
     useEffect(() => {
@@ -4371,6 +4408,203 @@ export default function AdminPage() {
                                     </Panel>
                                 </>
                             )}
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {/*  TAB: LLM API                             */}
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "llm" && (
+                        <>
+                            {llmLoading && !llmUsage && (
+                                <div className="text-center py-12 text-gray-400">Načítám LLM data…</div>
+                            )}
+                            {llmUsage && (() => {
+                                const claude = llmUsage.monthly?.claude;
+                                const gemini = llmUsage.monthly?.gemini;
+                                const claudeToday = llmUsage.today?.claude;
+                                const geminiToday = llmUsage.today?.gemini;
+                                const claudeHealth = llmUsage.api_health?.claude;
+                                const geminiHealth = llmUsage.api_health?.gemini;
+                                const claudeBudget = llmUsage.budgets?.claude || 100;
+                                const geminiBudget = llmUsage.budgets?.gemini || 20;
+                                const claudeSpent = claude?.cost_usd || 0;
+                                const geminiSpent = gemini?.cost_usd || 0;
+                                const claudePct = Math.min(100, Math.round((claudeSpent / claudeBudget) * 100));
+                                const geminiPct = Math.min(100, Math.round((geminiSpent / geminiBudget) * 100));
+
+                                const healthColor = (s?: string) =>
+                                    s === "ok" ? "text-green-400" :
+                                        s === "depleted" ? "text-red-500" :
+                                            s === "rate_limited" ? "text-yellow-400" :
+                                                s === "missing" ? "text-gray-500" : "text-red-400";
+                                const healthDot = (s?: string) =>
+                                    s === "ok" ? "bg-green-400" :
+                                        s === "depleted" ? "bg-red-500 animate-pulse" :
+                                            s === "rate_limited" ? "bg-yellow-400" :
+                                                s === "missing" ? "bg-gray-500" : "bg-red-400";
+                                const barColor = (pct: number) =>
+                                    pct >= 95 ? "from-red-500 to-red-600" :
+                                        pct >= 80 ? "from-amber-500 to-orange-500" :
+                                            "from-cyan-500 to-blue-500";
+
+                                const fmtTokens = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(0)}k` : `${n}`;
+
+                                return (
+                                    <>
+                                        {/* API Key Health */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                            {[
+                                                { name: "Anthropic (Claude)", key: "claude", health: claudeHealth },
+                                                { name: "Google (Gemini)", key: "gemini", health: geminiHealth },
+                                            ].map(p => (
+                                                <Panel key={p.key} className="p-5">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`w-2.5 h-2.5 rounded-full ${healthDot(p.health?.status)}`} />
+                                                            <h3 className="text-sm font-semibold text-white">{p.name}</h3>
+                                                        </div>
+                                                        <span className={`text-xs font-medium ${healthColor(p.health?.status)}`}>
+                                                            {p.health?.status === "ok" ? "✓ Aktivní" :
+                                                                p.health?.status === "depleted" ? "✗ Vyčerpáno" :
+                                                                    p.health?.status === "missing" ? "— Nenastaveno" :
+                                                                        p.health?.status === "rate_limited" ? "⚡ Rate limited" :
+                                                                            "✗ Chyba"}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-400">{p.health?.message || "—"}</p>
+                                                    {p.health?.key_prefix && (
+                                                        <p className="text-[10px] text-gray-600 mt-1 font-mono">{p.health.key_prefix}</p>
+                                                    )}
+                                                </Panel>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={handleCheckKeys}
+                                            disabled={llmCheckingKeys}
+                                            className="mb-6 text-xs px-4 py-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50"
+                                        >
+                                            {llmCheckingKeys ? "Ověřuji…" : "🔑 Ověřit API klíče"}
+                                        </button>
+
+                                        {/* Monthly Budget Bars */}
+                                        <Panel className="p-6 mb-6">
+                                            <h2 className="text-lg font-semibold text-white mb-4">📊 Měsíční spotřeba — {llmUsage.month}</h2>
+                                            <div className="space-y-5">
+                                                {[
+                                                    { name: "Anthropic (Claude)", spent: claudeSpent, budget: claudeBudget, pct: claudePct, data: claude },
+                                                    { name: "Google (Gemini)", spent: geminiSpent, budget: geminiBudget, pct: geminiPct, data: gemini },
+                                                ].map(p => (
+                                                    <div key={p.name}>
+                                                        <div className="flex items-center justify-between mb-1.5">
+                                                            <span className="text-sm text-white font-medium">{p.name}</span>
+                                                            <span className={`text-sm font-bold ${p.pct >= 95 ? "text-red-400" : p.pct >= 80 ? "text-amber-400" : "text-green-400"}`}>
+                                                                ${p.spent.toFixed(2)} / ${p.budget.toFixed(0)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full bg-gradient-to-r ${barColor(p.pct)} transition-all duration-500`}
+                                                                style={{ width: `${p.pct}%` }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-between mt-1 text-[10px] text-gray-500">
+                                                            <span>{p.pct}% budgetu</span>
+                                                            <span>
+                                                                {p.data ? `${fmtTokens(p.data.input_tokens)} in · ${fmtTokens(p.data.output_tokens)} out · ${p.data.calls} volání` : "—"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </Panel>
+
+                                        {/* Today */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                            <StatCard icon="🤖" label="Claude dnes" value={`$${(claudeToday?.cost_usd || 0).toFixed(3)}`} sub={claudeToday ? `${claudeToday.calls} volání · ${fmtTokens(claudeToday.input_tokens + claudeToday.output_tokens)} tokenů` : "—"} accent="cyan" />
+                                            <StatCard icon="✨" label="Gemini dnes" value={`$${(geminiToday?.cost_usd || 0).toFixed(3)}`} sub={geminiToday ? `${geminiToday.calls} volání · ${fmtTokens(geminiToday.input_tokens + geminiToday.output_tokens)} tokenů` : "—"} accent="fuchsia" />
+                                            <StatCard icon="📞" label="Celkem volání" value={claude?.calls || 0 + (gemini?.calls || 0)} sub={`Claude: ${claude?.calls || 0} · Gemini: ${gemini?.calls || 0}`} accent="green" />
+                                            <StatCard icon="💸" label="Celkem měsíc" value={`$${(claudeSpent + geminiSpent).toFixed(2)}`} sub={`zbývá $${Math.max(0, claudeBudget + geminiBudget - claudeSpent - geminiSpent).toFixed(2)}`} accent={claudePct >= 80 || geminiPct >= 80 ? "red" : "green"} />
+                                        </div>
+
+                                        {/* In-Memory Stats (since restart) */}
+                                        <Panel className="p-6 mb-6">
+                                            <h2 className="text-sm font-semibold text-gray-400 mb-3">🔄 Od posledního restartu serveru</h2>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                                                <div>
+                                                    <div className="text-xl font-bold text-white">{llmUsage.memory_stats?.total_calls || 0}</div>
+                                                    <div className="text-[10px] text-gray-500">Volání celkem</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xl font-bold text-white">{fmtTokens((llmUsage.memory_stats?.total_input_tokens || 0) + (llmUsage.memory_stats?.total_output_tokens || 0))}</div>
+                                                    <div className="text-[10px] text-gray-500">Tokenů celkem</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xl font-bold text-white">${(llmUsage.memory_stats?.total_cost_usd || 0).toFixed(4)}</div>
+                                                    <div className="text-[10px] text-gray-500">Náklady</div>
+                                                </div>
+                                                <div>
+                                                    <div className={`text-xl font-bold ${(llmUsage.memory_stats?.fallback_count || 0) > 0 ? "text-amber-400" : "text-green-400"}`}>
+                                                        {llmUsage.memory_stats?.fallback_count || 0}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500">Fallbacků</div>
+                                                </div>
+                                            </div>
+                                        </Panel>
+
+                                        {/* Daily trend */}
+                                        {llmUsage.daily_trend && llmUsage.daily_trend.length > 0 && (
+                                            <Panel className="p-6">
+                                                <h2 className="text-sm font-semibold text-gray-400 mb-3">📈 Denní trend (posledních 30 dní)</h2>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-xs">
+                                                        <thead>
+                                                            <tr className="text-gray-500 border-b border-white/5">
+                                                                <th className="text-left py-2 pr-4">Datum</th>
+                                                                <th className="text-left py-2 pr-4">Provider</th>
+                                                                <th className="text-right py-2 pr-4">Volání</th>
+                                                                <th className="text-right py-2 pr-4">Input tok.</th>
+                                                                <th className="text-right py-2 pr-4">Output tok.</th>
+                                                                <th className="text-right py-2">Cena</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {llmUsage.daily_trend.slice().reverse().map((d, i) => (
+                                                                <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.03]">
+                                                                    <td className="py-1.5 pr-4 text-gray-300">{d.date}</td>
+                                                                    <td className="py-1.5 pr-4">
+                                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${d.provider === "claude" ? "bg-cyan-500/10 text-cyan-400" : "bg-fuchsia-500/10 text-fuchsia-400"}`}>
+                                                                            {d.provider}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="py-1.5 pr-4 text-right text-gray-300">{d.calls}</td>
+                                                                    <td className="py-1.5 pr-4 text-right text-gray-400">{fmtTokens(d.input_tokens)}</td>
+                                                                    <td className="py-1.5 pr-4 text-right text-gray-400">{fmtTokens(d.output_tokens)}</td>
+                                                                    <td className="py-1.5 text-right text-white font-medium">${d.cost_usd.toFixed(4)}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </Panel>
+                                        )}
+
+                                        <div className="mt-4 flex items-center gap-3">
+                                            <button
+                                                onClick={loadLLMUsage}
+                                                disabled={llmLoading}
+                                                className="text-xs px-4 py-2 rounded-lg bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-white transition-all disabled:opacity-50"
+                                            >
+                                                {llmLoading ? "Načítám…" : "🔄 Obnovit data"}
+                                            </button>
+                                            <span className="text-[10px] text-gray-600">
+                                                Aktualizováno: {llmUsage.timestamp ? new Date(llmUsage.timestamp).toLocaleString("cs") : "—"}
+                                            </span>
+                                        </div>
+                                    </>
+                                );
+                            })()}
                         </>
                     )}
 
