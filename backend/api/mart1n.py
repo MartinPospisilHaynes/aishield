@@ -1004,15 +1004,12 @@ def _get_intro_phase(db_history: list[dict]) -> int:
     """
     Detect intro phase from conversation history.
     Returns:
-      0 — first user message (responding to Uršula greeting)
-      1 — second user message (ANO/NE response to "Souhlasíte?")
+      0 — first user message (responding to Uršula greeting) → jump to first question
      -1 — intro complete, normal Claude flow
     """
     user_count = sum(1 for m in db_history if m["role"] == "user")
     if user_count == 0:
         return 0
-    elif user_count == 1:
-        return 1
     return -1
 
 
@@ -1033,52 +1030,13 @@ def _get_industry_bubbles() -> list[str]:
     return []
 
 
-def _build_intro_phase_0(session_id: str) -> Mart1nResponse:
-    """User just responded to the greeting → 'No nic...' + 'Souhlasíte?'"""
-    return Mart1nResponse(
-        message="",
-        multi_messages=[
-            MultiMessage(
-                text=(
-                    "No nic, tak se dáme do práce. Jen Vás chci upozornit na dvě věci — "
-                    "první z nich je, že byť mi v procesorech koluje česká elektřina, "
-                    "nemám problém s Vámi mluvit v jakémkoliv jiném jazyce — stačí si jen říct."
-                ),
-                delay_ms=0,
-            ),
-            MultiMessage(
-                text=(
-                    "A druhá věc — nejsem moc příznivcem nudného vyplňování dotazníků "
-                    "a tvůrci z Desperados design se při mém programování celkem vyblbli... "
-                    "takže tam občas hodím nějaký ten fórek. Souhlasíte?"
-                ),
-                delay_ms=3000,
-                bubbles=["ANO", "NE"],
-            ),
-        ],
-        bubble_overrides={"NE": "ANO"},
-        progress=0,
-        session_id=session_id,
-    )
-
-
-def _build_intro_phase_1(user_msg: str, session_id: str) -> Mart1nResponse:
-    """User clicked ANO or NE → joke response + first real question."""
+def _build_intro_response(session_id: str) -> Mart1nResponse:
+    """User responded to the greeting → go straight to first question."""
     msgs: list[MultiMessage] = []
 
-    if user_msg.strip().upper() == "NE":
-        msgs.append(MultiMessage(
-            text="Jsem si na 99% jistá, že jste zmáčkl tlačítko ANO...",
-            delay_ms=0,
-        ))
-    else:
-        msgs.append(MultiMessage(text="Už teď jste můj nejoblíbenější klient", delay_ms=0))
-        msgs.append(MultiMessage(text="A to rozhodně neříkám všem.", delay_ms=2000))
-
-    # First real question
     msgs.append(MultiMessage(
         text="Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**",
-        delay_ms=2000,
+        delay_ms=0,
         bubbles=_get_industry_bubbles(),
     ))
 
@@ -1574,10 +1532,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
         intro_phase = _get_intro_phase(db_history)
         if intro_phase >= 0:
             _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
-            if intro_phase == 0:
-                result = _build_intro_phase_0(req.session_id)
-            else:
-                result = _build_intro_phase_1(user_msg, req.session_id)
+            result = _build_intro_response(req.session_id)
             combined = "\n\n".join(m.text for m in result.multi_messages)
             _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=0)
             return result

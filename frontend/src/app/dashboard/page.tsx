@@ -767,7 +767,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <p className="text-[10px] text-slate-400 leading-relaxed">
                                                     Za <strong className="text-white">~24 hodin</strong> vám napíšeme e-mail s agregovanými výsledky
-                                                    z <strong className="text-white">24 skenů ze 7 zemí</strong> (6 kol × 4 země, desktop + mobil).
+                                                    z <strong className="text-white">24 skenů ze 7 zemí</strong> (6 kol × 4 země — střídavě desktop a mobil).
                                                 </p>
                                             </div>
                                         )}
