@@ -24,7 +24,7 @@ GEO_COUNTRIES = WebScanner.GEO_COUNTRIES
 
 # ── Konfigurace ──
 DEEP_SCAN_ROUNDS = 6          # Počet kol skenování
-ROUND_INTERVAL_SECONDS = 5 * 60    # ⚡ TESTOVACÍ REŽIM: 5 min mezi koly (produkce: 4 * 3600)
+ROUND_INTERVAL_SECONDS = 4 * 3600  # 4 hodiny mezi koly (celkem ~24h pro 6 kol)
 COUNTRIES_PER_ROUND = 4       # Zemí na kolo (rotace)
 DEVICE_TYPES = ["desktop", "mobile", "random"]
 
