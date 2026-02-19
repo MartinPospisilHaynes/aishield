@@ -30,6 +30,7 @@ from typing import Optional
 import anthropic
 import redis
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from backend.config import get_settings
@@ -1784,6 +1785,303 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     )
 
     return result
+
+
+# ═══════════════════════════════════════════════════════════════
+# STREAMING ENDPOINT — SSE for real-time token display
+# ═══════════════════════════════════════════════════════════════
+
+def _sse_event(event: str, data: str) -> str:
+    """Format a single SSE event."""
+    return f"event: {event}\ndata: {data}\n\n"
+
+
+@router.post("/mart1n/chat/stream")
+async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
+    """
+    Streaming version of /mart1n/chat.
+    Returns Server-Sent Events (SSE):
+      - event: token   → data: chunk of message text
+      - event: meta    → data: JSON {bubbles, extracted_answers, progress, ...}
+      - event: done    → data: {}
+    For non-Claude responses (intro, jokes, fatal error) sends the full
+    response as a single 'full' event so the frontend can handle it normally.
+    """
+    settings = get_settings()
+
+    if not settings.anthropic_api_key:
+        raise HTTPException(status_code=503, detail="Uršula je momentálně nedostupná.")
+
+    if not _check_dual_rate_limit(req.company_id, http_request):
+        raise HTTPException(status_code=429, detail="Příliš mnoho zpráv.")
+
+    # ── Determine user message ──
+    if req.message is not None:
+        user_msg = req.message.strip()
+        if not user_msg:
+            raise HTTPException(status_code=400, detail="Prázdná zpráva.")
+        if len(user_msg) > MAX_MESSAGE_LENGTH:
+            raise HTTPException(status_code=400, detail="Zpráva je příliš dlouhá.")
+
+        _, db_history, _ = _load_session_history(req.company_id)
+
+        # ── Scripted responses (no Claude call) → send as 'full' event ──
+        intro_phase = _get_intro_phase(db_history)
+        if intro_phase >= 0:
+            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
+            result = _build_intro_response(req.session_id)
+            combined = "\n\n".join(m.text for m in result.multi_messages)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=0)
+            async def _gen_full():
+                yield _sse_event("full", result.model_dump_json())
+                yield _sse_event("done", "{}")
+            return StreamingResponse(_gen_full(), media_type="text/event-stream",
+                                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+        if _is_post_fatal_error(db_history):
+            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
+            result = _build_closing_response(req.company_id, req.session_id)
+            combined = "\n\n".join(m.text for m in result.multi_messages)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            async def _gen_full_close():
+                yield _sse_event("full", result.model_dump_json())
+                yield _sse_event("done", "{}")
+            return StreamingResponse(_gen_full_close(), media_type="text/event-stream",
+                                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+        if _is_post_feedback_question(db_history):
+            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
+            sentiment = _detect_feedback_sentiment(user_msg)
+            result = _build_feedback_response(user_msg, req.session_id)
+            combined = "\n\n".join(m.text for m in result.multi_messages)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            import asyncio
+            asyncio.ensure_future(_summarize_and_save_feedback(req.company_id, req.session_id, user_msg, sentiment))
+            async def _gen_full_fb():
+                yield _sse_event("full", result.model_dump_json())
+                yield _sse_event("done", "{}")
+            return StreamingResponse(_gen_full_fb(), media_type="text/event-stream",
+                                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+        claude_messages = db_history[-28:] + [{"role": "user", "content": user_msg}]
+        server_mode = True
+    elif req.messages:
+        if not req.messages[-1].content.strip():
+            raise HTTPException(status_code=400, detail="Prázdná zpráva.")
+        if len(req.messages) > MAX_CONVERSATION_TURNS:
+            raise HTTPException(status_code=400, detail="Konverzace je příliš dlouhá.")
+        user_msg = req.messages[-1].content.strip()
+        if len(user_msg) > MAX_MESSAGE_LENGTH:
+            raise HTTPException(status_code=400, detail="Zpráva je příliš dlouhá.")
+        claude_messages = [{"role": msg.role, "content": msg.content} for msg in req.messages[-30:]]
+        server_mode = False
+    else:
+        raise HTTPException(status_code=400, detail="Prázdná zpráva.")
+
+    if _detect_prompt_injection(user_msg):
+        logger.warning(f"[MART1N] Prompt injection attempt from {req.company_id[:8]}...: {user_msg[:100]}")
+
+    _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
+
+    scan_context = _get_scan_context(req.company_id)
+    full_system_prompt = SYSTEM_PROMPT + scan_context if scan_context else SYSTEM_PROMPT
+
+    # ── Stream Claude response via SSE ──
+    async def _generate_stream():
+        try:
+            client = anthropic.Anthropic(
+                api_key=settings.anthropic_api_key,
+                timeout=CLAUDE_TIMEOUT,
+            )
+
+            full_text = ""
+            # Track whether we're inside the "message" JSON value
+            in_message_field = False
+            message_buffer = ""
+            brace_depth = 0
+            in_string = False
+            escape_next = False
+            current_key = ""
+            after_colon = False
+
+            with client.messages.stream(
+                model=CLAUDE_MODEL,
+                max_tokens=2048,
+                temperature=0.4,
+                system=full_system_prompt,
+                messages=claude_messages,
+            ) as stream:
+                for text_chunk in stream.text_stream:
+                    full_text += text_chunk
+
+                    # Simple JSON state machine to detect "message": "..." content
+                    for ch in text_chunk:
+                        if escape_next:
+                            escape_next = False
+                            if in_message_field and in_string:
+                                message_buffer += ch
+                            continue
+
+                        if ch == '\\' and in_string:
+                            escape_next = True
+                            if in_message_field:
+                                message_buffer += ch
+                            continue
+
+                        if ch == '"':
+                            if not in_string:
+                                in_string = True
+                                if after_colon and current_key == "message":
+                                    in_message_field = True
+                                    message_buffer = ""
+                                    after_colon = False
+                                elif not after_colon:
+                                    current_key = ""
+                            else:
+                                in_string = False
+                                if in_message_field:
+                                    # End of message string — flush remaining buffer
+                                    if message_buffer:
+                                        yield _sse_event("token", json.dumps(message_buffer))
+                                        message_buffer = ""
+                                    in_message_field = False
+                                after_colon = False
+                            continue
+
+                        if in_string:
+                            if not in_message_field and not after_colon:
+                                current_key += ch
+                            elif in_message_field:
+                                message_buffer += ch
+                                # Flush buffer periodically (every ~30 chars for smooth display)
+                                if len(message_buffer) >= 30:
+                                    yield _sse_event("token", json.dumps(message_buffer))
+                                    message_buffer = ""
+                        else:
+                            if ch == ':':
+                                after_colon = True
+                            elif ch == '{':
+                                brace_depth += 1
+                                if brace_depth > 1:
+                                    after_colon = False
+                            elif ch == '}':
+                                brace_depth -= 1
+                            elif ch == ',':
+                                after_colon = False
+
+            # Flush any remaining message buffer
+            if message_buffer:
+                yield _sse_event("token", json.dumps(message_buffer))
+
+            # Parse complete response
+            parsed = _parse_claude_response(full_text)
+            reply_text = full_text.strip()
+
+            # Process extracted answers
+            extracted = []
+            for ans_data in parsed.get("extracted_answers", []):
+                try:
+                    ea = _validate_extracted_answer(ans_data)
+                    if ea:
+                        extracted.append(ea)
+                except Exception:
+                    continue
+
+            answered_before = len(_get_answered_keys(req.company_id))
+
+            if extracted:
+                try:
+                    _save_extracted_answers(req.company_id, extracted)
+                    logger.info(
+                        f"[MART1N] Saved {len(extracted)} answers for company "
+                        f"{req.company_id[:8]}...: {[e.question_key for e in extracted]}"
+                    )
+                except Exception as e:
+                    logger.error(f"[MART1N] Failed to save answers: {e}")
+
+            answered_after = len(_get_answered_keys(req.company_id)) if extracted else answered_before
+            humor_off = parsed.get("humor_off", False) or _detect_humor_off(db_history if server_mode else claude_messages)
+
+            # ── Handle is_complete (FATAL ERROR / closing) ──
+            if parsed.get("is_complete", False):
+                logger.info(f"[MART1N] Conversation COMPLETE for company {req.company_id[:8]}...")
+                _log_mart1n_message(
+                    req.session_id, req.company_id, "assistant",
+                    parsed.get("message", reply_text),
+                    extracted_answers=[ea.dict() for ea in extracted] if extracted else None,
+                    progress=100,
+                )
+                if humor_off:
+                    result = _build_closing_response_serious(req.company_id, req.session_id)
+                    result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
+                else:
+                    fatal = _build_fatal_error()
+                    claude_msg = MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)
+                    result = Mart1nResponse(
+                        message="", multi_messages=[claude_msg] + fatal,
+                        extracted_answers=extracted, progress=100,
+                        is_complete=False, session_id=req.session_id,
+                    )
+                combined = "\n\n".join(m.text for m in result.multi_messages)
+                _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+                # For complete responses, send as 'full' (multi-message with jokes/closing)
+                yield _sse_event("full", result.model_dump_json())
+                yield _sse_event("done", "{}")
+                return
+
+            # ── Joke triggers ──
+            joke_msgs: list[MultiMessage] = []
+            if not humor_off:
+                if answered_before < 5 <= answered_after:
+                    joke_msgs = _build_q5_jokes()
+                elif answered_before < 10 <= answered_after:
+                    joke_msgs = _build_q10_jokes()
+
+            # ── Check for Claude multi_messages ──
+            claude_multi = parsed.get("multi_messages", [])
+
+            # Build metadata for the frontend
+            meta = {
+                "bubbles": parsed.get("bubbles", [])[:5],
+                "multi_messages": claude_multi if isinstance(claude_multi, list) else [],
+                "extracted_answers": [ea.dict() for ea in extracted],
+                "progress": min(100, max(0, parsed.get("progress", 0))),
+                "current_section": parsed.get("current_section", ""),
+                "is_complete": False,
+                "session_id": req.session_id,
+                "bubble_overrides": {},
+            }
+
+            # If jokes triggered, include them in meta
+            if joke_msgs:
+                meta["joke_messages"] = [mm.dict() for mm in joke_msgs]
+
+            yield _sse_event("meta", json.dumps(meta))
+            yield _sse_event("done", "{}")
+
+            # Log
+            log_text = parsed.get("message", reply_text)
+            _log_mart1n_message(
+                req.session_id, req.company_id, "assistant", log_text,
+                extracted_answers=[ea.dict() for ea in extracted] if extracted else None,
+                progress=meta["progress"],
+            )
+
+        except anthropic.APIStatusError as e:
+            logger.error(f"[MART1N] Claude API error: {e.status_code} — {e.message}")
+            yield _sse_event("error", json.dumps({"detail": "Uršula má momentálně technické potíže."}))
+        except anthropic.APITimeoutError:
+            logger.error(f"[MART1N] Claude API timeout after {CLAUDE_TIMEOUT}s")
+            yield _sse_event("error", json.dumps({"detail": "Odpověď trvá příliš dlouho."}))
+        except Exception as e:
+            logger.error(f"[MART1N] Unexpected streaming error: {e}")
+            yield _sse_event("error", json.dumps({"detail": "Došlo k neočekávané chybě."}))
+
+    return StreamingResponse(
+        _generate_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ═══════════════════════════════════════════════════════════════

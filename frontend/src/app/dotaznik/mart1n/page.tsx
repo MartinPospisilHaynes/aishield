@@ -299,7 +299,7 @@ function Mart1nPageInner() {
         })();
     }, [companyId]);
 
-    // Send message to Uršula API (server-side mode — sends single message)
+    // Send message to Uršula API via SSE streaming
     const sendMessage = useCallback(async (text: string, displayText?: string) => {
         if (!text.trim() || sending || isComplete) return;
 
@@ -315,13 +315,13 @@ function Mart1nPageInner() {
         setIsResuming(false);
 
         try {
-            const res = await fetch(`${API_URL}/api/mart1n/chat`, {
+            const res = await fetch(`${API_URL}/api/mart1n/chat/stream`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     session_id: sessionId,
                     company_id: companyId,
-                    message: text.trim(),   // Send original text to backend
+                    message: text.trim(),
                 }),
             });
 
@@ -330,61 +330,201 @@ function Mart1nPageInner() {
                 throw new Error(errData.detail || `HTTP ${res.status}`);
             }
 
-            const data = await res.json();
+            const reader = res.body?.getReader();
+            if (!reader) throw new Error("No stream reader");
 
-            // Store bubble overrides for next interaction
-            if (data.bubble_overrides && Object.keys(data.bubble_overrides).length > 0) {
-                setBubbleOverrides(data.bubble_overrides);
-            } else {
-                setBubbleOverrides({});
-            }
+            const decoder = new TextDecoder();
+            let streamedText = "";
+            let streamMsgIndex = -1;
+            let buffer = "";
 
-            // ── Multi-message sequential display ──
-            if (data.multi_messages && data.multi_messages.length > 0) {
-                for (let i = 0; i < data.multi_messages.length; i++) {
-                    const mm = data.multi_messages[i] as MultiMessage;
+            // Add an empty assistant message for streaming into
+            const streamingMsg: Mart1nMessage = {
+                role: "assistant",
+                content: "",
+                bubbles: [],
+                progress: 0,
+                timestamp: Date.now(),
+            };
+            setMessages(prev => {
+                streamMsgIndex = prev.length;
+                return [...prev, streamingMsg];
+            });
+            setSending(false); // Show the message bubble immediately (streaming)
 
-                    // Show typing indicator during delay
-                    if (mm.delay_ms > 0) {
-                        setSending(true);
-                        await new Promise(resolve => setTimeout(resolve, mm.delay_ms));
-                    }
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-                    setSending(false);
-                    const assistantMsg: Mart1nMessage = {
-                        role: "assistant",
-                        content: mm.text,
-                        bubbles: mm.bubbles || [],
-                        progress: data.progress || 0,
-                        isComplete: i === data.multi_messages.length - 1 ? (data.is_complete || false) : false,
-                        timestamp: Date.now(),
-                    };
-                    setMessages(prev => [...prev, assistantMsg]);
+                buffer += decoder.decode(value, { stream: true });
 
-                    // Brief typing pause between messages (even without explicit delay)
-                    if (i < data.multi_messages.length - 1) {
-                        setSending(true);
-                        await new Promise(resolve => setTimeout(resolve, 600));
+                // Parse SSE events from buffer
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+                let eventType = "";
+                for (const line of lines) {
+                    if (line.startsWith("event: ")) {
+                        eventType = line.slice(7).trim();
+                    } else if (line.startsWith("data: ")) {
+                        const data = line.slice(6);
+
+                        if (eventType === "token") {
+                            // Streaming text token
+                            try {
+                                const chunk = JSON.parse(data) as string;
+                                streamedText += chunk;
+                                setMessages(prev => {
+                                    const updated = [...prev];
+                                    const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
+                                    if (updated[idx] && updated[idx].role === "assistant") {
+                                        updated[idx] = { ...updated[idx], content: streamedText };
+                                    }
+                                    return updated;
+                                });
+                            } catch { /* skip malformed token */ }
+                        } else if (eventType === "meta") {
+                            // Final metadata (bubbles, progress, etc.)
+                            try {
+                                const meta = JSON.parse(data);
+
+                                // Store bubble overrides
+                                if (meta.bubble_overrides && Object.keys(meta.bubble_overrides).length > 0) {
+                                    setBubbleOverrides(meta.bubble_overrides);
+                                } else {
+                                    setBubbleOverrides({});
+                                }
+
+                                // Check for Claude multi_messages
+                                const claudeMulti = meta.multi_messages || [];
+                                if (claudeMulti.length > 0) {
+                                    // Replace streamed message with multi_messages
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
+                                        // Replace the streaming message with multi_messages
+                                        const multiMsgs: Mart1nMessage[] = claudeMulti.map((mm: MultiMessage, i: number) => ({
+                                            role: "assistant" as const,
+                                            content: mm.text,
+                                            bubbles: (i === claudeMulti.length - 1) ? (mm.bubbles || []) : [],
+                                            progress: meta.progress || 0,
+                                            timestamp: Date.now() + i,
+                                        }));
+                                        updated.splice(idx, 1, ...multiMsgs);
+                                        return updated;
+                                    });
+                                } else {
+                                    // Update the streamed message with final bubbles/progress
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
+                                        if (updated[idx] && updated[idx].role === "assistant") {
+                                            updated[idx] = {
+                                                ...updated[idx],
+                                                content: streamedText || updated[idx].content,
+                                                bubbles: meta.bubbles || [],
+                                                progress: meta.progress || 0,
+                                                isComplete: meta.is_complete || false,
+                                            };
+                                        }
+                                        return updated;
+                                    });
+                                }
+
+                                // Handle joke messages (prepend before the main message)
+                                if (meta.joke_messages && meta.joke_messages.length > 0) {
+                                    const jokeInsert = async () => {
+                                        for (const joke of meta.joke_messages) {
+                                            setSending(true);
+                                            await new Promise(r => setTimeout(r, joke.delay_ms || 1500));
+                                            setSending(false);
+                                            setMessages(prev => {
+                                                const updated = [...prev];
+                                                const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
+                                                updated.splice(idx, 0, {
+                                                    role: "assistant",
+                                                    content: joke.text,
+                                                    bubbles: [],
+                                                    timestamp: Date.now(),
+                                                });
+                                                streamMsgIndex++;
+                                                return updated;
+                                            });
+                                        }
+                                    };
+                                    await jokeInsert();
+                                }
+
+                                setProgress(meta.progress || 0);
+                                if (meta.is_complete) setIsComplete(true);
+                            } catch { /* skip malformed meta */ }
+                        } else if (eventType === "full") {
+                            // Full response (scripted, non-Claude)
+                            try {
+                                const fullData = JSON.parse(data);
+                                setSending(false);
+
+                                if (fullData.bubble_overrides && Object.keys(fullData.bubble_overrides).length > 0) {
+                                    setBubbleOverrides(fullData.bubble_overrides);
+                                } else {
+                                    setBubbleOverrides({});
+                                }
+
+                                // Remove the streaming placeholder
+                                setMessages(prev => {
+                                    const updated = [...prev];
+                                    const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
+                                    updated.splice(idx, 1);
+                                    return updated;
+                                });
+
+                                // Process multi_messages sequentially
+                                if (fullData.multi_messages && fullData.multi_messages.length > 0) {
+                                    for (let i = 0; i < fullData.multi_messages.length; i++) {
+                                        const mm = fullData.multi_messages[i] as MultiMessage;
+                                        if (mm.delay_ms > 0) {
+                                            setSending(true);
+                                            await new Promise(r => setTimeout(r, mm.delay_ms));
+                                        }
+                                        setSending(false);
+                                        setMessages(prev => [...prev, {
+                                            role: "assistant",
+                                            content: mm.text,
+                                            bubbles: mm.bubbles || [],
+                                            progress: fullData.progress || 0,
+                                            isComplete: i === fullData.multi_messages.length - 1 ? (fullData.is_complete || false) : false,
+                                            timestamp: Date.now(),
+                                        }]);
+                                        if (i < fullData.multi_messages.length - 1) {
+                                            setSending(true);
+                                            await new Promise(r => setTimeout(r, 600));
+                                        }
+                                    }
+                                } else if (fullData.message) {
+                                    setMessages(prev => [...prev, {
+                                        role: "assistant",
+                                        content: fullData.message,
+                                        bubbles: fullData.bubbles || [],
+                                        progress: fullData.progress || 0,
+                                        isComplete: fullData.is_complete || false,
+                                        timestamp: Date.now(),
+                                    }]);
+                                }
+
+                                setProgress(fullData.progress || 0);
+                                if (fullData.is_complete) setIsComplete(true);
+                            } catch { /* skip malformed full */ }
+                        } else if (eventType === "error") {
+                            try {
+                                const err = JSON.parse(data);
+                                throw new Error(err.detail || "Chyba serveru");
+                            } catch (e) {
+                                if (e instanceof Error) throw e;
+                            }
+                        }
+                        eventType = "";
                     }
                 }
-            } else {
-                // ── Normal single message ──
-                setSending(false);
-                const assistantMsg: Mart1nMessage = {
-                    role: "assistant",
-                    content: data.message,
-                    bubbles: data.bubbles || [],
-                    progress: data.progress || 0,
-                    isComplete: data.is_complete || false,
-                    timestamp: Date.now(),
-                };
-                setMessages(prev => [...prev, assistantMsg]);
-            }
-
-            setProgress(data.progress || 0);
-
-            if (data.is_complete) {
-                setIsComplete(true);
             }
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : "Neočekávaná chyba";
