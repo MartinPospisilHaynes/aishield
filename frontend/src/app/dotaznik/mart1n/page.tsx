@@ -81,15 +81,32 @@ function renderInlineMarkdown(text: string) {
 function Mart1nAvatar({ size = 40 }: { size?: number }) {
     return (
         <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Circle background */}
-            <circle cx="24" cy="24" r="22" fill="url(#face-grad)" fillOpacity="0.15" stroke="url(#face-grad)" strokeWidth="2" />
-            {/* Eyes */}
-            <circle cx="17" cy="21" r="2.5" fill="url(#face-grad)" />
-            <circle cx="31" cy="21" r="2.5" fill="url(#face-grad)" />
-            {/* Smile */}
-            <path d="M16 30c2.5 4 13.5 4 16 0" stroke="url(#face-grad)" strokeWidth="2" strokeLinecap="round" fill="none" />
+            {/* Outer circle */}
+            <circle cx="24" cy="24" r="22" fill="url(#ai-grad)" fillOpacity="0.12" stroke="url(#ai-grad)" strokeWidth="2" />
+            {/* Brain — left hemisphere */}
+            <path d="M24 14c-2.5 0-4.5 1-5.8 2.5C17 17.8 16 19.5 16 22c0 2 .8 3.5 2 4.5.5.4.5 1 .3 1.5l-1 3c-.2.5.2 1 .7 1h6v-17z"
+                fill="url(#ai-grad)" fillOpacity="0.25" stroke="url(#ai-grad)" strokeWidth="1.5" strokeLinejoin="round" />
+            {/* Brain — right hemisphere */}
+            <path d="M24 14c2.5 0 4.5 1 5.8 2.5C31 17.8 32 19.5 32 22c0 2-.8 3.5-2 4.5-.5.4-.5 1-.3 1.5l1 3c.2.5-.2 1-.7 1h-6v-17z"
+                fill="url(#ai-grad)" fillOpacity="0.25" stroke="url(#ai-grad)" strokeWidth="1.5" strokeLinejoin="round" />
+            {/* Neural connections — left */}
+            <path d="M19 20h5M18.5 24h5.5" stroke="url(#ai-grad)" strokeWidth="1.2" strokeLinecap="round" />
+            {/* Neural connections — right */}
+            <path d="M24 20h5M24 24h5.5" stroke="url(#ai-grad)" strokeWidth="1.2" strokeLinecap="round" />
+            {/* Center line */}
+            <line x1="24" y1="14" x2="24" y2="32" stroke="url(#ai-grad)" strokeWidth="1" strokeDasharray="2 2" />
+            {/* Neural nodes */}
+            <circle cx="19" cy="20" r="1.5" fill="url(#ai-grad)" />
+            <circle cx="29" cy="20" r="1.5" fill="url(#ai-grad)" />
+            <circle cx="18.5" cy="24" r="1.5" fill="url(#ai-grad)" />
+            <circle cx="29.5" cy="24" r="1.5" fill="url(#ai-grad)" />
+            {/* Sparkle accents */}
+            <circle cx="12" cy="16" r="1" fill="url(#ai-grad)" fillOpacity="0.6" />
+            <circle cx="36" cy="16" r="1" fill="url(#ai-grad)" fillOpacity="0.6" />
+            <circle cx="10" cy="28" r="0.8" fill="url(#ai-grad)" fillOpacity="0.4" />
+            <circle cx="38" cy="28" r="0.8" fill="url(#ai-grad)" fillOpacity="0.4" />
             <defs>
-                <linearGradient id="face-grad" x1="2" y1="2" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+                <linearGradient id="ai-grad" x1="2" y1="2" x2="46" y2="46" gradientUnits="userSpaceOnUse">
                     <stop stopColor="#e879f9" />
                     <stop offset="0.5" stopColor="#a855f7" />
                     <stop offset="1" stopColor="#22d3ee" />
