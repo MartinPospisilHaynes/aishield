@@ -731,7 +731,7 @@ function Mart1nPageInner() {
                                 value={input}
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
-                                placeholder={isComplete ? "Analýza je dokončena" : "Napište odpověď..."}
+                                placeholder={isComplete ? "Analýza je dokončena" : "Nevidíte správnou odpověď? Napište nám ji."}
                                 disabled={sending || isComplete || initLoading}
                                 rows={1}
                                 className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
