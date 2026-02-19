@@ -3,8 +3,11 @@ AIshield.cz — Supabase klient
 Singleton pro připojení k databázi.
 """
 
+import logging
 from supabase import create_client, Client
 from backend.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 _supabase_client: Client | None = None
 
@@ -20,8 +23,13 @@ def get_supabase() -> Client:
         settings = get_settings()
         # service_role key obchází RLS — standardní pro backend
         key = settings.supabase_service_role_key or settings.supabase_anon_key
-        _supabase_client = create_client(
-            settings.supabase_url,
-            key,
-        )
+        try:
+            _supabase_client = create_client(
+                settings.supabase_url,
+                key,
+            )
+            logger.info("Supabase klient inicializován (URL=%s)", settings.supabase_url[:40])
+        except Exception as e:
+            logger.critical("Nelze inicializovat Supabase klienta: %s", e, exc_info=True)
+            raise
     return _supabase_client

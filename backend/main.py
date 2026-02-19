@@ -17,26 +17,14 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # ══════════════════════════════════════════════════════════════════════
 # CENTRÁLNÍ KONFIGURACE LOGOVÁNÍ
+# Strukturované JSON logy + request_id propagace přes contextvars.
 # Každý modul používá logging.getLogger(__name__)
-# Tady nastavujeme formát, úroveň a handler PRO CELOU APLIKACI.
 # ══════════════════════════════════════════════════════════════════════
-_LOG_FORMAT = "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
-_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+from backend.logging_config import setup_logging, set_request_id
 
-logging.basicConfig(
-    level=logging.INFO,
-    format=_LOG_FORMAT,
-    datefmt=_LOG_DATE_FORMAT,
-    stream=sys.stdout,
-    force=True,  # přepíše i dřívější basicConfig z jiných modulů
-)
-
-# Ztišit příliš upovídané knihovny
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("hpack").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logging.getLogger("multipart").setLevel(logging.WARNING)
+# JSON format v produkci, plain text pro lokální vývoj
+_is_debug = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes")
+setup_logging(json_format=not _is_debug)
 
 logger = logging.getLogger("aishield.main")
 
@@ -112,9 +100,14 @@ app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"]
 # ── Request logging middleware ──
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
-    """Loguje každý HTTP požadavek: metodu, cestu, status a dobu trvání."""
+    """Loguje každý HTTP požadavek: metodu, cestu, status a dobu trvání.
+    
+    Nastaví request_id do contextvars → automaticky se propaguje
+    do všech logů vygenerovaných v rámci tohoto requestu.
+    """
     request_id = str(uuid.uuid4())[:8]
     request.state.request_id = request_id
+    set_request_id(request_id)          # propagace do structured logů
     start = time.time()
     method = request.method
     path = request.url.path
@@ -123,14 +116,22 @@ async def request_logging_middleware(request: Request, call_next):
     skip_log = path in ("/api/health", "/api/health/")
 
     if not skip_log:
-        logger.info(f"[{request_id}] → {method} {path}")
+        logger.info("request_start", extra={"url": f"{method} {path}"})
 
     response = await call_next(request)
 
     elapsed_ms = (time.time() - start) * 1000
     if not skip_log:
         level = logging.WARNING if response.status_code >= 400 else logging.INFO
-        logger.log(level, f"[{request_id}] ← {method} {path} → {response.status_code} ({elapsed_ms:.0f}ms)")
+        logger.log(
+            level,
+            "request_end",
+            extra={
+                "url": f"{method} {path}",
+                "status_code": response.status_code,
+                "elapsed_ms": round(elapsed_ms, 1),
+            },
+        )
 
     response.headers["X-Request-ID"] = request_id
     return response

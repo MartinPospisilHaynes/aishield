@@ -4,6 +4,9 @@ Detects scan infrastructure failures and sends immediate alert emails
 to admin. Monitors: Claude API errors, Playwright crashes, rate limits,
 token depletion, and general pipeline failures.
 
+Persistence: lifetime_counts and last_alert timestamps are persisted
+to Supabase table `engine_health_counters` so they survive restarts.
+
 Usage:
     from backend.monitoring.engine_health import engine_monitor
     await engine_monitor.report_error("anthropic_auth", scan_id, url, error_details)
@@ -147,7 +150,12 @@ class EngineHealthMonitor:
     """
     Singleton monitor that tracks scan engine errors and sends
     immediate admin alerts with cooldown to prevent spam.
+    
+    Persistent data (lifetime_counts, last_alert) is saved to Supabase
+    table `engine_health_counters` and loaded on first use.
     """
+
+    TABLE = "engine_health_counters"
 
     def __init__(self):
         # Track last alert time per error type (cooldown)
@@ -156,6 +164,51 @@ class EngineHealthMonitor:
         self._error_counts: dict[str, list[datetime]] = defaultdict(list)
         # Total lifetime counters
         self._lifetime_counts: dict[str, int] = defaultdict(int)
+        # Whether we've loaded persistent state yet
+        self._loaded = False
+
+    # ── Persistence ──────────────────────────────────────────────────
+
+    def _ensure_loaded(self):
+        """Load persisted counters from Supabase (once)."""
+        if self._loaded:
+            return
+        self._loaded = True
+        try:
+            from backend.database import get_supabase
+            sb = get_supabase()
+            rows = sb.table(self.TABLE).select("*").execute()
+            for row in (rows.data or []):
+                etype = row["error_type"]
+                self._lifetime_counts[etype] = row.get("lifetime_count", 0)
+                last_alert_str = row.get("last_alert_at")
+                if last_alert_str:
+                    self._last_alert[etype] = datetime.fromisoformat(
+                        last_alert_str.replace("Z", "+00:00")
+                    )
+            logger.info(
+                "Engine health counters loaded from DB (%d error types)",
+                len(rows.data or []),
+            )
+        except Exception as e:
+            logger.warning("Cannot load engine health counters: %s", e)
+
+    def _persist(self, error_type: str):
+        """Upsert one error type's counters to Supabase."""
+        try:
+            from backend.database import get_supabase
+            sb = get_supabase()
+            last = self._last_alert.get(error_type)
+            sb.table(self.TABLE).upsert(
+                {
+                    "error_type": error_type,
+                    "lifetime_count": self._lifetime_counts.get(error_type, 0),
+                    "last_alert_at": last.isoformat() if last else None,
+                },
+                on_conflict="error_type",
+            ).execute()
+        except Exception as e:
+            logger.warning("Cannot persist engine health counter '%s': %s", error_type, e)
 
     def _is_on_cooldown(self, error_type: str) -> bool:
         """Check if this error type was alerted recently."""
@@ -173,6 +226,7 @@ class EngineHealthMonitor:
 
     def get_health_status(self) -> dict:
         """Return current health metrics (for admin API endpoint)."""
+        self._ensure_loaded()
         now = datetime.now(timezone.utc)
         status = {}
         for err_type in ERROR_TYPES:
@@ -205,11 +259,15 @@ class EngineHealthMonitor:
             details: Error message / traceback excerpt
         """
         now = datetime.now(timezone.utc)
+        self._ensure_loaded()
 
         # Track event
         self._error_counts[error_type].append(now)
         self._lifetime_counts[error_type] += 1
         self._prune_old_events(error_type)
+
+        # Persist updated lifetime count to Supabase
+        self._persist(error_type)
 
         error_info = ERROR_TYPES.get(error_type, ERROR_TYPES["pipeline_error"])
         count_1h = len(self._error_counts[error_type])
@@ -229,6 +287,7 @@ class EngineHealthMonitor:
 
         # Send alert
         self._last_alert[error_type] = now
+        self._persist(error_type)          # persist alert timestamp
 
         try:
             html = self._build_alert_email(error_type, error_info, scan_id, url, details, count_1h)
@@ -373,7 +432,7 @@ class EngineHealthMonitor:
                 </td>
                 <td style="text-align:center;padding:14px;background:#1a2340;border-radius:10px;border:1px solid #1e293b;">
                     <div style="font-size:24px;font-weight:700;color:#f1f5f9;">{self._lifetime_counts.get(error_type, 0)}</div>
-                    <div style="font-size:11px;color:#64748b;margin-top:2px;">Celkem (od restartu)</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:2px;">Celkem</div>
                 </td>
             </tr>
         </table>

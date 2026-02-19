@@ -27,7 +27,6 @@ from backend.outbound.email_engine import send_email
 from backend.outbound.payment_emails import build_payment_received_email
 
 logger = logging.getLogger("bank_checker")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 
 # FIO Banka API base URL
 FIO_API_BASE = "https://fioapi.fio.cz/v1/rest"
