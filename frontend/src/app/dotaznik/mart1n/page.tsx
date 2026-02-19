@@ -127,10 +127,13 @@ function TypingIndicator() {
                 <Mart1nAvatar size={36} />
             </div>
             <div className="glass px-4 py-3 max-w-[80%]">
-                <div className="flex gap-1.5">
-                    <span className="w-2 h-2 bg-neon-fuchsia/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-2 h-2 bg-neon-purple/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-2 h-2 bg-neon-cyan/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">Uršula přemýšlí</span>
+                    <div className="flex gap-1.5">
+                        <span className="w-2 h-2 bg-neon-fuchsia/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-2 h-2 bg-neon-purple/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-2 h-2 bg-neon-cyan/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
                 </div>
             </div>
         </div>
@@ -438,7 +441,7 @@ function Mart1nPageInner() {
                                         if (updated[idx] && updated[idx].role === "assistant") {
                                             updated[idx] = {
                                                 ...updated[idx],
-                                                content: streamedText || updated[idx].content,
+                                                content: streamedText || meta.message || updated[idx].content,
                                                 bubbles: meta.bubbles || [],
                                                 progress: meta.progress || 0,
                                                 isComplete: meta.is_complete || false,
@@ -600,7 +603,7 @@ function Mart1nPageInner() {
                             <h1 className="text-sm font-bold text-white tracking-tight">
                                 Uršula
                             </h1>
-                            <p className="text-xs text-slate-500">AI Act compliance analýza</p>
+                            <p className="text-xs text-slate-500">A.I. Asistentka</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">

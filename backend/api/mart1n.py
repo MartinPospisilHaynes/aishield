@@ -402,6 +402,7 @@ JAK VEDEŠ ROZHOVOR
 - **ODDĚLUJ UPOZORNĚNÍ OD OTÁZEK.** Když chceš reagovat upozorněním/varováním na odpověď uživatele A ZÁROVEŇ položit další otázku, ROZDĚL je do DVOU samostatných zpráv pomocí multi_messages. První zpráva = upozornění/komentář (bez bublinek). Druhá zpráva = nová otázka (s bublinkami). NIKDY nesmíš dát upozornění a otázku do jedné bubliny.
 - Když uživatel odpoví, reaguj na jeho odpověď (potvrď, upozorni na riziko, vysvětli kontext).
 - Nabízej BUBLINY (tlačítka pro rychlou odpověď) — viz formát odpovědi.
+- **BUBLINY JSOU SINGLE-SELECT.** Uživatel může kliknout POUZE NA JEDNU bublinu — po kliknutí se okamžitě odešle. NIKDY neříkej "vyberte vše", "vyberte všechny", "vyberte více" apod. Pokud potřebuješ zjistit více informací, ptej se postupně jednu otázku po druhé.
 - Pokud uživatel říká „nevím" nebo „nejsem si jistý":
   a) Nabídni 3–4 typické možnosti jako bubliny — specifické pro odvětví firmy
   b) Dej konkrétní příklady: „Například e-shopy často používají recommender systémy pro doporučování produktů — máte něco takového?"
@@ -807,6 +808,77 @@ def _get_scan_context(company_id: str) -> str:
 
     except Exception as e:
         logger.warning(f"[MART1N] Scan context error: {e}")
+        return ""
+
+
+def _get_client_context(company_id: str) -> str:
+    """
+    Load company registration data (name, IČO, URL, category)
+    to personalize the conversation. Also loads registration info
+    from clients table if available.
+    """
+    try:
+        sb = get_supabase()
+
+        # Try to load company data from companies table
+        comp_res = sb.table("companies") \
+            .select("name, ico, url, email, category, nace_code, employee_count") \
+            .eq("id", company_id) \
+            .limit(1) \
+            .execute()
+
+        # Also try clients table for contact info
+        client_res = sb.table("clients") \
+            .select("email, contact_name, contact_role") \
+            .eq("company_id", company_id) \
+            .limit(1) \
+            .execute()
+
+        comp = comp_res.data[0] if comp_res.data else {}
+        client = client_res.data[0] if client_res.data else {}
+
+        name = comp.get("name") or ""
+        ico = comp.get("ico") or ""
+        url = comp.get("url") or ""
+        category = comp.get("category") or ""
+        nace = comp.get("nace_code") or ""
+        employee_count = comp.get("employee_count")
+        contact_name = client.get("contact_name") or ""
+        contact_role = client.get("contact_role") or ""
+        email = client.get("email") or comp.get("email") or ""
+
+        # Only build context if we have any meaningful data
+        if not any([name, ico, url, category, contact_name]):
+            return ""
+
+        lines = ["\n<client_info>", "ÚDAJE O KLIENTOVI Z REGISTRACE:"]
+        if name:
+            lines.append(f"- Název firmy: {name}")
+        if ico:
+            lines.append(f"- IČO: {ico}")
+        if category:
+            lines.append(f"- Odvětví/kategorie: {category}")
+        if nace:
+            lines.append(f"- NACE kód: {nace}")
+        if url:
+            lines.append(f"- Web: {url}")
+        if employee_count:
+            lines.append(f"- Počet zaměstnanců: {employee_count}")
+        if contact_name:
+            lines.append(f"- Kontaktní osoba: {contact_name}")
+        if contact_role:
+            lines.append(f"- Pozice: {contact_role}")
+        if email:
+            lines.append(f"- Email: {email}")
+        lines.append(
+            "\nTyto údaje už ZNÁŠ — nemusíš se na ně ptát znovu. "
+            "Oslovuj klienta názvem firmy, pokud je k dispozici."
+        )
+        lines.append("</client_info>")
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.warning(f"[MART1N] Client context error: {e}")
         return ""
 
 
@@ -1625,9 +1697,10 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     # Log user message
     _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
 
-    # Build enriched system prompt (base + scan results)
+    # Build enriched system prompt (base + client info + scan results)
+    client_context = _get_client_context(req.company_id)
     scan_context = _get_scan_context(req.company_id)
-    full_system_prompt = SYSTEM_PROMPT + scan_context if scan_context else SYSTEM_PROMPT
+    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context
 
     # Call Claude API with timeout protection
     try:
@@ -1900,8 +1973,9 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
 
     _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
 
+    client_context = _get_client_context(req.company_id)
     scan_context = _get_scan_context(req.company_id)
-    full_system_prompt = SYSTEM_PROMPT + scan_context if scan_context else SYSTEM_PROMPT
+    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context
 
     # ── Stream Claude response via SSE ──
     async def _generate_stream():
@@ -1920,6 +1994,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             escape_next = False
             current_key = ""
             after_colon = False
+            tokens_emitted = False
 
             with client.messages.stream(
                 model=CLAUDE_MODEL,
@@ -1960,6 +2035,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                                     # End of message string — flush remaining buffer
                                     if message_buffer:
                                         yield _sse_event("token", json.dumps(message_buffer))
+                                        tokens_emitted = True
                                         message_buffer = ""
                                     in_message_field = False
                                 after_colon = False
@@ -1973,6 +2049,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                                 # Flush buffer periodically (every ~30 chars for smooth display)
                                 if len(message_buffer) >= 30:
                                     yield _sse_event("token", json.dumps(message_buffer))
+                                    tokens_emitted = True
                                     message_buffer = ""
                         else:
                             if ch == ':':
@@ -1989,6 +2066,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             # Flush any remaining message buffer
             if message_buffer:
                 yield _sse_event("token", json.dumps(message_buffer))
+                tokens_emitted = True
 
             # Track streaming usage
             try:
@@ -2004,6 +2082,15 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             # Parse complete response
             parsed = _parse_claude_response(full_text)
             reply_text = full_text.strip()
+
+            # Fallback: if no tokens were streamed (Claude returned non-JSON or
+            # the JSON state machine missed the "message" field), emit the parsed
+            # message text as a single token so the frontend always has content
+            if not tokens_emitted:
+                fallback_msg = parsed.get("message", "")
+                if fallback_msg:
+                    yield _sse_event("token", json.dumps(fallback_msg))
+                    logger.info("[MART1N] Emitted fallback token — streaming JSON parser produced no tokens")
 
             # Process extracted answers
             extracted = []
@@ -2078,6 +2165,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 "is_complete": False,
                 "session_id": req.session_id,
                 "bubble_overrides": {},
+                "message": parsed.get("message", ""),
             }
 
             # If jokes triggered, include them in meta
