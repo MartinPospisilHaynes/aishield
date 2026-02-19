@@ -1056,3 +1056,48 @@ export async function previewScanReport(scanId: string): Promise<void> {
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank", "noopener");
 }
+
+// ── Chat Feedback ──
+
+export interface ChatFeedbackEntry {
+    id: string;
+    company_id: string;
+    session_id: string;
+    feedback_text: string;
+    feedback_sentiment: string;
+    ai_summary: string;
+    ai_sentiment: string;
+    ai_humor_reception: string;
+    ai_key_moments: string[];
+    ai_frustrations: string[];
+    questions_answered: number;
+    completion_status: string;
+    company_name: string;
+    company_email: string;
+    created_at: string;
+}
+
+export interface ChatFeedbackStats {
+    total: number;
+    sentiment: Record<string, number>;
+    humor: Record<string, number>;
+    completion: Record<string, number>;
+    avg_questions: number;
+}
+
+export async function getChatFeedback(limit = 50, sentiment?: string): Promise<{
+    feedback: ChatFeedbackEntry[];
+    total: number;
+}> {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (sentiment) params.set("sentiment", sentiment);
+    const res = await adminFetch(`${API_URL}/api/admin/chat-feedback?${params}`);
+    if (!res.ok) throw new Error("Chyba při načítání zpětné vazby");
+    return res.json();
+}
+
+export async function getChatFeedbackStats(): Promise<ChatFeedbackStats> {
+    const res = await adminFetch(`${API_URL}/api/admin/chat-feedback/stats`);
+    if (!res.ok) throw new Error("Chyba při načítání statistik");
+    return res.json();
+}

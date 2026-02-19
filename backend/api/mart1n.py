@@ -155,6 +155,11 @@ MÁŠ SMYSL PRO HUMOR:
 - Vtipné poznámky jsou přirozenou součástí konverzace — nenarušují profesionalitu.
 - Hlavní vtipné interlude (Q5, Q10, závěr) jsou řízeny automaticky — TY se o ně nestarej.
 - Ale můžeš přidat drobné vtipné poznámky vlastní (max 1-2 za celou konverzaci).
+- DETEKCE VÁŽNÉHO KLIENTA: Pokud z tónu konverzace vyplývá, že klient není na fórky
+  (formální styl, krátké odpovědi, napomínání, žádost o profesionální přístup),
+  OKAMŽITĚ přestaň vtipkovat a přejdi do čistě profesionálního módu.
+  V takovém případě nastav v JSON odpovědi: "humor_off": true
+  Tím se deaktivují i automatické vtipy (Q5, Q10, závěr).
 
 ═══════════════════════════════════════════════════════════════
 TVÉ HLAVNÍ ÚKOLY
@@ -425,7 +430,8 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
   ],
   "progress": 25,
   "current_section": "internal_ai",
-  "is_complete": false
+  "is_complete": false,
+  "humor_off": false
 }}
 
 PRAVIDLA PRO JSON:
@@ -440,6 +446,7 @@ PRAVIDLA PRO JSON:
 - "progress": Číslo 0–100, jak daleko jste v konverzaci (odhad).
 - "current_section": ID aktuální sekce dotazníku, o které mluvíte.
 - "is_complete": true pouze když jste probrali všechny relevantní sekce a uživatel potvrdil.
+- "humor_off": nastav na true pokud klient jasně dává najevo, že nechce vtipy (formální, krátké odpovědi, napomínání). Jednou nastaveno na true, zůstane true.
 </format_odpovedi>
 
 ═══════════════════════════════════════════════════════════════
@@ -1041,7 +1048,8 @@ def _build_intro_phase_0(session_id: str) -> Mart1nResponse:
             ),
             MultiMessage(
                 text=(
-                    "A druhá věc — nejsem moc příznivcem nudného vyplňování dotazníků, "
+                    "A druhá věc — nejsem moc příznivcem nudného vyplňování dotazníků "
+                    "a tvůrci z Desperados design se při mém programování celkem vyblbli... "
                     "takže tam občas hodím nějaký ten fórek. Souhlasíte?"
                 ),
                 delay_ms=3000,
@@ -1143,12 +1151,58 @@ def _build_closing_response(company_id: str, session_id: str) -> Mart1nResponse:
             text="Mohu Vám ještě s něčím poradit, či se chcete na něco zeptat?",
             delay_ms=2000,
         ),
+        MultiMessage(
+            text=(
+                "A mimochodem — jak se Vám líbil můj přístup? "
+                "Lepší než ti ostatní chat-bot suchaři, no ne?"
+            ),
+            delay_ms=3000,
+            bubbles=["Rozhodně lepší!", "Bylo to fajn", "Nic moc", "Raději klasický dotazník"],
+        ),
     ]
     return Mart1nResponse(
         message="",
         multi_messages=msgs,
         progress=100,
-        is_complete=False,  # Allow follow-up questions
+        is_complete=False,  # Allow follow-up questions + feedback
+        session_id=session_id,
+    )
+
+
+def _build_closing_response_serious(company_id: str, session_id: str) -> Mart1nResponse:
+    """Closing for serious clients (humor_off) — no jokes, professional feedback question."""
+    pptx = " + powerpointovou prezentaci pro zaměstnance" if _has_employees(company_id) else ""
+    msgs = [
+        MultiMessage(
+            text=(
+                "Máme od Vás vše potřebné. Vaše odpovědi předám kolegovi, "
+                "který se Vám v případě jakýchkoliv nesrovnalostí ozve. "
+                "Zkompletujeme data z monitoringu a do 7 dní od obdržení platby Vám na e-mail "
+                f"zašleme veškerou dokumentaci{pptx}. Do 14 dnů obdržíte vytištěné dokumenty "
+                "v profesionální vazbě."
+            ),
+            delay_ms=0,
+        ),
+        MultiMessage(
+            text=(
+                "Pokud si zvolíte balíček **PRO** nebo **ENTERPRISE**, bude Vás kontaktovat "
+                "náš technik ohledně implementace."
+            ),
+            delay_ms=0,
+        ),
+        MultiMessage(
+            text=(
+                "Jak byste ohodnotil/a naši konverzaci? Vaše zpětná vazba je pro nás velmi cenná."
+            ),
+            delay_ms=2000,
+            bubbles=["Velmi dobré", "Dobré", "Průměrné", "Mohlo být lepší"],
+        ),
+    ]
+    return Mart1nResponse(
+        message="",
+        multi_messages=msgs,
+        progress=100,
+        is_complete=False,
         session_id=session_id,
     )
 
@@ -1184,6 +1238,295 @@ def _build_fatal_error() -> list[MultiMessage]:
             delay_ms=1000,
         ),
     ]
+
+
+# Feedback question markers (used to detect if user is responding to it)
+_FEEDBACK_MARKER = "Lepší než ti ostatní chat-bot suchaři"
+_FEEDBACK_MARKER_SERIOUS = "Vaše zpětná vazba je pro nás velmi cenná"
+
+
+def _is_post_feedback_question(db_history: list[dict]) -> bool:
+    """Check if the last assistant message contains the feedback question."""
+    for msg in reversed(db_history):
+        if msg["role"] == "assistant":
+            return _FEEDBACK_MARKER in msg["content"] or _FEEDBACK_MARKER_SERIOUS in msg["content"]
+    return False
+
+
+def _detect_feedback_sentiment(user_msg: str) -> str:
+    """
+    Detect sentiment of user's feedback response.
+    Returns: 'positive', 'negative', or 'neutral'.
+    """
+    msg = user_msg.strip().lower()
+
+    positive_words = [
+        "lepší", "super", "skvěl", "výborn", "paráda", "fajn", "dobr",
+        "líbil", "zábav", "rozhodně", "perfekt", "úžasn", "bomba", "hustý",
+        "haha", "lol", "funny", "great", "good", "nice", "cool", "best",
+        "bavil", "pobavil", "smích", "vtipn", "fantast", "krásn",
+        "ano", "jo", "jasně", "sure", "yes", "definitely", "absolutely",
+    ]
+    negative_words = [
+        "nic moc", "špatn", "hrozn", "otřesn", "raději", "klasick",
+        "dotazník", "profesionáln", "vážn", "bez vtip", "nevtipn",
+        "otravuj", "zbytečn", "nesmysl", "trapn", "hloup", "blb",
+        "no", "ne ", "nee", "nikoliv", "horrible", "bad", "worse",
+        "nepříjemn", "nudné", "nuda", "ztráta času",
+    ]
+
+    pos_count = sum(1 for w in positive_words if w in msg)
+    neg_count = sum(1 for w in negative_words if w in msg)
+
+    if pos_count > neg_count:
+        return "positive"
+    elif neg_count > pos_count:
+        return "negative"
+    # Default: short msgs with positive bubbles are positive
+    if msg in ["rozhodně lepší!", "bylo to fajn"]:
+        return "positive"
+    if msg in ["nic moc", "raději klasický dotazník"]:
+        return "negative"
+    return "neutral"
+
+
+def _build_feedback_response(user_msg: str, session_id: str) -> Mart1nResponse:
+    """Respond to user's feedback about the chat experience."""
+    sentiment = _detect_feedback_sentiment(user_msg)
+    msgs: list[MultiMessage] = []
+
+    if sentiment == "positive":
+        msgs.append(MultiMessage(
+            text="To mě nesmírně těší! Předám to programátorovi — určitě ho to potěší, až mu to vyřídím.",
+            delay_ms=0,
+        ))
+    elif sentiment == "negative":
+        msgs.append(MultiMessage(
+            text=(
+                "Omlouvám se, to mě mrzí. Na Vaši zpětnou vazbu určitě upozorním programátora. "
+                "A pokud se nám nahromadí vícero stejných názorů, tak zklapneme podpatky, "
+                "zařadíme se do řady mezi ostatní, budeme se chovat jako zbytek a nebudeme vyčnívat."
+            ),
+            delay_ms=0,
+        ))
+    else:
+        msgs.append(MultiMessage(
+            text="Děkuji za zpětnou vazbu! Každý názor se počítá a předám ho dál.",
+            delay_ms=0,
+        ))
+
+    msgs.append(MultiMessage(
+        text="Pokud budete potřebovat cokoliv dalšího, jsem tu pro Vás. Přeji hezký den!",
+        delay_ms=2000,
+    ))
+
+    return Mart1nResponse(
+        message="",
+        multi_messages=msgs,
+        progress=100,
+        is_complete=True,  # Now really complete
+        session_id=session_id,
+    )
+
+
+def _detect_humor_off(db_history: list[dict]) -> bool:
+    """
+    Check if Claude has flagged this client as not enjoying humor.
+    Looks for 'humor_off': true in recent Claude JSON responses.
+    """
+    for msg in reversed(db_history):
+        if msg["role"] == "assistant":
+            try:
+                parsed = json.loads(msg["content"])
+                if parsed.get("humor_off"):
+                    return True
+            except (json.JSONDecodeError, AttributeError):
+                # Non-JSON assistant messages (intro/jokes) — check for flags in content
+                if '"humor_off": true' in msg["content"] or '"humor_off":true' in msg["content"]:
+                    return True
+    return False
+
+
+async def _summarize_and_save_feedback(
+    company_id: str,
+    session_id: str,
+    feedback_text: str,
+    sentiment: str,
+):
+    """
+    Summarize the full conversation using Claude, detect overall sentiment,
+    save to chat_feedback table, and send notification email.
+    Runs as fire-and-forget background task.
+    """
+    try:
+        sb = get_supabase()
+        settings = get_settings()
+
+        # Load full conversation history
+        _, full_history, _ = _load_session_history(company_id)
+        if not full_history:
+            logger.warning(f"[FEEDBACK] No history found for {company_id[:8]}...")
+            return
+
+        # Get company info
+        client_res = sb.table("clients").select("id, email, company_name, ico").eq(
+            "company_id", company_id
+        ).limit(1).execute()
+        company_name = ""
+        company_email = ""
+        company_ico = ""
+        if client_res.data:
+            company_name = client_res.data[0].get("company_name") or ""
+            company_email = client_res.data[0].get("email") or ""
+            company_ico = client_res.data[0].get("ico") or ""
+
+        # Build conversation text for Claude summary
+        conv_lines = []
+        for msg in full_history:
+            role_label = "URŠULA" if msg["role"] == "assistant" else "KLIENT"
+            conv_lines.append(f"{role_label}: {msg['content'][:500]}")
+        conversation_text = "\n".join(conv_lines[-40:])  # Last 40 messages
+
+        # Call Claude for summary
+        summary_text = ""
+        overall_sentiment = sentiment  # Default to feedback sentiment
+        try:
+            client = anthropic.Anthropic(
+                api_key=settings.anthropic_api_key,
+                timeout=30,
+            )
+            response = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1024,
+                temperature=0.2,
+                system=(
+                    "Jsi analytik zákaznické zkušenosti. Zanalyzuj konverzaci mezi chatbotem Uršulou "
+                    "a klientem. Vrať JSON s těmito poli:\n"
+                    '{"summary": "Stručné shrnutí konverzace (max 3 věty česky)", '
+                    '"sentiment": "positive|negative|neutral|mixed", '
+                    '"humor_reception": "enjoyed|tolerated|disliked|unknown", '
+                    '"key_moments": ["moment1", "moment2"], '
+                    '"client_frustrations": ["frustr1"] nebo [], '
+                    '"questions_answered": číslo, '
+                    '"completion": "completed|abandoned|partial"}'
+                ),
+                messages=[{"role": "user", "content": conversation_text}],
+            )
+            summary_raw = response.content[0].text.strip()
+            try:
+                summary_data = json.loads(summary_raw)
+                summary_text = summary_data.get("summary", summary_raw)
+                overall_sentiment = summary_data.get("sentiment", sentiment)
+            except json.JSONDecodeError:
+                # Try extracting JSON
+                brace_start = summary_raw.find('{')
+                brace_end = summary_raw.rfind('}')
+                if brace_start != -1 and brace_end != -1:
+                    try:
+                        summary_data = json.loads(summary_raw[brace_start:brace_end + 1])
+                        summary_text = summary_data.get("summary", summary_raw)
+                        overall_sentiment = summary_data.get("sentiment", sentiment)
+                    except json.JSONDecodeError:
+                        summary_text = summary_raw
+                        summary_data = {}
+                else:
+                    summary_text = summary_raw
+                    summary_data = {}
+        except Exception as e:
+            logger.error(f"[FEEDBACK] Claude summary error: {e}")
+            summary_data = {}
+            summary_text = f"Automatické shrnutí se nepodařilo: {e}"
+
+        # Save to chat_feedback table
+        feedback_row = {
+            "company_id": company_id,
+            "session_id": session_id,
+            "feedback_text": feedback_text[:2000],
+            "feedback_sentiment": sentiment,
+            "ai_summary": summary_text[:5000],
+            "ai_sentiment": overall_sentiment,
+            "ai_humor_reception": summary_data.get("humor_reception", "unknown") if isinstance(summary_data, dict) else "unknown",
+            "ai_key_moments": summary_data.get("key_moments", []) if isinstance(summary_data, dict) else [],
+            "ai_frustrations": summary_data.get("client_frustrations", []) if isinstance(summary_data, dict) else [],
+            "questions_answered": summary_data.get("questions_answered", 0) if isinstance(summary_data, dict) else 0,
+            "completion_status": summary_data.get("completion", "unknown") if isinstance(summary_data, dict) else "unknown",
+            "company_name": company_name,
+            "company_email": company_email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        try:
+            sb.table("chat_feedback").insert(feedback_row).execute()
+            logger.info(f"[FEEDBACK] Saved feedback for {company_id[:8]}...: {sentiment}")
+        except Exception as e:
+            logger.error(f"[FEEDBACK] DB save error: {e}")
+
+        # Send notification email to admin
+        try:
+            sentiment_emoji = {"positive": "😊", "negative": "😤", "neutral": "😐", "mixed": "🤔"}.get(overall_sentiment, "❓")
+            humor_label = {
+                "enjoyed": "Bavily ho vtipy",
+                "tolerated": "Toleroval vtipy",
+                "disliked": "Nelíbily se mu vtipy",
+                "unknown": "Neznámé",
+            }.get(summary_data.get("humor_reception", "unknown") if isinstance(summary_data, dict) else "unknown", "Neznámé")
+
+            moments_html = ""
+            if isinstance(summary_data, dict) and summary_data.get("key_moments"):
+                moments_html = "<ul>" + "".join(f"<li>{m}</li>" for m in summary_data["key_moments"][:5]) + "</ul>"
+
+            frustrations_html = ""
+            if isinstance(summary_data, dict) and summary_data.get("client_frustrations"):
+                frustrations_html = (
+                    "<h3 style='color:#e74c3c'>⚠️ Frustrace klienta:</h3><ul>"
+                    + "".join(f"<li>{f}</li>" for f in summary_data["client_frustrations"][:5])
+                    + "</ul>"
+                )
+
+            html_body = f"""
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                <h2 style="color:#06b6d4">🛡️ AIshield — Zpětná vazba z chatu</h2>
+                <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">Firma</td>
+                        <td style="padding:8px;border:1px solid #333;"><strong>{company_name or company_id[:12]}</strong></td></tr>
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">Email</td>
+                        <td style="padding:8px;border:1px solid #333;">{company_email or '—'}</td></tr>
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">IČO</td>
+                        <td style="padding:8px;border:1px solid #333;">{company_ico or '—'}</td></tr>
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">Nálada</td>
+                        <td style="padding:8px;border:1px solid #333;">{sentiment_emoji} {overall_sentiment}</td></tr>
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">Humor</td>
+                        <td style="padding:8px;border:1px solid #333;">{humor_label}</td></tr>
+                    <tr><td style="padding:8px;border:1px solid #333;color:#888;">Otázek zodpovězeno</td>
+                        <td style="padding:8px;border:1px solid #333;">{summary_data.get('questions_answered', '?') if isinstance(summary_data, dict) else '?'}</td></tr>
+                </table>
+                <h3>📝 AI Shrnutí:</h3>
+                <p style="background:#1e293b;padding:12px;border-radius:8px;color:#e2e8f0;">{summary_text}</p>
+                <h3>💬 Zpětná vazba klienta:</h3>
+                <p style="background:#1e293b;padding:12px;border-radius:8px;color:#e2e8f0;">„{feedback_text}"</p>
+                {moments_html}
+                {frustrations_html}
+                <hr style="border-color:#333;margin:20px 0;">
+                <p style="font-size:12px;color:#666;">
+                    Session: {session_id[:12]}... | Company: {company_id[:12]}...
+                    <br>Vygenerováno automaticky chatbotem Uršula.
+                </p>
+            </div>
+            """
+
+            from backend.outbound.email_engine import send_email
+            await send_email(
+                to="info@aishield.cz",
+                subject=f"{sentiment_emoji} Chat feedback: {company_name or company_id[:12]} — {overall_sentiment}",
+                html=html_body,
+                from_email="podpora@aishield.cz",
+                from_name="Uršula — Zpětná vazba",
+            )
+            logger.info(f"[FEEDBACK] Email sent for {company_id[:8]}...")
+        except Exception as e:
+            logger.error(f"[FEEDBACK] Email send error: {e}")
+
+    except Exception as e:
+        logger.error(f"[FEEDBACK] Summary pipeline error: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1245,6 +1588,20 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             result = _build_closing_response(req.company_id, req.session_id)
             combined = "\n\n".join(m.text for m in result.multi_messages)
             _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            return result
+
+        # ── Post feedback question → detect sentiment, respond, trigger summary ──
+        if _is_post_feedback_question(db_history):
+            _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
+            sentiment = _detect_feedback_sentiment(user_msg)
+            result = _build_feedback_response(user_msg, req.session_id)
+            combined = "\n\n".join(m.text for m in result.multi_messages)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            # Fire-and-forget: AI summary + email notification
+            import asyncio
+            asyncio.ensure_future(_summarize_and_save_feedback(
+                req.company_id, req.session_id, user_msg, sentiment,
+            ))
             return result
 
         # Append new user message
@@ -1347,9 +1704,12 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     # Count answered after saving
     answered_after = len(_get_answered_keys(req.company_id)) if extracted else answered_before
 
+    # Check if humor is disabled for this client
+    humor_off = parsed.get("humor_off", False) or _detect_humor_off(db_history if server_mode else claude_messages)
+
     # ── FATAL ERROR joke (intercepts is_complete) ──
     if parsed.get("is_complete", False):
-        logger.info(f"[MART1N] Conversation COMPLETE for company {req.company_id[:8]}... → FATAL ERROR joke")
+        logger.info(f"[MART1N] Conversation COMPLETE for company {req.company_id[:8]}...")
         # Log user + Claude's response first
         _log_mart1n_message(
             req.session_id, req.company_id, "assistant",
@@ -1357,27 +1717,38 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             extracted_answers=[ea.dict() for ea in extracted] if extracted else None,
             progress=100,
         )
-        # Build FATAL ERROR multi_messages (Claude's wrap-up + joke)
-        fatal = _build_fatal_error()
-        claude_msg = MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)
-        result = Mart1nResponse(
-            message="",
-            multi_messages=[claude_msg] + fatal,
-            extracted_answers=extracted,
-            progress=100,
-            is_complete=False,  # Wait for user response before closing
-            session_id=req.session_id,
-        )
-        combined = "\n\n".join(m.text for m in fatal)
-        _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
-        return result
+        if humor_off:
+            # Serious client → skip FATAL ERROR, go directly to closing + feedback
+            logger.info(f"[MART1N] humor_off=true → skipping FATAL ERROR joke")
+            result = _build_closing_response_serious(req.company_id, req.session_id)
+            combined = parsed.get("message", reply_text) + "\n\n" + "\n\n".join(m.text for m in result.multi_messages)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            # Prepend Claude's wrap-up
+            result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
+            return result
+        else:
+            # Build FATAL ERROR multi_messages (Claude's wrap-up + joke)
+            fatal = _build_fatal_error()
+            claude_msg = MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)
+            result = Mart1nResponse(
+                message="",
+                multi_messages=[claude_msg] + fatal,
+                extracted_answers=extracted,
+                progress=100,
+                is_complete=False,  # Wait for user response before closing
+                session_id=req.session_id,
+            )
+            combined = "\n\n".join(m.text for m in fatal)
+            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+            return result
 
-    # ── Q5 / Q10 joke triggers ──
+    # ── Q5 / Q10 joke triggers (only if humor is on) ──
     joke_msgs: list[MultiMessage] = []
-    if answered_before < 5 <= answered_after:
-        joke_msgs = _build_q5_jokes()
-    elif answered_before < 10 <= answered_after:
-        joke_msgs = _build_q10_jokes()
+    if not humor_off:
+        if answered_before < 5 <= answered_after:
+            joke_msgs = _build_q5_jokes()
+        elif answered_before < 10 <= answered_after:
+            joke_msgs = _build_q10_jokes()
 
     # Build response
     result = Mart1nResponse(

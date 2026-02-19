@@ -43,6 +43,8 @@ import {
     resendScanReport,
     cancelDeepScan,
     previewScanReport,
+    getChatFeedback,
+    getChatFeedbackStats,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -70,6 +72,8 @@ import type {
     MonitoredScan,
     ScanFindingsData,
     ScanFinding,
+    ChatFeedbackEntry,
+    ChatFeedbackStats,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -147,7 +151,8 @@ type Tab =
     | "nastroje"
     | "analytika"
     | "predplatne"
-    | "testy24h";
+    | "testy24h"
+    | "zpetnavazba";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -162,6 +167,7 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "nastroje", icon: "⚙️", label: "Nástroje" },
     { id: "analytika", icon: "📉", label: "Analytika" },
     { id: "predplatne", icon: "💳", label: "Předplatné" },
+    { id: "zpetnavazba", icon: "💬", label: "Zpětná vazba" },
 ];
 
 const TASKS = [
@@ -418,6 +424,12 @@ export default function AdminPage() {
     const [resendingScan, setResendingScan] = useState<string | null>(null);
     const [resendResult, setResendResult] = useState<string | null>(null);
 
+    // Chat Feedback
+    const [chatFeedback, setChatFeedback] = useState<ChatFeedbackEntry[]>([]);
+    const [chatFeedbackStats, setChatFeedbackStats] = useState<ChatFeedbackStats | null>(null);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [feedbackFilter, setFeedbackFilter] = useState<string>("all");
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -593,6 +605,23 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadChatFeedback = useCallback(async () => {
+        setFeedbackLoading(true);
+        try {
+            const [fb, stats] = await Promise.all([
+                getChatFeedback(100, feedbackFilter === "all" ? undefined : feedbackFilter),
+                getChatFeedbackStats(),
+            ]);
+            setChatFeedback(fb.feedback || []);
+            setChatFeedbackStats(stats);
+        } catch (e) {
+            console.error("Chat feedback load error:", e);
+            setLoadError(`Zpětná vazba: ${e}`);
+        } finally {
+            setFeedbackLoading(false);
+        }
+    }, [feedbackFilter]);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -622,7 +651,14 @@ export default function AdminPage() {
         if (tab === "analytika") loadAnalytics();
         if (tab === "predplatne") loadSubscriptions();
         if (tab === "testy24h") loadScanMonitor();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor]);
+        if (tab === "zpetnavazba") loadChatFeedback();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadChatFeedback]);
+
+    // Reload feedback when filter changes
+    useEffect(() => {
+        if (!authed || tab !== "zpetnavazba") return;
+        loadChatFeedback();
+    }, [feedbackFilter, authed, tab, loadChatFeedback]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -889,6 +925,7 @@ export default function AdminPage() {
                                 if (tab === "predplatne") loadSubscriptions();
                                 if (tab === "nastroje") loadDashboard();
                                 if (tab === "testy24h") loadScanMonitor();
+                                if (tab === "zpetnavazba") loadChatFeedback();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -4184,6 +4221,155 @@ export default function AdminPage() {
                                     <div className="text-3xl mb-2">🔬</div>
                                     Nepodařilo se načíst data o testech
                                 </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* ══════════════════════════════════════════ */}
+                    {/*  ZPĚTNÁ VAZBA                             */}
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "zpetnavazba" && (
+                        <>
+                            {feedbackLoading && (
+                                <div className="text-center text-gray-500 py-12 animate-pulse">Načítám zpětnou vazbu...</div>
+                            )}
+
+                            {!feedbackLoading && chatFeedbackStats && (
+                                <>
+                                    {/* Stats cards */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <StatCard icon="💬" label="Celkem" value={chatFeedbackStats.total} accent="cyan" />
+                                        <StatCard icon="😊" label="Pozitivní" value={chatFeedbackStats.sentiment?.positive || 0} accent="green" />
+                                        <StatCard icon="😤" label="Negativní" value={chatFeedbackStats.sentiment?.negative || 0} accent="red" />
+                                        <StatCard icon="📝" label="Prům. otázek" value={chatFeedbackStats.avg_questions} accent="fuchsia" />
+                                    </div>
+
+                                    {/* Humor reception */}
+                                    <Panel className="p-5">
+                                        <h3 className="text-sm font-semibold text-white mb-3">Recepce humoru</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {Object.entries(chatFeedbackStats.humor || {}).map(([key, val]) => {
+                                                const labels: Record<string, string> = {
+                                                    enjoyed: "😂 Bavily ho vtipy",
+                                                    tolerated: "🙂 Toleroval",
+                                                    disliked: "😒 Nelíbily se",
+                                                    unknown: "❓ Neurčeno",
+                                                };
+                                                return (
+                                                    <div key={key} className="bg-white/5 rounded-lg p-3 text-center">
+                                                        <div className="text-lg font-bold text-white">{val}</div>
+                                                        <div className="text-xs text-gray-400 mt-1">{labels[key] || key}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </Panel>
+
+                                    {/* Filter */}
+                                    <div className="flex gap-2">
+                                        {["all", "positive", "negative", "neutral", "mixed"].map((f) => {
+                                            const labels: Record<string, string> = {
+                                                all: "Vše",
+                                                positive: "😊 Pozitivní",
+                                                negative: "😤 Negativní",
+                                                neutral: "😐 Neutrální",
+                                                mixed: "🤔 Smíšené",
+                                            };
+                                            return (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => setFeedbackFilter(f)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${feedbackFilter === f ? "bg-cyan-500/20 border-cyan-500/30 text-cyan-400" : "bg-white/5 border-white/10 text-gray-400 hover:text-white"}`}
+                                                >
+                                                    {labels[f]}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Feedback list */}
+                                    <Panel className="divide-y divide-white/5">
+                                        {chatFeedback.length === 0 ? (
+                                            <div className="text-center text-gray-500 py-12">
+                                                <div className="text-3xl mb-2">💬</div>
+                                                Zatím žádná zpětná vazba
+                                            </div>
+                                        ) : (
+                                            chatFeedback.map((fb) => {
+                                                const sentimentEmoji: Record<string, string> = {
+                                                    positive: "😊",
+                                                    negative: "😤",
+                                                    neutral: "😐",
+                                                    mixed: "🤔",
+                                                };
+                                                const humorLabels: Record<string, string> = {
+                                                    enjoyed: "😂 Bavily ho",
+                                                    tolerated: "🙂 Toleroval",
+                                                    disliked: "😒 Nelíbily se",
+                                                    unknown: "❓",
+                                                };
+                                                return (
+                                                    <div key={fb.id} className="p-4 hover:bg-white/[0.02]">
+                                                        <div className="flex items-start justify-between gap-4">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="text-lg">{sentimentEmoji[fb.ai_sentiment] || "❓"}</span>
+                                                                    <span className="font-medium text-white text-sm truncate">
+                                                                        {fb.company_name || fb.company_id?.slice(0, 12) + "..."}
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-500">{fb.company_email || ""}</span>
+                                                                    <span className={`px-2 py-0.5 rounded text-xs ${fb.ai_sentiment === "positive" ? "bg-green-500/20 text-green-400" : fb.ai_sentiment === "negative" ? "bg-red-500/20 text-red-400" : "bg-gray-500/20 text-gray-400"}`}>
+                                                                        {fb.ai_sentiment}
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-600">{humorLabels[fb.ai_humor_reception] || ""}</span>
+                                                                </div>
+                                                                {/* Client feedback */}
+                                                                <div className="bg-white/5 rounded-lg p-3 mb-2">
+                                                                    <div className="text-xs text-gray-500 mb-1">Zpětná vazba klienta:</div>
+                                                                    <div className="text-sm text-gray-200">
+                                                                        &ldquo;{fb.feedback_text}&rdquo;
+                                                                    </div>
+                                                                </div>
+                                                                {/* AI Summary */}
+                                                                {fb.ai_summary && (
+                                                                    <div className="bg-cyan-500/5 rounded-lg p-3 mb-2">
+                                                                        <div className="text-xs text-cyan-400/60 mb-1">AI shrnutí konverzace:</div>
+                                                                        <div className="text-sm text-gray-300">{fb.ai_summary}</div>
+                                                                    </div>
+                                                                )}
+                                                                {/* Key moments & frustrations */}
+                                                                <div className="flex flex-wrap gap-4 text-xs">
+                                                                    {fb.ai_key_moments && fb.ai_key_moments.length > 0 && (
+                                                                        <div>
+                                                                            <span className="text-gray-500">Klíčové momenty: </span>
+                                                                            {fb.ai_key_moments.map((m, i) => (
+                                                                                <span key={i} className="inline-block bg-white/5 rounded px-1.5 py-0.5 mr-1 text-gray-400">{m}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                    {fb.ai_frustrations && fb.ai_frustrations.length > 0 && (
+                                                                        <div>
+                                                                            <span className="text-red-400/60">Frustrace: </span>
+                                                                            {fb.ai_frustrations.map((f2, i) => (
+                                                                                <span key={i} className="inline-block bg-red-500/10 rounded px-1.5 py-0.5 mr-1 text-red-400">{f2}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                {/* Meta */}
+                                                                <div className="flex gap-4 mt-2 text-xs text-gray-600">
+                                                                    <span>Q: {fb.questions_answered}</span>
+                                                                    <span>{fb.completion_status === "completed" ? "✅ Dokončeno" : fb.completion_status === "abandoned" ? "🚪 Opuštěno" : fb.completion_status}</span>
+                                                                    <span>{fmtDateTime(fb.created_at)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </Panel>
+                                </>
                             )}
                         </>
                     )}
