@@ -118,11 +118,22 @@ export interface Finding {
     created_at: string;
 }
 
+export interface TrackerInfo {
+    name: string;
+    category: string;
+    description_cs: string;
+    icon: string;
+    evidence: string[];
+    matched_count: number;
+}
+
 export interface FindingsResponse {
     findings: Finding[];
     false_positives: Finding[];
+    trackers: TrackerInfo[];
     count: number;
     fp_count: number;
+    tracker_count: number;
     ai_classified: boolean;
 }
 
@@ -176,6 +187,38 @@ export async function startScan(url: string): Promise<ScanResponse> {
         if (err instanceof TypeError) {
             apiLog("error", `POST ${endpoint} → NETWORK ERROR`, err.message);
             throw new Error(`Nepodařilo se spojit s API (${API_URL}). ${err.message}`);
+        }
+        throw err;
+    }
+}
+
+/**
+ * Spustí 24h hloubkový scan — POST /api/scan/{scan_id}/deep
+ */
+export async function triggerDeepScan(scanId: string): Promise<{ scan_id: string; deep_scan_status: string; message: string }> {
+    const endpoint = `${API_URL}/api/scan/${scanId}/deep`;
+    apiLog("info", `POST ${endpoint}`);
+
+    try {
+        const res = await authFetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+            const msg = error.detail || `HTTP ${res.status}`;
+            apiLog("error", `POST ${endpoint} → ${res.status}`, msg);
+            throw new Error(msg);
+        }
+
+        const data = await res.json();
+        apiLog("info", `POST ${endpoint} → 200`, `status=${data.deep_scan_status}`);
+        return data;
+    } catch (err) {
+        if (err instanceof TypeError) {
+            apiLog("error", `POST ${endpoint} → NETWORK ERROR`, err.message);
+            throw new Error(`Nepodařilo se spojit s API. ${err.message}`);
         }
         throw err;
     }
@@ -534,6 +577,12 @@ export interface DashboardScan {
     total_findings: number;
     created_at: string;
     finished_at: string | null;
+    scan_type?: string;
+    deep_scan_status?: string | null;
+    deep_scan_started_at?: string | null;
+    deep_scan_finished_at?: string | null;
+    deep_scan_total_findings?: number | null;
+    geo_countries_scanned?: string[] | null;
 }
 
 export interface DashboardFinding {
@@ -786,6 +835,36 @@ export async function getQuestionnaireProgress(companyId: string): Promise<Quest
     if (!res.ok) {
         const text = await res.text().catch(() => "");
         apiLog("error", `getQuestionnaireProgress failed: ${res.status}`, text);
+        throw new Error(`HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+export interface QuestionnaireResultsResponse {
+    company_id: string;
+    answers: QuestionnaireAnswer[];
+    analysis: {
+        total_answers: number;
+        ai_systems_declared: number;
+        risk_breakdown: Record<string, number>;
+        recommendations: Array<{
+            question_key: string;
+            tool_name: string;
+            risk_level: string;
+            ai_act_article: string;
+            recommendation: string;
+            priority: string;
+        }>;
+    };
+    submitted_at: string;
+}
+
+export async function getQuestionnaireResults(companyId: string): Promise<QuestionnaireResultsResponse> {
+    apiLog("info", "getQuestionnaireResults", companyId);
+    const res = await authFetch(`${API_URL}/api/questionnaire/${companyId}/results`);
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        apiLog("error", `getQuestionnaireResults failed: ${res.status}`, text);
         throw new Error(`HTTP ${res.status}`);
     }
     return res.json();

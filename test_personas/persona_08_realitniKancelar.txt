@@ -1,0 +1,75 @@
+PERSONA 08 — Realitní kancelář
+================================
+
+Jméno firmy:     METRO Reality a.s.
+Kontaktní osoba: Ing. Libor Pospíšil, obchodní ředitel
+Forma podnikání: a.s.
+IČO:             56789008
+Sídlo:           Václavské náměstí 56, 110 00 Praha 1
+Telefon:         +420 608 888 008
+E-mail:          pospisil@metroreality.cz
+Web:             www.metroreality.cz
+
+Zaměstnanci:     65 (50-249)
+Roční obrat:     ~120 mil. Kč
+Odvětví:         Reality / Nemovitosti
+
+Popis podnikání:
+- Velká realitní kancelář, 8 poboček po ČR
+- CRM s AI (Salesforce Einstein) — predikce prodejů, lead scoring
+- AI generátor inzerátů (ChatGPT + Midjourney pro vizualizace)
+- Chatbot na webu (Intercom s AI)
+- AI odhad cen nemovitostí (vlastní model na bázi historických dat)
+- HR: AI screening životopisů (50+ kandidátů/měsíc)
+- Zpracovává osobní data prodávajících i kupujících
+
+Očekávané chování dotazníku:
+- RELEVANTNÍ: AI rozhodování (odhad cen), HR screening, chatbot, AI obsah, osobní data, GDPR
+- RELEVANTNÍ: credit scoring (vedlejší — financování), oversight, guidelines
+- MÉNĚ RELEVANTNÍ: critical infrastructure, biometrika, zdravotnictví, pojišťovnictví
+- Risk level: VYSOKÉ (AI recruitment screening + AI decision-making + personal data)
+
+Odpovědi pro test:
+  company_legal_name: "METRO Reality a.s."
+  company_ico: "56789008"
+  company_address: "Václavské náměstí 56, 110 00 Praha 1"
+  company_contact_email: "pospisil@metroreality.cz"
+  company_industry: ["Reality / Nemovitosti"]
+  company_size: "50–249 zaměstnanců"
+  company_annual_revenue: "50–250 mil. Kč"
+  develops_own_ai: "yes" → own_ai_description: "AI model pro odhad tržní ceny nemovitostí"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Psaní inzerátů", "Komunikace se zákazníky"], chatgpt_data_type: ["Veřejné info", "Interní dokumenty"]
+  uses_copilot: "no"
+  uses_ai_content: "yes" → content_tool_name: ["ChatGPT / GPT-4o", "Midjourney"], content_published: ["Web / sociální sítě", "Inzerce"]
+  uses_deepfake: "no"
+  uses_ai_chatbot: "yes" → chatbot_tool_name: ["Intercom"]
+  uses_ai_email_auto: "yes" → email_tool: ["Salesforce Einstein"]
+  uses_ai_decision: "yes" → decision_scope: ["Odhad cen nemovitostí", "Lead scoring"], decision_human_review: "yes"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "yes" → recruitment_tool: ["Vlastní řešení"], recruitment_scope: ["Screening CV", "Předvýběr kandidátů"]
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "yes" → accounting_tool: ["Fakturoid"]
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Osobní údaje klientů", "Finanční data", "Kopie dokladů"], dpia_done: "Ne"
+  ai_data_stored_eu: "yes"
+  has_ai_vendor_contracts: "yes" → vendor_names: ["Salesforce", "Intercom", "OpenAI"]
+  has_ai_training: "yes" → training_scope: "Základní školení makléřů o AI nástrojích"
+  has_ai_guidelines: "yes" → guidelines_scope: "Interní pravidla pro AI v komunikaci s klienty"
+  has_oversight_person: "no"
+  can_override_ai: "yes" → override_scope: ["Odhady cen", "Výběr kandidátů"]
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "yes" → monitoring_method: "Makléř kontroluje AI odhady cen"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

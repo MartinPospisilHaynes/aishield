@@ -10,18 +10,22 @@ import {
     getScanStatus,
     getScanFindings,
     getQuestionnaireProgress,
+    getQuestionnaireResults,
     createCheckout,
+    triggerDeepScan,
     type DashboardData,
     type ScanStatus,
     type Finding,
     type QuestionnaireProgress,
     type QuestionnaireFinding,
     type QuestionnaireUnknown,
+    type QuestionnaireResultsResponse,
+    type QuestionnaireAnswer,
 } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 import ContactForm from "@/components/contact-form";
 
-type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "ucet";
+type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "dotaznik" | "skeny" | "ucet";
 
 
 /* ── Scan progress stages ── */
@@ -59,6 +63,11 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
         key: "plan",
         label: "Musíte doplnit",
         icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>),
+    },
+    {
+        key: "dotaznik",
+        label: "Dotazník",
+        icon: (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>),
     },
     {
         key: "skeny",
@@ -181,6 +190,8 @@ export default function DashboardPage() {
 
     // ── Questionnaire progress ──
     const [questProgress, setQuestProgress] = useState<QuestionnaireProgress | null>(null);
+    const [questResults, setQuestResults] = useState<QuestionnaireResultsResponse | null>(null);
+    const [questResultsLoading, setQuestResultsLoading] = useState(false);
 
     // ── AI systems card expand ──
     const [aiCardOpen, setAiCardOpen] = useState(false);
@@ -196,6 +207,31 @@ export default function DashboardPage() {
     const [scanDone, setScanDone] = useState(false);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // ── Scan cooldown lock (1 hodina) ──
+    const [scanCooldownUntil, setScanCooldownUntil] = useState<number | null>(null);
+    const [scanCooldownMsg, setScanCooldownMsg] = useState<string | null>(null);
+    const scanLocked = scanCooldownUntil !== null && Date.now() < scanCooldownUntil;
+
+    // ── Deep scan manual trigger ──
+    const [deepScanLoading, setDeepScanLoading] = useState(false);
+    const [deepScanTriggered, setDeepScanTriggered] = useState(false);
+    const [deepScanError, setDeepScanError] = useState<string | null>(null);
+
+    // Restore scan cooldown from localStorage on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('aishield_scan_cooldown');
+            if (saved) {
+                const until = Number(saved);
+                if (until > Date.now()) {
+                    setScanCooldownUntil(until);
+                } else {
+                    localStorage.removeItem('aishield_scan_cooldown');
+                }
+            }
+        } catch {}
+    }, []);
 
     // Clean up timers on unmount
     useEffect(() => {
@@ -260,6 +296,14 @@ export default function DashboardPage() {
     );
 
     const handleStartScan = useCallback(async () => {
+        // ── Kontrola cooldownu — 1 hodina mezi skeny ──
+        if (scanLocked) {
+            const mins = Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000);
+            setScanCooldownMsg(`Další sken bude možný za ${mins} min. Mezi skeny musí uplynout alespoň 1 hodina.`);
+            return;
+        }
+        setScanCooldownMsg(null);
+
         const scanUrl = data?.company?.url || user?.user_metadata?.web_url;
         track("scan_started", { context: "dashboard", url: scanUrl || "" });
         if (!scanUrl) {
@@ -281,6 +325,11 @@ export default function DashboardPage() {
 
         try {
             const result = await startScan(scanUrl);
+            // Zamknout tlačítko na 1 hodinu po spuštění
+            const lockUntil = Date.now() + 60 * 60 * 1000;
+            setScanCooldownUntil(lockUntil);
+            try { localStorage.setItem('aishield_scan_cooldown', String(lockUntil)); } catch {}
+
             const status = await getScanStatus(result.scan_id);
             setScanResult(status);
             if (status.status === "queued" || status.status === "running") {
@@ -302,6 +351,31 @@ export default function DashboardPage() {
         }
     }, [data?.company?.url, user?.user_metadata?.web_url, startStageAnimation, startScanPolling, fetchScanFindings, reloadDashboard]);
 
+    const handleTriggerDeepScan = useCallback(async () => {
+        const latestScan = data?.scans?.[0];
+        if (!latestScan?.id) {
+            console.warn("[Dashboard] handleTriggerDeepScan: žádný scan k dispozici");
+            return;
+        }
+        console.log(`[Dashboard] Deep scan trigger: scan_id=${latestScan.id}, deep_scan_status=${latestScan.deep_scan_status}`);
+        setDeepScanLoading(true);
+        setDeepScanError(null);
+        track("deep_scan_triggered", { scan_id: latestScan.id });
+        try {
+            const result = await triggerDeepScan(latestScan.id);
+            console.log(`[Dashboard] Deep scan trigger úspěch:`, result);
+            setDeepScanTriggered(true);
+            // Reload dashboard to get updated deep_scan_status
+            reloadDashboard();
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Nepodařilo se spustit hloubkový scan";
+            console.error(`[Dashboard] Deep scan trigger CHYBA: ${msg}`, err);
+            setDeepScanError(msg);
+        } finally {
+            setDeepScanLoading(false);
+        }
+    }, [data?.scans, track, reloadDashboard]);
+
     const closeScanPanel = () => {
         setScanActive(false);
         setScanDone(false);
@@ -310,10 +384,18 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (!user?.email) return;
+        console.log(`[Dashboard] Načítám data pro: ${user.email}`);
         setLoading(true);
         getDashboardData(user.email)
-            .then(setData)
-            .catch((e) => setError(e.message))
+            .then((d) => {
+                const scan = d?.scans?.[0];
+                console.log(`[Dashboard] Data načtena: scans=${d?.scans?.length || 0}, latest_scan_status=${scan?.status}, deep_scan_status=${scan?.deep_scan_status}`);
+                setData(d);
+            })
+            .catch((e) => {
+                console.error(`[Dashboard] Chyba načítání dat: ${e.message}`);
+                setError(e.message);
+            })
             .finally(() => setLoading(false));
     }, [user?.email]);
 
@@ -405,9 +487,14 @@ export default function DashboardPage() {
                             <p className="text-sm text-slate-300 mt-1 truncate">{(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
                         </div>
                         <div className="flex gap-2 sm:gap-3 flex-wrap">
-                            <button onClick={handleStartScan} disabled={scanLoading} className="btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50">
-                                {scanLoading ? "Skenuji..." : "Nový sken"}
+                            <button onClick={handleStartScan} disabled={scanLoading || scanLocked} className={`btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50 ${scanLocked ? 'cursor-not-allowed' : ''}`}>
+                                {scanLoading ? "Skenuji..." : scanLocked ? `Zamčeno (${Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000)} min)` : "Nový sken"}
                             </button>
+                            {scanCooldownMsg && (
+                                <div className="w-full rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-300">
+                                    <span className="font-medium">⏳ </span>{scanCooldownMsg}
+                                </div>
+                            )}
                             {hasScans ? (
                                 hasQuest ? (
                                     qUnknowns.length > 0 ? (
@@ -516,58 +603,202 @@ export default function DashboardPage() {
                     {/* ═══ STAT CARDS (4 equal panels) ═══ */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 items-start">
                         {/* Panel 1: Sken webu */}
-                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
-                            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Sken webu</p>
-                            {!hasScans ? (
-                                <>
-                                    <p className="text-2xl font-extrabold mt-1 text-slate-500">—</p>
-                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Sken zatím nebyl proveden.</p>
-                                </>
-                            ) : uniqueSystemsCount > 0 ? (
-                                <>
-                                    <p className="text-2xl font-extrabold mt-1 text-amber-400">{uniqueSystemsCount}</p>
-                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                                        {cz(uniqueSystemsCount, 'AI systém nalezen', 'AI systémy nalezeny', 'AI systémů nalezeno')}, {cz(uniqueSystemsCount, 'který spadá', 'které spadají', 'které spadají')} do zákona EU o umělé inteligenci.
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-2xl font-extrabold mt-1 text-green-400">0</p>
-                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                                        Sken na webu nezjistil žádné AI systémy, které podléhají zákonu Evropské unie o umělé inteligenci.
-                                    </p>
-                                </>
-                            )}
-                            {hasScans && uniqueSystemsCount === 0 && !hasQuest && (
-                                <p className="text-[10px] text-amber-400/80 mt-2">Sken prověřuje jen web — AI Act reguluje i interní systémy. Vyplňte dotazník pro úplný obraz.</p>
-                            )}
-                            {/* Expandable scan findings */}
-                            {hasScans && uniqueSystemsCount > 0 && (
-                                <div className="mt-3 border-t border-white/[0.06] pt-3">
-                                    <button onClick={() => setAiCardOpen(!aiCardOpen)} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
-                                        {aiCardOpen ? 'Skrýt nálezy' : 'Zobrazit nálezy'}
-                                        <svg className={`w-3 h-3 transition-transform ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    {aiCardOpen && (
-                                        <div className="mt-2 space-y-1.5">
-                                            {groupFindings(data?.findings || []).map((f) => (
-                                                <div key={f.name} className="rounded-md bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                                                    <p className="text-xs font-medium text-white">{f.name}</p>
-                                                    <p className="text-[10px] text-slate-400 mt-0.5">{categoryLabel(f.category)}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
-                                                </div>
-                                            ))}
+                        {(() => {
+                            const latestScan = data?.scans?.[0];
+                            const deepStatus = latestScan?.deep_scan_status;
+                            const deepDone = deepStatus === 'done';
+                            const deepRunning = deepStatus === 'pending' || deepStatus === 'running';
+                            const deepTotal = latestScan?.deep_scan_total_findings ?? 0;
+                            const deepStarted = latestScan?.deep_scan_started_at;
+                            // Countdown: estimate 24h from deep_scan_started_at
+                            const deepEta = deepStarted ? (() => {
+                                const endTime = new Date(deepStarted).getTime() + 24 * 60 * 60 * 1000;
+                                const remaining = endTime - Date.now();
+                                if (remaining <= 0) return 'dokončení každou chvíli…';
+                                const hours = Math.floor(remaining / (60 * 60 * 1000));
+                                const mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+                                return `~${hours}h ${mins}min`;
+                            })() : null;
+                            const countryFlags: Record<string, string> = { CZ: '🇨🇿', GB: '🇬🇧', US: '🇺🇸', BR: '🇧🇷', JP: '🇯🇵', ZA: '🇿🇦', AU: '🇦🇺' };
+                            const scannedFlags = (latestScan?.geo_countries_scanned || []).map(c => countryFlags[c] || c).join(' ');
+
+                            return (
+                                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
+                                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Sken webu</p>
+                                    {!hasScans ? (
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-slate-500">—</p>
+                                            <p className="text-xs text-slate-400 mt-1 leading-relaxed">Sken zatím nebyl proveden.</p>
+                                        </>
+                                    ) : deepDone ? (
+                                        /* ═══ Deep scan DONE ═══ */
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-amber-400">{deepTotal}</p>
+                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                Hloubkový 24hodinový scan byl úspěšně dokončen. Celkový počet nalezených systémů umělé inteligence je <strong className="text-white">{deepTotal}</strong>.
+                                            </p>
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                                <span className="inline-block w-2 h-2 rounded-full bg-green-400" />
+                                                <span className="text-[10px] text-green-400 font-medium">24h hloubkový scan dokončen</span>
+                                            </div>
+                                            {scannedFlags && (
+                                                <p className="text-[10px] text-slate-500 mt-1">Skenováno z: {scannedFlags}</p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        /* ═══ Quick scan results ═══ */
+                                        <>
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <span className="inline-block w-2 h-2 rounded-full bg-cyan-400" />
+                                                <span className="text-[10px] text-cyan-400 font-medium uppercase tracking-wide">Rychlý orientační scan</span>
+                                            </div>
+                                            {uniqueSystemsCount > 0 ? (
+                                                <>
+                                                    <p className="text-2xl font-extrabold mt-1 text-amber-400">{uniqueSystemsCount}</p>
+                                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                        {cz(uniqueSystemsCount, 'AI systém nalezen', 'AI systémy nalezeny', 'AI systémů nalezeno')}, {cz(uniqueSystemsCount, 'který spadá', 'které spadají', 'které spadají')} do zákona EU o umělé inteligenci.
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="text-2xl font-extrabold mt-1 text-green-400">0</p>
+                                                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                        Rychlý scan na webu nezjistil žádné AI systémy spadající pod EU AI Act.
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-500 mt-1.5 leading-relaxed">
+                                                        To neznamená, že žádné nepoužíváte. Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace, nebo po interakci uživatele. Proto doporučujeme spustit 24h hloubkový scan a vyplnit dotazník pro kompletní obraz.
+                                                    </p>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                    {/* Deep scan running indicator */}
+                                    {hasScans && deepRunning && (
+                                        <div className="mt-3 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="relative flex h-2.5 w-2.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500" />
+                                                </span>
+                                                <span className="text-[11px] font-semibold text-purple-300">Probíhá 24h hloubkový scan</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed">
+                                                Provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech</strong> ze 7 zemí (CZ, GB, US, BR, JP, ZA, AU) — střídavě z desktopu i mobilu přes rezidenční proxy. Výsledky zde budou za <strong className="text-white">{deepEta || '~24 hodin'}</strong>.
+                                            </p>
+                                            {scannedFlags && (
+                                                <p className="text-[10px] text-slate-500 mt-1">Dosud prověřeno: {scannedFlags}</p>
+                                            )}
                                         </div>
                                     )}
+                                    {hasScans && uniqueSystemsCount === 0 && !deepDone && !hasQuest && (
+                                        <p className="text-[10px] text-amber-400/80 mt-2">Sken prověřuje jen web — AI Act reguluje i interní systémy. Vyplňte dotazník pro úplný obraz.</p>
+                                    )}
+                                    {/* Expandable scan findings */}
+                                    {hasScans && uniqueSystemsCount > 0 && !deepDone && (
+                                        <div className="mt-3 border-t border-white/[0.06] pt-3">
+                                            <button onClick={() => setAiCardOpen(!aiCardOpen)} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                                {aiCardOpen ? 'Skrýt nálezy' : 'Zobrazit nálezy'}
+                                                <svg className={`w-3 h-3 transition-transform ${aiCardOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            {aiCardOpen && (
+                                                <div className="mt-2 space-y-1.5">
+                                                    {groupFindings(data?.findings || []).map((f) => (
+                                                        <div key={f.name} className="rounded-md bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                                                            <p className="text-xs font-medium text-white">{f.name}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-0.5">{categoryLabel(f.category)}{f.count > 1 ? ` · ${f.count}×` : ''}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="mt-auto pt-3 space-y-2">
+                                        {/* Pulsating button to trigger deep scan — hidden when quest is done (focus shifts to Objednávka) */}
+                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !deepScanTriggered && !hasQuest && (
+                                            <div className="space-y-2">
+                                                <p className="text-[10px] text-cyan-300/80 leading-relaxed">
+                                                    Rychlý scan zachytil jen to, co bylo vidět v okamžiku testu.
+                                                </p>
+                                                <button
+                                                    onClick={handleTriggerDeepScan}
+                                                    disabled={deepScanLoading}
+                                                    className="w-full relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:from-purple-500 hover:to-fuchsia-500 transition-all disabled:opacity-50 group"
+                                                >
+                                                    <span className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-purple-400/20 to-fuchsia-400/20" />
+                                                    <span className="relative flex items-center justify-center gap-2">
+                                                        {deepScanLoading ? (
+                                                            <>
+                                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                                                                Spouštím...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                🔍 Spustit hloubkový test
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                </button>
+                                                {deepScanError && (
+                                                    <p className="text-[10px] text-red-400">{deepScanError}</p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {/* Subtle deep scan link when quest done but deep scan not started */}
+                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !deepScanTriggered && hasQuest && (
+                                            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
+                                                <button
+                                                    onClick={handleTriggerDeepScan}
+                                                    disabled={deepScanLoading}
+                                                    className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50"
+                                                >
+                                                    {deepScanLoading ? 'Spouštím...' : '🔍 Volitelné: Spustit 24h hloubkový test'}
+                                                </button>
+                                                <p className="text-[10px] text-slate-500 mt-0.5">24 skenů ze 7 zemí za 24 hodin — není nutné pro objednávku</p>
+                                            </div>
+                                        )}
+                                        {/* Deep scan just triggered — success */}
+                                        {hasScans && deepScanTriggered && !deepDone && (deepRunning || deepStatus === 'pending') && (
+                                            <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-green-400 text-base">✅</span>
+                                                    <p className="text-xs font-semibold text-green-300">Výborně! Hloubkový test běží</p>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 leading-relaxed">
+                                                    Za <strong className="text-white">~24 hodin</strong> vám napíšeme e-mail s agregovanými výsledky
+                                                    z <strong className="text-white">24 skenů ze 7 zemí</strong> (6 kol × 4 země, desktop + mobil).
+                                                </p>
+                                            </div>
+                                        )}
+                                        {deepRunning && !deepScanTriggered && (
+                                            <p className="text-[10px] text-purple-400 font-medium">Hloubkový scan běží — výsledky se zobrazí automaticky.</p>
+                                        )}
+                                        {/* Cooldown info */}
+                                        {deepStatus === 'cooldown' && (
+                                            <div className="rounded-lg border border-slate-500/15 bg-slate-500/5 p-2.5">
+                                                <p className="text-[10px] text-slate-400 leading-relaxed">
+                                                    <strong className="text-slate-300">24h hloubkový scan byl proveden v posledních 7 dnech.</strong>{' '}
+                                                    Další bude dostupný za týden.
+                                                </p>
+                                            </div>
+                                        )}
+                                        {/* Opakovat rychlý sken — po dokončení deep scanu */}
+                                        {(deepDone || deepStatus === 'cooldown') && !scanLocked && (
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={handleStartScan} disabled={scanLoading || scanLocked} className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
+                                                    {scanLoading ? 'Skenuji...' : 'Opakovat rychlý sken'}
+                                                </button>
+                                                <span className="text-[9px] text-slate-600">orientační</span>
+                                            </div>
+                                        )}
+                                        {(deepDone || deepStatus === 'cooldown') && scanLocked && (
+                                            <p className="text-[10px] text-amber-400/80">Další sken bude možný za {Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000)} min.</p>
+                                        )}
+                                    </div>
                                 </div>
-                            )}
-                            <div className="mt-auto pt-3">
-                                <button onClick={handleStartScan} disabled={scanLoading} className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
-                                    {scanLoading ? 'Skenuji...' : 'Opakovat sken'}
-                                </button>
-                            </div>
-                        </div>
+                            );
+                        })()}
 
                         {/* Panel 2: Výsledky dotazníku */}
                         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:border-white/[0.12] transition-all flex flex-col">
@@ -672,6 +903,17 @@ export default function DashboardPage() {
                                 const hasDocs = (data?.documents || []).length > 0;
                                 const questIncomplete = hasQuest && qUnknowns.length > 0;
 
+                                // Deep scan state (local to this panel)
+                                const latestScan = data?.scans?.[0];
+                                const ds = latestScan?.deep_scan_status;
+                                const deepRunningLocal = ds === 'pending' || ds === 'running' || (deepScanTriggered && ds !== 'done' && ds !== 'cooldown');
+                                const deepDoneLocal = ds === 'done' || ds === 'cooldown';
+                                const noDeepYet = !ds || (!['pending', 'running', 'done', 'cooldown'].includes(ds));
+
+                                // Summary line: findings count
+                                const scanCount = uniqueSystemsCount || 0;
+                                const questCount = qFindings?.length || 0;
+
                                 if (hasDocs && hasPaid && ws === 'documents_sent') {
                                     return (
                                         <>
@@ -688,23 +930,87 @@ export default function DashboardPage() {
                                         </>
                                     );
                                 }
-                                if (!hasQuest || questIncomplete) {
+
+                                // Quest done (even with some unknowns) → show "Objednejte" with findings summary
+                                if (hasQuest && hasScans) {
                                     return (
                                         <>
-                                            <p className="text-2xl font-extrabold mt-1 text-amber-400">Čekáme</p>
-                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                                                {!hasQuest
-                                                    ? 'Čekáme na vyplnění dotazníku.'
-                                                    : `Dotazník obsahuje ${qUnknowns.length}× odpověď „Nevím". Doplňte prosím chybějící informace.`
+                                            <p className="text-2xl font-extrabold mt-1 text-fuchsia-400">Objednejte</p>
+                                            {/* Findings summary */}
+                                            <div className="mt-2 space-y-1">
+                                                {scanCount > 0 && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                                        <span className="text-[10px] text-slate-300">{scanCount} AI {scanCount === 1 ? 'systém' : 'systémů'} ze skenu</span>
+                                                    </div>
+                                                )}
+                                                {questCount > 0 && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                        <span className="text-[10px] text-slate-300">{questCount} {questCount === 1 ? 'nález' : 'nálezů'} z dotazníku</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                                                {questIncomplete
+                                                    ? `Můžete objednat nyní. U ${qUnknowns.length} otázek zbývá doplnit „Nevím".`
+                                                    : 'Analýza dokončena. Vyberte si balíček pro vygenerování compliance dokumentace.'
                                                 }
                                             </p>
+                                            {/* Deep scan running indicator */}
+                                            {deepRunningLocal && (
+                                                <div className="mt-2 flex items-center gap-1.5">
+                                                    <span className="relative flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                                                    </span>
+                                                    <span className="text-[10px] text-purple-300">24h test probíhá — výsledky doplníme automaticky</span>
+                                                </div>
+                                            )}
+                                            {deepDoneLocal && (
+                                                <div className="mt-2 flex items-center gap-1.5">
+                                                    <span className="inline-block w-2 h-2 rounded-full bg-green-400" />
+                                                    <span className="text-[10px] text-green-400">24h test ✓</span>
+                                                </div>
+                                            )}
                                         </>
                                     );
                                 }
+
+                                // Waiting state — quest not done
+                                const waitItems: string[] = [];
+                                if (!hasQuest) waitItems.push('vyplnění dotazníku');
+                                if (deepRunningLocal) waitItems.push('dokončení 24h testu');
                                 return (
                                     <>
-                                        <p className="text-2xl font-extrabold mt-1 text-slate-400">Připraveno</p>
-                                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">Analýza dokončena. Vyberte si balíček pro vygenerování compliance dokumentace.</p>
+                                        <p className="text-2xl font-extrabold mt-1 text-amber-400">Čekáme</p>
+                                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                            {waitItems.length > 0
+                                                ? `Čekáme na ${waitItems.join(' a ')}.`
+                                                : 'Čekáme na dokončení analýzy.'
+                                            }
+                                        </p>
+                                        {scanCount > 0 && (
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                                <span className="text-[10px] text-slate-400">{scanCount} AI {scanCount === 1 ? 'systém' : 'systémů'} ze skenu</span>
+                                            </div>
+                                        )}
+                                        {deepRunningLocal && (
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                                <span className="relative flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                                                </span>
+                                                <span className="text-[10px] text-purple-300">24h test probíhá</span>
+                                            </div>
+                                        )}
+                                        {noDeepYet && !deepScanTriggered && hasScans && (
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                                                <span className="text-[10px] text-amber-300">Hloubkový test zatím nespuštěn</span>
+                                            </div>
+                                        )}
                                     </>
                                 );
                             })()}
@@ -743,9 +1049,11 @@ export default function DashboardPage() {
                                     }`}
                             >
                                 {tab.icon}
-                                {tab.label}
+                                <span className={tab.key === "plan" && qUnknowns.length > 0 && activeTab !== "plan" ? "text-amber-400 animate-pulse font-bold" : ""}>
+                                    {tab.label}
+                                </span>
                                 {tab.key === "plan" && qUnknowns.length > 0 && activeTab !== "plan" && (
-                                    <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black animate-pulse">
+                                    <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black animate-pulse shadow-lg shadow-amber-500/50">
                                         {qUnknowns.length}
                                     </span>
                                 )}
@@ -758,10 +1066,11 @@ export default function DashboardPage() {
 
                     {/* Tab content */}
                     <div className="min-h-[400px]">
-                        {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} onShowPlan={() => setActiveTab("plan")} />}
+                        {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} onShowPlan={() => setActiveTab("plan")} onTriggerDeepScan={handleTriggerDeepScan} deepScanLoading={deepScanLoading} deepScanTriggered={deepScanTriggered} deepScanError={deepScanError} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
                         {activeTab === "plan" && <TabPlan questionnaireUnknowns={qUnknowns} companyId={data?.company?.id || ''} />}
+                        {activeTab === "dotaznik" && <TabDotaznik companyId={data?.company?.id || ''} questResults={questResults} questResultsLoading={questResultsLoading} setQuestResults={setQuestResults} setQuestResultsLoading={setQuestResultsLoading} hasQuest={hasQuest} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
                         {activeTab === "ucet" && <TabUcet user={user} data={data} />}
                     </div>
@@ -840,7 +1149,7 @@ function StatCard({ label, value, sub, color, icon, tooltip }: {
 
 
 /* ── Tab: Přehled ── */
-function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride, onShowPlan }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean; onShowPlan: () => void }) {
+function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride, onShowPlan, onTriggerDeepScan, deepScanLoading, deepScanTriggered, deepScanError }: { data: DashboardData | null; onStartScan: () => void; scanLoading: boolean; hasScans: boolean; onShowPlan: () => void; onTriggerDeepScan: () => void; deepScanLoading: boolean; deepScanTriggered: boolean; deepScanError: string | null }) {
     const hasScans = hasScansOverride || (data?.scans.length || 0) > 0;
     const hasQuest = data?.questionnaire_status === "dokončen";
     const hasDocs = (data?.documents.length || 0) > 0;
@@ -849,6 +1158,11 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
     const ws = data?.company?.workflow_status || 'new';
     const isProcessingDocs = ws === 'processing' || ws === 'documents_sent';
     const qUnknowns = data?.questionnaire_unknowns || [];
+
+    const latestScan = data?.scans?.[0];
+    const deepStatus = latestScan?.deep_scan_status;
+    const deepDone = deepStatus === 'done' || deepStatus === 'cooldown';
+    const deepRunning = deepStatus === 'pending' || deepStatus === 'running';
 
     const steps = [
         {
@@ -859,6 +1173,22 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             href: null as string | null,
             cta: scanLoading ? "Skenuji..." : "Spustit sken",
             onClick: onStartScan,
+        },
+        {
+            done: deepDone || deepRunning || deepScanTriggered,
+            optional: true,
+            label: (deepRunning || deepScanTriggered) && !deepDone ? "24h test ⏳" : "24h test",
+            desc: deepDone
+                ? "Hloubkový scan ze 7 zemí a 6 kontinentů byl úspěšně dokončen"
+                : deepRunning || deepScanTriggered
+                    ? "Hloubkový scan probíhá na pozadí ze 7 zemí — mezitím pokračujte dotazníkem"
+                    : hasScans
+                        ? "Spusťte 24hodinový hloubkový test ze 7 zemí a 6 kontinentů"
+                        : "Nejprve dokončete rychlý sken webu",
+            detail: null,
+            href: null,
+            cta: "__deep_scan_custom__",  // Custom rendering handled below
+            onClick: undefined as (() => void) | undefined,
         },
         {
             done: hasQuest,
@@ -901,7 +1231,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         {
             done: hasDocs,
             label: "Dodání",
-            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení" : "7 dokumentů pro splnění AI Act",
+            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení" : "8 dokumentů pro splnění AI Act",
             detail: null,
             href: hasDocs ? "#" : null,
             cta: hasDocs ? "Viz tab Dokumenty" : "",
@@ -909,10 +1239,14 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
         },
     ];
 
-    const currentStepIndex = steps.findIndex((s) => !s.done);
+    // Smart step index: skip optional steps (24h test) when later steps are done
+    const rawStepIndex = steps.findIndex((s) => !s.done);
+    const currentStepIndex = (rawStepIndex === 1 && steps[2]?.done) ? steps.findIndex((s, i) => i > 1 && !s.done) : rawStepIndex;
     const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
     const completedCount = steps.filter((s) => s.done).length;
-    const lineWidthPercent = completedCount <= 1 ? 0 : ((completedCount - 1) / (steps.length - 1)) * 83.4;
+    // Line extends TO the current active step (not just to last completed)
+    const progressTarget = currentStepIndex >= 0 ? currentStepIndex : steps.length - 1;
+    const lineWidthPercent = progressTarget <= 0 ? 0 : (progressTarget / (steps.length - 1)) * ((steps.length - 1) / steps.length * 100);
 
     const isProcessing = hasPaidOrder && !hasDocs;
     const currentHour = new Date().getHours();
@@ -923,28 +1257,56 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             {/* Progress Timeline */}
             <div className="glass">
                 <h3 className="font-semibold mb-8">Postup k compliance</h3>
-                <div className="grid grid-cols-6 relative mb-8">
-                    <div className="absolute top-5 left-[8.3%] right-[8.3%] h-0.5 bg-white/[0.06]" />
+                <div className="grid grid-cols-7 relative mb-8">
+                    {/* Background track line */}
+                    <div className="absolute top-[18px] sm:top-[22px] left-[7%] right-[7%] h-1 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04]" />
+                    {/* Active progress line */}
                     {lineWidthPercent > 0 && (
-                        <div className="absolute top-5 left-[8.3%] h-0.5 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-700 rounded-full" style={{ width: `${lineWidthPercent}%` }} />
+                        <div
+                            className="absolute top-[18px] sm:top-[22px] left-[7%] h-1 rounded-full transition-all duration-700"
+                            style={{
+                                width: `${lineWidthPercent}%`,
+                                background: 'linear-gradient(90deg, #22c55e, #10b981, #06b6d4, #a855f7)',
+                                boxShadow: '0 0 12px rgba(34,197,94,0.4), 0 0 24px rgba(6,182,212,0.2)',
+                            }}
+                        />
                     )}
                     {steps.map((step, i) => {
                         const isCurrent = i === currentStepIndex;
+                        const isSkipped = !step.done && (step as any).optional && i < (currentStepIndex >= 0 ? currentStepIndex : steps.length);
+                        const isRunning = i === 1 && (deepRunning || deepScanTriggered) && !deepDone;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
-                                <div className={`flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${step.done
-                                    ? "bg-green-500/20 text-green-400 border-2 border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.15)]"
-                                    : isCurrent
-                                        ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.15)] animate-pulse"
-                                        : "bg-slate-900 text-slate-600 border-2 border-white/[0.08]"
+                                {/* Node circle */}
+                                <div className={`flex items-center justify-center h-9 w-9 sm:h-11 sm:w-11 rounded-full text-xs sm:text-sm font-bold transition-all duration-500 ${step.done && !isRunning
+                                    ? "bg-gradient-to-br from-green-500/30 to-emerald-500/20 text-green-300 border-2 border-green-400/50 shadow-[0_0_16px_rgba(34,197,94,0.3),0_0_4px_rgba(34,197,94,0.5)]"
+                                    : isRunning
+                                        ? "bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-300 border-2 border-cyan-400/50 shadow-[0_0_16px_rgba(6,182,212,0.3)] animate-pulse"
+                                        : isSkipped
+                                            ? "bg-slate-700/80 text-slate-400 border-2 border-dashed border-slate-500/40"
+                                            : isCurrent
+                                                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-500/20 text-fuchsia-300 border-2 border-fuchsia-400/60 shadow-[0_0_20px_rgba(217,70,239,0.35),0_0_6px_rgba(217,70,239,0.5)] animate-pulse"
+                                                : "bg-slate-800/80 text-slate-500 border-2 border-white/[0.1] shadow-[0_0_6px_rgba(0,0,0,0.3)]"
                                     }`}>
-                                    {step.done ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {step.done && !isRunning ? (
+                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                         </svg>
-                                    ) : (i + 1)}
+                                    ) : isRunning ? (
+                                        <span className="text-sm">⏳</span>
+                                    ) : isSkipped ? (
+                                        <span className="text-[10px] text-slate-500">—</span>
+                                    ) : (
+                                        <span className={isCurrent ? "drop-shadow-[0_0_4px_rgba(217,70,239,0.6)]" : ""}>{i + 1}</span>
+                                    )}
                                 </div>
-                                <span className={`text-[9px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-medium text-center leading-tight ${step.done ? "text-green-400/80" : isCurrent ? "text-fuchsia-400" : "text-slate-600"}`}>
+                                {/* Label */}
+                                <span className={`text-[8px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-semibold text-center leading-tight max-w-[60px] sm:max-w-none ${step.done
+                                    ? "text-green-400/90 drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]"
+                                    : isCurrent
+                                        ? "text-fuchsia-400 drop-shadow-[0_0_4px_rgba(217,70,239,0.3)]"
+                                        : "text-slate-500"
+                                    }`}>
                                     {step.label}
                                 </span>
                             </div>
@@ -967,7 +1329,66 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                 <p className="text-xs text-slate-400 leading-relaxed">{currentStep.detail}</p>
                             </div>
                         )}
-                        {currentStep.onClick ? (
+                        {/* Custom deep scan step rendering */}
+                        {currentStep.cta === "__deep_scan_custom__" ? (
+                            <div className="ml-0 sm:ml-9 space-y-3">
+                                {/* Not triggered yet → Big pulsating button */}
+                                {!deepScanTriggered && !deepRunning && (
+                                    <div className="space-y-3">
+                                        <p className="text-xs text-slate-400 leading-relaxed">
+                                            Chatboti a AI nástroje se často zobrazují jen v určitou hodinu, z určité lokace nebo na mobilním zařízení — rychlý scan je nemůže odhalit všechny.
+                                        </p>
+                                        <button
+                                            onClick={onTriggerDeepScan}
+                                            disabled={deepScanLoading || !hasScans}
+                                            className="relative overflow-hidden w-full sm:w-auto rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:from-purple-500 hover:to-fuchsia-500 transition-all disabled:opacity-50 group"
+                                        >
+                                            <span className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-purple-400/20 to-fuchsia-400/20" />
+                                            <span className="relative flex items-center justify-center gap-2">
+                                                {deepScanLoading ? (
+                                                    <>
+                                                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                                                        Spouštím...
+                                                    </>
+                                                ) : (
+                                                    <>🔍 Spustit hloubkový test</>
+                                                )}
+                                            </span>
+                                        </button>
+                                        {deepScanError && (
+                                            <p className="text-xs text-red-400">{deepScanError}</p>
+                                        )}
+                                        <p className="text-xs text-slate-400">
+                                            🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 — 7 zemí, 6 kontinentů, desktop i mobil
+                                        </p>
+                                    </div>
+                                )}
+                                {/* Just triggered or running → Success message + dotazník */}
+                                {(deepScanTriggered || deepRunning) && !deepDone && (
+                                    <div className="space-y-4">
+                                        <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <span className="text-2xl">✅</span>
+                                                <h4 className="font-bold text-green-300 text-base">Výborně! Hloubkový test běží</h4>
+                                            </div>
+                                            <p className="text-sm text-slate-300 leading-relaxed">
+                                                Za přibližně <strong className="text-white">24 hodin</strong> vám napíšeme e-mail s kompletními výsledky.
+                                                Mezitím můžete vyplnit dotazník — upřesní analýzu o interní AI systémy.
+                                            </p>
+                                        </div>
+                                        {!hasQuest && (
+                                            <a
+                                                href={`/dotaznik?company_id=${data?.company?.id || ''}`}
+                                                className="relative overflow-hidden inline-flex items-center justify-center w-full sm:w-auto rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-4 text-base font-bold text-white shadow-lg shadow-fuchsia-500/30 hover:shadow-fuchsia-500/50 hover:from-fuchsia-500 hover:to-purple-500 transition-all"
+                                            >
+                                                <span className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-fuchsia-400/20 to-purple-400/20" />
+                                                <span className="relative">📝 Vyplnit dotazník</span>
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : currentStep.onClick ? (
                             <button onClick={currentStep.onClick} disabled={scanLoading} className="btn-primary text-sm px-5 py-2 ml-0 sm:ml-9 inline-block disabled:opacity-50">
                                 {currentStep.cta}
                             </button>
@@ -989,6 +1410,27 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                     </div>
                 )}
             </div>
+
+            {/* 24h deep scan running banner — always visible when test is in progress */}
+            {(deepRunning || deepScanTriggered) && !deepDone && currentStepIndex !== 1 && (
+                <div className="glass border-cyan-500/20">
+                    <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+                            <span className="text-lg animate-pulse">⏳</span>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-cyan-300 text-sm">24h hloubkový test probíhá</h4>
+                            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Testujeme váš web ze <strong className="text-slate-300">7 zemí a 6 kontinentů</strong> (desktop i mobil).
+                                Výsledky budou přibližně za <strong className="text-slate-300">24 hodin</strong> — pošleme vám e-mail.
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                                <span className="text-[10px] text-slate-500">🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Processing timer */}
             {isProcessing && (
@@ -1446,8 +1888,8 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
                                 </div>
                                 {/* CTA visible even when collapsed */}
                                 <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0 ${isExp
-                                        ? "bg-white/[0.06] text-slate-400"
-                                        : "bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300 group-hover:bg-fuchsia-500/25"
+                                    ? "bg-white/[0.06] text-slate-400"
+                                    : "bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300 group-hover:bg-fuchsia-500/25"
                                     }`}>
                                     {isExp ? "Skrýt" : "Zobrazit postup →"}
                                 </span>
@@ -1491,6 +1933,227 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
 }
 
 
+/* ── Tab: Dotazník (odpovědi) ── */
+const SECTION_LABELS: Record<string, string> = {
+    "O vaší firmě": "🏢 O vaší firmě",
+    "Zakázané praktiky": "🚫 Zakázané praktiky",
+    "AI nástroje ve firmě": "🤖 AI nástroje ve firmě",
+    "Lidské zdroje a zaměstnanci": "👥 Lidské zdroje a zaměstnanci",
+    "Finance a rozhodování": "💰 Finance a rozhodování",
+    "Zákazníci a komunikace": "💬 Zákazníci a komunikace",
+    "Bezpečnost a infrastruktura": "🔒 Bezpečnost a infrastruktura",
+    "Ochrana dat": "🛡️ Ochrana dat",
+    "AI gramotnost (čl. 4)": "📚 AI gramotnost (čl. 4)",
+    "Lidský dohled nad AI": "👁️ Lidský dohled nad AI",
+    "Vaše role v AI ekosystému": "🏷️ Vaše role v AI ekosystému",
+    "Řízení AI incidentů": "⚡ Řízení AI incidentů",
+};
+
+const ANSWER_LABELS: Record<string, { label: string; color: string }> = {
+    yes: { label: "Ano", color: "bg-green-500/15 text-green-400 border-green-500/25" },
+    no: { label: "Ne", color: "bg-red-500/15 text-red-400 border-red-500/25" },
+    unknown: { label: "Nevím", color: "bg-amber-500/15 text-amber-400 border-amber-500/25" },
+};
+
+function TabDotaznik({ companyId, questResults, questResultsLoading, setQuestResults, setQuestResultsLoading, hasQuest }: {
+    companyId: string;
+    questResults: QuestionnaireResultsResponse | null;
+    questResultsLoading: boolean;
+    setQuestResults: (r: QuestionnaireResultsResponse | null) => void;
+    setQuestResultsLoading: (l: boolean) => void;
+    hasQuest: boolean;
+}) {
+    const [showDetails, setShowDetails] = useState(false);
+
+    useEffect(() => {
+        if (!companyId || questResults) return;
+        setQuestResultsLoading(true);
+        getQuestionnaireResults(companyId)
+            .then(setQuestResults)
+            .catch(() => { /* silent */ })
+            .finally(() => setQuestResultsLoading(false));
+    }, [companyId]);
+
+    if (!hasQuest) {
+        return (
+            <div className="text-center py-16">
+                <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <p className="text-white font-semibold text-lg mb-2">Dotazník zatím nebyl dokončen</p>
+                <p className="text-slate-400 text-sm mb-6">Po vyplnění dotazníku zde uvidíte přehled vašich odpovědí.</p>
+                <a
+                    href={`/dotaznik?company_id=${companyId}`}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-400 text-white font-semibold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-fuchsia-500/25"
+                >
+                    📝 Vyplnit dotazník
+                </a>
+            </div>
+        );
+    }
+
+    if (questResultsLoading) {
+        return (
+            <div className="flex items-center justify-center gap-3 py-20">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-fuchsia-500 border-t-transparent" />
+                <span className="text-slate-400">Načítám odpovědi…</span>
+            </div>
+        );
+    }
+
+    if (!questResults) {
+        return (
+            <div className="text-center py-16">
+                <p className="text-slate-400">Nepodařilo se načíst odpovědi.</p>
+            </div>
+        );
+    }
+
+    // Risk breakdown with Czech labels
+    const riskLabels: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+        high: { label: "Vysoké riziko", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", icon: "🔴" },
+        limited: { label: "Střední riziko", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: "🟡" },
+        minimal: { label: "Minimální riziko", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20", icon: "🟢" },
+    };
+
+    const { risk_breakdown, total_answers, ai_systems_declared, recommendations } = questResults.analysis;
+
+    // Count "no risk" answers (yes answers that aren't in risk breakdown)
+    const totalRiskAnswers = Object.values(risk_breakdown).reduce((a, b) => a + b, 0);
+    const noRiskCount = total_answers - totalRiskAnswers;
+
+    // Determine overall risk level
+    const overallRisk = risk_breakdown.high > 0 ? "high" : risk_breakdown.limited > 0 ? "limited" : "minimal";
+    const overallLabel = overallRisk === "high" ? "Vyžaduje pozornost" : overallRisk === "limited" ? "Částečně v souladu" : "V pořádku";
+    const overallColor = overallRisk === "high" ? "from-red-600 to-red-500" : overallRisk === "limited" ? "from-amber-600 to-amber-500" : "from-emerald-600 to-emerald-500";
+
+    // Group high-risk recommendations
+    const highRiskRecs = (recommendations || []).filter((r: any) => r.risk_level === "high");
+    const limitedRiskRecs = (recommendations || []).filter((r: any) => r.risk_level === "limited");
+
+    return (
+        <div className="space-y-6">
+            {/* Overall status banner */}
+            <div className={`bg-gradient-to-r ${overallColor} rounded-2xl p-6 text-white`}>
+                <div className="flex items-center gap-4 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl">
+                        {overallRisk === "high" ? "⚠️" : overallRisk === "limited" ? "📋" : "✅"}
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold">{overallLabel}</h3>
+                        <p className="text-white/80 text-sm">Vyhodnoceno {new Date(questResults.submitted_at).toLocaleDateString("cs-CZ")}</p>
+                    </div>
+                </div>
+                <p className="text-white/90 text-sm">
+                    Na základě {total_answers} odpovědí jsme identifikovali {ai_systems_declared} AI {ai_systems_declared === 1 ? "systém" : ai_systems_declared < 5 ? "systémy" : "systémů"} ve vaší firmě.
+                </p>
+            </div>
+
+            {/* Risk breakdown cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {Object.entries(riskLabels).map(([key, meta]) => (
+                    <div key={key} className={`${meta.bg} border rounded-xl p-4 text-center`}>
+                        <div className="text-2xl mb-1">{meta.icon}</div>
+                        <div className={`text-2xl font-bold ${meta.color}`}>{risk_breakdown[key] || 0}</div>
+                        <div className="text-slate-400 text-xs mt-1">{meta.label}</div>
+                    </div>
+                ))}
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
+                    <div className="text-2xl mb-1">✅</div>
+                    <div className="text-2xl font-bold text-emerald-400">{noRiskCount}</div>
+                    <div className="text-slate-400 text-xs mt-1">Bez rizika</div>
+                </div>
+            </div>
+
+            {/* High-risk alerts */}
+            {highRiskRecs.length > 0 && (
+                <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-5">
+                    <h4 className="text-red-400 font-semibold text-sm mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        Vysoce rizikové oblasti ({highRiskRecs.length})
+                    </h4>
+                    <div className="space-y-2">
+                        {highRiskRecs.map((rec: any, i: number) => (
+                            <div key={i} className="flex items-start gap-3 bg-white/[0.02] rounded-xl px-4 py-3">
+                                <span className="text-red-400 shrink-0 mt-0.5">🔴</span>
+                                <div>
+                                    <p className="text-slate-300 text-sm">{rec.recommendation}</p>
+                                    {rec.ai_act_article && (
+                                        <p className="text-slate-500 text-xs mt-1">{rec.ai_act_article}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Limited risk alerts */}
+            {limitedRiskRecs.length > 0 && (
+                <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-5">
+                    <h4 className="text-amber-400 font-semibold text-sm mb-3">
+                        Oblasti se středním rizikem ({limitedRiskRecs.length})
+                    </h4>
+                    <div className="space-y-2">
+                        {limitedRiskRecs.map((rec: any, i: number) => (
+                            <div key={i} className="flex items-start gap-3 bg-white/[0.02] rounded-xl px-4 py-3">
+                                <span className="text-amber-400 shrink-0 mt-0.5">🟡</span>
+                                <p className="text-slate-300 text-sm">{rec.recommendation}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Detailed answers toggle */}
+            <div className="border-t border-white/[0.06] pt-4">
+                <button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors"
+                >
+                    <svg className={`w-4 h-4 transition-transform ${showDetails ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {showDetails ? "Skrýt podrobné odpovědi" : "Zobrazit podrobné odpovědi"}
+                </button>
+
+                {showDetails && (
+                    <div className="mt-4 space-y-2">
+                        {questResults.answers.map((ans) => {
+                            const ansStyle = ANSWER_LABELS[ans.answer] || { label: ans.answer, color: "bg-slate-500/15 text-slate-400 border-slate-500/25" };
+                            return (
+                                <div key={ans.question_key} className="flex items-center justify-between gap-3 bg-white/[0.02] rounded-lg px-4 py-2">
+                                    <span className="text-slate-400 text-xs truncate">{ans.question_key.replace(/_/g, " ")}</span>
+                                    <span className={`inline-flex items-center shrink-0 rounded-lg border px-2 py-0.5 text-xs font-medium ${ansStyle.color}`}>
+                                        {ansStyle.label}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a
+                    href={`/dotaznik?company_id=${companyId}`}
+                    className="inline-flex items-center justify-center gap-2 bg-white/[0.05] border border-white/[0.1] hover:bg-white/[0.08] text-white font-medium py-2.5 px-6 rounded-xl transition-all text-sm"
+                >
+                    ✏️ Upravit odpovědi
+                </a>
+                <a
+                    href={`/dotaznik?company_id=${companyId}&reset=1`}
+                    className="inline-flex items-center justify-center gap-2 text-sm text-fuchsia-400 hover:text-fuchsia-300 transition-colors py-2.5 px-6"
+                >
+                    🔄 Vyplnit dotazník znovu
+                </a>
+            </div>
+        </div>
+    );
+}
+
+
 /* ── Tab: Historie skenů ── */
 function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onStartScan: () => void }) {
     if (scans.length === 0) {
@@ -1526,19 +2189,33 @@ function TabSkeny({ scans, onStartScan }: { scans: DashboardData["scans"]; onSta
                         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                             <p className="text-sm font-medium text-slate-200 truncate">{scan.url}</p>
                             <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${scan.status === "completed"
-                                ? "bg-cyan-500/10 text-cyan-400"
+                                ? (scan.total_findings === 0 ? "bg-green-500/10 text-green-400" : "bg-cyan-500/10 text-cyan-400")
                                 : scan.status === "running"
                                     ? "bg-amber-500/10 text-amber-400"
                                     : "bg-red-500/10 text-red-400"
                                 }`}>
-                                {scan.status === "completed" ? "Dokončen" : scan.status === "running" ? "Probíhá" : scan.status}
+                                {scan.status === "completed" ? (scan.total_findings === 0 ? "Bez nálezů ✓" : "Dokončen") : scan.status === "running" ? "Probíhá" : scan.status}
                             </span>
+                            {scan.scan_type === "quick" && (
+                                <span className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium bg-slate-500/10 text-slate-400">Rychlý</span>
+                            )}
+                            {scan.deep_scan_status === "running" || scan.deep_scan_status === "pending" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-500/10 text-purple-400">
+                                    <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500" /></span>
+                                    24h scan běží
+                                </span>
+                            ) : scan.deep_scan_status === "done" || scan.deep_scan_status === "cooldown" ? (
+                                <span className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-500/10 text-green-400">24h scan ✓</span>
+                            ) : null}
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4 text-xs text-slate-500 mt-1 flex-wrap">
                             <span>{new Date(scan.created_at).toLocaleDateString("cs-CZ", {
                                 day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
                             })}</span>
                             <span>{scan.total_findings} {cz(scan.total_findings, 'nález', 'nálezy', 'nálezů')}</span>
+                            {(scan.deep_scan_status === "done" || scan.deep_scan_status === "cooldown") && scan.deep_scan_total_findings != null && (
+                                <span className="text-green-400">+ {scan.deep_scan_total_findings} z 24h skenu</span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1554,6 +2231,8 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
     const [passwordMsg, setPasswordMsg] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordAttempts, setPasswordAttempts] = useState(0);
+    const [passwordLockUntil, setPasswordLockUntil] = useState(0);
 
     const meta = user?.user_metadata || {};
     const companyName = meta.company_name || data?.company?.name || "—";
@@ -1565,8 +2244,17 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Anti-bot: throttle after 3 failed attempts (30 sec lock)
+        if (Date.now() < passwordLockUntil) {
+            const secs = Math.ceil((passwordLockUntil - Date.now()) / 1000);
+            setPasswordMsg(`Příliš mnoho pokusů. Zkuste to za ${secs} s.`);
+            return;
+        }
         if (newPassword !== confirmPassword) { setPasswordMsg("Hesla se neshodují"); return; }
-        if (newPassword.length < 6) { setPasswordMsg("Heslo musí mít alespoň 6 znaků"); return; }
+        if (newPassword.length < 8) { setPasswordMsg("Heslo musí mít alespoň 8 znaků"); return; }
+        if (!/[A-Z]/.test(newPassword)) { setPasswordMsg("Heslo musí obsahovat alespoň jedno velké písmeno"); return; }
+        if (!/[0-9]/.test(newPassword)) { setPasswordMsg("Heslo musí obsahovat alespoň jednu číslici"); return; }
+        if (!/[^A-Za-z0-9]/.test(newPassword)) { setPasswordMsg("Heslo musí obsahovat alespoň jeden speciální znak (!@#$%...)"); return; }
         setPasswordLoading(true);
         setPasswordMsg("");
         try {
@@ -1578,6 +2266,12 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
             setConfirmPassword("");
         } catch (err: any) {
             setPasswordMsg(`❌ ${err.message || "Chyba při změně hesla"}`);
+            const attempts = passwordAttempts + 1;
+            setPasswordAttempts(attempts);
+            if (attempts >= 3) {
+                setPasswordLockUntil(Date.now() + 30000);
+                setPasswordAttempts(0);
+            }
         } finally {
             setPasswordLoading(false);
         }
@@ -1598,7 +2292,6 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                     <InfoRow label="Web" value={webUrl} isUrl />
                     <InfoRow label="Email" value={user?.email || "—"} />
                     <InfoRow label="Registrace" value={registeredAt} />
-                    <InfoRow label="Partner" value={meta.partner || "—"} />
                 </div>
             </div>
 
@@ -1679,7 +2372,7 @@ function TabUcet({ user, data }: { user: any; data: DashboardData | null }) {
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-sm">
                     <div>
                         <label className="block text-sm text-slate-300 mb-1">Nové heslo</label>
-                        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimálně 6 znaků" minLength={6} required
+                        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 8 znaků, velké písmeno, číslo, speciální znak" minLength={8} required
                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30 transition-all" />
                     </div>
                     <div>
@@ -1710,12 +2403,13 @@ const DASHBOARD_PLANS = [
         description: "Compliance Kit — dokumenty ke stažení",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (7 dokumentů)",
+            "AI Act Compliance Kit (8 dokumentů)",
             "Transparenční stránka (HTML)",
             "Registr AI systémů",
             "Interní AI politika firmy",
             "Školení — prezentace v PowerPointu",
             "Záznamový list o proškolení",
+            "Plán řízení AI incidentů",
         ],
         notIncluded: [
             "Implementace na klíč",
@@ -1785,13 +2479,14 @@ const DASHBOARD_PLANS = [
 
 const COMPARISON_FEATURES = [
     { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
-    { label: "Compliance Kit (7 dokumentů)", basic: true, pro: true, enterprise: true },
+    { label: "Compliance Kit (8 dokumentů)", basic: true, pro: true, enterprise: true },
     { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
     { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
     { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
     { label: "Interní AI politika firmy", basic: true, pro: true, enterprise: true },
     { label: "Školení — prezentace v PowerPointu", basic: true, pro: true, enterprise: true },
     { label: "Záznamový list o proškolení", basic: true, pro: true, enterprise: true },
+    { label: "Plán řízení AI incidentů", basic: true, pro: true, enterprise: true },
     { label: "Implementace na váš web na klíč", basic: false, pro: true, enterprise: true },
     { label: "Nastavení transparenční stránky na webu", basic: false, pro: true, enterprise: true },
     { label: "Úprava cookie lišty a chatbot oznámení", basic: false, pro: true, enterprise: true },
@@ -2032,7 +2727,7 @@ function PricingComparisonTable() {
                             {[
                                 "2× měsíčně automatický sken webu",
                                 "Vše z Monitoring",
-                                "Aktualizace VŠECH 7 dokumentů",
+                                "Aktualizace VŠECH 8 dokumentů",
                                 "Implementace změn na webu klienta",
                                 "Prioritní emailová podpora",
                                 "Čtvrtletní souhrnný přehled",

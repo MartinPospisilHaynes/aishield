@@ -1,0 +1,74 @@
+PERSONA 07 — Restaurace / OSVČ
+=================================
+
+Jméno firmy:     U Staré Lípy
+Kontaktní osoba: Jaroslav Kučera, majitel (OSVČ)
+Forma podnikání: OSVČ
+IČO:             98765407
+Sídlo:           Masarykova 18, 370 01 České Budějovice
+Telefon:         +420 607 777 007
+E-mail:          info@ustarelípy.cz
+Web:             www.ustarelípy.cz
+
+Zaměstnanci:     0 (sám + 3 brigádníci na DPP)
+Roční obrat:     ~2,5 mil. Kč
+Odvětví:         Gastronomie / Restaurace
+
+Popis podnikání:
+- Malá rodinná restaurace, 40 míst
+- Žádné AI — mají jen web s online rezervacemi (WordPress plugin)
+- Fakturuje přes Pohodu
+- Sociální sítě — ručně, občas Canva s šablonami
+- Minimální digitalizace
+- Data: účtenky EET (zrušeno), fakturace, žádné osobní data v AI
+
+Očekávané chování dotazníku:
+- Téměř nic relevantního — na většinu otázek odpoví "ne"
+- VELKÝ PROBLÉM: dotazník bude mít 43 otázek pro restauraci, která AI vůbec nepoužívá
+- Risk level: MINIMÁLNÍ (žádné AI, žádná riziková činnost)
+- Dotazník by měl být extrémně krátký — ale není, protože chybí filtrování
+
+Odpovědi pro test:
+  company_legal_name: "Jaroslav Kučera — U Staré Lípy"
+  company_ico: "98765407"
+  company_address: "Masarykova 18, 370 01 České Budějovice"
+  company_contact_email: "info@ustarelípy.cz"
+  company_industry: ["Gastronomie / Restaurace"]
+  company_size: "1–9 zaměstnanců"
+  company_annual_revenue: "pod 2 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "no"
+  uses_copilot: "no"
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "no"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "no"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "no"
+  ai_data_stored_eu: "not_applicable"
+  has_ai_vendor_contracts: "no"
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "not_applicable"
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "no"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

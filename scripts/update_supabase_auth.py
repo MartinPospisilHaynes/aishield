@@ -91,10 +91,8 @@ def _email_wrapper(title: str, body_content: str) -> str:
 CONFIRM_EMAIL_SUBJECT = "Potvrďte svůj email — AIshield.cz"
 CONFIRM_EMAIL_TEMPLATE = _email_wrapper("Potvrďte email", f"""
     <div style="text-align:center;">
-        <div style="margin:0 auto 20px;width:56px;height:56px;border-radius:14px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);display:flex;align-items:center;justify-content:center;">
-            <svg width="28" height="28" fill="none" stroke="#22c55e" viewBox="0 0 24 24" style="display:block;margin:auto;padding-top:14px;">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
+        <div style="margin:0 auto 20px;width:56px;height:56px;border-radius:14px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);line-height:56px;text-align:center;font-size:28px;">
+            &#9993;
         </div>
         <h1 style="font-size:22px;font-weight:700;color:{TEXT};margin:0 0 10px;">Potvrďte svůj email</h1>
         <p style="font-size:14px;color:{TEXT_SECONDARY};line-height:1.6;margin:0 0 24px;">
@@ -139,11 +137,8 @@ MAGIC_LINK_TEMPLATE = _email_wrapper("Přihlášení", f"""
 RECOVERY_SUBJECT = "Obnovení hesla — AIshield.cz"
 RECOVERY_TEMPLATE = _email_wrapper("Obnovení hesla", f"""
     <div style="text-align:center;">
-        <div style="margin:0 auto 20px;width:56px;height:56px;border-radius:14px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.2);display:flex;align-items:center;justify-content:center;">
-            <svg width="28" height="28" fill="none" stroke="#eab308" viewBox="0 0 24 24" style="display:block;margin:auto;padding-top:14px;">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
-                <path stroke-width="2" d="M7 11V7a5 5 0 0110 0v4"/>
-            </svg>
+        <div style="margin:0 auto 20px;width:56px;height:56px;border-radius:14px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.2);line-height:56px;text-align:center;font-size:28px;">
+            &#128274;
         </div>
         <h1 style="font-size:22px;font-weight:700;color:{TEXT};margin:0 0 10px;">Obnovení hesla</h1>
         <p style="font-size:14px;color:{TEXT_SECONDARY};line-height:1.6;margin:0 0 24px;">

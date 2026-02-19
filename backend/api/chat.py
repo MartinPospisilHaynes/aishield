@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 import httpx
 from cryptography.fernet import Fernet
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from backend.security.prompt_guard import (
@@ -173,10 +173,12 @@ def _decrypt(token: str) -> str:
         return token  # pravděpodobně starý nešifrovaný záznam
 
 
-# ── Rate limiting (jednoduchý in-memory) ──
+# ── Rate limiting (IP-based in-memory) ──
 _rate_limits: dict[str, list[float]] = {}
 RATE_LIMIT_WINDOW = 60  # sekund
-RATE_LIMIT_MAX = 15  # zpráv za minutu na session
+RATE_LIMIT_MAX = 15  # zpráv za minutu na IP adresu
+RATE_LIMIT_MAX_GLOBAL = 300  # max zpráv/min celkem (ochrana proti DDoS)
+_global_chat_timestamps: list[float] = []
 
 
 # ── System prompt ──────────────────────────────────────────────────
@@ -602,28 +604,43 @@ def _log_message(session_id: str, role: str, content: str, page_url: str | None 
         logger.error(f"Chat log chyba: {e}")
 
 
-# ── Rate limiter ──
-def _check_rate_limit(session_id: str) -> bool:
-    """Vrať True pokud je OK, False pokud překročen limit."""
+# ── Rate limiter (IP-based) ──
+def _check_rate_limit(key: str) -> bool:
+    """Vrať True pokud je OK, False pokud překročen limit. Klíč je IP adresa."""
+    global _global_chat_timestamps
     now = time.time()
-    if session_id not in _rate_limits:
-        _rate_limits[session_id] = []
-    # Vyčistit staré záznamy
-    _rate_limits[session_id] = [t for t in _rate_limits[session_id] if now - t < RATE_LIMIT_WINDOW]
-    if len(_rate_limits[session_id]) >= RATE_LIMIT_MAX:
+    # Per-IP limit
+    if key not in _rate_limits:
+        _rate_limits[key] = []
+    _rate_limits[key] = [t for t in _rate_limits[key] if now - t < RATE_LIMIT_WINDOW]
+    if len(_rate_limits[key]) >= RATE_LIMIT_MAX:
         return False
-    _rate_limits[session_id].append(now)
+    # Globální limit
+    _global_chat_timestamps = [t for t in _global_chat_timestamps if now - t < RATE_LIMIT_WINDOW]
+    if len(_global_chat_timestamps) >= RATE_LIMIT_MAX_GLOBAL:
+        return False
+    _rate_limits[key].append(now)
+    _global_chat_timestamps.append(now)
     return True
 
 
 # ── Hlavní endpoint ──
 @router.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest, http_request: Request = None):
     """Chatbot endpoint — volá Gemini 2.5 Flash. Obsahuje dev-mode pro vývojáře."""
 
-    # Rate limit (dev sessions mají dvojnásobný limit)
+    # Extrahovat IP pro rate limiting
+    client_ip = "unknown"
+    if http_request:
+        client_ip = (
+            http_request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or http_request.headers.get("x-real-ip", "")
+            or (http_request.client.host if http_request.client else "unknown")
+        )
+
+    # Rate limit podle IP (dev sessions mají bypass)
     is_dev = _is_dev_session_active(req.session_id, req.messages)
-    if not is_dev and not _check_rate_limit(req.session_id):
+    if not is_dev and not _check_rate_limit(client_ip):
         raise HTTPException(
             status_code=429,
             detail="Příliš mnoho zpráv. Zkuste to prosím za chvíli."

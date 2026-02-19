@@ -371,6 +371,7 @@ def _deliverables_panel() -> str:
         ("AI banner / oznámení", "Připravené k&nbsp;okamžitému nasazení na váš web"),
         ("Samostatnou transparenční stránku", "HTML stránka s&nbsp;informacemi o&nbsp;AI pro vaše návštěvníky"),
         ("Záznamy o&nbsp;školení", "Dokumentace AI gramotnosti pro zaměstnance (čl.&nbsp;4)"),
+        ("Plán řízení AI incidentů", "Postup při selhání AI systému — koho kontaktovat, do kdy hlásit"),
         ("Kompletní akční plán", "Konkrétní kroky s&nbsp;termíny — přesně co, kdy a&nbsp;jak"),
         ("Dotazník interních AI systémů", "Pomůžeme zmapovat i&nbsp;AI, které scanner nevidí (HR, ERP…)"),
         ("Průběžný monitoring a&nbsp;alerting", "Automatické sledování nových AI nástrojů na webu"),

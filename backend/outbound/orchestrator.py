@@ -28,6 +28,12 @@ from backend.prospecting.smart_pipeline import (
 )
 from backend.outbound.email_engine import run_email_campaign, is_sending_allowed
 
+# ══════════════════════════════════════════════════════════════
+# ⛔ PIPELINE POZASTAVENA — zapnout až bude celá pipeline hotová
+# Nastavit na True pro spuštění prospectingu, scanningu a emailů.
+# ══════════════════════════════════════════════════════════════
+PIPELINE_ENABLED = False
+
 # ── AGRESIVNÍ LIMITY ──
 
 # Prospecting: kolik firem načíst za cyklus (z každého zdroje)
@@ -210,6 +216,9 @@ SCHEDULE = {
 
 async def run_task(task_name: str) -> dict:
     """Spustí konkrétní úlohu a zaloguje výsledek."""
+    if not PIPELINE_ENABLED:
+        return {"task": task_name, "status": "skipped", "reason": "Pipeline pozastavena (PIPELINE_ENABLED=False)"}
+
     if task_name not in SCHEDULE:
         return {"error": f"Neznámá úloha: {task_name}"}
 
@@ -297,6 +306,9 @@ async def run_continuous():
     """
     print("=" * 60)
     print("🚀 AIshield Orchestrátor v2 — CONTINUOUS MODE")
+    if not PIPELINE_ENABLED:
+        print("   ⛔ PIPELINE POZASTAVENA — žádné úlohy se nespouštějí")
+        print("   → Zapnout: PIPELINE_ENABLED = True v orchestrator.py")
     print(f"   Cyklus: {CYCLE_INTERVAL_MINUTES}min (den) / {NIGHT_CYCLE_MINUTES}min (noc)")
     print(f"   Prospecting: {PROSPECT_PER_SOURCE}/zdroj × {len(PROSPECT_SOURCES)} zdroje")
     print(f"   Scanning: {SCAN_LIMIT}/cyklus")

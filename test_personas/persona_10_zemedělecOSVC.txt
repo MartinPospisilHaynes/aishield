@@ -1,0 +1,75 @@
+PERSONA 10 — Farmář / Zemědělec OSVČ
+=======================================
+
+Jméno firmy:     Farma Zelený Kopec
+Kontaktní osoba: František Malý (OSVČ)
+Forma podnikání: OSVČ
+IČO:             11223310
+Sídlo:           Zelený Kopec 1, 393 01 Pelhřimov
+Telefon:         +420 610 000 010
+E-mail:          frantafarmar@email.cz
+Web:             (nemá web)
+
+Zaměstnanci:     0 (sám + sezónní brigádníci)
+Roční obrat:     ~3 mil. Kč
+Odvětví:         Zemědělství
+
+Popis podnikání:
+- Rodinná farma, 80 ha polí (pšenice, řepka, kukuřice)
+- 20 kusů skotu
+- Žádné AI systémy
+- Mobil s internetem, faktury v Excelu
+- Administrace přes Portál farmáře (SZIF)
+- Občas Google pro počasí
+- Žádné osobní data třetích stran
+
+Očekávané chování dotazníku:
+- ABSOLUTNĚ NIC RELEVANTNÍHO — na všechno odpoví "ne"
+- EXTRÉMNÍ DEMONSTRACE PROBLÉMU: 43 otázek o AI pro farmáře bez internetu
+- Risk level: MINIMÁLNÍ (žádné AI, žádná infrastruktura)
+- Dotazník by měl skončit po 3-4 otázkách a říct "AI Act se vás netýká"
+
+Odpovědi pro test:
+  company_legal_name: "František Malý — Farma Zelený Kopec"
+  company_ico: "11223310"
+  company_address: "Zelený Kopec 1, 393 01 Pelhřimov"
+  company_contact_email: "frantafarmar@email.cz"
+  company_industry: ["Zemědělství"]
+  company_size: "1–9 zaměstnanců"
+  company_annual_revenue: "2–10 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "no"
+  uses_copilot: "no"
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "no"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "no"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "no"
+  ai_data_stored_eu: "not_applicable"
+  has_ai_vendor_contracts: "no"
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "not_applicable"
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "no"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

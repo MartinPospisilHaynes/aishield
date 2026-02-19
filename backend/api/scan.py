@@ -4,6 +4,7 @@ Přijme URL, uloží do DB, vrátí scan_id.
 Skutečný scanner přijde v Fázi B (úkoly 6-10).
 """
 
+import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
@@ -18,6 +19,7 @@ import re
 import socket
 from urllib.parse import urlparse
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ── SSRF ochrana ──
@@ -99,6 +101,13 @@ class ScanStatusResponse(BaseModel):
     company_name: str | None
     scan_warning: str | None = None
     error_message: str | None = None
+    # Deep scan fields
+    scan_type: str | None = None
+    deep_scan_status: str | None = None
+    deep_scan_started_at: str | None = None
+    deep_scan_finished_at: str | None = None
+    deep_scan_total_findings: int | None = None
+    geo_countries_scanned: list[str] | None = None
 
 
 # ── Endpointy ──
@@ -236,7 +245,8 @@ async def get_scan_status(scan_id: str):
 
     try:
         result = supabase.table("scans").select(
-            "id, url_scanned, status, total_findings, started_at, finished_at, company_id, error_message"
+            "id, url_scanned, status, total_findings, started_at, finished_at, company_id, error_message, "
+            "scan_type, deep_scan_status, deep_scan_started_at, deep_scan_finished_at, deep_scan_total_findings, geo_countries_scanned"
         ).eq("id", scan_id).limit(1).execute()
 
         if not result.data:
@@ -251,8 +261,7 @@ async def get_scan_status(scan_id: str):
                 started = datetime.fromisoformat(scan["started_at"].replace("Z", "+00:00"))
                 elapsed = (datetime.now(timezone.utc) - started).total_seconds()
                 if elapsed > STALE_SCAN_TIMEOUT_SECONDS:
-                    import logging
-                    logging.getLogger(__name__).warning(
+                    logger.warning(
                         f"[StaleScan] Scan {scan_id} běží {elapsed:.0f}s — označuji jako error"
                     )
                     now_iso = datetime.now(timezone.utc).isoformat()
@@ -289,6 +298,12 @@ async def get_scan_status(scan_id: str):
             company_name=company_name,
             scan_warning=scan_warning,
             error_message=error_message,
+            scan_type=scan.get("scan_type"),
+            deep_scan_status=scan.get("deep_scan_status"),
+            deep_scan_started_at=scan.get("deep_scan_started_at"),
+            deep_scan_finished_at=scan.get("deep_scan_finished_at"),
+            deep_scan_total_findings=scan.get("deep_scan_total_findings"),
+            geo_countries_scanned=scan.get("geo_countries_scanned"),
         )
 
     except HTTPException:
@@ -301,8 +316,15 @@ async def get_scan_status(scan_id: str):
 
 
 @router.get("/scans/recent")
-async def get_recent_scans(limit: int = 10):
-    """Vrátí posledních N skenů — pro dashboard / statistiky."""
+async def get_recent_scans(
+    limit: int = 10,
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    """Vrátí posledních N skenů — vyžaduje admin přístup."""
+    # Zabezpečení: pouze admin může vidět všechny skeny
+    if not user or user.email not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Přístup odepřen — vyžaduje admin oprávnění")
+
     supabase = get_supabase()
 
     try:
@@ -321,7 +343,7 @@ async def get_recent_scans(limit: int = 10):
 
 @router.get("/scan/{scan_id}/findings")
 async def get_scan_findings(scan_id: str):
-    """Vrátí všechny nálezy pro daný sken (deployed + false positives zvlášť)."""
+    """Vrátí všechny nálezy pro daný sken (deployed + false positives + trackery zvlášť)."""
     supabase = get_supabase()
 
     try:
@@ -340,11 +362,23 @@ async def get_scan_findings(scan_id: str):
             else:
                 deployed.append(f)
 
+        # Načteme trackery z scans tabulky
+        trackers = []
+        try:
+            scan_row = supabase.table("scans").select("trackers_json").eq("id", scan_id).single().execute()
+            if scan_row.data and scan_row.data.get("trackers_json"):
+                import json
+                trackers = json.loads(scan_row.data["trackers_json"])
+        except Exception:
+            pass  # trackers_json nemusí existovat pro starší skeny
+
         return {
             "findings": deployed,
             "false_positives": false_positives,
+            "trackers": trackers,
             "count": len(deployed),
             "fp_count": len(false_positives),
+            "tracker_count": len(trackers),
             "ai_classified": any(
                 f.get("source") in ("ai_classified", "ai_classified_fp")
                 for f in result.data
@@ -506,3 +540,147 @@ async def confirm_all_findings(scan_id: str, request: ConfirmFindingRequest):
             status_code=500,
             detail=f"Chyba při hromadném potvrzování: {str(e)}",
         )
+
+
+@router.post("/scan/{scan_id}/deep")
+async def trigger_deep_scan(scan_id: str):
+    """
+    Ručně spustí 24h hloubkový scan pro daný sken.
+    Kontroluje cooldown (max 1× za 7 dní na doménu).
+    """
+    from datetime import timedelta
+    from arq.connections import ArqRedis, create_pool
+    from arq.connections import RedisSettings
+
+    logger.info(f"[DeepTrigger] Požadavek na spuštění deep scanu: scan_id={scan_id}")
+
+    supabase = get_supabase()
+
+    # 1. Najít scan
+    scan_res = supabase.table("scans").select(
+        "id, url_scanned, company_id, status, deep_scan_status, deep_scan_started_at"
+    ).eq("id", scan_id).limit(1).execute()
+
+    if not scan_res.data:
+        logger.warning(f"[DeepTrigger] Scan nenalezen: scan_id={scan_id}")
+        raise HTTPException(status_code=404, detail="Scan nenalezen.")
+
+    scan = scan_res.data[0]
+    company_id = scan["company_id"]
+    url = scan["url_scanned"]
+    current_deep_status = scan["deep_scan_status"]
+
+    logger.info(
+        f"[DeepTrigger] Stav scanu: scan_id={scan_id}, url={url}, "
+        f"status={scan['status']}, deep_scan_status={current_deep_status}, "
+        f"company_id={company_id}"
+    )
+
+    if not url:
+        logger.error(f"[DeepTrigger] Scan nemá URL! scan_id={scan_id}")
+        raise HTTPException(status_code=400, detail="Scan nemá URL. Kontaktujte podporu.")
+
+    if scan["status"] != "done":
+        logger.warning(f"[DeepTrigger] Rychlý scan nedokončen: scan_id={scan_id}, status={scan['status']}")
+        raise HTTPException(status_code=400, detail="Rychlý scan ještě nebyl dokončen.")
+
+    if current_deep_status in ("running", "pending"):
+        # Check if stuck (>26h = probably dead) — auto-reset
+        from datetime import datetime, timezone, timedelta
+        started = scan.get("deep_scan_started_at")
+        if started:
+            started_dt = datetime.fromisoformat(started.replace("Z", "+00:00"))
+            elapsed_h = (datetime.now(timezone.utc) - started_dt).total_seconds() / 3600
+            if elapsed_h > 26:
+                logger.warning(
+                    f"[DeepTrigger] Zaseknutý deep scan detekován ({elapsed_h:.1f}h), resetuji: scan_id={scan_id}"
+                )
+                supabase.table("scans").update({
+                    "deep_scan_status": None,
+                    "deep_scan_started_at": None,
+                }).eq("id", scan_id).execute()
+                # Fall through — allow re-trigger
+            else:
+                logger.info(
+                    f"[DeepTrigger] Deep scan již běží ({elapsed_h:.1f}h): scan_id={scan_id}"
+                )
+                return {
+                    "scan_id": scan_id,
+                    "deep_scan_status": current_deep_status,
+                    "message": "Hloubkový scan již běží. Výsledky obdržíte e-mailem do 24 hodin.",
+                }
+        else:
+            logger.info(
+                f"[DeepTrigger] Deep scan status={current_deep_status} ale chybí started_at: scan_id={scan_id}"
+            )
+            return {
+                "scan_id": scan_id,
+                "deep_scan_status": current_deep_status,
+                "message": "Hloubkový scan již běží. Výsledky obdržíte e-mailem do 24 hodin.",
+            }
+
+    if current_deep_status == "done":
+        logger.info(f"[DeepTrigger] Deep scan již dokončen: scan_id={scan_id}")
+        return {
+            "scan_id": scan_id,
+            "deep_scan_status": "done",
+            "message": "Hloubkový scan již byl dokončen. Výsledky najdete v dashboardu.",
+        }
+
+    # 2. Cooldown: max 1× za 7 dní pro danou doménu
+    from datetime import datetime, timezone
+    cooldown_since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    recent_deep = supabase.table("scans").select("id").eq(
+        "company_id", company_id
+    ).eq(
+        "deep_scan_status", "done"
+    ).gte(
+        "deep_scan_finished_at", cooldown_since
+    ).limit(1).execute()
+
+    if recent_deep.data:
+        logger.warning(
+            f"[DeepTrigger] Cooldown aktivní: company_id={company_id}, "
+            f"poslední deep scan={recent_deep.data[0]['id']}"
+        )
+        raise HTTPException(
+            status_code=429,
+            detail="Hloubkový scan byl proveden v posledních 7 dnech. Zkuste to později.",
+        )
+
+    # 3. Označit jako pending a enqueue
+    logger.info(f"[DeepTrigger] Nastavuji pending a enqueue: scan_id={scan_id}, url={url}")
+    supabase.table("scans").update({
+        "deep_scan_status": "pending",
+    }).eq("id", scan_id).execute()
+
+    try:
+        pool = await create_pool(RedisSettings(host="localhost", port=6379))
+        await pool.enqueue_job(
+            "deep_scan_job",
+            scan_id,
+            url,
+            company_id,
+            _job_id=f"deep-{scan_id}",
+        )
+        await pool.close()
+        logger.info(f"[DeepTrigger] ✅ Job zařazen do fronty: scan_id={scan_id}, url={url}")
+    except Exception as enqueue_err:
+        logger.error(
+            f"[DeepTrigger] ❌ Chyba při enqueue: scan_id={scan_id}, error={enqueue_err}",
+            exc_info=True,
+        )
+        # Rollback status
+        supabase.table("scans").update({
+            "deep_scan_status": None,
+        }).eq("id", scan_id).execute()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Nepodařilo se naplánovat hloubkový scan: {str(enqueue_err)}",
+        )
+
+    return {
+        "scan_id": scan_id,
+        "deep_scan_status": "pending",
+        "message": "Hloubkový 24h scan byl úspěšně spuštěn. Výsledky obdržíte e-mailem.",
+    }

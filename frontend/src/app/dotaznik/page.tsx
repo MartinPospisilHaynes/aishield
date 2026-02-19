@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAnalytics } from "@/lib/analytics";
+import { createClient } from "@/lib/supabase-browser";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -23,7 +24,7 @@ function renderWarningText(text: string) {
 interface FollowupField {
     key: string;
     label: string;
-    type: "text" | "select" | "multi_select" | "info";
+    type: "text" | "select" | "single_select" | "multi_select" | "info";
     options?: string[];
     warning?: Record<string, string>;
 }
@@ -36,6 +37,7 @@ interface Question {
     help_text?: string;
     followup?: { condition: string; fields: FollowupField[] };
     followup_no?: { fields: FollowupField[] };
+    followup_yes?: { fields: FollowupField[] };
     risk_hint: string;
     ai_act_article: string | null;
 }
@@ -104,7 +106,7 @@ const INDUSTRY_SVG: Record<string, React.ReactNode> = {
         <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.379a48.474 48.474 0 00-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 016 13.12M12.265 3.11a.375.375 0 11-.53 0L12 2.845l.265.265z" /></svg>
     ),
     "Kadeřnictví / Kosmetika": (
-        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.848 8.25l1.536.887M7.848 8.25a3 3 0 11-5.196-3 3 3 0 015.196 3zm1.536.887a2.165 2.165 0 011.083 1.839c.005.351.054.695.14 1.024M9.384 9.137l2.077 1.199M7.848 15.75l1.536-.887m-1.536.887a3 3 0 11-5.196 3 3 3 0 015.196-3zm1.536-.887a2.165 2.165 0 001.083-1.838c.005-.352.054-.696.14-1.025m-1.223 2.863l2.077-1.199m0-3.328a4.323 4.323 0 012.068-1.379l5.325-1.628a4.5 4.5 0 012.48-.044l.803.215-7.794 4.5m-2.882-1.664A4.331 4.331 0 0010.607 12m3.736 0l7.794 4.5-.802.215a4.5 4.5 0 01-2.48-.043l-5.326-1.629a4.324 4.324 0 01-2.068-1.379M14.343 12l-2.882 1.664" /></svg>
     ),
     "Právní služby": (
         <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" /></svg>
@@ -197,6 +199,32 @@ function QuestionnaireInner() {
             })
             .catch(() => setLoading(false));
     }, []);
+
+    /* ── Prefill from registration (Supabase user_metadata) ── */
+    useEffect(() => {
+        (async () => {
+            try {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user?.user_metadata) return;
+                const meta = user.user_metadata;
+                setAnswers((prev) => {
+                    const updated = { ...prev };
+                    // Pre-fill only empty fields
+                    if (meta.company_name && updated.company_legal_name && !updated.company_legal_name.answer) {
+                        updated.company_legal_name = { ...updated.company_legal_name, answer: meta.company_name };
+                    }
+                    if (meta.ico && updated.company_ico && !updated.company_ico.answer) {
+                        updated.company_ico = { ...updated.company_ico, answer: meta.ico };
+                    }
+                    if (user.email && updated.company_contact_email && !updated.company_contact_email.answer) {
+                        updated.company_contact_email = { ...updated.company_contact_email, answer: user.email };
+                    }
+                    return updated;
+                });
+            } catch { /* not logged in — skip prefill */ }
+        })();
+    }, [sections]); // run after sections loaded so answer slots exist
 
     /* ── URL params + pre-fill existing answers in edit mode ── */
     useEffect(() => {
@@ -663,6 +691,7 @@ function QuestionnaireInner() {
     const ans = answers[q.key];
     const isLast = currentQuestion === totalQuestions - 1;
     const showFollowup = q.followup && (
+        (q.followup.condition === "any" && !!ans?.answer) ||
         (q.followup.condition === "yes" && ans?.answer === "yes") ||
         (q.followup.condition === "unknown" && ans?.answer === "unknown") ||
         (q.followup.condition === "no" && ans?.answer === "no")
@@ -793,6 +822,90 @@ function QuestionnaireInner() {
         );
     }
 
+    /* ── Text input question (company name, IČO, address, email etc.) ── */
+    if (q.type === "text") {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col">
+                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+
+                <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="fixed bottom-[-150px] left-[-80px] w-[350px] h-[350px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="flex-1 flex items-center justify-center p-4 pt-16">
+                    <div className={`w-full max-w-xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
+
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+                            {q.text}
+                        </h2>
+
+                        {q.help_text && (
+                            <div className="text-slate-400 text-sm mb-6 flex items-start gap-2">
+                                <span className="text-slate-500 mt-0.5 flex-shrink-0">ℹ️</span>
+                                <span className="whitespace-pre-line">{q.help_text}</span>
+                            </div>
+                        )}
+                        {!q.help_text && <div className="mb-6" />}
+
+                        <input
+                            type={q.key === "company_contact_email" ? "email" : "text"}
+                            placeholder={
+                                q.key === "company_legal_name" ? "Např. ACME Solutions s.r.o." :
+                                    q.key === "company_ico" ? "Např. 12345678" :
+                                        q.key === "company_address" ? "Např. Václavské nám. 1, Praha 1" :
+                                            q.key === "company_contact_email" ? "Např. ai@firma.cz" :
+                                                "Napište…"
+                            }
+                            className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-4 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                            value={ans?.answer || ""}
+                            onChange={(e) => setAnswer(q.key, e.target.value)}
+                            autoFocus
+                        />
+
+                        {/* AI Act reference pill */}
+                        {q.ai_act_article && (
+                            <div className="mt-4">
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Navigation */}
+                        <div className="flex justify-between mt-8">
+                            <button
+                                onClick={goBack}
+                                className="px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1]"
+                            >
+                                ← Zpět
+                            </button>
+                            {ans?.answer?.trim() ? (
+                                isLast ? (
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={submitting}
+                                        className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 animate-pulse"
+                                    >
+                                        {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={goNext}
+                                        className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
+                                    >
+                                        Další →
+                                    </button>
+                                )
+                            ) : null}
+                        </div>
+
+                        <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     /* ── Yes / No / Unknown question ── */
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col">
@@ -811,6 +924,14 @@ function QuestionnaireInner() {
                         {q.text}
                     </h2>
 
+                    {/* Scope hint — who is this question for */}
+                    {(q as any).scope_hint && (
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 mb-4 flex items-start gap-2">
+                            <span className="text-amber-400 mt-0.5 flex-shrink-0 text-sm">👤</span>
+                            <p className="text-xs text-amber-300/90 leading-relaxed">{(q as any).scope_hint}</p>
+                        </div>
+                    )}
+
                     {/* Help text */}
                     {q.help_text && (
                         <div className="text-slate-400 text-sm mb-4 flex items-start gap-2">
@@ -818,7 +939,7 @@ function QuestionnaireInner() {
                             <span className="whitespace-pre-line">{q.help_text}</span>
                         </div>
                     )}
-                    {!q.help_text && <div className="mb-4" />}
+                    {!q.help_text && !(q as any).scope_hint && <div className="mb-4" />}
 
                     {/* Answer tiles */}
                     <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-2" : "grid-cols-3"} gap-3 mb-4`}>
@@ -837,8 +958,12 @@ function QuestionnaireInner() {
                                             // Came from dashboard for specific question — submit this answer and go back
                                             if (q.followup && q.followup.condition === opt.value) {
                                                 // Followup triggered — let user fill it, they'll use the "Zpět" button
+                                            } else if (q.followup && q.followup.condition === "any") {
+                                                // Followup always shows — let user fill it, they'll use the "Zpět" button
                                             } else if (q.followup_no && opt.value === "no") {
                                                 // followup_no triggered — show warning, they'll use the "Zpět" button
+                                            } else if (q.followup_yes && opt.value === "yes") {
+                                                // followup_yes triggered — show fields, they'll use the "Zpět" button
                                             } else {
                                                 // No followup — auto-submit and return to dashboard
                                                 setTimeout(() => { handleSubmit(); }, 400);
@@ -942,7 +1067,6 @@ function QuestionnaireInner() {
                                                             <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
                                                             <div>
                                                                 <p className="text-xs text-red-300 leading-relaxed">{renderWarningText((field.warning as Record<string, string>)[ans.details[field.key] as string])}</p>
-                                                                <p className="text-xs text-white font-bold mt-2">Nebojte se — my víme jak na to a postaráme se o to!</p>
                                                             </div>
                                                         </div>
                                                     )}
@@ -997,7 +1121,6 @@ function QuestionnaireInner() {
                                                                 <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
                                                                 <div>
                                                                     <p className="text-xs text-red-300 leading-relaxed">{renderWarningText(msg.join(" "))}</p>
-                                                                    <p className="text-xs text-white font-bold mt-2">Nebojte se — my víme jak na to a postaráme se o to!</p>
                                                                 </div>
                                                             </div>
                                                         ) : null;
@@ -1008,12 +1131,43 @@ function QuestionnaireInner() {
                                             {/* Text → minimal input (fallback) */}
                                             {field.type === "text" && (
                                                 <input
-                                                    type="text"
-                                                    placeholder="Napište…"
+                                                    type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
+                                                    placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
                                                     className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                     value={(ans?.details[field.key] as string) || ""}
                                                     onChange={(e) => setDetail(q.key, field.key, e.target.value)}
                                                 />
+                                            )}
+
+                                            {/* Single select → tile grid (one choice) */}
+                                            {field.type === "single_select" && field.options && (
+                                                <>
+                                                    {field.label && (
+                                                        <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                            {field.label}
+                                                        </label>
+                                                    )}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const selected = (ans?.details[field.key] as string) === opt;
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => setDetail(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </>
                                             )}
                                         </div>
                                     ))}
@@ -1029,10 +1183,188 @@ function QuestionnaireInner() {
                                 <div className="space-y-4">
                                     {q.followup_no.fields.map((field) => (
                                         <div key={field.key}>
+                                            {/* Info → warning banner */}
                                             {field.type === "info" && (
                                                 <div className="flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
                                                     <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">⚠️</span>
                                                     <p className="text-xs text-red-300 leading-relaxed">{renderWarningText(field.label.replace(/^⚠️\s*/, ''))}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Text input */}
+                                            {field.type === "text" && (
+                                                <>
+                                                    <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                        {field.label}
+                                                    </label>
+                                                    <input
+                                                        type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
+                                                        placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
+                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                        value={(ans?.details[field.key] as string) || ""}
+                                                        onChange={(e) => setDetail(q.key, field.key, e.target.value)}
+                                                    />
+                                                </>
+                                            )}
+
+                                            {/* Select → tile grid */}
+                                            {field.type === "select" && field.options && (
+                                                <>
+                                                    <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                        {field.label}
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const selected = (ans?.details[field.key] as string) === opt;
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => setDetail(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {field.warning && ans?.details[field.key] && (field.warning as Record<string, string>)[ans.details[field.key] as string] && (
+                                                        <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
+                                                            <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
+                                                            <div>
+                                                                <p className="text-xs text-red-300 leading-relaxed">{renderWarningText((field.warning as Record<string, string>)[ans.details[field.key] as string])}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {/* Single select → tile grid (one choice) */}
+                                            {field.type === "single_select" && field.options && (
+                                                <>
+                                                    <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                        {field.label}
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const selected = (ans?.details[field.key] as string) === opt;
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => setDetail(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Followup_yes fields (slides down when "Ano") ── */}
+                    {q.followup_yes && ans?.answer === "yes" && (
+                        <div className="animate-slide-down mb-6">
+                            <div className="bg-emerald-500/[0.06] backdrop-blur-xl rounded-2xl p-5">
+                                <p className="text-emerald-300 text-sm font-semibold mb-4">Doplňující informace:</p>
+                                <div className="space-y-4">
+                                    {q.followup_yes.fields.map((field) => (
+                                        <div key={field.key}>
+                                            {/* Info → green info banner */}
+                                            {field.type === "info" && (
+                                                <div className="flex items-start gap-2 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20 px-4 py-3">
+                                                    <span className="text-emerald-400 text-lg mt-0.5 flex-shrink-0">✅</span>
+                                                    <p className="text-xs text-emerald-300 leading-relaxed">{renderWarningText(field.label.replace(/^✅\s*/, ''))}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Text input */}
+                                            {field.type === "text" && (
+                                                <>
+                                                    <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                        {field.label}
+                                                    </label>
+                                                    <input
+                                                        type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
+                                                        placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
+                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                        value={(ans?.details[field.key] as string) || ""}
+                                                        onChange={(e) => setDetail(q.key, field.key, e.target.value)}
+                                                    />
+                                                </>
+                                            )}
+
+                                            {/* Select → tile grid */}
+                                            {(field.type === "select" || field.type === "single_select") && field.options && (
+                                                <>
+                                                    <label className="block text-slate-400 text-sm mb-2 font-medium">
+                                                        {field.label}
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {field.options.map((opt) => {
+                                                            const selected = (ans?.details[field.key] as string) === opt;
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    onClick={() => setDetail(q.key, field.key, opt)}
+                                                                    className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                      ${selected
+                                                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                        }
+                                    `}
+                                                                >
+                                                                    {opt}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Multi-select → tile grid with checkmarks */}
+                                            {field.type === "multi_select" && field.options && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {field.options.map((opt) => {
+                                                        const mkey = `${q.key}__${field.key}`;
+                                                        const selected = (multiSelections[mkey] || []).includes(opt);
+                                                        return (
+                                                            <button
+                                                                key={opt}
+                                                                onClick={() => toggleMulti(q.key, field.key, opt)}
+                                                                className={`
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                      ${selected
+                                                                        ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
+                                                                        : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
+                                                                    }
+                                    `}
+                                                            >
+                                                                {selected && (
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+                                                                )}
+                                                                {opt}
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
                                             )}
                                         </div>

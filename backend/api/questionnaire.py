@@ -37,9 +37,41 @@ QUESTIONNAIRE_SECTIONS = [
     {
         "id": "industry",
         "title": "O vaší firmě",
-        "description": "Řeknete nám, čím se zabýváte, a my přizpůsobíme otázky.",
+        "description": "Řeknete nám, čím se zabýváte, a my přizpůsobíme otázky a dokumentaci přímo na míru.",
         "questions": [
+                        {
+                "key": "company_legal_name",
+                "text": "Obchodní firma (název společnosti nebo jméno OSVČ):",
+                "type": "text",
+                "help_text": "Přesný název tak, jak je zapsán v obchodním rejstříku nebo živnostenském rejstříku.\nPříklady:\n1) ACME Solutions s.r.o.\n2) Jan Novák — grafický design\n3) TechStart a.s.",
+                "risk_hint": "none",
+                "ai_act_article": None,
+            },
             {
+                "key": "company_ico",
+                "text": "IČO (identifikační číslo osoby):",
+                "type": "text",
+                "help_text": "8místné číslo z obchodního nebo živnostenského rejstříku. Slouží k identifikaci vaší firmy v oficiální dokumentaci.\nPříklady: 12345678, 05123456.",
+                "risk_hint": "none",
+                "ai_act_article": None,
+            },
+            {
+                "key": "company_address",
+                "text": "Sídlo firmy (adresa):",
+                "type": "text",
+                "help_text": "Adresa sídla dle rejstříku — použijeme ji v Compliance Reportu, na transparěnční stránce a v oficiální dokumentaci.\nPříklad: Václavské náměstí 1, 110 00 Praha 1",
+                "risk_hint": "none",
+                "ai_act_article": None,
+            },
+            {
+                "key": "company_contact_email",
+                "text": "Kontaktní e-mail pro AI záležitosti:",
+                "type": "text",
+                "help_text": "E-mail, na který se mohou obracet zákazníci, zaměstnanci nebo dozorové orgány ohledně vašeho používání AI. Zobrazí se na transparěnční stránce.\nPříklad: ai@vase-firma.cz nebo info@vase-firma.cz",
+                "risk_hint": "none",
+                "ai_act_article": "čl. 50 — transparentnost a informování",
+            },
+{
                 "key": "company_industry",
                 "text": "Čím se vaše firma zabývá?",
                 "type": "multi_select",
@@ -64,6 +96,33 @@ QUESTIONNAIRE_SECTIONS = [
                 "ai_act_article": None,
             },
             {
+                "key": "eshop_platform",
+                "text": "Na jaké platformě provozujete svůj e-shop / web?",
+                "type": "multi_select",
+                "options": [
+                    "Shoptet",
+                    "WooCommerce (WordPress)",
+                    "Shopify",
+                    "PrestaShop",
+                    "Magento / Adobe Commerce",
+                    "Upgates",
+                    "Shopsys",
+                    "OpenCart",
+                    "Vlastní řešení (custom)",
+                    "Nemám e-shop",
+                    "Jiné",
+                ],
+                "help_text": "Tato informace je zásadní pro implementaci transparenční stránky AI Act — každá platforma vyžaduje jiný způsob nasazení.\n\nPříklady:\n1) Shoptet — nejrozšířenější český e-shop systém.\n2) WooCommerce — plugin pro WordPress.\n3) Shopify — cloudová platforma.\n4) Vlastní řešení — custom web/CMS.\n\nPokud víte, že váš web běží na WordPressu, ale neprodáváte online, vyberte 'WooCommerce (WordPress)' nebo 'Vlastní řešení (custom)'.\nPokud máte pouze statický web nebo web na míru, vyberte 'Vlastní řešení (custom)'.",
+                "followup": {
+                    "condition": "Jiné",
+                    "fields": [
+                        {"key": "eshop_platform_other", "label": "Jakou platformu používáte?", "type": "text"},
+                    ]
+                },
+                "risk_hint": "none",
+                "ai_act_article": "čl. 50 — transparentnost a informování (implementace transparenční stránky)",
+            },
+            {
                 "key": "company_size",
                 "text": "Kolik má vaše firma zaměstnanců?",
                 "type": "single_select",
@@ -78,16 +137,33 @@ QUESTIONNAIRE_SECTIONS = [
                 "risk_hint": "none",
                 "ai_act_article": "čl. 62 — povinnosti MSP a start-upů",
             },
-            {
+                        {
+                "key": "company_annual_revenue",
+                "text": "Jaký je přibližný roční obrat vaší firmy?",
+                "type": "single_select",
+                "options": [
+                    "Do 2 mil. Kč",
+                    "2–10 mil. Kč",
+                    "10–50 mil. Kč",
+                    "50–250 mil. Kč",
+                    "250 mil. – 1 mld. Kč",
+                    "Nad 1 mld. Kč",
+                ],
+                "help_text": "Potřebujeme pro výpočet maximální výše pokut dle AI Act (pokuty se počítají jako % z celosvětového obratu). Údaj je důvěrný a slouží pouze pro vaši compliance dokumentaci.\n\n💡 Nemusíte odpovídat přesně — stačí přibližný rozsah.",
+                "risk_hint": "none",
+                "ai_act_article": "čl. 99 — správní pokuty (% z obratu)",
+            },
+{
                 "key": "develops_own_ai",
                 "text": "Vyvíjíte vlastní AI systémy nebo modely?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) IT firma trénuje vlastní ML model pro predikci poptávky.\n2) Startup vyvíjí AI chatbota pro klienty.\n3) E-shop integruje AI doporučovací engine do svého webu.",
+                "help_text": "Myslíme tím, že jste primární autoři AI systému — navrhli jste architekturu, trénujete vlastní model, nebo vyrábíte AI produkt.\n\nPříklady ANO:\n1) IT firma trénuje vlastní ML model pro predikci poptávky.\n2) Startup vyvíjí AI chatbota pro klienty.\n3) E-shop vytváří vlastní AI doporučovací engine.\n\nPříklady NE (to je Q36):\n1) Používáte ChatGPT API a přizpůsobujete si prompty.\n2) Fine-tunujete cizí model na svých datech.\n3) Přebudováváte zakoupený nástroj na jiný účel.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "ai_role", "label": "Jaká je vaše role?", "type": "multi_select",
                          "options": ["Vyvíjíme AI (provider)", "Nasazujeme AI od jiných (deployer)", "Importujeme AI do EU (importer)", "Distribuujeme AI (distributor)", "Jiné"]},
+                        {"key": "ai_provider_warning", "label": "⚠️ Jako poskytovatel AI systému (čl. 3 bod 3) máte rozsáhlejší povinnosti: technická dokumentace (příloha IV), posouzení shody (čl. 16), označení CE, systém řízení kvality. **AIshield vám pomůže s kompletní dokumentací.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -112,7 +188,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "scoring_tool_name", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Salesforce", "HubSpot", "Jiný CRM", "Jiný"]},
+                         "options": ["Salesforce", "HubSpot", "ChatGPT", "Claude", "Gemini", "Jiný CRM", "Jiný"]},
                         {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "multi_select",
                          "options": ["Zaměstnanci", "Zákazníci"]},
                     ]
@@ -128,8 +204,6 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "manipulation_type", "label": "O jaký typ ovlivňování jde? (vyberte vše)", "type": "multi_select",
-                         "options": ["Dynamické ceny podle emocí/chování", "Cílení na zranitelné skupiny", "Skryté manipulativní UX vzory", "Jiné"]},
                         {"key": "manipulation_warning", "label": "🚫 ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem. V tomto případě nedokážeme pomoct ani my — jedná se o protiprávní jednání.", "type": "info"},
                     ]
                 },
@@ -191,7 +265,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "copilot_tool_name", "label": "Které nástroje používáte?", "type": "multi_select",
-                         "options": ["GitHub Copilot", "Cursor", "Codeium", "Amazon CodeWhisperer", "Jiný"]},
+                         "options": ["GitHub Copilot", "Cursor", "ChatGPT", "Claude", "Gemini", "Codeium", "Amazon CodeWhisperer", "Jiný"]},
                         {"key": "copilot_code_type", "label": "Typ vyvíjeného software", "type": "multi_select",
                          "options": ["Webové aplikace", "Mobilní aplikace", "Backend/API", "Data/ML", "Automatizace", "Jiné"]},
                     ]
@@ -203,12 +277,12 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_ai_content",
                 "text": "Generujete obrázky, videa nebo texty pomocí AI?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) Marketing generuje obrázky produktů v Midjourney pro sociální sítě.\n2) Grafik vytváří bannery v Canva AI (kreativní oddělení).\n3) Copywriter píše popisky produktů v Jasper / Copy.ai.",
+                "help_text": "Příklady:\n1) Marketing generuje obrázky produktů v Midjourney pro sociální sítě.\n2) Grafik vytváří bannery v Canva AI (kreativní oddělení).\n3) Copywriter píše popisky produktů v Jasper / Copy.ai.\n4) ChatGPT generuje texty, obrázky (DALL-E) i kód.\n5) Gemini (Google) generuje obrázky, texty i videa.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "content_tool_name", "label": "Které nástroje používáte?", "type": "multi_select",
-                         "options": ["DALL-E", "Midjourney", "Stable Diffusion", "Canva AI", "Jasper", "Copy.ai", "Jiný"]},
+                         "options": ["ChatGPT / GPT-4o", "Gemini (Google)", "Claude (Anthropic)", "DALL-E", "Midjourney", "Stable Diffusion", "Canva AI", "Adobe Firefly", "Jasper", "Copy.ai", "Suno AI", "Jiný"]},
                         {"key": "content_published", "label": "Kde AI obsah používáte?", "type": "multi_select",
                          "options": ["Web / sociální sítě", "Interní materiály", "E-maily zákazníkům", "Reklamní kampaně", "Jiné"]},
                     ]
@@ -225,10 +299,8 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "deepfake_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["HeyGen", "Synthesia", "ElevenLabs", "D-ID", "Murf AI", "Jiný"]},
-                        {"key": "deepfake_disclosed", "label": "Označujete tento obsah jako AI generovaný?", "type": "select",
-                         "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Od 2. srpna 2025 je podle čl. 50 AI Act povinné označit veškerý deep-fake obsah (syntetická videa, klonovaný hlas, AI avatary) jako uměle vytvořený. Nesplnění může vést k pokutě."}},
+                         "options": ["ChatGPT (Sora)", "Gemini / VEO3 (Google)", "HeyGen", "Synthesia", "ElevenLabs", "D-ID", "Murf AI", "Jiný"]},
+                        {"key": "deepfake_disclosure_info", "label": "ℹ️ Od 2. srpna 2026 je podle čl. 50 AI Act povinné označit veškerý deep-fake obsah jako uměle vytvořený. V rámci služby AIshield vám dodáme profesionálně zpracovanou dokumentaci včetně pokynů pro správné označování AI obsahu.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -253,7 +325,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "recruitment_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "Jiné"]},
+                         "options": ["LinkedIn Recruiter", "Teamio", "LMC/Jobs.cz AI", "Sloneek", "Prace.cz AI", "ChatGPT", "Claude", "Gemini", "Jiné"]},
                         {"key": "recruitment_autonomous", "label": "Rozhoduje AI samostatně o kandidátech?", "type": "select",
                          "options": ["Ano, automaticky filtruje", "Ne, pouze doporučuje"]},
                     ]
@@ -271,9 +343,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "monitoring_type", "label": "Co sledujete?", "type": "multi_select",
                          "options": ["Sledování obrazovky", "Měření produktivity", "GPS sledování", "Kamerový dohled s AI", "Analýza emailů", "Jiné"]},
-                        {"key": "monitoring_informed", "label": "Jsou zaměstnanci informováni?", "type": "select",
-                         "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Zaměstnanci mají právo být informováni o sledování. Neinformování může porušit GDPR i AI Act (čl. 26 odst. 7)."}},
+                        {"key": "monitoring_compliance_info", "label": "ℹ️ Zaměstnanci musí být informováni o sledování dle GDPR i AI Act (čl. 26 odst. 7). V rámci služby AIshield vám dodáme profesionálně zpracovanou prezentaci (PowerPoint), kterou zaměstnancům představíte, a dokumentaci informování zaměstnanců.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -288,7 +358,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "emotion_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Kamerový systém", "Call centrum analýza", "Jiný"]},
+                         "options": ["Kamerový systém", "Call centrum analýza", "ChatGPT", "Claude", "Gemini", "Jiný"]},
                         {"key": "emotion_context", "label": "V jakém kontextu? (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost", "Jiné"]},
                     ]
@@ -315,7 +385,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "accounting_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "Jiné"]},
+                         "options": ["Fakturoid", "Money S5", "ABRA", "Pohoda", "iDoklad", "Helios", "ChatGPT", "Claude", "Gemini", "Jiné"]},
                         {"key": "accounting_decisions", "label": "Dělá AI autonomní finanční rozhodnutí?", "type": "select",
                          "options": ["Ne, pouze asistuje", "Ano, schvaluje platby"],
                          "warning": {"Ano, schvaluje platby": "AI systém autonomně schvalující platby bez lidského dohledu může spadat do kategorie vysoce rizikových AI systémů. Dle AI Act je nutné zajistit lidský dohled nad finančními rozhodnutími (čl. 14) a transparentnost vůči dotčeným osobám."}},
@@ -333,10 +403,10 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "credit_tool", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["CRIF – Czech Credit Bureau", "Bisnode / Dun & Bradstreet", "Scoring Solutions", "Jiný"]},
+                         "options": ["CRIF – Czech Credit Bureau", "Bisnode / Dun & Bradstreet", "Scoring Solutions", "ChatGPT", "Claude", "Gemini", "Jiný"]},
                         {"key": "credit_impact", "label": "Ovlivňuje AI rozhodnutí o úvěrech/smlouvách?", "type": "select",
                          "options": ["Ano, přímo rozhoduje", "Ne"],
-                         "warning": {"Ano, přímo rozhoduje": "Automatické rozhodování o úvěrech bez lidského dohledu spadá do kategorie vysoce rizikových AI systémů (Příloha III, bod 5b). Vyžaduje registraci v EU databázi a průběžné monitorování."}},
+                         "warning": {"Ano, přímo rozhoduje": "⚠️ Automatické rozhodování o úvěrech bez lidského dohledu spadá do kategorie vysoce rizikových AI systémů (Příloha III, bod 5b). Vaše firma musí provést registraci v EU databázi a zajistit průběžné monitorování — toto je zákonná povinnost, kterou musíte splnit interně. V rámci dokumentace vám poskytneme potřebné podklady a doporučení."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -351,10 +421,10 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "insurance_tool", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Guidewire", "NESS / Allianz AI", "ČPP / ČSOB interní AI", "Jiný"]},
+                         "options": ["Guidewire", "NESS / Allianz AI", "ČPP / ČSOB interní AI", "ChatGPT", "Claude", "Gemini", "Jiný"]},
                         {"key": "insurance_impact", "label": "Ovlivňuje AI cenu nebo dostupnost pojištění?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ano": "AI systém, který ovlivňuje cenu nebo dostupnost pojištění, je vysoce rizikový dle Přílohy III, bod 5a. Musíte zajistit posouzení shody, registraci v EU databázi, průběžné monitorování a právo pojistníka na vysvětlení rozhodnutí."}},
+                         "warning": {"Ano": "⚠️ AI systém ovlivňující cenu nebo dostupnost pojištění je vysoce rizikový dle Přílohy III, bod 5a. Vaše firma musí zajistit posouzení shody, registraci v EU databázi, průběžné monitorování a právo pojistníka na vysvětlení rozhodnutí — toto jsou zákonné povinnosti, které musíte splnit interně. V rámci dokumentace vám poskytneme podklady a doporučení."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -379,10 +449,8 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "chatbot_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "Chatbot.cz", "Jiné"]},
-                        {"key": "chatbot_disclosed", "label": "Ví návštěvník, že komunikuje s AI?", "type": "select",
-                         "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem. Tato povinnost platí od 2. srpna 2025."}},
+                         "options": ["Smartsupp", "Tidio", "Intercom", "Drift", "ChatGPT API", "Claude API", "Gemini API", "Chatbot.cz", "Jiné"]},
+                        {"key": "chatbot_compliance_info", "label": "ℹ️ Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem (od 2. srpna 2026). V rámci služby AIshield vám dodáme profesionálně zpracovanou dokumentaci včetně textu oznámení pro chatbota.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -397,10 +465,8 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "email_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "Jiné"]},
-                        {"key": "email_disclosed", "label": "Ví zákazník, že odpovídá AI?", "type": "select",
-                         "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem. Tato povinnost platí od 2. srpna 2025."}},
+                         "options": ["Freshdesk AI", "Zendesk AI", "Intercom", "ChatGPT", "Claude", "Gemini", "Jiné"]},
+                        {"key": "email_compliance_info", "label": "ℹ️ Podle čl. 50 AI Act musí být zákazníci informováni, že komunikují s AI systémem (od 2. srpna 2026). Součástí vaší dokumentace bude text informování zákazníků.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -418,7 +484,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Reklamace", "Slevy / ceny", "Přístup ke službám", "Schvalování žádostí", "Jiné"]},
                         {"key": "decision_human_review", "label": "Je k dispozici lidský přezkum?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "AI rozhodující o právech zákazníků bez možnosti lidského přezkumu porušuje čl. 14 AI Act (povinnost lidského dohledu). Zákazník má právo požadovat, aby rozhodnutí přezkoumal člověk."}},
+                         "warning": {"Ne": "⚠️ AI rozhodující o právech zákazníků bez možnosti lidského přezkumu porušuje čl. 14 AI Act. Zákazník má právo požadovat, aby rozhodnutí přezkoumal člověk. Musíte si nastavit interní postupy tak, aby rozhodování AI nebylo protiprávní — v rámci dokumentace vám dodáme doporučení, jak tyto procesy zavést."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -428,21 +494,35 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "uses_dynamic_pricing",
                 "text": "Používáte AI k automatickému nastavování cen podle chování zákazníka?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) E-shop zvyšuje ceny víkendům podle AI predikce poptávky.\n2) Letěnky zdražují, když AI detekuje vyšší zájem z určité lokace.\n3) AI nabízí různé ceny vracíce se vs. novemu zákazníkovi. Dynamické ceny dle sezóny jsou běžné — problém je cílená personalizace.",
+                "help_text": "Příklady:\n1) E-shop zvyšuje ceny víkendům podle AI predikce poptávky.\n2) Letenky zdražují, když AI detekuje vyšší zájem z určité lokace.\n3) AI nabízí různé ceny vracejícímu se vs. novému zákazníkovi. Dynamické ceny dle sezóny jsou běžné — problém je cílená personalizace.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
                         {"key": "pricing_tool", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Prisync", "Competera", "Dynamic Yield", "Jiný"]},
+                         "options": ["Prisync", "Competera", "Dynamic Yield", "ChatGPT", "Claude", "Gemini", "Jiný"]},
                         {"key": "pricing_basis", "label": "Na základě čeho se ceny mění?", "type": "multi_select",
                          "options": ["Historie nákupů", "Lokace zákazníka", "Čas / sezóna", "Profil zákazníka", "Poptávka", "Jiné"]},
-                        {"key": "pricing_disclosed", "label": "Ví zákazník o personalizaci cen?", "type": "select",
-                         "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Personalizace cen bez informování zákazníka může představovat nekalou obchodní praktiku a porušení transparentnosti dle AI Act."}},
+                        {"key": "pricing_compliance_info", "label": "⚠️ Personalizace cen bez informování zákazníka může představovat nekalou obchodní praktiku a porušení transparentnosti dle AI Act. Musíte si nastavit interní postupy tak, abyste si nepočínali protiprávně — v rámci dokumentace vám dodáme doporučení.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 5 odst. 1 písm. a/b) — potenciálně manipulativní, pokud cílí na zranitelné osoby",
+            },
+            {
+                "key": "uses_ai_for_children",
+                "text": "Používáte AI systémy, které přímo interagují s dětmi nebo nezletilými?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady ANO:\n1) AI chatbot/tutor pro žáky základních škol.\n2) AI doporučovací systém v dětské mobilní aplikaci.\n3) AI hra nebo edukační platforma pro děti.\n4) AI filtrování obsahu pro nezletilé.\n\nPříklady NE:\n1) AI nástroje používají pouze dospělí zaměstnanci.\n2) E-shop cílí na dospělé zákazníky.\n3) B2B produkt bez interakce s dětmi.\n\nTato otázka je relevantní pro vzdělávání, hry, dětské aplikace a služby cílené na nezletilé.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "children_ai_context", "label": "V jakém kontextu AI s dětmi interaguje?", "type": "multi_select",
+                         "options": ["Vzdělávání / e-learning", "Mobilní aplikace / hry", "Doporučování obsahu", "Chatbot / virtuální asistent", "Filtrování / moderování obsahu", "Jiné"]},
+                        {"key": "children_ai_warning", "label": "⚠️ AI systémy interagující s dětmi jsou dle Přílohy III AI Act považovány za vysoce rizikové. Musíte zajistit posouzení shody, technickou dokumentaci a zvýšenou ochranu. Čl. 5 zakazuje AI manipulaci zranitelných skupin, kam děti patří. **AIshield vám pomůže s compliance dokumentací pro AI cílené na děti.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "high",
+                "ai_act_article": "Příloha III bod 3 — vzdělávání + čl. 5 odst. 1 písm. a,b) — ochrana zranitelných skupin",
             },
         ],
     },
@@ -466,6 +546,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Siemens MindSphere", "ABB Ability", "Honeywell Forge", "Jiný"]},
                         {"key": "infra_sector", "label": "Sektor (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Energetika", "Doprava", "Vodohospodářství", "Telekomunikace", "Zdravotnictví", "Jiné"]},
+                        {"key": "infra_warning", "label": "⚠️ KRITICKÁ INFRASTRUKTURA — AI jako bezpečnostní komponenta v kritické infrastruktuře (Příloha III bod 2) podléhá přísnému režimu. Registrace probíhá u národního orgánu (v ČR pravděpodobně NÚKIB), nikoli ve veřejné EU databázi (čl. 49 odst. 4). Povinnosti: systém řízení rizik (čl. 9), technická dokumentace (Příloha IV), posouzení shody, CE označení, post-market monitoring. Navíc platí zákon o kybernetické bezpečnosti (181/2014 Sb.). **Doporučujeme konzultaci s právníkem specializovaným na AI Act — AIshield vám připraví veškeré podklady.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -484,6 +565,7 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "safety_ce_mark", "label": "Má produkt CE označení?", "type": "select",
                          "options": ["Ano", "Ne"]},
                         {"key": "safety_ce_mark_info", "label": "ℹ️ CE označení = prohlášení výrobce, že produkt splňuje požadavky EU legislativy. AI Act rozšiřuje CE požadavky na vysoce rizikové AI systémy.", "type": "info"},
+                        {"key": "safety_component_warning", "label": "⚠️ AI JAKO BEZPEČNOSTNÍ KOMPONENTA — Plná účinnost od 2. 8. 2027 (Příloha I produkty). Musíte: (1) provést posouzení shody dle čl. 43, (2) vypracovat technickou dokumentaci dle Přílohy IV, (3) zajistit CE označení dle čl. 48, (4) zaregistrovat v EU databázi dle čl. 49, (5) nastavit post-market monitoring dle čl. 72. Interní posouzení shody (Příloha VI) je dostačující — notifikovaný subjekt NENÍ potřeba (kromě biometriky). **AIshield vám připraví pre-filled dokumentaci a checklist.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -511,7 +593,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Jména a kontakty", "Rodná čísla / OP", "Zdravotní údaje", "Finanční údaje", "Fotografie / video", "Lokační data", "Jiné"]},
                         {"key": "dpia_done", "label": "Provedli jste DPIA (posouzení vlivu na ochranu dat)?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "U AI systémů zpracovávajících osobní údaje se důrazně doporučuje provedení DPIA (posouzení vlivu na ochranu dat) dle GDPR čl. 35. Zařídíme za Vás."}},
+                         "warning": {"Ne": "U AI systémů zpracovávajících osobní údaje se důrazně doporučuje provedení DPIA (posouzení vlivu na ochranu dat) dle GDPR čl. 35. V rámci Compliance Kitu vám vygenerujeme předvyplněnou DPIA šablonu s údaji z vašeho dotazníku — seznam AI systémů, rizikové úrovně a firemní data. Stačí doplnit specifika a nechat podepsat DPO nebo vedením firmy."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -526,20 +608,47 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "unknown",
                     "fields": [
                         {"key": "data_location_hint", "label": "Pomůžeme vám to zjistit — které AI nástroje používáte?", "type": "multi_select",
-                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA/EU)", "Microsoft Copilot (EU i USA)", "Claude (Anthropic — USA)", "Vlastní server v ČR/EU", "Jiný"]},
+                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA/EU)", "Microsoft Copilot (EU i USA)", "Claude (Anthropic — USA)", "Perplexity (USA)", "Midjourney (USA)", "Jasper AI (USA)", "DeepL (Německo/EU)", "Grammarly (USA)", "Notion AI (USA)", "Vlastní server v ČR/EU", "Jiný"]},
                         {"key": "data_location_info", "label": "ℹ️ Většina velkých AI poskytovatelů (OpenAI, Google, Anthropic) ukládá data primárně v USA. Pro GDPR soulad zvažte EU hosting nebo smluvní záruky (SCC).", "type": "info"},
+                    ]
+                },
+                "followup_yes": {
+                    "fields": [
+                        {"key": "data_location_eu_detail", "label": "Kde přesně jsou data uložena?", "type": "multi_select",
+                         "options": ["Azure EU (západní Evropa)", "AWS Frankfurt / Irsko", "GCP EU", "Vlastní server v ČR/EU", "Hetzner / OVH / jiný EU hosting", "Jiné"]},
+                        {"key": "data_location_eu_ok", "label": "✅ Uložení dat v EU je z pohledu GDPR ideální stav. Do dokumentace zaznamenáme konkrétní lokaci.", "type": "info"},
+                    ]
+                },
+                "followup_no": {
+                    "fields": [
+                        {"key": "data_outside_eu_warning", "label": "⚠️ Data vašich AI systémů jsou uložena mimo EU. Dle GDPR čl. 44+ musíte mít právní základ pro přenos dat do třetích zemí — např. standardní smluvní doložky (SCC) nebo rozhodnutí o adekvaci. Ověřte, zda máte s poskytovatelem uzavřenou DPA (Data Processing Agreement).", "type": "info"},
+                        {"key": "data_outside_eu_tool", "label": "Které AI nástroje ukládají data mimo EU?", "type": "multi_select",
+                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA)", "Claude (Anthropic — USA)", "Perplexity (USA)", "Jiné"]},
                     ]
                 },
                 "risk_hint": "limited",
                 "ai_act_article": "Nařízení GDPR čl. 44+ — přenos dat do třetích zemí",
             },
             {
-                "key": "ai_transparency_docs",
-                "text": "Máte přehled o tom, jaké AI ve firmě používáte?",
-                "type": "yes_unknown",
-                "help_text": "Příklady:\n1) Interní tabulka se seznamem AI nástrojů a jejich účelem (IT oddělení).\n2) Přehled SaaS služeb včetně AI v portálu dodavatelů.\n3) Jednoduchý dokument ‚Které AI používáme‘ pro management.",
+                "key": "has_ai_vendor_contracts",
+                "text": "Máte s dodavateli AI systémů uzavřeny smlouvy pokrývající zpracování dat a odpovědnost?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady ANO:\n1) S OpenAI máte podepsanou DPA (Data Processing Agreement).\n2) S dodavatelem chatbotu máte SLA s definovanou dostupností.\n3) Ve smlouvě je jasně uvedeno, kdo odpovídá za chyby AI.\n\nPříklady NE:\n1) Používáte ChatGPT přes free/personal účet bez firemní smlouvy.\n2) AI nástroj jste si jen stáhli a nainstalovali bez jakékoliv smlouvy.\n3) S dodavatelem AI nemáte řešenou odpovědnost za škody.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "vendor_contract_scope", "label": "Co vaše smlouvy pokrývají? (vyberte vše)", "type": "multi_select",
+                         "options": ["DPA (zpracování osobních údajů)", "SLA (dostupnost a kvalita služby)", "Odpovědnost za škody způsobené AI", "Práva k datům a výstupům", "Podmínky ukončení spolupráce", "Audit / kontrola dodavatele"]},
+                        {"key": "vendor_contract_ok_info", "label": "✅ Výborně! Smluvní pokrytí s dodavateli AI je důležité pro GDPR i AI Act compliance. Do dokumentace zaznamenáme rozsah vašich smluv.", "type": "info"},
+                    ]
+                },
+                "followup_no": {
+                    "fields": [
+                        {"key": "vendor_contract_warning", "label": "⚠️ Bez smlouvy s dodavatelem AI systému riskujete porušení GDPR čl. 28 (zpracovatel bez smlouvy) a nemáte právně ošetřenou odpovědnost za chyby AI. Doporučujeme uzavřít alespoň DPA s každým poskytovatelem AI, kterému předáváte firemní nebo osobní data. **V rámci Compliance Kitu vám vygenerujeme **Dodavatelský checklist** — kontrolní seznam všech náležitostí, které musí vaše smlouvy s dodavateli AI pokrývat (DPA, SLA, GDPR záruky, opt-out z trénování a další).**", "type": "info"},
+                    ]
+                },
                 "risk_hint": "limited",
-                "ai_act_article": "čl. 49 — registrace vysoce rizikových AI systémů v EU databázi",
+                "ai_act_article": "GDPR čl. 28 — zpracovatel, AI Act čl. 25-26 — povinnosti v hodnotovém řetězci",
             },
         ],
     },
@@ -561,13 +670,22 @@ QUESTIONNAIRE_SECTIONS = [
                     "fields": [
                         {"key": "training_attendance", "label": "Máte prezenční listinu (podpisy účastníků školení)?", "type": "select",
                          "options": ["Ano", "Ne"],
-                         "warning": {"Ne": "Pro doložení splnění povinnosti čl. 4 AI Act je vhodné mít prezenční listinu s podpisy účastníků. **AIshield.cz vám v rámci služeb dodá kompletní školící prezentaci + šablonu prezenční listiny.**"}},
-                        {"key": "training_info", "label": "ℹ️ Součástí všech AIshield balíčků je profesionální školící prezentace (PowerPoint) a kompletní dokumentace včetně šablony prezenční listiny.", "type": "info"},
+                         "warning": {"Ne": "Pro doložení splnění povinnosti čl. 4 AI Act je vhodné mít prezenční listinu s podpisy účastníků. **AIshield.cz vám v rámci služeb dodá kompletní školící prezentaci + profesionálně zpracovanou prezenční listinu.**"}},
+                        {"key": "training_audience_size", "label": "Kolik lidí potřebuje proškolit?", "type": "select",
+                         "options": ["1–5 osob", "6–20 osob", "21–50 osob", "51–100 osob", "100+ osob"]},
+                        {"key": "training_audience_level", "label": "Jaká je technická úroveň školených osob?", "type": "select",
+                         "options": [
+                             "Netechničtí (administrativa, obchod, marketing)",
+                             "Středně technicky zdatní (manažeři, analytici)",
+                             "Techničtí (IT, vývojáři, data analytici)",
+                             "Mix — různé úrovně",
+                         ]},
+                        {"key": "training_info", "label": "ℹ️ Součástí všech AIshield balíčků je profesionální školící prezentace (PowerPoint) a kompletní dokumentace včetně prezenční listiny.", "type": "info"},
                     ]
                 },
                 "followup_no": {
                     "fields": [
-                        {"key": "training_no_warning", "label": "⚠️ Článek 4 AI Act vyžaduje „dostatečnou úroveň AI gramotnosti“ zaměstnanců — tato povinnost platí již od 2. února 2025. Nesplnění může vést k pokutě až 15 milionů EUR. **Nebojte se — součástí všech AIshield balíčků je kompletní školící prezentace (PowerPoint) + šablona prezenční listiny, kterou zaměstnanci podepíšou. Vše zařídíme za vás.**", "type": "info"},
+                        {"key": "training_no_warning", "label": "⚠️ Článek 4 AI Act vyžaduje „dostatečnou úroveň AI gramotnosti“ zaměstnanců — tato povinnost platí již od 2. února 2025. Nesplnění může vést k pokutě až 15 milionů EUR. **Součástí všech AIshield balíčků je kompletní školící prezentace (PowerPoint) + profesionálně zpracovaná prezenční listina, kterou zaměstnanci podepíšou.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -578,9 +696,30 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Máte ve firmě pravidla pro používání AI?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) Interní směrnice ‚Co se smí a nesmí do ChatGPT‘ (IT oddělení).\n2) Etický kodex pro používání AI v marketingu.\n3) Pravidla pro sdílení firemních dat s AI nástroji.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "guidelines_scope", "label": "Co vaše pravidla pokrývají? (vyberte vše)", "type": "multi_select",
+                         "options": [
+                             "Které AI nástroje smí zaměstnanci používat",
+                             "Jaká data se smí do AI vkládat",
+                             "Kdo schvaluje nové AI nástroje",
+                             "Pravidla pro AI generovaný obsah",
+                             "Ochrana osobních údajů při práci s AI",
+                             "Postup při AI incidentu",
+                         ]},
+                        {"key": "guidelines_format", "label": "V jakém formátu pravidla máte?", "type": "select",
+                         "options": [
+                             "Písemná směrnice / interní předpis",
+                             "Součást jiného dokumentu (IT politika, GDPR apod.)",
+                             "Ústní pravidla / nepsaná dohoda",
+                         ]},
+                        {"key": "guidelines_ok_info", "label": "✅ Výborně! Vaši stávající směrnici rozšíříme o požadavky AI Act a dodáme kompletní AI politiku firmy na míru.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
-                        {"key": "guidelines_no_warning", "label": "⚠️ Bez interní směrnice zaměstnanci nevědí, jaká data smí vkládat do AI, zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování předpisů. Dle čl. 4 AI Act musí organizace zajistit odpovědné používání AI. **Nebojte se — v rámci služby AIshield vám dodáme kompletní šablonu směrnice „Pravidla pro používání AI ve firmě“, kterou si snadno přizpůsobíte.**", "type": "info"},
+                        {"key": "guidelines_no_warning", "label": "⚠️ Bez interní směrnice zaměstnanci nevědí, jaká data smí vkládat do AI, zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování předpisů. Dle čl. 4 AI Act musí organizace zajistit odpovědné používání AI. **Nebojte se — v rámci služby AIshield vám dodáme profesionálně zpracovanou směrnici „Pravidla pro používání AI ve firmě“, kterou si snadno přizpůsobíte.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -601,9 +740,36 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Máte určenou osobu/tým zodpovědný za dohled nad AI systémy?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) IT manažer pověřený dohledem nad AI chatbotem.\n2) Compliance officer monitorující automatizované rozhodovací procesy.\n3) Tým 'AI governance' schvalující nové AI nástroje.",
+                "followup": {
+                    "condition": "any",
+                    "fields": [
+                        {"key": "oversight_role", "label": "Jakou roli má osoba, která na AI dohlíží?", "type": "select",
+                         "options": [
+                             "Jednatel / majitel (dohlížím osobně)",
+                             "IT manažer / vedoucí IT",
+                             "Compliance officer",
+                             "DPO (pověřenec pro ochranu osobních údajů)",
+                             "Tým / komise AI governance",
+                             "Jiná role"
+                         ]},
+                        {"key": "oversight_person_name", "label": "Jméno odpovědné osoby:", "type": "text"},
+                        {"key": "oversight_person_email", "label": "E-mail odpovědné osoby:", "type": "text"},
+                        {"key": "oversight_person_phone", "label": "Telefon odpovědné osoby:", "type": "text"},
+                        {"key": "oversight_scope", "label": "Na co konkrétně dohlíží?", "type": "multi_select",
+                         "options": [
+                             "Chatbot na webu",
+                             "Interní AI nástroje (ChatGPT, Copilot apod.)",
+                             "AI analytiku a doporučovací systémy",
+                             "AI v zákaznickém servisu",
+                             "AI v HR / náboru",
+                             "AI v účetnictví / financích",
+                             "Vše — zastřešuje kompletní AI governance"
+                         ]},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
-                        {"key": "oversight_warning", "label": "⚠️ Článek 14 AI Act vyžaduje lidský dohled nad vysoce rizikovými AI systémy. I u systémů s omezeným rizikem (chatboty) je vhodné mít odpovědnou osobu. **AIshield vám pomůže definovat role a odpovědnosti v rámci AI governance dokumentace.**", "type": "info"},
+                        {"key": "oversight_warning", "label": "⚠️ Článek 14 AI Act vyžaduje lidský dohled nad AI systémy. Musíte určit odpovědnou osobu. Vyplňte prosím kontakt výše — použijeme ho v compliance dokumentaci.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -614,6 +780,15 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Mohou vaši zaměstnanci přepsat nebo zrušit rozhodnutí AI systému?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) HR manažer může přepsat doporučení AI při výběru kandidátů.\n2) Operátor může ručně změnit automatické třídění zákaznických požadavků.\n3) Schvalovací proces vyžaduje lidský podpis po AI analýze.",
+                                "scope_hint": "Tato otázka se vztahuje na VŠECHNY AI systémy ve firmě — nejen zákaznický servis, ale i HR, finance, interní procesy. Odpovězte ANO, pokud zaměstnanci mohou v jakémkoliv případě rozhodnutí AI přepsat nebo zrušit.",
+"followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "override_scope", "label": "V jakých případech se override používá?", "type": "multi_select",
+                         "options": ["Vždy — AI jen doporučuje, člověk rozhoduje", "Při reklamacích a stížnostech", "Při HR rozhodnutích", "Při finančních rozhodnutích", "Jen výjimečně / eskalace", "Jiné"]},
+                        {"key": "override_ok_info", "label": "✅ Výborně! Možnost přepsat rozhodnutí AI je klíčový požadavek čl. 14 odst. 4 písm. d) AI Act. Do dokumentace zaznamenáme, v jakých případech override používáte.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
                         {"key": "override_warning", "label": "⚠️ Článek 14 odst. 4 písm. d) AI Act vyžaduje, aby osoby pověřené lidským dohledem mohly rozhodnutí AI systému nepoužít, přepsat nebo zrušit. Bez této možnosti hrozí porušení nařízení. **AIshield vám pomůže nastavit procesy pro lidský dohled a přepisování AI rozhodnutí.**", "type": "info"},
@@ -627,13 +802,45 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Zaznamenáváte rozhodnutí, která AI systémy dělají nebo doporučují?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) Log chatbotových odpovědí pro zpětnou kontrolu.\n2) Archivace AI doporučení v CRM.\n3) Záznam automatizovaných rozhodnutí v interním systému.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "logging_method", "label": "Jakým způsobem logujete?", "type": "multi_select",
+                         "options": ["Logy v aplikaci (automatické)", "Export do SIEM / centrálního logu", "Excel / tabulka", "Ticketovací systém (Jira, Freshdesk)", "Jiný systém"]},
+                        {"key": "logging_retention", "label": "Jak dlouho logy uchováváte?", "type": "single_select",
+                         "options": ["Méně než 6 měsíců", "6–12 měsíců", "1–3 roky", "Déle než 3 roky", "Nevím"]},
+                        {"key": "logging_ok_info", "label": "✅ Výborně! Čl. 26 odst. 1 písm. f) AI Act vyžaduje uchovávání logů minimálně 6 měsíců. Do dokumentace zaznamenáme váš systém logování.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
                         {"key": "logging_warning", "label": "⚠️ Článek 26 odst. 1 písm. f) AI Act vyžaduje uchovávání automaticky generovaných protokolů po dobu nejméně 6 měsíců. Logování je klíčové pro audit a zpětnou kontrolu.", "type": "info"},
+                        {"key": "logging_internal_note", "label": "⚠️ Důležité: Logování rozhodnutí AI je interní záležitost vaší firmy — vy nejlépe znáte své systémy a procesy. AIshield vám poskytne profesionálně zpracovaný logovací protokol (co zaznamenávat, jak dlouho uchovávat, formát záznamů), ale samotné logování musíte nastavit ve svých interních systémech.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
                 "ai_act_article": "čl. 26 odst. 1 písm. f) — uchovávání protokolů",
+            },
+            {
+                "key": "has_ai_register",
+                "text": "Vedete interní registr/seznam všech AI systémů, které používáte?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady:\n1) Tabulka se seznamem AI nástrojů, jejich dodavatelů a účelů.\n2) Interní databáze AI systémů s kategorizací rizik.\n3) IT inventář, který zahrnuje i AI služby.\n\nRegistr AI systémů je základem pro compliance — bez něj nevíte, jaké povinnosti máte.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "register_contents", "label": "Co váš registr obsahuje? (vyberte vše)", "type": "multi_select",
+                         "options": ["Název AI systému", "Dodavatel / poskytovatel", "Účel použití", "Kategorie rizika dle AI Act", "Odpovědná osoba", "Datum nasazení", "Typ zpracovávaných dat"]},
+                        {"key": "register_ok_info", "label": "✅ Výborně! Registr AI systémů je základ compliance dle čl. 26 AI Act. Do dokumentace zaznamenáme strukturu vašeho registru a případně doporučíme rozšíření.", "type": "info"},
+                    ]
+                },
+                "followup_no": {
+                    "fields": [
+                        {"key": "register_warning", "label": "⚠️ Článek 26 AI Act vyžaduje, aby zavádějící (deployers) měli přehled o všech AI systémech, které používají. Bez registru nemůžete prokázat soulad s nařízením. **V rámci služby AIshield vám dodáme profesionálně zpracovaný registr AI systémů — jednoduchou tabulku, kterou si snadno vyplníte.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 26 — povinnosti zavádějícího (deployer)",
             },
         ],
     },
@@ -646,24 +853,10 @@ QUESTIONNAIRE_SECTIONS = [
         "description": "AI Act rozlišuje různé povinnosti pro poskytovatele (výrobce) a zavádějící (uživatele) AI systémů.",
         "questions": [
             {
-                "key": "develops_own_ai",
-                "text": "Vyvíjíte vlastní AI modely nebo systémy?",
-                "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) Vlastní ML model pro predikci chování zákazníků.\n2) Interní chatbot trénovaný na firemních datech.\n3) AI algoritmus pro optimalizaci logistiky.",
-                "followup": {
-                    "condition": "yes",
-                    "fields": [
-                        {"key": "ai_provider_warning", "label": "⚠️ Jako poskytovatel AI systému (čl. 3 bod 3) máte rozsáhlejší povinnosti: technická dokumentace (příloha IV), posouzení shody (čl. 16), označení CE, systém řízení kvality. **AIshield vám pomůže s kompletní dokumentací.**", "type": "info"},
-                    ]
-                },
-                "risk_hint": "high",
-                "ai_act_article": "čl. 3 bod 3 — definice poskytovatele, čl. 16 — povinnosti poskytovatele",
-            },
-            {
                 "key": "modifies_ai_purpose",
                 "text": "Měníte účel nebo podstatně upravujete zakoupený AI systém?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) Přetrénování ChatGPT API na vlastních datech pro specifický účel.\n2) Vlastní fine-tuning jazykového modelu.\n3) Změna účelu AI nástroje (např. z marketingu na HR screening).",
+                "help_text": "Sem patří případy, kdy podstatně měníte existující AI systém třetí strany — fine-tuning, změna účelu, přetrénování. Dle čl. 25 AI Act se tím můžete stát poskytovatelem.\n\nPříklady ANO:\n1) Fine-tunujete GPT/Claude na vlastních datech pro specifický účel.\n2) Přetrénováváte jazykový model pro úplně jiné použití.\n3) Měníte účel AI nástroje (např. z marketingu na HR screening).\n\nPříklady NE:\n1) Používáte ChatGPT/Claude tak, jak je, bez úprav.\n2) Jen píšete vlastní prompty (to není úprava systému).\n3) Používáte RAG bez změny základního modelu.",
                 "followup": {
                     "condition": "yes",
                     "fields": [
@@ -672,6 +865,24 @@ QUESTIONNAIRE_SECTIONS = [
                 },
                 "risk_hint": "high",
                 "ai_act_article": "čl. 25 — další zavádějící, kteří se považují za poskytovatele",
+            },
+            {
+                "key": "uses_gpai_api",
+                "text": "Integrujete API velkých jazykových modelů (LLM) do vlastních produktů nebo služeb?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady ANO:\n1) Voláte ChatGPT/Claude/Gemini API z vaší aplikace pro zákazníky.\n2) Chatbot na vašem webu je poháněn LLM přes API.\n3) Váš SaaS produkt generuje texty/analýzy pomocí LLM.\n\nPříklady NE:\n1) Zaměstnanci ručně používají ChatGPT (to patří do sekce interní AI).\n2) Pouze testujete API interně.\n3) Nepoužíváte žádné LLM API.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "gpai_provider", "label": "Které API používáte?", "type": "multi_select",
+                         "options": ["OpenAI (GPT-4/4o)", "Anthropic (Claude)", "Google (Gemini)", "Meta (Llama)", "Mistral", "Vlastní model", "Jiné"]},
+                        {"key": "gpai_customer_facing", "label": "Jsou výstupy LLM viditelné přímo zákazníkům?", "type": "select",
+                         "options": ["Ano, zákazníci vidí AI výstupy přímo", "Částečně — AI navrhuje, člověk kontroluje", "Ne — pouze interní použití"],
+                         "warning": {"Ano, zákazníci vidí AI výstupy přímo": "⚠️ Od 2. srpna 2025 platí pravidla pro GPAI (čl. 51-54 AI Act). Jako deployer integrující LLM do zákaznického produktu máte povinnost transparentnosti — zákazníci musí vědět, že interagují s AI (čl. 50). **AIshield vám pomůže s GPAI compliance.**"}},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 51-54 — GPAI povinnosti, čl. 50 — transparentnost",
             },
         ],
     },
@@ -688,9 +899,41 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Máte plán pro případ, že AI systém udělá chybu nebo způsobí škodu?",
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) Postup při chybné AI odpovědi zákazníkovi.\n2) Eskalační proces při diskriminačním výstupu AI.\n3) Plán okamžitého vypnutí AI systému.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "incident_plan_scope", "label": "Co váš plán pokrývá? (vyberte vše)", "type": "multi_select",
+                         "options": [
+                             "Postup při chybné AI odpovědi zákazníkovi",
+                             "Eskalační proces (kdo rozhoduje o dalších krocích)",
+                             "Okamžité odstavení AI systému",
+                             "Hlášení incidentu dozorové autoritě",
+                             "Informování dotčených osob",
+                             "Záznamy a dokumentace incidentu",
+                         ]},
+                        {"key": "incident_escalation_chain", "label": "Kdo je v eskalačním řetězci? (vyberte vše, co platí)", "type": "multi_select",
+                         "options": [
+                             "Operátor / zaměstnanec, který incident zjistí",
+                             "Vedoucí oddělení / manažer",
+                             "IT oddělení / správce systému",
+                             "Jednatel / vedení firmy",
+                             "DPO / Compliance officer",
+                             "Externí právní poradce",
+                         ]},
+                        {"key": "incident_communication", "label": "Jak komunikujete incidenty interně?", "type": "multi_select",
+                         "options": [
+                             "E-mail",
+                             "Telefon / krizová linka",
+                             "Interní chat (Teams, Slack apod.)",
+                             "Ticketovací systém (Jira, Freshdesk apod.)",
+                             "Nemáme definovaný kanál",
+                         ]},
+                        {"key": "incident_existing_ok", "label": "✅ Výborně! Na základě těchto informací doplníme váš stávající plán o požadavky AI Act — zejména povinné hlášení závažných incidentů dle čl. 73 a komunikaci s dozorovou autoritou.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
-                        {"key": "incident_warning", "label": "⚠️ Nařízení vyžaduje sledování závažných incidentů a jejich hlášení (čl. 73). Mít připravený plán je nejen zákonná povinnost, ale i dobrá praxe. **V rámci služby AIshield vám dodáme šablonu plánu řízení AI incidentů.**", "type": "info"},
+                        {"key": "incident_warning", "label": "⚠️ Nařízení vyžaduje sledování závažných incidentů a jejich hlášení (čl. 73). Mít připravený plán je nejen zákonná povinnost, ale i dobrá praxe. **V rámci služby AIshield vám dodáme profesionálně zpracovaný plán řízení AI incidentů.**", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -700,10 +943,20 @@ QUESTIONNAIRE_SECTIONS = [
                 "key": "monitors_ai_outputs",
                 "text": "Pravidelně kontrolujete kvalitu a správnost výstupů vašich AI systémů?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) Týdenní audit vzorku chatbotových odpovědí.\n2) Měsíční kontrola přesnosti AI doporučení.\n3) Automatický monitoring bias a drift v ML modelech.",
+                "help_text": "Táže se, jestli někdo ve vaší firmě pravidelně kontroluje, že AI dělá to, co má.\n\nPříklady ANO:\n1) Vedoucí čte náhodné odpovědi chatbota a ověřuje správnost.\n2) Tým jednou měsíčně kontroluje AI doporučení.\n3) Vývojář monitoruje přesnost ML modelu.\n\nPříklady NE:\n1) AI chatbot běží a nikdo jeho odpovědi nekontroluje.\n2) AI generuje reporty, které se posílají přímo zákazníkům.\n\nPokud AI používáte jen občas pro sebe (např. ChatGPT), odpovězte Ne.",
+                "scope_hint": "Tato otázka se týká všech AI systémů, které ve firmě používáte. Odpovězte ANO, pokud někdo pravidelně kontroluje správnost výstupů AI (např. čte odpovědi chatbota, ověřuje AI doporučení). Odpovězte NE, pokud AI běží bez jakékoliv kontroly kvality výstupů.",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "monitoring_frequency", "label": "Jak často kontrolujete výstupy AI?", "type": "single_select",
+                         "options": ["Denně", "Týdně", "Měsíčně", "Nepřípravidělně / ad hoc"]},
+                        {"key": "monitoring_ok_info", "label": "✅ Výborně! Pravidelný monitoring výstupů AI je základem čl. 9 AI Act (systém řízení rizik). Do dokumentace zaznamenáme váš monitoring proces.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
-                        {"key": "monitoring_warning", "label": "⚠️ Článek 9 AI Act vyžaduje průběžné řízení rizik po celou dobu životního cyklu AI systému, včetně monitoringu výstupů. Pravidelná kontrola kvality je základem pro splnění této povinnosti. **AIshield vám pomůže nastavit efektivní monitoring AI výstupů.**", "type": "info"},
+                        {"key": "monitoring_warning", "label": "⚠️ Článek 9 AI Act vyžaduje průběžné řízení rizik po celou dobu životního cyklu AI systému, včetně monitoringu výstupů. Pravidelná kontrola kvality je základem pro splnění této povinnosti. **Monitoring AI výstupů je důležitou součástí vaší compliance strategie.**", "type": "info"},
+                        {"key": "monitoring_internal_note", "label": "⚠️ Důležité: Monitoring kvality AI výstupů je interní záležitost vaší firmy. Vy nejlépe znáte své procesy a víte, co je „správná“ odpověď chatbota nebo „přesné“ doporučení. V rámci Compliance Kitu vám vygenerujeme **Monitoring plán AI** — konkrétní KPI, metriky a měsíční checklist, co a jak často kontrolovat — ale samotné kontroly musíte provádět vy ve svých systémech.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -711,16 +964,106 @@ QUESTIONNAIRE_SECTIONS = [
             },
             {
                 "key": "tracks_ai_changes",
-                "text": "Dokumentujete změny v AI systémech (aktualizace, nové modely, změny promptů)?",
+                "text": "Dokumentujete změny ve vlastních AI systémech, které provozujete nebo vyvíjíte?",
                 "type": "yes_no_unknown",
-                "help_text": "Příklady:\n1) Changelog aktualizací chatbota.\n2) Verzování promptů v Git repozitáři.\n3) Dokumentace přechodu na novou verzi AI modelu.",
+                "help_text": "Příklady:\n1) Záznam o aktualizaci chatbota na novou verzi.\n2) Poznámka v tabulce, že jste změnili poskytovatele AI analytiky.\n3) Dokumentace přechodu z jednoho AI nástroje na jiný.\n\nPozor: Nejedná se o sledování aktualizací nástrojů třetích stran (např. kdy OpenAI vydal novou verzi GPT). Jde o vaše vlastní rozhodnutí — kdy jste vy změnili, co používáte a jak.",
+                "scope_hint": "Tato otázka se týká firem, které PROVOZUJÍ nebo VYVÍJEJÍ vlastní AI řešení (chatbot na webu, AI analytika, automatizace procesů). Pokud jste OSVČ nebo malá firma a pouze občas používáte ChatGPT či Copilot bez vlastních úprav, tato otázka se vás netýká — odpovězte \"Ne\".",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "changes_tracking_method", "label": "Jak změny dokumentujete?", "type": "multi_select",
+                         "options": ["Verze v Git / repozitáři", "Interní tabulka / evidence", "Ticketovací systém (Jira)", "Changelog v dokumentaci", "Jiný způsob"]},
+                        {"key": "changes_ok_info", "label": "✅ Výborně! Dokumentace změn je požadavek Přílohy IV bod 6 AI Act. Do compliance dokumentace zaznamenáme váš systém evidence změn.", "type": "info"},
+                    ]
+                },
                 "followup_no": {
                     "fields": [
                         {"key": "changes_warning", "label": "⚠️ Příloha IV bod 6 AI Act vyžaduje popis všech změn provedených během životního cyklu AI systému. Bez dokumentace změn nebudete moci prokázat soulad s nařízením. **AIshield vám pomůže zavést jednoduché verzování a evidenci změn vašich AI systémů.**", "type": "info"},
+                        {"key": "changes_internal_note", "label": "⚠️ Důležité: Evidenci změn AI systémů si musíte vést interně — stačí i jednoduchá tabulka s datem, názvem systému a popisem změny. AIshield vám dodá profesionálně zpracovanou dokumentaci pro tuto evidenci.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
                 "ai_act_article": "příloha IV bod 6 — popis změn během životního cyklu",
+            },
+            {
+                "key": "has_ai_bias_check",
+                "text": "Testujete své AI systémy na diskriminaci nebo zaujatost (bias)?",
+                "type": "yes_no_unknown",
+                "help_text": "Příklady ANO:\n1) Kontrolujete, zda AI nábor nezvýhodňuje/neznevýhodňuje kandidáty podle pohlaví nebo věku.\n2) Testujete, zda chatbot odpovídá stejně kvalitně česky i anglicky.\n3) Analyzujete, zda AI scoring nediskriminuje určité skupiny zákazníků.\n\nPříklady NE:\n1) AI běží bez jakékoliv kontroly férovosti.\n2) Nikdy jste netestovali, zda AI výstupy nejsou zaujaté.\n\nTato otázka je relevantní zejména pro firmy s vysoce rizikovými AI systémy (HR, finance, přístup ke službám).",
+                "followup": {
+                    "condition": "yes",
+                    "fields": [
+                        {"key": "bias_check_method", "label": "Jak testujete? (vyberte vše)", "type": "multi_select",
+                         "options": ["Manuální kontrola výstupů na vzorku dat", "Automatizované testy férovosti", "Porovnání výstupů pro různé skupiny (pohlaví, věk, etnicita)", "Zpětná vazba od uživatelů / zákazníků", "Externí audit"]},
+                        {"key": "bias_check_ok_info", "label": "✅ Výborně! Testování férovosti AI je požadavek čl. 9–10 AI Act. Do dokumentace zaznamenáme váš přístup k testování biasu.", "type": "info"},
+                    ]
+                },
+                "followup_no": {
+                    "fields": [
+                        {"key": "bias_check_warning", "label": "⚠️ Články 9 a 10 AI Act vyžadují, aby vysoce rizikové AI systémy byly testovány na bias a diskriminaci. I u systémů s nižším rizikem je testování férovosti dobrá praxe. **V rámci Compliance Kitu vám vygenerujeme **Monitoring plán AI**, který zahrnuje sekci testování férovosti (bias testing) — konkrétní postup, jak testovat genderový, etnický a věkový bias ve vašich AI systémech.**", "type": "info"},
+                    ]
+                },
+                "risk_hint": "limited",
+                "ai_act_article": "čl. 9 — systém řízení rizik, čl. 10 — správa dat a tréninkových dat",
+            },
+        ],
+    },
+    # ═══════════════════════════════════════════════════════════════
+    # SEKCE 13: Implementace transparenční stránky
+    # ═══════════════════════════════════════════════════════════════
+    {
+        "id": "implementation",
+        "title": "Implementace transparenční stránky",
+        "description": "Poslední krok — jak chcete nasadit transparenční stránku na váš web? AI Act (čl. 50) přikazuje informovat uživatele o tom, že interagují s AI. Transparenční stránka je klíčový compliance dokument, který musí být veřejně dostupný na vašem webu.",
+        "questions": [
+            {
+                "key": "transparency_page_implementation",
+                "text": "Kdo bude implementovat transparenční stránku na váš web?",
+                "type": "single_select",
+                "options": [
+                    "Implementujeme sami (vlastní IT / technik)",
+                    "Náš webdesignér / externí dodavatel",
+                    "Chci, aby to udělal AIshield za mě (od balíčku Pro)",
+                ],
+                "help_text": "Transparenční stránka je HTML stránka, kterou vygenerujeme jako součást Compliance Kitu. Potřebujete ji vložit na svůj web (typicky /ai-transparency nebo /ai-info).\n\nPříklady:\n1) 'Implementujeme sami' — váš IT tým nebo vy sami vložíte HTML kód na web.\n2) 'Webdesignér' — předáme podklady vašemu externistovi.\n3) 'AIshield za mě' — implementujeme za vás (pouze u balíčku Pro a Enterprise).",
+                "followup": {
+                    "condition": "Implementujeme sami (vlastní IT / technik)",
+                    "fields": [
+                        {"key": "implementation_self_info", "label": "✅ Výborně! Veškeré vypracované podklady včetně HTML kódu vám zašleme e-mailem. Implementace je jednoduchá — stačí vložit HTML soubor na váš web.", "type": "info"},
+                    ]
+                },
+                "risk_hint": "none",
+                "ai_act_article": "čl. 50 — transparentnost a informování",
+            },
+            {
+                "key": "implementation_contact",
+                "text": "Kontakt na osobu, které máme zaslat podklady k implementaci:",
+                "type": "conditional_fields",
+                "show_when": "transparency_page_implementation == 'Náš webdesignér / externí dodavatel'",
+                "fields": [
+                    {"key": "implementor_name", "label": "Jméno a příjmení technika / webdesignéra", "type": "text", "required": True},
+                    {"key": "implementor_email", "label": "E-mail technika", "type": "email", "required": True},
+                    {"key": "implementor_phone", "label": "Telefon technika", "type": "phone", "required": False},
+                    {"key": "implementor_info", "label": "✅ Výborně! Veškeré vypracované podklady včetně HTML kódu zašleme přímo vašemu technikovi. Pokud bude mít jakékoliv dotazy k implementaci, jsme mu k dispozici.", "type": "info"},
+                ],
+                "help_text": "Potřebujeme kontakt na osobu, která bude implementovat transparenční stránku na váš web. Podklady zašleme přímo jí.",
+                "risk_hint": "none",
+                "ai_act_article": None,
+            },
+            {
+                "key": "aishield_implementation_request",
+                "text": "Implementace transparenční stránky službou AIshield",
+                "type": "conditional_fields",
+                "show_when": "transparency_page_implementation == 'Chci, aby to udělal AIshield za mě (od balíčku Pro)'",
+                "fields": [
+                    {"key": "aishield_impl_note", "label": "ℹ️ Implementace transparenční stránky naším týmem je dostupná v balíčcích **Pro** (14 999 Kč) a **Enterprise** (39 999 Kč). V balíčku Basic tato služba není zahrnuta.\n\n**Co uděláme:**\n• Nasadíme transparenční stránku přímo na váš web\n• Zajistíme správné zobrazení a responzivitu\n• Ověříme soulad s AI Act čl. 50\n\nPro implementaci budeme potřebovat přístupové údaje k vašemu webu (zašleme vám bezpečný formulář po objednávce).", "type": "info"},
+                    {"key": "implementation_web_url", "label": "URL vašeho webu, kde má být stránka umístěna", "type": "text", "required": True},
+                    {"key": "implementation_cms_access", "label": "Máte přístup k administraci webu (CMS)?", "type": "single_select", "options": ["Ano, mám přístup", "Ne, přístup má někdo jiný", "Nevím"]},
+                    {"key": "implementation_preferred_url", "label": "Preferovaná URL pro transparenční stránku (např. /ai-info)", "type": "text", "required": False},
+                ],
+                "help_text": "Implementace je dostupná od balíčku Pro. Nainstalujeme transparenční stránku přímo na váš web.",
+                "risk_hint": "none",
+                "ai_act_article": "čl. 50 — transparentnost a informování",
             },
         ],
     },
@@ -730,7 +1073,7 @@ QUESTIONNAIRE_SECTIONS = [
 _SECTION_ORDER = [
     "industry", "internal_ai", "customer_service", "hr", "finance",
     "prohibited_systems", "infrastructure_safety", "data_protection", "ai_literacy",
-    "human_oversight", "ai_role", "incident_management",
+    "human_oversight", "ai_role", "incident_management", "implementation",
 ]
 QUESTIONNAIRE_SECTIONS.sort(key=lambda s: _SECTION_ORDER.index(s["id"]))
 
@@ -779,6 +1122,7 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
     """
     Uloží odpovědi z dotazníku do DB.
     Vrátí analýzu rizik + doporučení.
+    Pokud existují staré odpovědi (re-questionnaire), odešle notifikaci.
     """
     supabase = get_supabase()
 
@@ -787,6 +1131,20 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
 
     # Najít nebo vytvořit anonymního clienta pro tuto firmu
     client_id = await _get_or_create_client(supabase, submission.company_id)
+
+    # Načíst staré odpovědi pro detekci změn (re-questionnaire)
+    old_answers_map: dict[str, str] = {}
+    is_resubmission = False
+    try:
+        old_result = supabase.table("questionnaire_responses") \
+            .select("question_key, answer") \
+            .eq("client_id", client_id) \
+            .execute()
+        if old_result.data:
+            is_resubmission = True
+            old_answers_map = {r["question_key"]: r["answer"] for r in old_result.data}
+    except Exception as e:
+        logger.warning(f"[Questionnaire] Nepodařilo se načíst staré odpovědi: {e}")
 
     # Smazat staré odpovědi pokud existují (umožňuje editaci)
     try:
@@ -824,10 +1182,68 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
     if submission.scan_id:
         analysis["scan_id"] = submission.scan_id
 
+    # ── Re-questionnaire notifikace ──
+    # Pokud uživatel změnil odpovědi, pošleme email s přehledem změn
+    if is_resubmission and old_answers_map:
+        try:
+            new_answers_map = {a.question_key: a.answer for a in submission.answers}
+            changed = []
+            for key, new_val in new_answers_map.items():
+                old_val = old_answers_map.get(key)
+                if old_val and old_val != new_val:
+                    changed.append(f"• {key.replace('_', ' ')}: {old_val} → {new_val}")
+            added = [k for k in new_answers_map if k not in old_answers_map]
+            removed = [k for k in old_answers_map if k not in new_answers_map]
+
+            if changed or added or removed:
+                # Zjistit název firmy
+                company_name = submission.company_id[:8]
+                try:
+                    comp = supabase.table("companies").select("name, url").eq("id", submission.company_id).limit(1).execute()
+                    if comp.data:
+                        company_name = comp.data[0].get("name", company_name)
+                except Exception:
+                    pass
+
+                changes_html = "<h3>Změněné odpovědi:</h3><ul>"
+                for c in changed:
+                    changes_html += f"<li>{c}</li>"
+                changes_html += "</ul>"
+                if added:
+                    changes_html += f"<p><b>Nové otázky:</b> {len(added)}</p>"
+                if removed:
+                    changes_html += f"<p><b>Odebrané otázky:</b> {len(removed)}</p>"
+
+                notification_html = f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px;">
+                    <h2>🔔 Změna dotazníku — {company_name}</h2>
+                    <p>Klient <b>{company_name}</b> (company_id: {submission.company_id}) změnil odpovědi v dotazníku.</p>
+                    <p><b>Počet změn:</b> {len(changed)} změněných, {len(added)} nových, {len(removed)} odebraných</p>
+                    {changes_html}
+                    <hr>
+                    <p style="color: #666;">Je nutné přegenerovat compliance dokumenty pro tohoto klienta.</p>
+                    <p><a href="https://aishield.cz/admin">Otevřít admin panel →</a></p>
+                </div>
+                """
+
+                from backend.outbound.email_engine import send_email
+                await send_email(
+                    to="info@desperados-design.cz",
+                    subject=f"🔔 Změna dotazníku — {company_name}",
+                    html=notification_html,
+                )
+                logger.info(f"[Questionnaire] Odeslána notifikace o změně dotazníku pro {company_name}")
+
+                # TODO: Automatické přegenerování dokumentů
+                # await regenerate_documents(submission.company_id)
+        except Exception as e:
+            logger.error(f"[Questionnaire] Chyba při odesílání notifikace: {e}")
+
     return {
         "status": "saved",
         "saved_count": saved_count,
         "analysis": analysis,
+        "is_resubmission": is_resubmission,
     }
 
 
@@ -1319,12 +1735,6 @@ UNKNOWN_CHECKLISTS: dict[str, list[str]] = {
         'Zkontrolujte smlouvy s AI poskytovateli — kde jsou data uložena? Mají Data Processing Agreement?',
         'Ověřte, zda používáte EU verze služeb (např. Azure EU, AWS Frankfurt).',
     ],
-    'ai_transparency_docs': [
-        'Koho se zeptat: všechna oddělení — každé oddělení zvlášť.',
-        'Příklad: Firma nemá přehled o tom, kolik AI nástrojů zaměstnanci používají. Stačí jednoduchý Excel seznam: název nástroje, kdo ho používá, k čemu.',
-        'Požádejte každého vedoucího oddělení o seznam AI nástrojů, které jeho tým používá.',
-        'Spočítejte, kolik AI nástrojů firma celkem používá — stačí neformální přehled.',
-    ],
     # AI gramotnost
     'has_ai_training': [
         'Koho se zeptat: HR oddělení, vedení firmy, školící manažer.',
@@ -1344,6 +1754,38 @@ UNKNOWN_CHECKLISTS: dict[str, list[str]] = {
         'Příklad: Firma vyvíjí vlastní ML model pro doporučování produktů, integruje AI do svého SaaS produktu, trénuje vlastní jazykový model.',
         'Zkontrolujte, zda produkty nebo služby firmy obsahují AI/ML funkce.',
         'Ověřte s vývojovým týmem, zda firma trénuje vlastní modely nebo fine-tunuje existující.',
+    ],
+    # Governance
+    'has_ai_register': [
+        'Koho se zeptat: IT oddělení, compliance officer, vedení firmy.',
+        'Příklad: Firma používá ChatGPT, Copilot a AI chatbot na webu, ale nikde nemá centrální seznam těchto nástrojů.',
+        'Zjistěte, zda existuje jakýkoliv přehled AI nástrojů — i neformální seznam v Excelu se počítá.',
+        'Zkontrolujte IT inventář — zahrnuje i cloudové AI služby?',
+    ],
+    'has_ai_vendor_contracts': [
+        'Koho se zeptat: právní oddělení, IT oddělení, nákup.',
+        'Příklad: Firma platí za ChatGPT Plus, ale nemá s OpenAI žádnou firemní smlouvu ani DPA.',
+        'Zkontrolujte faktury za AI služby — máte k nim odpovídající smlouvy?',
+        'Ověřte, zda smlouvy pokrývají zpracování dat, odpovědnost za chyby AI a podmínky ukončení.',
+    ],
+    'has_ai_bias_check': [
+        'Koho se zeptat: CTO, vývojáři, HR oddělení (pro AI v náboru), compliance officer.',
+        'Příklad: AI nástroj pro nábor automaticky vyřazuje kandidáty, ale nikdo netestoval, zda nediskriminuje podle pohlaví nebo věku.',
+        'Zkontrolujte, zda AI rozhodnutí nezvýhodňují/neznevýhodňují určité skupiny zákazníků nebo zaměstnanců.',
+        'Ověřte, zda máte zpětnou vazbu od uživatelů AI systémů.',
+    ],
+    # Děti / GPAI
+    'uses_ai_for_children': [
+        'Koho se zeptat: produktový manažer, vývojáři, marketing.',
+        'Příklad: Mobilní aplikace s AI chatbotem, kterou používají děti — např. edukační hra nebo online výuková platforma.',
+        'Zkontrolujte, zda vaše AI produkty/služby cílí na osoby mladší 18 let.',
+        'Ověřte, zda sbíráte data dětí nebo AI interaguje s dětmi přímo.',
+    ],
+    'uses_gpai_api': [
+        'Koho se zeptat: CTO, vývojáři, produktový tým.',
+        'Příklad: Firma volá OpenAI API ze své aplikace a výstupy zobrazuje zákazníkům.',
+        'Zkontrolujte zdrojový kód a faktury — platíte za API klíče k LLM službám?',
+        'Ověřte, zda výstupy LLM vidí koneční uživatelé vašeho produktu.',
     ],
 }
 
@@ -1374,11 +1816,17 @@ _NEVIM_SEVERITY: dict[str, dict] = {
     'uses_ai_accounting':           {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     'ai_processes_personal_data':   {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     'ai_data_stored_eu':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
-    'ai_transparency_docs':         {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     'has_ai_training':              {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     'has_ai_guidelines':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
     # Minimální
     'uses_copilot':                 {'severity': 'minimal',  'color': 'gray',   'label': 'Nízká priorita'},
+    # Governance
+    'has_ai_register':              {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'has_ai_vendor_contracts':      {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    'has_ai_bias_check':            {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
+    # Děti / GPAI
+    'uses_ai_for_children':         {'severity': 'high',     'color': 'orange', 'label': 'Vysoké riziko'},
+    'uses_gpai_api':                {'severity': 'limited',  'color': 'yellow', 'label': 'Omezené riziko'},
 }
 
 
@@ -1387,18 +1835,6 @@ _NEVIM_SEVERITY: dict[str, dict] = {
 # nebo nemožnost dodat compliance dokumentaci. Generujeme doporučení.
 
 _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
-    'ai_transparency_docs': {
-        'risk_level': 'limited',
-        'priority': 'vysoká',
-        'recommendation': (
-            'Nemáte přehled o tom, jaké AI ve firmě používáte. '
-            'Bez tohoto přehledu nelze splnit žádnou povinnost AI Act — '
-            'nevíte, které systémy regulovat, registrovat ani dokumentovat. '
-            'Toto je úplně první krok ke compliance. '
-            'Registr všech AI systémů ve vaší firmě vám vytvoříme my '
-            'v rámci služby AIshield.cz — na základě výsledků skenu a dotazníku.'
-        ),
-    },
     'has_ai_training': {
         'risk_level': 'limited',
         'priority': 'vysoká',
@@ -1407,7 +1843,7 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
             'Článek 4 AI Act vyžaduje „dostatečnou úroveň AI gramotnosti" '
             'a tato povinnost platí již od 2. února 2025. '
             'Zajistěte školení co nejdříve — AIshield.cz dodává kompletní '
-            'školící prezentaci (PowerPoint) a šablonu prezenční listiny.'
+            'školící prezentaci (PowerPoint) a profesionálně zpracovanou prezenční listinu.'
         ),
     },
     'has_ai_guidelines': {
@@ -1417,10 +1853,10 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
             'Nemáte ve firmě pravidla pro používání AI. '
             'Bez interní směrnice zaměstnanci nevědí, jaká data smí do AI vkládat, '
             'zda mohou AI výstupy publikovat, ani kdo je zodpovědný za dodržování. '
-            'V rámci služby vám dodáme univerzální šablonu směrnice „Pravidla pro AI ve firmě", '
+            'V rámci služby vám dodáme profesionálně zpracovanou směrnici „Pravidla pro AI ve firmě", '
             'která pokrývá obecné zásady a je použitelná pro jakoukoliv firmu. '
             'Pozor: konkrétní pravidla šitá na míru vašim procesům a AI nástrojům '
-            'si musíte vytvořit interně — šablona vám k tomu poslouží jako základ.'
+            'si musíte vytvořit interně — dokumentace vám k tomu poslouží jako základ.'
         ),
     },
     'ai_data_stored_eu': {
@@ -1435,6 +1871,41 @@ _NO_ANSWER_RECOMMENDATIONS: dict[str, dict] = {
             'Pokud používáte ChatGPT, Gemini nebo Claude, '
             'ověřte si v nastavení, zda máte zapnutou firemní verzi '
             '(Team/Business) — ta obvykle zajišťuje vyšší úroveň ochrany dat.'
+        ),
+    },
+    'has_ai_register': {
+        'risk_level': 'limited',
+        'priority': 'vysoká',
+        'recommendation': (
+            'Nemáte interní registr AI systémů. '
+            'Článek 26 AI Act vyžaduje, aby zavádějící měli přehled '
+            'o všech AI systémech, které používají. '
+            'Bez registru nemůžete prokázat soulad s nařízením. '
+            'AIshield vám dodá profesionálně zpracovaný registr AI systémů — '
+            'jednoduchou tabulku, kterou si snadno vyplníte.'
+        ),
+    },
+    'has_ai_vendor_contracts': {
+        'risk_level': 'limited',
+        'priority': 'střední',
+        'recommendation': (
+            'Nemáte smlouvy s dodavateli AI systémů. '
+            'GDPR čl. 28 vyžaduje smlouvu se zpracovatelem osobních údajů '
+            'a AI Act čl. 25-26 definuje povinnosti v hodnotovém řetězci. '
+            'Bez DPA riskujete pokutu za porušení GDPR. '
+            'AIshield vám dodá kontrolní seznam bodů, '
+            'které by smlouva s AI dodavatelem měla obsahovat.'
+        ),
+    },
+    'has_ai_bias_check': {
+        'risk_level': 'limited',
+        'priority': 'střední',
+        'recommendation': (
+            'Netestujete AI systémy na diskriminaci nebo bias. '
+            'Články 9 a 10 AI Act vyžadují testování férovosti '
+            'zejména u vysoce rizikových AI systémů (HR, finance, přístup ke službám). '
+            'I u systémů s nižším rizikem je testování férovosti dobrá praxe. '
+            'AIshield vám dodá jednoduchou metodiku pro základní testování biasu.'
         ),
     },
 }
@@ -1466,17 +1937,23 @@ def _get_recommendation(question_key: str, risk: str, tool_name: str, details: O
         "uses_ai_decision": f"AI rozhodující o právech zákazníků vyžaduje lidský dohled (čl. 14 AI Act). Zajistěte právo na přezkum člověkem.",
         "uses_dynamic_pricing": "Dynamické ceny řízené AI mohou být problematické, pokud cílí na zranitelné skupiny (čl. 5 AI Act). Zajistěte transparentnost cenotvorby a nediskriminaci zákazníků.",
         # Kritická infrastruktura
-        "uses_ai_critical_infra": f"VYSOCE RIZIKOVÝ systém! AI v kritické infrastruktuře spadá pod Přílohu III bod 2. Proveďte conformity assessment a zajistěte systém řízení rizik dle čl. 9.",
-        "uses_ai_safety_component": f"VYSOCE RIZIKOVÝ systém! AI jako bezpečnostní komponenta spadá pod čl. 6 odst. 1. Zajistěte CE označení a conformity assessment.",
+        "uses_ai_critical_infra": f"VYSOCE RIZIKOVÝ systém! AI v kritické infrastruktuře (Příloha III bod 2) — registrace u NÁRODNÍHO orgánu (čl. 49 odst. 4), ne ve veřejné EU databázi. Povinnosti: systém řízení rizik (čl. 9), technická dokumentace (Příloha IV), posouzení shody (čl. 43 — interní postačuje), CE označení (čl. 48), post-market monitoring (čl. 72). V ČR kontaktujte NÚKIB. Deadline: 2. 8. 2026. Doporučujeme konzultaci s právníkem — AIshield připraví podklady.",
+        "uses_ai_safety_component": f"VYSOCE RIZIKOVÝ systém! AI jako bezpečnostní komponenta (čl. 6 odst. 1) — plná účinnost od 2. 8. 2027. Povinnosti: posouzení shody (Příloha VI — interní), technická dokumentace (Příloha IV), CE označení (čl. 48), registrace v EU databázi (čl. 49), prohlášení o shodě (čl. 47). Notifikovaný subjekt NENÍ nutný (kromě biometrie). AIshield připraví pre-filled dokumentaci.",
         # Ochrana dat
         "ai_processes_personal_data": f"Proveďte DPIA dle GDPR. Zajistěte právní základ pro zpracování a minimalizaci dat v AI systémech.",
         "ai_data_stored_eu": "Ověřte, kde jsou data AI systémů fyzicky uložena. Pro přenos mimo EU zajistěte adekvátní záruky (SCC, adequacy decision).",
-        "ai_transparency_docs": "Vytvořte registr všech AI systémů ve firmě. Pro vysoce rizikové systémy je registrace v EU databázi povinná (čl. 49).",
         # Provider / deployer
         "develops_own_ai": "Jako vývojář (provider) AI systémů máte povinnosti dle čl. 16 AI Act — dokumentace, posouzení shody, registrace. Identifikujte risk kategorii každého vašeho AI produktu.",
         # AI gramotnost
         "has_ai_training": "Zajistěte proškolení zaměstnanců o bezpečném používání AI nástrojů. Článek 4 AI Act vyžaduje ‚dostatečnou úroveň AI gramotnosti'.",
         "has_ai_guidelines": "Vytvořte interní pravidla pro používání AI — co se smí sdílet, jaká data nesmí do AI nástrojů, a kdo je zodpovědný za dodržování.",
+        # Governance
+        "has_ai_register": "Vytvořte interní registr všech AI systémů — čl. 26 AI Act vyžaduje přehled o nasazených AI systémech.",
+        "has_ai_vendor_contracts": "Uzavřete smlouvy (DPA, SLA) s dodavateli AI systémů — GDPR čl. 28 vyžaduje smlouvu se zpracovatelem dat.",
+        "has_ai_bias_check": "Testujte AI systémy na férovost a diskriminaci — čl. 9-10 AI Act vyžadují řízení rizik včetně biasu.",
+        # Děti / GPAI
+        "uses_ai_for_children": "AI interagující s dětmi je vysoce rizikové dle Přílohy III AI Act. Proveďte posouzení shody a zajistěte zvýšenou ochranu nezletilých.",
+        "uses_gpai_api": "Integrujete LLM API do zákaznických produktů — od srpna 2025 platí GPAI pravidla (čl. 51-54). Zajistěte transparentnost a dokumentaci.",
     }
     return recs.get(question_key, f"Zkontrolujte soulad {tool_name} s AI Act a dokumentujte jeho použití.")
 

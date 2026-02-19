@@ -1,0 +1,73 @@
+PERSONA 06 — Advokátní kancelář
+==================================
+
+Jméno firmy:     AK Novotný & Partners s.r.o.
+Kontaktní osoba: JUDr. Martin Novotný, partner
+Forma podnikání: s.r.o.
+IČO:             12345606
+Sídlo:           Revoluční 3, 110 00 Praha 1
+Telefon:         +420 606 666 006
+E-mail:          novotny@aknovotny.cz
+Web:             www.aknovotny.cz
+
+Zaměstnanci:     12 (10-49)
+Roční obrat:     ~18 mil. Kč
+Odvětví:         Právní služby
+
+Popis podnikání:
+- Advokátní kancelář zaměřená na obchodní právo a nemovitosti
+- 4 advokáti + 3 koncipienti + 5 administrativních pracovníků
+- Používá AI pro analýzu smluv (Harvey AI trial)
+- ChatGPT pro rešerše judikatury
+- Zpracovává osobní data klientů (advokátní tajemství)
+- Github Copilot pro interní IT (jeden programátor na správu systémů)
+
+Očekávané chování dotazníku:
+- RELEVANTNÍ: AI rozhodování (analýza smluv), osobní data, GDPR, oversight, AI training
+- MÉNĚ RELEVANTNÍ: chatbot pro zákazníky, dynamické ceny, critical infra, biometrika, HR screening
+- Risk level: OMEZENÉ (AI asistence + legal data + personal data)
+
+Odpovědi pro test:
+  company_legal_name: "AK Novotný & Partners s.r.o."
+  company_ico: "12345606"
+  company_address: "Revoluční 3, 110 00 Praha 1"
+  company_contact_email: "novotny@aknovotny.cz"
+  company_industry: ["Právní služby"]
+  company_size: "10–49 zaměstnanců"
+  company_annual_revenue: "10–50 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Právní rešerše", "Analýza dokumentů"], chatgpt_data_type: ["Veřejné info", "Interní dokumenty"]
+  uses_copilot: "yes" → copilot_scope: ["Vývoj interních nástrojů"]
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "yes" → decision_scope: ["Analýza smluv", "Právní rešerše"], decision_human_review: "yes"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "yes" → accounting_tool: ["Fakturoid"]
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Osobní údaje klientů", "Smluvní data", "Rodná čísla"], dpia_done: "Ne"
+  ai_data_stored_eu: "yes"
+  has_ai_vendor_contracts: "yes" → vendor_names: ["Harvey AI", "OpenAI"]
+  has_ai_training: "no"
+  has_ai_guidelines: "yes" → guidelines_scope: "Interní směrnice pro práci s AI — nesmí se vkládat klientská data"
+  has_oversight_person: "no"
+  can_override_ai: "yes" → override_scope: ["Advokát vždy kontroluje AI výstup"]
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "yes" → monitoring_method: "Advokát kontroluje každý AI výstup"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

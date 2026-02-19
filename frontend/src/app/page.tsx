@@ -47,6 +47,22 @@ const ICONS = {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
         </svg>
     ),
+    dpia: (
+        <svg className="w-7 h-7 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
+        </svg>
+    ),
+    vendor: (
+        <svg className="w-7 h-7 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+    ),
+    monitoring: (
+        <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+        </svg>
+    ),
 };
 
 /* ─── Deliverables data ─── */
@@ -140,6 +156,58 @@ const DELIVERABLES = [
             "Zákon nevyžaduje certifikát — ale důkaz o proškolení ano",
             "Stačí vytisknout, nechat podepsat a archivovat",
             "Bez záznamu riskujete, že školení nikdo neuzná",
+        ],
+    },
+    {
+        icon: ICONS.shield,
+        name: "Plán řízení AI incidentů",
+        desc: "Připravenost na selhání AI systému",
+        detail: null,
+        bullets: [
+            "Jasný postup, co dělat, když AI systém udělá chybu nebo způsobí škodu",
+            "Kdo je zodpovědný, koho kontaktovat, jak eskalovat",
+            "Splňuje požadavek čl. 73 AI Actu na hlášení závažných incidentů",
+            "Personalizovaný podle AI systémů, které skutečně používáte",
+            "Připraveno k okamžitému použití — stačí vytisknout a založit",
+        ],
+    },
+    {
+        icon: ICONS.dpia,
+        name: "DPIA — Posouzení vlivu",
+        desc: "Předvyplněná šablona dle GDPR + AI Act",
+        detail: null,
+        bullets: [
+            "Posouzení vlivu na ochranu osobních údajů — povinné při zpracování dat přes AI",
+            "Předvyplněná šablona s údaji z dotazníku — seznam AI systémů, rizikové úrovně, firemní data",
+            "Strukturovaná dle GDPR čl. 35 a AI Act čl. 27 — úřady přesně tohle vyžadují",
+            "Stačí doplnit specifika vaší firmy a nechat podepsat DPO / vedením",
+            "Bez DPIA riskujete sankce i ze strany ÚOOÚ, nejen z AI Actu",
+        ],
+    },
+    {
+        icon: ICONS.vendor,
+        name: "Dodavatelský checklist",
+        desc: "Kontrola smluv s dodavateli AI",
+        detail: null,
+        bullets: [
+            "Kontrolní seznam, co musí pokrývat vaše smlouvy s dodavateli AI (OpenAI, Google, Microsoft…)",
+            "Povinné dle čl. 25–26 AI Actu — nasazovatel odpovídá i za dodavatele",
+            "Checkboxy pro DPA, SLA, GDPR záruky, opt-out z trénování a další náležitosti",
+            "Personalizovaný — obsahuje konkrétní AI systémy nalezené u vás",
+            "Formulář pro každého dodavatele zvlášť — vytisknout a vyplnit",
+        ],
+    },
+    {
+        icon: ICONS.monitoring,
+        name: "Monitoring plán AI",
+        desc: "Co, jak a jak často kontrolovat",
+        detail: null,
+        bullets: [
+            "Plán monitoringu výstupů AI — povinný dle čl. 9 a 72 AI Actu",
+            "KPI a metriky: přesnost, halucinace, bias, bezpečnost, compliance",
+            "Zahrnuje testování férovosti (bias testing) — genderový, etnický, věkový",
+            "Měsíční checklist s konkrétními úkoly pro každý týden",
+            "Záznamový list pro archivaci — důkaz pravidelného monitoringu při kontrole",
         ],
     },
 ];
@@ -448,8 +516,37 @@ export default function HomePage() {
                         Nestačí jen přidat zmínku o AI na cookie lištu — zákon vyžaduje mnohem víc.
                     </p>
 
+                    {/* CTA — Scanner Input — hned pod subheadline */}
+                    <div className="mx-auto mt-8 max-w-xl">
+                        <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
+                            const form = e.currentTarget;
+                            const input = form.querySelector('input[name="url"]') as HTMLInputElement;
+                            let val = input.value.trim();
+                            if (val && !val.match(/^https?:\/\//i)) {
+                                val = 'https://' + val;
+                            }
+                            input.value = val;
+                        }}>
+                            <input
+                                type="text"
+                                name="url"
+                                placeholder="vasefirma.cz"
+                                required
+                                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white text-lg
+                                    placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
+                                    focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
+                            />
+                            <button type="submit" className="btn-primary whitespace-nowrap text-lg px-10 py-4 w-full sm:w-auto">
+                                Skenovat ZDARMA
+                            </button>
+                        </form>
+                        <p className="text-sm text-slate-400 mt-3 text-center">
+                            Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je <strong className="text-white">zdarma a nezávazné</strong>.
+                        </p>
+                    </div>
+
                     {/* Povinnosti — odrážky */}
-                    <div className="mx-auto mt-8 max-w-2xl text-left">
+                    <div className="mx-auto mt-12 max-w-2xl text-left">
                         <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
                             Co zákon vyžaduje od webů a e-shopů
                         </h3>
@@ -482,7 +579,7 @@ export default function HomePage() {
                                         "Přehled AI systémů, hodnocení rizik, přijatá opatření",
                                         "Dokumenty musí být v češtině a ve formátu k tisku",
                                     ],
-                                    solution: "Vygenerujeme kompletní sadu 7 dokumentů v PDF",
+                                    solution: "Vygenerujeme sadu dokumentů přesně podle vašeho rizikového profilu",
                                 },
                                 {
                                     icon: (
@@ -560,34 +657,9 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* CTA — Scanner Input */}
-                    <div className="mx-auto mt-10 max-w-xl">
-                        <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
-                            const form = e.currentTarget;
-                            const input = form.querySelector('input[name="url"]') as HTMLInputElement;
-                            let val = input.value.trim();
-                            if (val && !val.match(/^https?:\/\//i)) {
-                                val = 'https://' + val;
-                            }
-                            input.value = val;
-                        }}>
-                            <input
-                                type="text"
-                                name="url"
-                                placeholder="vasefirma.cz"
-                                required
-                                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-white
-                                    placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
-                                    focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
-                            />
-                            <button type="submit" className="btn-primary whitespace-nowrap text-base px-8 w-full sm:w-auto">
-                                Skenovat ZDARMA
-                            </button>
-                        </form>
-                        <p className="text-xs text-slate-500 mt-3 text-center">
-                            Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je zdarma a nezávazné.
-                        </p>
-                        <div className="mt-4 bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5">
+                    {/* Warning box */}
+                    <div className="mx-auto mt-8 max-w-2xl">
+                        <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5">
                             <div className="flex items-start gap-3">
                                 <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
@@ -604,6 +676,126 @@ export default function HomePage() {
                                     </p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── 24H HLOUBKOVÝ SCAN ── */}
+            <section className="border-t border-white/[0.06] py-16 sm:py-24 relative overflow-hidden">
+                <div className="absolute inset-0 -z-10">
+                    <div className="absolute top-[30%] left-[10%] h-[500px] w-[500px] rounded-full bg-cyan-600/8 blur-[120px]" />
+                    <div className="absolute top-[10%] right-[15%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/6 blur-[100px]" />
+                </div>
+
+                <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                    <div className="text-center mb-12 sm:mb-16">
+                        <div className="neon-divider mb-6" />
+                        <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                            </span>
+                            Unikátní v ČR
+                        </div>
+                        <h2 className="text-3xl font-extrabold sm:text-5xl leading-tight">
+                            24hodinový hloubkový <span className="neon-text">scan</span>
+                        </h2>
+                        <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+                            Jeden rychlý scan nestačí. AI systémy se na webu chovají různě podle času, lokace i&nbsp;zařízení.
+                            Proto provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze&nbsp;7 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
+                        </p>
+                    </div>
+
+                    {/* Globe visual + features */}
+                    <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
+
+                        {/* Left — Globe / map visual */}
+                        <div className="relative">
+                            <div className="glass p-8 sm:p-10 text-center">
+                                <div className="text-6xl sm:text-7xl mb-4">🌍</div>
+                                <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
+                                    {[
+                                        { flag: "🇨🇿", code: "CZ" },
+                                        { flag: "🇬🇧", code: "GB" },
+                                        { flag: "🇺🇸", code: "US" },
+                                        { flag: "🇧🇷", code: "BR" },
+                                        { flag: "🇯🇵", code: "JP" },
+                                        { flag: "🇿🇦", code: "ZA" },
+                                        { flag: "🇦🇺", code: "AU" },
+                                    ].map((c) => (
+                                        <div key={c.code} className="flex flex-col items-center gap-1 rounded-lg bg-white/5 border border-white/10 py-2 px-1">
+                                            <span className="text-xl">{c.flag}</span>
+                                            <span className="text-[10px] text-slate-500 font-mono">{c.code}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-sm text-slate-400">
+                                    <strong className="text-white">24 skenů</strong> z rezidenčních IP adres v&nbsp;7 zemích za 24 hodin
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right — Feature list */}
+                        <div className="space-y-5">
+                            {[
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                    ),
+                                    title: "6 kol po 4 hodinách",
+                                    desc: "Skenujeme v 6 kolech rozložených přes 24 hodin — ráno, odpoledne, večer, v noci. Odhalíme AI systémy, které se aktivují jen v určitou hodinu."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" /></svg>
+                                    ),
+                                    title: "7 zemí × 24 skenů",
+                                    desc: "V každém kole skenujeme ze 4 zemí (rotace CZ, GB, US, BR, JP, ZA, AU). Chatboti se často zobrazují jen návštěvníkům z určitých regionů — tohle je odhalí."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+                                    ),
+                                    title: "Desktop i mobilní zařízení",
+                                    desc: "V rámci každého kola střídáme desktopové a mobilní prohlížeče — mnoho chatbotů se zobrazuje jen na mobilu, nebo naopak."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                                    ),
+                                    title: "Agregovaný report za 24h",
+                                    desc: "Po dokončení všech 24 skenů vám pošleme kompletní report — deduplikovaný přehled všech nalezených AI systémů s označením, kde a kdy byly detekovány."
+                                },
+                            ].map((item, i) => (
+                                <div key={i} className="flex gap-4 items-start">
+                                    <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                        {item.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-white">{item.title}</h3>
+                                        <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* CTA */}
+                    <div className="mt-12 sm:mt-16 text-center">
+                        <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
+                            <h3 className="text-xl sm:text-2xl font-bold mb-3">
+                                Chcete kompletní přehled?
+                            </h3>
+                            <p className="text-slate-400 mb-6">
+                                Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
+                                O&nbsp;výsledku vás budeme informovat e-mailem.
+                            </p>
+                            <a href="/registrace" className="btn-primary text-base px-10 py-4 inline-flex items-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
+                                Registrovat se a spustit 24h scan
+                            </a>
+                            <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
                         </div>
                     </div>
                 </div>
@@ -745,10 +937,10 @@ export default function HomePage() {
                     <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            7 dokumentů v jednom <span className="neon-text">balíčku</span>
+                            Až 12 dokumentů <span className="neon-text">na míru</span>
                         </h2>
                         <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            Kompletní sada dokumentů pro splnění povinností dle AI Actu.
+                            Generujeme jen dokumenty, které vaše firma skutečně potřebuje — podle rizikového profilu.
                             Klikněte na položku pro podrobný popis.
                         </p>
                     </div>

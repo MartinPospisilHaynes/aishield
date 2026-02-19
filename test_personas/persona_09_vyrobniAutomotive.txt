@@ -1,0 +1,77 @@
+PERSONA 09 — Výrobní podnik / Automotive
+==========================================
+
+Jméno firmy:     CzechParts Manufacturing a.s.
+Kontaktní osoba: Ing. Radek Černý, CTO
+Forma podnikání: a.s.
+IČO:             34567809
+Sídlo:           Průmyslová 1, 293 01 Mladá Boleslav
+Telefon:         +420 609 999 009
+E-mail:          cerny@czechparts.cz
+Web:             www.czechparts.cz
+
+Zaměstnanci:     420 (250+)
+Roční obrat:     ~850 mil. Kč
+Odvětví:         Výroba / Automotive
+
+Popis podnikání:
+- Výroba brzdových komponentů pro automobilový průmysl (Tier 2 supplier)
+- AI vizuální inspekce kvality (vlastní CNN model na detekci vad)
+- Prediktivní údržba strojů (IoT + ML model)
+- AI optimalizace výrobního plánu (scheduling)
+- ERP s AI modulem (SAP)
+- Safety-critical: brzdové díly = bezpečnostní komponenty vozidel
+- IATF 16949 certifikace
+- 420 zaměstnanců — relevantní HR, monitoring
+
+Očekávané chování dotazníku:
+- VYSOCE RELEVANTNÍ: safety component (brzdové díly!), AI quality control, critical infra
+- RELEVANTNÍ: employee monitoring (kamery ve výrobě), HR AI, AI training, oversight, logging
+- RELEVANTNÍ: osobní data zaměstnanců, vendor contracts (SAP), incident plan
+- MÉNĚ RELEVANTNÍ: chatbot, e-commerce, dynamic pricing, credit scoring
+- Risk level: VYSOKÉ (safety component + AI quality inspection + 250+ employees)
+
+Odpovědi pro test:
+  company_legal_name: "CzechParts Manufacturing a.s."
+  company_ico: "34567809"
+  company_address: "Průmyslová 1, 293 01 Mladá Boleslav"
+  company_contact_email: "cerny@czechparts.cz"
+  company_industry: ["Výroba / Průmysl"]
+  company_size: "250+ zaměstnanců"
+  company_annual_revenue: "nad 250 mil. Kč"
+  develops_own_ai: "yes" → own_ai_description: "CNN model pro vizuální inspekci kvality brzdových dílů + ML prediktivní údržba"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Administrativa", "Překlady technické dokumentace"], chatgpt_data_type: ["Veřejné info"]
+  uses_copilot: "yes" → copilot_scope: ["Vývoj AI modelů", "Interní scripty"]
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "yes" → decision_scope: ["Kvalita výrobků (pass/fail)", "Plánování výroby", "Prediktivní údržba"], decision_human_review: "yes"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "yes" → recruitment_tool: ["SAP SuccessFactors"], recruitment_scope: ["Předvýběr kandidátů"]
+  uses_ai_employee_monitoring: "yes" → monitoring_scope: ["Kamerový systém ve výrobě", "Docházkový systém"]
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "yes" → accounting_tool: ["SAP"]
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "yes" → critical_infra_domain: ["Výrobní linka"], critical_infra_description: "AI řízení kvalitní inspekce na výrobní lince — brzdové komponenty"
+  uses_ai_safety_component: "yes" → safety_domain: ["Automotive — brzdové díly"], safety_description: "AI vizuální inspekce rozhoduje pass/fail pro brzdové komponenty — safety-critical"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Data zaměstnanců", "Kamerové záznamy", "Docházka"], dpia_done: "yes"
+  ai_data_stored_eu: "yes"
+  has_ai_vendor_contracts: "yes" → vendor_names: ["SAP", "Microsoft (Copilot)", "NVIDIA (GPU infra)"]
+  has_ai_training: "yes" → training_scope: "Povinné školení operátorů AI inspekce + awareness pro management"
+  has_ai_guidelines: "yes" → guidelines_scope: "Interní předpis pro AI ve výrobě — validace modelů, change management"
+  has_oversight_person: "yes" → oversight_role: "AI Quality Manager"
+  can_override_ai: "yes" → override_scope: ["Kvalitní inspekce — operátor může přepsat AI verdikt"]
+  ai_decision_logging: "yes" → logging_scope: "Všechna AI rozhodnutí o kvalitě jsou logována (traceability)"
+  has_ai_register: "yes" → register_content: "Registr AI systémů dle IATF + interní AI governance"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "yes" → incident_plan_scope: "Plán pro selhání AI inspekce — fallback na manuální kontrolu"
+  monitors_ai_outputs: "yes" → monitoring_method: "Statistická kontrola AI výstupů, drift monitoring, měsíční reporting"
+  tracks_ai_changes: "yes" → change_tracking_method: "Git + MLflow, validace při každé změně modelu"
+  has_ai_bias_check: "yes" → bias_check_method: "Testování na různých materiálech a podmínkách osvětlení"

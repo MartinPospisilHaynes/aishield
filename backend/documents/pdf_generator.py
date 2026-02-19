@@ -27,15 +27,17 @@ def html_to_pdf(html_content: str) -> bytes:
         )
 
 
-def save_pdf_to_supabase(
-    pdf_bytes: bytes,
+def save_to_supabase_storage(
+    file_bytes: bytes,
     filename: str,
     client_id: str,
     bucket: str = "documents",
+    content_type: str = "application/pdf",
 ) -> str:
     """
-    Uloží PDF do Supabase Storage a vrátí veřejný URL.
+    Uloží soubor do Supabase Storage a vrátí veřejný URL.
     Cesta: documents/{client_id}/{filename}
+    Podporuje PDF, HTML, PPTX a další formáty.
     """
     from backend.database import get_supabase
 
@@ -49,11 +51,11 @@ def save_pdf_to_supabase(
         except Exception:
             pass  # Soubor neexistuje — OK
 
-        # Upload nového PDF
+        # Upload souboru
         supabase.storage.from_(bucket).upload(
             path=storage_path,
-            file=pdf_bytes,
-            file_options={"content-type": "application/pdf"},
+            file=file_bytes,
+            file_options={"content-type": content_type},
         )
 
         # Získat veřejný URL
@@ -62,9 +64,13 @@ def save_pdf_to_supabase(
         return url
 
     except Exception as e:
-        logger.error(f"Chyba při ukládání PDF do Supabase: {e}")
-        # Fallback — vrátit prázdný URL, PDF je stále dostupné jako bytes
+        logger.error(f"Chyba při ukládání do Supabase Storage: {e}")
+        # Fallback — vrátit prázdný URL, soubor je stále dostupný jako bytes
         return ""
+
+
+# Backward-compatible alias
+save_pdf_to_supabase = save_to_supabase_storage
 
 
 def generate_document_pdf(
@@ -98,7 +104,7 @@ def generate_document_pdf(
     # 3. Uložit do Supabase Storage
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"{template_key}_{timestamp}.pdf" if has_pdf else f"{template_key}_{timestamp}.html"
-    download_url = save_pdf_to_supabase(pdf_bytes, filename, client_id)
+    download_url = save_to_supabase_storage(pdf_bytes, filename, client_id)
 
     return {
         "template_key": template_key,

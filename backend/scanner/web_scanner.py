@@ -1,18 +1,24 @@
 """
-AIshield.cz — Web Scanner v4 (Playwright)
+AIshield.cz — Web Scanner v5 (Playwright)
 Hlavní modul pro skenování webových stránek.
 
+v5: Enhanced interactions (full scroll, hover, subpage nav),
+    user-agent rotation, Bright Data proxy support.
 v4: Enriched network capture — zachytává nejen URL, ale i metodu,
     resource_type a response hlavičky pro Network Interceptor.
 """
 
 import asyncio
 import hashlib
+import logging
 import os
+import random
 import base64
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from playwright.async_api import async_playwright, Page, Browser
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -39,10 +45,11 @@ class ScannedPage:
 
 class WebScanner:
     """
-    Playwright-based web scanner v4.
+    Playwright-based web scanner v5.
     Otevře stránku v headless Chromium a extrahuje vše potřebné
     pro detekci AI systémů.
 
+    v5: Full scroll, hover, subpage nav, UA rotation, Bright Data proxy.
     v4: Enriched network capture pro Network Interceptor.
     """
 
@@ -57,19 +64,65 @@ class WebScanner:
         "intercom.io", "drift.com", "x.ai", "deepseek.com",
     }
 
+    # User-agent pool — rotace desktop + mobile
+    UA_DESKTOP = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    ]
+    UA_MOBILE = [
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Mobile/15E148 Safari/604.1",
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+    ]
+
+    # Geolokace — 7 zemí, 1 na každý kontinent
+    GEO_COUNTRIES = ["cz", "gb", "us", "br", "jp", "za", "au"]
+
     def __init__(
         self,
         timeout_ms: int = 45_000,
         wait_after_load_ms: int = 5_000,
         user_agent: str | None = None,
+        device_type: str = "desktop",  # "desktop" | "mobile" | "random"
+        proxy_country: str | None = None,  # ISO country code ("us", "de", ...) or None for random
+        use_proxy: bool = False,  # True = use Bright Data proxy
     ):
         self.timeout_ms = timeout_ms
         self.wait_after_load_ms = wait_after_load_ms
-        self.user_agent = user_agent or (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        )
+        self.device_type = device_type
+        self.use_proxy = use_proxy
+        self.proxy_country = proxy_country
+
+        # Bright Data proxy credentials z env
+        self._proxy_host = os.environ.get("BRIGHT_DATA_HOST", "brd.superproxy.io")
+        self._proxy_port = os.environ.get("BRIGHT_DATA_PORT", "33335")
+        self._proxy_user = os.environ.get("BRIGHT_DATA_USER", "")
+        self._proxy_pass = os.environ.get("BRIGHT_DATA_PASS", "")
+
+        # Auto-enable proxy pokud jsou credentials v env
+        if self._proxy_user and self._proxy_pass and not self.use_proxy:
+            # Jen logujeme, neaktivujeme automaticky — musí se zapnout explicitně
+            pass
+
+        # User-agent
+        if user_agent:
+            self.user_agent = user_agent
+        elif device_type == "mobile":
+            self.user_agent = random.choice(self.UA_MOBILE)
+        elif device_type == "random":
+            pool = self.UA_DESKTOP + self.UA_MOBILE
+            self.user_agent = random.choice(pool)
+            self.device_type = "mobile" if self.user_agent in self.UA_MOBILE else "desktop"
+        else:
+            self.user_agent = random.choice(self.UA_DESKTOP)
+
+        # Viewport dle device type
+        if self.device_type == "mobile":
+            self.viewport = {"width": 390, "height": 844}
+        else:
+            self.viewport = {"width": 1920, "height": 1080}
 
     async def scan(self, url: str) -> ScannedPage:
         """
@@ -84,18 +137,41 @@ class WebScanner:
         console_msgs: list[str] = []
 
         async with async_playwright() as pw:
-            browser: Browser = await pw.chromium.launch(
-                headless=True,
-                args=[
+            # ── v5: Bright Data residential proxy OR local only ──
+            launch_args = {
+                "headless": True,
+                "args": [
                     "--no-sandbox",
                     "--disable-dev-shm-usage",
                     "--disable-gpu",
                 ],
-            )
+            }
+
+            if self.use_proxy and self._proxy_user and self._proxy_pass:
+                # Postavíme username s country targetingem
+                proxy_username = self._proxy_user
+                country = self.proxy_country or random.choice(self.GEO_COUNTRIES)
+                proxy_username += f"-country-{country}"
+                # Každý scan = nová IP (random session)
+                session_id = hashlib.md5(f"{url}{datetime.now().isoformat()}".encode()).hexdigest()[:8]
+                proxy_username += f"-session-{session_id}"
+
+                proxy_server = f"http://{self._proxy_host}:{self._proxy_port}"
+                launch_args["proxy"] = {
+                    "server": proxy_server,
+                    "username": proxy_username,
+                    "password": self._proxy_pass,
+                }
+                logger.info(f"[Scanner] Using Bright Data proxy: country={country}, session={session_id}")
+            else:
+                if self.use_proxy:
+                    logger.warning("[Scanner] Proxy requested but BRIGHT_DATA credentials not set — running without proxy")
+
+            browser: Browser = await pw.chromium.launch(**launch_args)
 
             context = await browser.new_context(
                 user_agent=self.user_agent,
-                viewport={"width": 1920, "height": 1080},
+                viewport=self.viewport,
                 locale="cs-CZ",
                 timezone_id="Europe/Prague",
                 ignore_https_errors=True,
@@ -195,20 +271,95 @@ class WebScanner:
                 except Exception:
                     pass  # Cookie consent handling is best-effort
 
-                # ── Scroll to 50% for lazy-loaded content ──
+                # ── v5: Full scroll — postupný scroll dolů po viewport krocích ──
                 try:
-                    total_height = await page.evaluate(
-                        "document.body.scrollHeight"
-                    )
-                    await page.evaluate(
-                        f"window.scrollTo(0, {total_height // 2})"
-                    )
-                    await page.wait_for_timeout(3000)
-                    # Scroll back to top for screenshots
-                    await page.evaluate("window.scrollTo(0, 0)")
-                    await page.wait_for_timeout(1000)
+                    total_height = await page.evaluate("document.body.scrollHeight")
+                    viewport_h = self.viewport["height"]
+                    position = 0
+                    while position < total_height:
+                        position += viewport_h
+                        await page.evaluate(f"window.scrollTo(0, {position})")
+                        await page.wait_for_timeout(400)
+                        # Stránka může dorůst (lazy loading)
+                        total_height = await page.evaluate("document.body.scrollHeight")
+                        # Bezpečnostní limit — max 20 scrollů
+                        if position > viewport_h * 20:
+                            break
+                    # Počkáme na dynamický obsah spuštěný scrollem
+                    await page.wait_for_timeout(2000)
                 except Exception:
                     pass  # Scroll is best-effort
+
+                # ── v5: Hover nad typickými chatbot triggery ──
+                try:
+                    hover_selectors = [
+                        '[class*="chat"]', '[class*="Chat"]',
+                        '[id*="chat"]', '[id*="Chat"]',
+                        '[class*="widget"]', '[class*="Widget"]',
+                        '[class*="support"]', '[class*="help"]',
+                        '[class*="messenger"]', '[class*="intercom"]',
+                        '[class*="tidio"]', '[class*="drift"]',
+                        '[class*="crisp"]', '[class*="smartsupp"]',
+                        'button[aria-label*="chat" i]',
+                        'button[aria-label*="help" i]',
+                        'button[aria-label*="support" i]',
+                        'div[class*="fab"]',  # floating action button
+                        'iframe[src*="chat"]',
+                    ]
+                    hovered = 0
+                    for sel in hover_selectors:
+                        try:
+                            loc = page.locator(sel).first
+                            if await loc.is_visible(timeout=300):
+                                await loc.hover(timeout=1000)
+                                hovered += 1
+                                await page.wait_for_timeout(500)
+                                if hovered >= 3:
+                                    break
+                        except Exception:
+                            continue
+                    if hovered > 0:
+                        await page.wait_for_timeout(2000)
+                except Exception:
+                    pass  # Hover is best-effort
+
+                # ── v5: Klik na kontaktní/support stránky (objeví chatboty) ──
+                try:
+                    contact_selectors = [
+                        'a:has-text("Kontakt")',
+                        'a:has-text("kontakt")',
+                        'a:has-text("Contact")',
+                        'a:has-text("Podpora")',
+                        'a:has-text("Support")',
+                        'a:has-text("Napište nám")',
+                        'a:has-text("Pomoc")',
+                        'a:has-text("Help")',
+                    ]
+                    for sel in contact_selectors:
+                        try:
+                            link = page.locator(sel).first
+                            if await link.is_visible(timeout=300):
+                                href = await link.get_attribute("href")
+                                # Jen interní linky (ne mailto:, tel:, external)
+                                if href and not href.startswith(("mailto:", "tel:", "http://", "https://")):
+                                    await link.click(timeout=3000)
+                                    await page.wait_for_timeout(3000)
+                                    break
+                                elif href and href.startswith(("http://", "https://")) and (page.url.split("/")[2] in href):
+                                    await link.click(timeout=3000)
+                                    await page.wait_for_timeout(3000)
+                                    break
+                        except Exception:
+                            continue
+                except Exception:
+                    pass  # Contact navigation is best-effort
+
+                # Scroll zpátky na top pro extrakci
+                try:
+                    await page.evaluate("window.scrollTo(0, 0)")
+                    await page.wait_for_timeout(500)
+                except Exception:
+                    pass
 
                 # ── Extrakce dat ──
 
@@ -275,7 +426,16 @@ class WebScanner:
         return result
 
 
-async def scan_url(url: str) -> ScannedPage:
+async def scan_url(
+    url: str,
+    device_type: str = "desktop",
+    use_proxy: bool = False,
+    proxy_country: str | None = None,
+) -> ScannedPage:
     """Convenience funkce — proskenuje URL a vrátí výsledek."""
-    scanner = WebScanner()
+    scanner = WebScanner(
+        device_type=device_type,
+        use_proxy=use_proxy,
+        proxy_country=proxy_country,
+    )
     return await scanner.scan(url)

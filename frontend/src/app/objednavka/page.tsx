@@ -13,10 +13,13 @@ const PLANS: Record<string, { name: string; price: number; features: string[] }>
         name: "BASIC",
         price: 4999,
         features: [
-            "AI Act compliance dokumenty",
+            "AI Act compliance dokumenty (8 dokumentů)",
+            "Tištěná dokumentace v profesionální vazbě",
+            "Elektronická záloha dokumentace",
             "Transparentní stránka",
             "Školící prezentace (PowerPoint)",
-            "Šablona prezenční listiny",
+            "Prezenční listina o proškolení",
+            "Plán řízení AI incidentů",
         ],
     },
     pro: {
@@ -24,6 +27,7 @@ const PLANS: Record<string, { name: string; price: number; features: string[] }>
         price: 14999,
         features: [
             "Vše z BASIC",
+            "Tištěná dokumentace v profesionální vazbě",
             "Implementace na klíč",
             "Konzultace s odborníkem",
             "Úpravy webu dle AI Act",
@@ -34,6 +38,7 @@ const PLANS: Record<string, { name: string; price: number; features: string[] }>
         price: 39999,
         features: [
             "Vše z PRO",
+            "Tištěná dokumentace v profesionální vazbě",
             "Komplexní audit AI systémů",
             "2 roky průběžné péče",
             "Prioritní podpora",

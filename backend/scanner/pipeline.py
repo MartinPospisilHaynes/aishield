@@ -6,6 +6,7 @@ Orchestrátor celého procesu skenování:
 3. Výsledky se uloží do Supabase (scans + findings)
 """
 
+import json
 import logging
 from datetime import datetime, timezone
 
@@ -14,6 +15,7 @@ from backend.scanner.web_scanner import WebScanner, ScannedPage
 from backend.scanner.detector import AIDetector, DetectedAI
 from backend.scanner.classifier import AIClassifier, ClassifiedFinding
 from backend.monitoring.engine_health import engine_monitor
+from arq.connections import RedisSettings
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +73,10 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         detector = AIDetector()
         findings: list[DetectedAI] = detector.detect(page)
         logger.info(f"[Pipeline] Signaturový detektor: {len(findings)} AI systémů")
+
+        # 3.0 Detekuj non-AI trackery (pro důvěryhodnost testu)
+        trackers = detector.detect_trackers(page)
+        logger.info(f"[Pipeline] Tracker detektor: {len(trackers)} non-AI sledovacích systémů")
 
         # 3.1 Double-scan consensus — druhý sken ověří, že findings jsou stabilní
         if findings:
@@ -178,6 +184,8 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
             "duration_seconds": duration,
             "total_findings": len(deployed),
             "raw_html_hash": page.html_hash,
+            "scan_type": "quick",
+            "trackers_json": json.dumps(trackers, ensure_ascii=False) if trackers else None,
         }
         if scan_warning:
             update_data["error_message"] = f"WARNING:{scan_warning}"
@@ -187,6 +195,8 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
         supabase.table("companies").update({
             "last_scanned_at": finished,
         }).eq("id", company_id).execute()
+
+        # Deep scan se nyní spouští manuálně přes POST /api/scan/{scan_id}/deep
 
         return {
             "status": "done",
@@ -210,6 +220,7 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                 }
                 for f in classified
             ],
+            "trackers": trackers,
         }
 
     except Exception as e:

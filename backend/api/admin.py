@@ -4,6 +4,7 @@ Přehledový dashboard, manuální ovládání orchestrátoru,
 email health monitoring.
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.outbound.orchestrator import get_stats, run_task, SCHEDULE
 from backend.outbound.deliverability import (
@@ -14,6 +15,7 @@ from backend.api.auth import AuthUser, require_admin
 from backend.api.rate_limit import scan_limiter, admin_limiter
 from backend.security import log_access
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -37,28 +39,34 @@ async def admin_stats(
     _rl=Depends(_check_admin_rate_limit),
 ):
     """Vrátí přehledové statistiky pro admin dashboard."""
+    logger.info(f"[Admin] GET /stats — user={user.email}")
     try:
         stats = await get_stats()
         return stats
     except Exception as e:
+        logger.error(f"[Admin] GET /stats CHYBA: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/run/{task_name}")
 async def admin_run_task(task_name: str, user: AuthUser = Depends(require_admin)):
     """Manuálně spustí úlohu orchestrátoru."""
+    logger.info(f"[Admin] POST /run/{task_name} — user={user.email}")
     if task_name not in SCHEDULE:
+        logger.warning(f"[Admin] Neznámá úloha: {task_name}")
         raise HTTPException(
             status_code=400,
             detail=f"Neznámá úloha: {task_name}. Dostupné: {list(SCHEDULE.keys())}",
         )
     result = await run_task(task_name)
+    logger.info(f"[Admin] Úloha {task_name} dokončena")
     return result
 
 
 @router.get("/email-log")
 async def admin_email_log(limit: int = 50, user: AuthUser = Depends(require_admin)):
     """Vrátí posledních N odeslaných emailů."""
+    logger.info(f"[Admin] GET /email-log limit={limit} — user={user.email}")
     from backend.database import get_supabase
     supabase = get_supabase()
 
@@ -72,6 +80,7 @@ async def admin_email_log(limit: int = 50, user: AuthUser = Depends(require_admi
 @router.get("/companies")
 async def admin_companies(status: str = "all", limit: int = 50, user: AuthUser = Depends(require_admin)):
     """Vrátí přehled firem z prospecting DB."""
+    logger.info(f"[Admin] GET /companies status={status}, limit={limit} — user={user.email}")
     from backend.database import get_supabase
     supabase = get_supabase()
 
@@ -119,8 +128,10 @@ async def admin_send_reminders(
     try:
         from backend.outbound.reminder_emails import send_reminder_emails
         result = await send_reminder_emails(reminder_type)
+        logger.info(f"[Admin] Reminders {reminder_type} odeslány: {result}")
         return result
     except Exception as e:
+        logger.error(f"[Admin] Reminders {reminder_type} CHYBA: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -133,6 +144,8 @@ async def resend_webhook(request: Request):
     import hmac
     import hashlib
     from backend.config import get_settings
+
+    logger.info("[Admin] POST /resend-webhook přijat")
 
     settings = get_settings()
     body_bytes = await request.body()
@@ -164,16 +177,19 @@ async def resend_webhook(request: Request):
             if "," in part
         )
         if not valid:
+            logger.warning("[Admin] Resend webhook: neplatný podpis")
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
     try:
         import json
         body = json.loads(body_bytes)
+        logger.info(f"[Admin] Resend webhook typ={body.get('type', '?')}, email={body.get('data', {}).get('to', ['?'])}")
         result = await process_resend_webhook(body)
         return result
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"[Admin] Resend webhook CHYBA: {e}", exc_info=True)
         return {"error": str(e)}
 
 
@@ -205,10 +221,13 @@ async def admin_legislative_alert(request: Request, user: AuthUser = Depends(req
     title = body.get("title", "Legislativní změna — AI Act")
     body_text = body.get("body_text", "")
 
+    logger.info(f"[Admin] POST /legislative-alert title='{title}' — user={user.email}")
+
     if not body_text:
         raise HTTPException(status_code=400, detail="body_text je povinný")
 
     result = await trigger_legislative_alert(title, body_text)
+    logger.info(f"[Admin] Legislative alert odeslán: {result}")
     return result
 
 
@@ -302,6 +321,10 @@ async def admin_purge_company(
     company_info = company.data[0]
     company_name = company_info.get("name", "?")
 
+    logger.warning(
+        f"[Admin] PURGE firmy: {company_name} (id={company_id}) — user={user.email}"
+    )
+
     # Audit log PŘED smazáním
     await log_access(
         actor_email=user.email,
@@ -371,6 +394,8 @@ async def admin_run_cleanup(
     from backend.security.data_cleanup import run_cleanup
 
     result = await run_cleanup()
+
+    logger.info(f"[Admin] Data cleanup spuštěn user={user.email}: {result.get('report', {})}")
 
     await log_access(
         actor_email=user.email,

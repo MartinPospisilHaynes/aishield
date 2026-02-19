@@ -1,0 +1,76 @@
+PERSONA 02 — Velký AI konglomerát
+===================================
+
+Jméno firmy:     NeuralForge Technologies s.r.o.
+Kontaktní osoba: Ing. Tomáš Říha, CTO
+Forma podnikání: s.r.o. (dceřiná společnost holdingu)
+IČO:             98765402
+Sídlo:           Technologická 88, 160 00 Praha 6
+Telefon:         +420 602 222 002
+E-mail:          tomas.riha@neuralforge.cz
+Web:             www.neuralforge.cz
+
+Zaměstnanci:     250+
+Roční obrat:     ~500 mil. Kč
+Odvětví:         IT / Technologie
+
+Popis podnikání:
+- Vyvíjí vlastní AI modely pro průmyslovou automatizaci
+- Má AI chatbota na webu pro zákazníky
+- Používá LLM API (GPT-4, Claude, Gemini) ve svých produktech
+- Fine-tunuje modely na zákaznických datech
+- Zpracovává osobní data zákazníků přes AI
+- Má 250+ zaměstnanců, HR používá AI screening
+- Provozuje AI systémy v kritické infrastruktuře (energetika)
+- Exportuje do EU i mimo EU
+
+Očekávané chování dotazníku:
+- Měl by dostat KOMPLETNÍ dotazník — všechny sekce jsou relevantní
+- Vše od prohibited systems po incident management
+- Risk level: VYSOKÉ (vyvíjí AI, kritická infrastruktura, HR screening, GPAI)
+- Měl by dostat varování ohledně poskytovatele AI (čl. 3)
+
+Odpovědi pro test:
+  company_legal_name: "NeuralForge Technologies s.r.o."
+  company_ico: "98765402"
+  company_address: "Technologická 88, 160 00 Praha 6"
+  company_contact_email: "tomas.riha@neuralforge.cz"
+  company_industry: ["IT / Technologie"]
+  company_size: "250+ zaměstnanců"
+  company_annual_revenue: "100+ mil. Kč"
+  develops_own_ai: "yes" → ai_role: ["Poskytovatel AI systému", "Vývojář AI modelu"]
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT", "Claude", "Gemini"], chatgpt_purpose: ["Vývoj / programování", "Analýza dat", "Tvorba obsahu"], chatgpt_data_type: ["Firemní dokumenty", "Zákaznická data", "Osobní údaje"]
+  uses_copilot: "yes" → copilot_tool_name: ["GitHub Copilot", "Cursor"], copilot_code_type: ["Backend", "Frontend", "ML / AI modely"]
+  uses_ai_content: "yes" → content_tool_name: ["ChatGPT / GPT-4o", "DALL-E", "Midjourney"], content_published: ["Web / sociální sítě", "Reklamní kampaně"]
+  uses_deepfake: "no"
+  uses_ai_chatbot: "yes" → chatbot_tool_name: ["Vlastní řešení (custom)", "OpenAI API"]
+  uses_ai_email_auto: "yes" → email_tool: ["Vlastní AI systém"]
+  uses_ai_decision: "yes" → decision_scope: ["Schvalování objednávek", "Přidělování zdrojů"], decision_human_review: "Ano, vždy"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "yes" → recruitment_tool: ["Vlastní AI screening"], recruitment_autonomous: "Částečně — AI doporučuje, člověk rozhoduje"
+  uses_ai_employee_monitoring: "yes" → monitoring_type: ["Produktivita", "Bezpečnost"]
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "yes" → accounting_tool: ["Vlastní řešení"], accounting_decisions: "Ne, jen doporučuje"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "yes" → biometric_tool_name: ["Vlastní systém"], biometric_purpose: ["Přístup do budovy"]
+  uses_ai_critical_infra: "yes" → infra_tool_name: ["Vlastní prediktivní systém"], infra_sector: ["Energetika"]
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Jména", "E-maily", "Životopisy"], dpia_done: "Ano"
+  ai_data_stored_eu: "no" → data_outside_eu_tool: ["OpenAI (USA)", "Anthropic (USA)"]
+  has_ai_vendor_contracts: "yes" → vendor_contract_scope: ["DPA podepsáno", "SLA definováno"]
+  has_ai_training: "yes" → training_attendance: "Ano", training_audience_size: "Celá firma", training_audience_level: "Pokročilé"
+  has_ai_guidelines: "yes" → guidelines_scope: ["Celofirmní"], guidelines_format: ["Interní wiki"]
+  has_oversight_person: "yes" → oversight_role: "CTO", oversight_person_name: "Ing. Tomáš Říha", oversight_person_email: "tomas.riha@neuralforge.cz", oversight_person_phone: "+420 602 222 002", oversight_scope: ["Všechny AI systémy"]
+  can_override_ai: "yes" → override_scope: ["Všechny AI systémy"]
+  ai_decision_logging: "yes" → logging_method: ["Databáze logů"], logging_retention: "12 měsíců"
+  has_ai_register: "yes" → register_contents: ["Název systému", "Účel", "Rizikovost", "Dodavatel"]
+  modifies_ai_purpose: "yes"
+  uses_gpai_api: "yes" → gpai_provider: ["OpenAI (GPT-4/4o)", "Anthropic (Claude)", "Google (Gemini)"], gpai_customer_facing: "Ano, zákazníci vidí AI výstupy přímo"
+  has_incident_plan: "yes" → incident_plan_scope: ["Všechny AI systémy"]
+  monitors_ai_outputs: "yes" → monitoring_frequency: "Denně"
+  tracks_ai_changes: "yes" → changes_tracking_method: ["Git / version control"]
+  has_ai_bias_check: "yes" → bias_check_method: ["Pravidelný audit"]

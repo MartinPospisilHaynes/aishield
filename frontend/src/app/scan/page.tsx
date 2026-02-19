@@ -8,6 +8,7 @@ import {
     getScanFindings,
     type ScanStatus,
     type Finding,
+    type TrackerInfo,
 } from "@/lib/api";
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
@@ -151,9 +152,9 @@ function RiskTooltip({ level, children }: { level: string; children: React.React
             {show && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setShow(false)} />
-                    <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 rounded-xl bg-slate-800 border border-white/10 p-3 text-xs text-slate-300 leading-relaxed shadow-xl">
+                    <div className="fixed sm:absolute z-50 sm:bottom-full left-4 right-4 sm:left-auto sm:right-auto sm:-translate-x-1/2 bottom-20 sm:mb-2 w-auto sm:w-72 rounded-xl bg-slate-800 border border-white/10 p-3 text-xs text-slate-300 leading-relaxed shadow-xl">
                         {explanations[level] || "Kategorie rizika dle EU AI Act."}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                        <div className="hidden sm:block absolute top-full left-1/2 -translate-x-1/2 -mt-px">
                             <div className="w-2 h-2 bg-slate-800 border-r border-b border-white/10 rotate-45" />
                         </div>
                     </div>
@@ -173,13 +174,31 @@ function ScanPageInner() {
     const [error, setError] = useState<string | null>(null);
     const [scanResult, setScanResult] = useState<ScanStatus | null>(null);
     const [findings, setFindings] = useState<Finding[]>([]);
+    const [trackers, setTrackers] = useState<TrackerInfo[]>([]);
     const [aiClassified, setAiClassified] = useState(false);
     const [scanId, setScanId] = useState<string | null>(null);
     const [currentStage, setCurrentStage] = useState(0);
+
+    // Check if user is logged in (for dashboard redirect)
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    useEffect(() => {
+        try {
+            // Check supabase auth without importing full context
+            const raw = localStorage.getItem('sb-rsxwqcrkttlfnqbjgpgc-auth-token');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.access_token && parsed?.user?.email) {
+                    setIsLoggedIn(true);
+                }
+            }
+        } catch {}
+    }, []);
     const [reportEmail, setReportEmail] = useState("");
     const [emailSent, setEmailSent] = useState(false);
     const [emailSending, setEmailSending] = useState(false);
     const [isCached, setIsCached] = useState(false);
+    const [countdown, setCountdown] = useState(120); // 2 min static countdown
+    const countdownRef = useRef<NodeJS.Timeout | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autoStartedRef = useRef(false);
@@ -190,13 +209,28 @@ function ScanPageInner() {
         return () => {
             if (pollingRef.current) clearInterval(pollingRef.current);
             if (stageRef.current) clearTimeout(stageRef.current);
+            if (countdownRef.current) clearInterval(countdownRef.current);
         };
     }, []);
+
+    // Countdown timer — ticks every second while loading
+    useEffect(() => {
+        if (loading && !isCached) {
+            setCountdown(120);
+            countdownRef.current = setInterval(() => {
+                setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+        } else {
+            if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
+        }
+        return () => { if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; } };
+    }, [loading, isCached]);
 
     const fetchFindings = useCallback(async (id: string) => {
         try {
             const res = await getScanFindings(id);
             setFindings(res.findings);
+            setTrackers(res.trackers || []);
             setAiClassified(res.ai_classified || false);
         } catch { /* tiché selhání */ }
     }, []);
@@ -268,6 +302,7 @@ function ScanPageInner() {
         setError(null);
         setScanResult(null);
         setFindings([]);
+        setTrackers([]);
         setAiClassified(false);
         setEmailSent(false);
         setReportEmail("");
@@ -439,11 +474,29 @@ function ScanPageInner() {
                 {/* ═══ PRŮBĚH SKENOVÁNÍ — multi-stage progress ═══ */}
                 {loading && (
                     <div className="mt-10 card">
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconShield className="w-8 h-8 text-fuchsia-400 animate-pulse" />
-                            <div>
-                                <h2 className="text-lg font-semibold text-white">Skenování probíhá...</h2>
-                                <p className="text-sm text-slate-400">Analyzujeme {scanResult?.url || url}</p>
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <IconShield className="w-8 h-8 text-fuchsia-400 animate-pulse" />
+                                <div>
+                                    <h2 className="text-lg font-semibold text-white">Skenování probíhá...</h2>
+                                    <p className="text-sm text-slate-400">Analyzujeme {scanResult?.url || url}</p>
+                                </div>
+                            </div>
+                            {/* Countdown timer */}
+                            <div className="text-right flex-shrink-0 ml-4">
+                                <div className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-2">
+                                    <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+                                    </svg>
+                                    <span className="font-mono text-lg font-bold text-white tabular-nums">
+                                        {countdown > 0
+                                            ? `${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`
+                                            : '0:00'}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-1">
+                                    {countdown > 0 ? 'odhadovaný zbývající čas' : 'ještě chvíli…'}
+                                </p>
                             </div>
                         </div>
 
@@ -529,22 +582,15 @@ function ScanPageInner() {
 
                 {/* ═══ VÝSLEDKY ═══ */}
                 {scanResult && scanResult.status === "done" && (
-                    <div className="mt-8 space-y-6">
+                    <div className="mt-8 space-y-5">
 
                         {/* ── INFO BANNER: cached výsledky ── */}
                         {isCached && (
-                            <div className="rounded-xl bg-cyan-500/8 border border-cyan-500/25 p-4">
-                                <div className="flex items-start gap-3">
-                                    <IconInfo className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm text-cyan-300 font-medium">
-                                            Tento web byl skenován v posledních 24 hodinách.
-                                        </p>
-                                        <p className="text-xs text-slate-400 mt-1">
-                                            Zobrazujeme výsledky z předchozího skenu. Nový sken bude možný za 24 hodin od posledního spuštění.
-                                        </p>
-                                    </div>
-                                </div>
+                            <div className="rounded-lg bg-slate-500/8 border border-slate-500/20 px-4 py-3 flex items-center gap-2.5">
+                                <IconInfo className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                <p className="text-xs text-slate-400">
+                                    Zobrazujeme výsledky z předchozího skenu (posledních 24 h). Nový sken bude možný zítra.
+                                </p>
                             </div>
                         )}
 
@@ -571,175 +617,190 @@ function ScanPageInner() {
                             </div>
                         )}
 
-                        {/* ── ČERVENÝ VAROVNÝ BANNER ── */}
-                        {hasFindings && (
-                            <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-5">
-                                <div className="flex items-start gap-3">
-                                    <IconExclamation className="w-7 h-7 text-red-400 flex-shrink-0 mt-0.5" />
+                        {/* ── HLAVNÍ VÝSLEDKOVÁ KARTA ── */}
+                        <div className="rounded-2xl border-2 border-white/[0.08] bg-white/[0.02] overflow-hidden">
+                            {/* Status bar */}
+                            <div className={"px-5 py-3 flex items-center justify-between " + (hasFindings ? "bg-red-500/10 border-b border-red-500/20" : "bg-green-500/8 border-b border-green-500/15")}>
+                                <div className="flex items-center gap-2">
+                                    {hasFindings ? (
+                                        <IconExclamation className="w-6 h-6 text-red-400" />
+                                    ) : (
+                                        <IconCheckCircle className="w-6 h-6 text-green-400" />
+                                    )}
+                                    <span className={"text-lg font-bold " + (hasFindings ? "text-red-300" : "text-green-300")}>
+                                        {hasFindings
+                                            ? `Nalezeno ${findings.length} AI ${findings.length === 1 ? "systém" : findings.length < 5 ? "systémy" : "systémů"} bez povinného označení`
+                                            : "Žádné AI systémy nebyly zachyceny"
+                                        }
+                                    </span>
+                                </div>
+                                <span className="text-xs text-slate-500 hidden sm:inline">Sken dokončen</span>
+                            </div>
+
+                            {/* Tělo karty */}
+                            <div className="p-5 space-y-4">
+                                {/* URL + firma */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                     <div>
-                                        <h2 className="text-lg font-bold text-white">
-                                            ALE na vašem webu byly nalezeny AI systémy, které bohužel zatím nemáte řádně označeny
-                                        </h2>
-                                        <p className="mt-2 text-sm text-red-300/80 leading-relaxed">
-                                            Skenováním jsme na vašem webu identifikovali{" "}
-                                            <strong className="text-white">
-                                                {findings.length} {findings.length === 1 ? "AI systém" : findings.length < 5 ? "AI systémy" : "AI systémů"}
-                                            </strong>.
-                                            {" "}{findings.length === 1 ? "Tento nález není" : "Tyto nálezy nejsou"}{" "}
-                                            jasně a zřetelně označeny pro návštěvníky vašeho webu.
-                                            Od <strong className="text-white">2. srpna 2026</strong> je toto porušením EU AI Act
-                                            (Nařízení 2024/1689, čl. 50) a hrozí pokuta{" "}
-                                            <strong className="text-white">až 15 milionů EUR nebo 3 % obratu</strong>.
+                                        <p className="text-white font-medium">{scanResult.url}</p>
+                                        {scanResult.company_name && (
+                                            <p className="text-sm text-slate-400">{scanResult.company_name}</p>
+                                        )}
+                                    </div>
+                                    {aiClassified && (
+                                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-full px-3 py-1">
+                                            <IconSparkles className="w-3.5 h-3.5" /> Ověřeno AI klasifikací
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Pokud jsou nálezy — co to znamená */}
+                                {hasFindings && (
+                                    <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 space-y-3">
+                                        <p className="text-sm text-slate-300 leading-relaxed">
+                                            Na vašem webu {findings.length === 1 ? "běží AI systém, který není" : `běží ${findings.length} AI ${findings.length < 5 ? "systémy, které nejsou" : "systémů, které nejsou"}`} jasně označen{findings.length === 1 ? "" : "y"} pro návštěvníky.
+                                            Od <strong className="text-white">2. srpna 2026</strong> je toto porušením EU AI Act (čl. 50)
+                                            s pokutou <strong className="text-white">až 15 mil. € nebo 3 % obratu</strong>.
                                         </p>
-                                        <p className="mt-3 text-sm font-semibold text-white bg-red-500/20 rounded-lg px-4 py-2.5 leading-relaxed border border-red-500/30">
-                                            ⚠️ Pokud tyto nedostatky odhalil náš software, mohou je najít i kontrolní orgány EU.
-                                            Po nabytí plné účinnosti zákona začnou evropské úřady provádět systematické inspekce
-                                            webových stránek a e-shopů.
+
+                                        {/* Risk counters — inline (only high shown, others too cryptic) */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {highCount > 0 && (
+                                                <RiskTooltip level="high">
+                                                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400">
+                                                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                                                        {highCount}× Plná regulace
+                                                    </span>
+                                                </RiskTooltip>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Dynamic scan warning */}
+                                {hasFindings && (
+                                    <div className="rounded-lg bg-amber-500/5 border border-amber-500/15 px-4 py-3">
+                                        <p className="text-xs text-amber-200/70 leading-relaxed">
+                                            <strong className="text-amber-300">⚠ Proč se může počet lišit?</strong>{" "}
+                                            Moderní weby načítají AI skripty dynamicky — podle geolokace, zařízení, denní doby
+                                            či cookies. Skutečný počet AI systémů na webu může být vyšší.
                                         </p>
-                                        <p className="mt-3 text-xs text-red-300/70 leading-relaxed">
-                                            <strong className="text-red-300">Upozornění:</strong> Tento výsledek zachycuje stav vašeho webu v okamžiku skenu.
-                                            Moderní weby dynamicky načítají AI skripty na základě geolokace, typu zařízení, denní doby,
-                                            A/B testování nebo cookies — proto se počet nalezených systémů může při opakovaném testu lišit.
-                                            Skutečný počet AI systémů na vašem webu může být vyšší, než kolik jich sken v danou chvíli odhalí.
-                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ── Non-AI trackery (pro důvěryhodnost) ── */}
+                        {trackers.length > 0 && (
+                            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+                                <div className="px-5 py-3 bg-slate-500/8 border-b border-slate-500/15">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <IconChartBar className="w-5 h-5 text-slate-400" />
+                                            <span className="text-sm font-semibold text-slate-300">
+                                                Dalších {trackers.length} sledovacích {trackers.length === 1 ? "systém" : trackers.length < 5 ? "systémy" : "systémů"} (non-AI)
+                                            </span>
+                                        </div>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 border border-green-500/20 px-2.5 py-0.5 text-[11px] font-medium text-green-400">
+                                            ✓ Nespadá pod AI Act
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1.5">
+                                        Tyto technologie <strong className="text-slate-400">nejsou umělou inteligencí</strong> a nevyžadují regulaci dle EU AI Act.
+                                        Zobrazujeme je pro úplnost — aby bylo vidět, že náš skener zachytí vše.
+                                    </p>
+                                </div>
+                                <div className="p-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {trackers.map((t, idx) => (
+                                            <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/[0.02] border border-white/[0.05] px-3 py-2.5">
+                                                <span className="text-lg flex-shrink-0">{t.icon}</span>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium text-white truncate">{t.name}</p>
+                                                    <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
+                                                </div>
+                                                <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
+                                                    {t.category}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* ── Summary karta ── */}
-                        <div className="card">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold text-white">Přehled výsledků</h2>
-                                <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-slate-500/20 text-slate-300">
-                                    <IconCheckCircle className="w-4 h-4 mr-1" /> Sken dokončen
-                                </span>
-                            </div>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                    <span className="text-white">Skenovaný web</span>
-                                    <span className="font-medium text-white">{scanResult.url}</span>
-                                </div>
-                                {scanResult.company_name && (
-                                    <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                        <span className="text-white">Firma</span>
-                                        <span className="font-medium text-white">{scanResult.company_name}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                    <span className="text-white">Nalezené AI systémy</span>
-                                    <span className="font-bold text-xl text-white">{findings.length}</span>
-                                </div>
-                                {aiClassified && (
-                                    <div className="flex justify-between border-b border-white/[0.06] pb-2">
-                                        <span className="text-white">Ověřeno</span>
-                                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-400">
-                                            <IconSparkles className="w-4 h-4" /> Claude Opus 4.6
+                        {/* ── CTA: 24h hloubkový scan — ZDARMA ── */}
+                        {hasFindings && (
+                            <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-fuchsia-500/8 border-2 border-fuchsia-500/25 p-6 text-center relative overflow-hidden">
+                                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-fuchsia-500/10 blur-3xl" />
+                                <h3 className="font-bold text-white text-lg">
+                                    Kompletní obraz získáte <span className="neon-text">24h hloubkovým skenem</span>
+                                </h3>
+                                <p className="text-sm text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
+                                    Jeden scan nemusí odhalit vše — AI systémy se chovají různě podle času, lokace i zařízení.
+                                    Zaregistrujte se a spustíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze 7 zemí</strong> (desktop + mobil, rezidenční proxy) +
+                                    {" "}<strong className="text-white">dotazník</strong>, který pokryje i interní AI (ChatGPT, účetnictví, HR automatizace).
+                                </p>
+                                <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+                                    {["🇨🇿 CZ", "🇬🇧 GB", "🇺🇸 US", "🇧🇷 BR", "🇯🇵 JP", "🇿🇦 ZA", "🇦🇺 AU"].map(c => (
+                                        <span key={c} className="inline-flex items-center gap-1 rounded-md bg-white/5 border border-white/10 px-2 py-0.5 text-xs text-slate-400">
+                                            {c}
                                         </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Risk summary */}
-                            {hasFindings && (
-                                <div className="mt-5 pt-5 border-t border-white/[0.06]">
-                                    <h3 className="font-semibold text-white mb-3">Co to znamená pro vás?</h3>
-                                    <div className="rounded-xl bg-red-500/8 border border-red-500/20 p-4">
-                                        <p className="text-sm text-slate-300 leading-relaxed">
-                                            <strong className="text-white">Váš web vyžaduje úpravy.</strong>{" "}
-                                            {findings.length === 1
-                                                ? "Nalezený AI systém vyžaduje"
-                                                : `Nalezených ${findings.length} AI ${findings.length < 5 ? "systémů" : "systémů"} vyžaduje`
-                                            }{" "}označení pro návštěvníky, interní evidenci, nebo obojí.
-                                            Bez nápravy riskujete pokutu dle EU AI Act.
-                                        </p>
-                                    </div>
-                                    <div className="rounded-xl bg-cyan-500/8 border border-cyan-500/20 p-4 mt-3">
-                                        <p className="text-sm text-cyan-200 leading-relaxed">
-                                            <strong className="text-white">Sken je první krok.</strong>{" "}
-                                            EU AI Act ale nekontroluje jen váš web — reguluje i interní AI systémy, které zákazníci nikdy neuvidí:
-                                            ChatGPT pro zaměstnance, AI v účetnictví, automatizaci HR nebo generování obsahu.
-                                            Dotazník pokryje celou AI politiku vaší firmy, nejen to, co je vidět navenek.
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-3 mt-4">
-                                        {highCount > 0 && (
-                                            <div className="rounded-xl bg-red-500/8 border border-red-500/20 p-3 text-center">
-                                                <div className="text-2xl font-bold text-red-400">{highCount}</div>
-                                                <RiskTooltip level="high">
-                                                    <span className="text-xs text-red-400/70">Plná regulace</span>
-                                                </RiskTooltip>
-                                            </div>
-                                        )}
-                                        {limitedCount > 0 && (
-                                            <div className="rounded-xl bg-cyan-500/8 border border-cyan-500/20 p-3 text-center">
-                                                <div className="text-2xl font-bold text-cyan-400">{limitedCount}</div>
-                                                <RiskTooltip level="limited">
-                                                    <span className="text-xs text-cyan-400/70">Dokumentace</span>
-                                                </RiskTooltip>
-                                            </div>
-                                        )}
-                                        {minimalCount > 0 && (
-                                            <div className="rounded-xl bg-slate-500/8 border border-slate-400/20 p-3 text-center">
-                                                <div className="text-2xl font-bold text-slate-300">{minimalCount}</div>
-                                                <RiskTooltip level="minimal">
-                                                    <span className="text-xs text-slate-300/70">Povinná transparence</span>
-                                                </RiskTooltip>
-                                            </div>
-                                        )}
-                                    </div>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
+                                <a href="/registrace" className="inline-flex items-center justify-center gap-2 mt-5 btn-primary text-base px-10 py-3.5 font-bold">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
+                                    Spustit 24h hloubkový scan — ZDARMA
+                                </a>
+                                <p className="text-xs text-slate-500 mt-2">Registrace zdarma • Výsledek na email do 24 h</p>
+                            </div>
+                        )}
 
-                        {/* ── Findings list ── */}
+                        {/* ── Seznam nálezů ── */}
                         {hasFindings ? (
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-4 inline-flex items-center gap-2">
-                                    <IconCpu className="w-5 h-5 text-fuchsia-400" /> Nalezené AI systémy ({findings.length})
+                                <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                                    <IconCpu className="w-5 h-5 text-fuchsia-400" />
+                                    Nalezené AI systémy
                                 </h3>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {findings.map((f) => (
-                                        <div
-                                            key={f.id}
-                                            className="card"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <h4 className="font-semibold text-white inline-flex items-center gap-2">
-                                                        {categoryIcon(f.category)} {f.name}
-                                                    </h4>
-                                                    <p className="text-xs text-slate-500 mt-1">{categoryLabel(f.category)}</p>
+                                        <div key={f.id} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    {categoryIcon(f.category)}
+                                                    <div className="min-w-0">
+                                                        <h4 className="font-semibold text-white text-sm truncate">{f.name}</h4>
+                                                        <p className="text-xs text-slate-500">{categoryLabel(f.category)}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <RiskTooltip level={f.risk_level}>
-                                                        <span className={"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium " + riskBadge(f.risk_level)}>
-                                                            <span className={"inline-block w-2 h-2 rounded-full " + riskDotColor(f.risk_level)} />
-                                                            {riskLabel(f.risk_level)}
-                                                        </span>
-                                                    </RiskTooltip>
-                                                </div>
+                                                <RiskTooltip level={f.risk_level}>
+                                                    <span className={"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium flex-shrink-0 " + riskBadge(f.risk_level)}>
+                                                        <span className={"w-1.5 h-1.5 rounded-full " + riskDotColor(f.risk_level)} />
+                                                        {riskLabel(f.risk_level)}
+                                                    </span>
+                                                </RiskTooltip>
                                             </div>
 
                                             {f.ai_classification_text && (
-                                                <p className="mt-2 text-sm text-slate-400 italic">{f.ai_classification_text}</p>
+                                                <p className="mt-2 text-xs text-slate-400 italic leading-relaxed">{f.ai_classification_text}</p>
                                             )}
 
-                                            <div className="mt-3 space-y-2 text-sm">
-                                                {f.ai_act_article && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-slate-500 shrink-0 inline-flex items-center gap-1"><IconDocument className="w-4 h-4" /> Článek:</span>
-                                                        <span className="text-slate-300">{f.ai_act_article}</span>
-                                                    </div>
-                                                )}
-                                                {f.action_required && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-slate-500 shrink-0 inline-flex items-center gap-1"><IconBolt className="w-4 h-4" /> Co musíte udělat:</span>
-                                                        <span className="text-slate-300">{f.action_required}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {(f.ai_act_article || f.action_required) && (
+                                                <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] space-y-1.5">
+                                                    {f.ai_act_article && (
+                                                        <p className="text-xs text-slate-500">
+                                                            <span className="text-slate-400 font-medium">Článek:</span> {f.ai_act_article}
+                                                        </p>
+                                                    )}
+                                                    {f.action_required && (
+                                                        <p className="text-xs text-slate-500">
+                                                            <span className="text-fuchsia-400 font-medium">Co musíte udělat:</span>{" "}
+                                                            <span className="text-slate-300">{f.action_required}</span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -754,15 +815,15 @@ function ScanPageInner() {
                                     const isSpa = warnType === "SPA_APP";
                                     const isOauth = warnType === "OAUTH_REDIRECT";
                                     return (
-                                        <div className="card text-center">
+                                        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
                                             <div className="flex justify-center mb-3">
                                                 {isLogin || isOauth ? (
-                                                    <IconLockClosed className="w-12 h-12 text-amber-400" />
+                                                    <IconLockClosed className="w-10 h-10 text-amber-400" />
                                                 ) : (
-                                                    <IconGlobeAlt className="w-12 h-12 text-amber-400" />
+                                                    <IconGlobeAlt className="w-10 h-10 text-amber-400" />
                                                 )}
                                             </div>
-                                            <h3 className="text-lg font-bold text-white">
+                                            <h3 className="text-base font-bold text-white">
                                                 {isLogin && "Stránka vyžaduje přihlášení"}
                                                 {isOauth && "Stránka přesměrovala na přihlášení"}
                                                 {isSpa && "Detekována webová aplikace"}
@@ -770,181 +831,86 @@ function ScanPageInner() {
                                             <p className="text-sm text-amber-300/80 mt-2 max-w-lg mx-auto leading-relaxed">
                                                 {warnMsg}
                                             </p>
-                                            <p className="text-sm text-slate-400 mt-3 max-w-lg mx-auto leading-relaxed">
-                                                {(isLogin || isOauth) ? (
-                                                    <>
-                                                        Náš skener analyzuje pouze <strong className="text-white">veřejně dostupné stránky</strong>.
-                                                        Stránky za přihlášením nelze automaticky skenovat. To ale neznamená,
-                                                        že vaše aplikace nepoužívá AI — právě naopak, webové aplikace často využívají
-                                                        AI systémy intenzivněji než běžné weby.
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        Tato adresa vede na <strong className="text-white">webovou aplikaci (SPA)</strong>,
-                                                        jejíž obsah se generuje dynamicky. Automatický sken nemohl analyzovat
-                                                        skutečný obsah aplikace. Webové aplikace typicky využívají AI systémy
-                                                        mnohem intenzivněji než statické weby.
-                                                    </>
-                                                )}
+                                            <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
+                                                {(isLogin || isOauth)
+                                                    ? "Náš skener analyzuje pouze veřejně dostupné stránky. Webové aplikace za přihlášením často využívají AI systémy intenzivněji."
+                                                    : "Dynamická webová aplikace (SPA) — automatický sken nemohl analyzovat skutečný obsah. Tyto aplikace typicky využívají AI intenzivněji."
+                                                }
                                             </p>
                                         </div>
                                     );
                                 })() : (
-                                    <div className="card text-center">
-                                        <div className="flex justify-center mb-3">
-                                            <IconCheckBadge className="w-12 h-12 text-cyan-400" />
-                                        </div>
-                                        <h3 className="text-lg font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
+                                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-center">
+                                        <IconCheckBadge className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                                        <h3 className="text-base font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
                                         <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
-                                            To ale <strong className="text-white">neznamená, že na vašem webu žádné nepoužíváte</strong>.
-                                            Automatický sken prověřuje pouze veřejně viditelné skripty.
+                                            To <strong className="text-white">neznamená, že žádné nepoužíváte</strong>.
                                             Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace,
                                             po interakci uživatele, nebo běží na pozadí přes API.
                                         </p>
                                     </div>
                                 )}
-
-                                {/* Co s tím — dotazník */}
-                                <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-cyan-500/8 border border-fuchsia-500/25 p-6 text-center">
-                                    <h3 className="text-lg font-bold text-white">Jak zjistit, jestli potřebujete řešit AI Act?</h3>
-                                    <p className="text-sm text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
-                                        Sken webu je jen začátek. <strong className="text-white">EU AI Act reguluje i interní AI systémy</strong>,
-                                        které na webu vůbec nejsou vidět — ChatGPT pro zaměstnance, AI v účetnictví, automatizace HR,
-                                        generování obsahu nebo rozhodovací algoritmy. Vyplňte krátký dotazník a my vám <strong className="text-white">zdarma vyhodnotíme</strong>,
-                                        zda vaše firma spadá pod regulaci a jaké kroky musíte podniknout.
-                                    </p>
-                                    <p className="text-xs text-slate-400 mt-2">
-                                        Po registraci získáte přístup do klientské zóny, kde uvidíte výsledky skenu i dotazníku
-                                        a můžete se rozhodnout, které řešení je pro vás nejlepší.
-                                    </p>
-                                    <a
-                                        href="/registrace"
-                                        className="inline-block mt-5 btn-primary text-sm px-8 py-3"
-                                    >
-                                        Zaregistrovat se a vyplnit dotazník →
-                                    </a>
-                                </div>
-
-                                {/* Varování */}
-                                <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-4">
-                                    <div className="flex items-start gap-3">
-                                        <IconExclamation className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                                        <p className="text-xs text-red-300/80 leading-relaxed">
-                                            <strong className="text-red-400">Pozor:</strong> I jeden AI systém na vašem webu znamená povinnosti dle EU AI Act.
-                                            Pokuty jsou odstupňované dle závažnosti:{" "}
-                                            <strong className="text-white">7,5 mil. € </strong> za nesplnění administrativních povinností,{" "}
-                                            <strong className="text-white">15 mil. € </strong> za porušení transparentnosti (čl. 50),{" "}
-                                            <strong className="text-white">až 35 mil. € </strong> za zakázané praktiky.
-                                            <strong className="text-white"> Povinnost platí od 2. srpna 2026.</strong>
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
                         )}
 
-                        {/* ── Info: 3 úrovně rizika EU AI Actu ── */}
-                        {hasFindings && (
-                            <div className="py-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
-                                        <p>
-                                            <strong className="text-white">EU AI Act rozlišuje 3 úrovně povinností — všechny vyžadují akci:</strong>
-                                        </p>
-                                        <ul className="space-y-1 ml-1">
-                                            <li><span className="text-red-400 font-medium">Vysoce rizikový (čl. 6):</span> Systémy ovlivňující rozhodnutí o lidech (scoring, biometrie, nábor) vyžadují registraci v EU databázi, interní evidenci, audit, technickou dokumentaci a lidský dohled.</li>
-                                            <li><span className="text-cyan-400 font-medium">Omezené riziko (čl. 50):</span> Chatboty musí informovat uživatele, že komunikují s AI. Generátory obsahu musí označovat výstupy jako uměle vytvořené.</li>
-                                            <li><span className="text-slate-300 font-medium">Minimální riziko:</span> Na většinu AI systémů se vztahují pouze dobrovolné kodexy chování (čl. 95), ale i tak doporučujeme transparentnost.</li>
-                                        </ul>
-                                        <p className="text-slate-300 font-medium">
-                                            ⚠ Byť i jeden AI systém na vašem webu znamená povinnosti. Pokuty: 7,5 mil. € za administrativní chyby, 15 mil. € za chybějící transparentnost, až 35 mil. € za zakázané AI praktiky — nebo 1–7 % celosvětového obratu.
-                                        </p>
-                                    </div>
+                        {/* ── Odeslat report / Dashboard redirect ── */}
+                        {isLoggedIn ? (
+                            <div className="rounded-xl border border-green-500/15 bg-green-500/5 p-5 text-center">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                    <IconCheckBadge className="w-5 h-5 text-green-400" />
+                                    <h3 className="font-semibold text-white">Výsledky najdete ve vašem dashboardu</h3>
                                 </div>
+                                <p className="text-xs text-slate-400 mb-3">
+                                    Jste přihlášeni — tento sken byl automaticky uložen do vašeho účtu.
+                                </p>
+                                <a href="/dashboard" className="inline-block btn-primary text-sm px-6 py-2.5">
+                                    Přejít na dashboard →
+                                </a>
                             </div>
-                        )}
-
-                        {/* ── Info: výsledky se mohou lišit ── */}
-                        {hasFindings && (
-                            <div className="py-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
-                                        <p>
-                                            <strong className="text-slate-300">Výsledky opakovaných skenů se mohou mírně lišit.</strong>{" "}
-                                            Moderní weby dynamicky načítají AI skripty (chatboty, analytiku, personalizaci) na základě
-                                            geolokace návštěvníka, typu zařízení, denní doby, A/B testování nebo cookies.
-                                            Některé systémy se aktivují až po interakci uživatele — proto nemusí být při každém skenu viditelné.
-                                        </p>
-                                        <p>
-                                            Kompletní audit všech AI systémů na vašem webu — včetně těch skrytých v backendu —
-                                            provádíme v rámci placeného plánu po{" "}
-                                            <a href="/registrace" className="text-fuchsia-400 hover:text-fuchsia-300 underline">registraci</a>{" "}
-                                            a vyplnění detailního dotazníku.
-                                        </p>
-                                    </div>
-                                </div>
+                        ) : (
+                        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                                <IconEnvelope className="w-5 h-5 text-fuchsia-400" />
+                                <h3 className="font-semibold text-white">Pošleme vám report na e-mail</h3>
                             </div>
-                        )}
-
-                        {/* ── ČERVENÝ VAROVNÝ BANNER (dole) ── */}
-                        {hasFindings && (
-                            <div className="rounded-2xl bg-red-500/10 border-2 border-red-500/40 p-5">
-                                <div className="flex items-start gap-3">
-                                    <IconExclamation className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <h3 className="font-bold text-red-400">Důležité: Toto musíte řešit</h3>
-                                        <p className="mt-1 text-sm text-red-300/80 leading-relaxed">
-                                            Výše uvedené AI systémy na vašem webu <strong className="text-white">nemají povinné oznámení pro návštěvníky</strong>.
-                                            Dle EU AI Act (čl. 50) musí být návštěvníkům jasně sděleno, že komunikují s AI nebo že web používá AI systémy.
-                                            <strong className="text-white"> Povinnost platí od 2. srpna 2026.</strong>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* ── Odeslat report na e-mail (lead capture) ── */}
-                        <div className="card bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 border border-fuchsia-500/20 text-center">
-                            <IconEnvelope className="w-8 h-8 text-fuchsia-400 mx-auto mb-3" />
-                            <h3 className="font-semibold text-white text-lg">Pošleme vám kompletní report na e-mail</h3>
-                            <p className="text-sm text-slate-400 mt-2">
-                                Podrobný přehled nálezů, doporučení k nápravě, ceník služeb a kontakt —
-                                vše přehledně v jednom e-mailu.
+                            <p className="text-xs text-slate-400 mb-3">
+                                Podrobný přehled nálezů, doporučení a ceník — vše v jednom e-mailu.
                             </p>
 
                             {emailSent ? (
-                                <div className="mt-4 inline-flex items-center gap-2 text-green-400 font-medium">
-                                    <IconCheckCircle className="w-5 h-5" /> Report odeslán na {reportEmail}
+                                <div className="inline-flex items-center gap-2 text-green-400 font-medium text-sm">
+                                    <IconCheckCircle className="w-4 h-4" /> Report odeslán na {reportEmail}
                                 </div>
                             ) : (
-                                <div className="mt-4 flex gap-2 max-w-md mx-auto">
+                                <div className="flex gap-2 max-w-sm mx-auto">
                                     <input
                                         type="email"
                                         value={reportEmail}
                                         onChange={(e) => setReportEmail(e.target.value)}
                                         placeholder="vas@email.cz"
-                                        className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition text-sm"
+                                        className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 transition text-sm"
                                         required
                                     />
                                     <button
                                         onClick={handleSendReport}
                                         disabled={emailSending || !reportEmail}
-                                        className="btn-primary text-sm disabled:opacity-50 px-5"
+                                        className="btn-primary text-sm disabled:opacity-50 px-4"
                                     >
-                                        {emailSending ? "Odesílám..." : "Odeslat report"}
+                                        {emailSending ? "..." : "Odeslat"}
                                     </button>
                                 </div>
                             )}
-                            <p className="text-xs text-slate-600 mt-3">Odesláním souhlasíte se zpracováním e-mailu dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
+                            <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
                         </div>
+                        )}
 
-                        {/* CTA */}
-                        <div className="card bg-white/[0.04] border border-white/[0.08] text-center">
-                            <h3 className="font-semibold text-white text-lg">Chcete to vyřešit za vás?</h3>
-                            <p className="text-sm text-slate-400 mt-2">
-                                Připravíme kompletní dokumentaci, transparenční stránku a vše potřebné
-                                pro soulad s AI Act — jednoduše a rychle.
+                        {/* ── CTA ceník ── */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
+                            <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
+                            <p className="text-sm text-slate-400 mt-1">
+                                Kompletní dokumentaci, transparenční stránku a vše potřebné pro soulad s AI Act.
                             </p>
-                            <a href="/pricing" className="inline-block mt-4 btn-primary">
+                            <a href="/pricing" className="inline-block mt-3 btn-primary text-sm px-6 py-2.5">
                                 Zobrazit ceník služeb →
                             </a>
                         </div>

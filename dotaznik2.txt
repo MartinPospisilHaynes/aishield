@@ -1,0 +1,999 @@
+================================================================================
+AIshield.cz — KOMPLETNÍ PŘEHLED DOTAZNÍKU (v3)
+Generováno: 2025-01-XX
+Celkem otázek: 39 (z toho 1 duplicitní → reálně 38 unikátních)
+Odhadovaný čas vyplnění: 5 minut
+================================================================================
+
+ÚČEL TOHOTO DOKUMENTU:
+Kompletní export všech otázek dotazníku pro review jinými AI systémy.
+Obsahuje: text otázek, typ, možnosti odpovědí, varování, followup pole,
+nápovědu, risk klasifikaci a AI Act články. Na konci: analýza duplicit,
+nalezené problémy a 5 návrhů nových otázek.
+
+================================================================================
+POŘADÍ ZOBRAZENÍ SEKCÍ (user-facing):
+================================================================================
+ 1. O vaší firmě (industry)
+ 2. AI nástroje ve firmě (internal_ai)
+ 3. Zákazníci a komunikace (customer_service)
+ 4. Lidské zdroje (hr)
+ 5. Finance a pojišťovnictví (finance)
+ 6. Zakázané praktiky (prohibited_systems)
+ 7. Bezpečnost a infrastruktura (infrastructure_safety)
+ 8. Ochrana dat (data_protection)
+ 9. AI gramotnost (ai_literacy)
+10. Lidský dohled nad AI (human_oversight)
+11. Vaše role v AI ekosystému (ai_role)
+12. Řízení AI incidentů (incident_management)
+
+================================================================================
+================================================================================
+SEKCE 1: O VAŠÍ FIRMĚ (id: industry)
+================================================================================
+Popis: "Řeknete nám, čím se zabýváte, a my přizpůsobíme otázky a dokumentaci
+přímo na míru."
+================================================================================
+
+--- Q01: company_legal_name ---
+Text: "Obchodní firma (název společnosti nebo jméno OSVČ):"
+Typ: text (volné textové pole)
+Nápověda: Přesný název tak, jak je zapsán v obchodním rejstříku nebo
+  živnostenském rejstříku. Příklady: ACME Solutions s.r.o., Jan Novák — 
+  grafický design, TechStart a.s.
+Risk: none
+AI Act: —
+Followup: žádný
+Poznámka: Předvyplňuje se z registrace (user_metadata.company_name)
+
+--- Q02: company_ico ---
+Text: "IČO (identifikační číslo osoby):"
+Typ: text
+Nápověda: 8místné číslo z obchodního nebo živnostenského rejstříku. Slouží k
+  identifikaci vaší firmy v oficiální dokumentaci. Příklady: 12345678, 05123456.
+Risk: none
+AI Act: —
+Followup: žádný
+Poznámka: Předvyplňuje se z registrace (user_metadata.ico)
+
+--- Q03: company_address ---
+Text: "Sídlo firmy (adresa):"
+Typ: text
+Nápověda: Adresa sídla dle rejstříku — použijeme ji v Compliance Reportu,
+  na transparěnční stránce a v oficiální dokumentaci.
+  Příklad: Václavské náměstí 1, 110 00 Praha 1
+Risk: none
+AI Act: —
+Followup: žádný
+
+--- Q04: company_contact_email ---
+Text: "Kontaktní e-mail pro AI záležitosti:"
+Typ: text
+Nápověda: E-mail, na který se mohou obracet zákazníci, zaměstnanci nebo
+  dozorové orgány ohledně vašeho používání AI. Zobrazí se na transparěnční
+  stránce. Příklad: ai@vase-firma.cz nebo info@vase-firma.cz
+Risk: none
+AI Act: čl. 50 — transparentnost a informování
+Followup: žádný
+Poznámka: Předvyplňuje se z registrace (user email)
+
+--- Q05: company_industry ---
+Text: "Čím se vaše firma zabývá?"
+Typ: multi_select (výběr více možností)
+Možnosti:
+  • E-shop / Online obchod
+  • Účetnictví / Finance
+  • Zdravotnictví
+  • Vzdělávání / Školství
+  • Výroba / Průmysl
+  • IT / Technologie
+  • Stavebnictví
+  • Doprava / Logistika
+  • Restaurace / Gastronomie
+  • Kadeřnictví / Kosmetika
+  • Právní služby
+  • Nemovitosti / Reality
+  • Zemědělství
+  • Jiné
+Nápověda: Vyberte všechna odvětví, která se vás týkají.
+Risk: none
+AI Act: —
+
+--- Q06: company_size ---
+Text: "Kolik má vaše firma zaměstnanců?"
+Typ: single_select
+Možnosti:
+  • Jen já (OSVČ)
+  • 2–9 zaměstnanců
+  • 10–49 zaměstnanců
+  • 50–249 zaměstnanců
+  • 250+ zaměstnanců
+Nápověda: Malé a střední podniky (do 250 zaměstnanců) mají dle AI Act 
+  některé úlevy.
+Risk: none
+AI Act: čl. 62 — povinnosti MSP a start-upů
+
+--- Q07: company_annual_revenue ---
+Text: "Jaký je přibližný roční obrat vaší firmy?"
+Typ: single_select
+Možnosti:
+  • Do 2 mil. Kč
+  • 2–10 mil. Kč
+  • 10–50 mil. Kč
+  • 50–250 mil. Kč
+  • 250 mil. – 1 mld. Kč
+  • Nad 1 mld. Kč
+Nápověda: Potřebujeme pro výpočet maximální výše pokut dle AI Act 
+  (pokuty se počítají jako % z celosvětového obratu). Údaj je důvěrný a 
+  slouží pouze pro vaši compliance dokumentaci. Nemusíte odpovídat přesně — 
+  stačí přibližný rozsah.
+Risk: none
+AI Act: čl. 99 — správní pokuty (% z obratu)
+
+--- Q08: develops_own_ai (1. výskyt — v sekci "O vaší firmě") ---
+Text: "Vyvíjíte vlastní AI systémy nebo modely?"
+Typ: yes_no_unknown (Ano / Ne / Nevím)
+Nápověda: Příklady: IT firma trénuje vlastní ML model, Startup vyvíjí AI
+  chatbota, E-shop integruje AI doporučovací engine.
+Followup (Ano):
+  • ai_role — "Jaká je vaše role?" — multi_select
+    Možnosti: Vyvíjíme AI (provider), Nasazujeme AI od jiných (deployer),
+    Importujeme AI do EU (importer), Distribuujeme AI (distributor), Jiné
+Risk: high
+AI Act: čl. 3 (definice rolí) + čl. 16–29 — povinnosti dle role v řetězci AI
+⚠️ DUPLICITA: Stejná otázka je znovu v sekci 11 (ai_role) jako Q35!
+
+
+================================================================================
+================================================================================
+SEKCE 2: AI NÁSTROJE VE FIRMĚ (id: internal_ai)
+================================================================================
+Popis: "Zjistíme, jaké AI nástroje ve firmě používáte — i ty, které web skener 
+nevidí."
+================================================================================
+
+--- Q09: uses_chatgpt ---
+Text: "Používáte ChatGPT, Claude, Gemini nebo podobné AI nástroje?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Marketingový tým píše texty v ChatGPT, Obchodníci
+  sumarizují schůzky přes Claude, Účetní generuje reporty v Gemini.
+Followup (Ano):
+  • chatgpt_tools — "Které nástroje používáte? (vyberte vše)" — multi_select
+    Možnosti: ChatGPT (OpenAI), Claude (Anthropic), Google Gemini, 
+    Microsoft Copilot, Perplexity AI, Jiné
+  • chatgpt_usage — "Na co AI používáte? (vyberte vše)" — multi_select
+    Možnosti: Psaní textů / emailů, Sumarizace dokumentů, Překlady,
+    Analýza dat, Generování kódu, Zákaznická podpora, Jiné
+  • chatgpt_policy — "Máte pravidla, jaká data se smí do AI vkládat?" 
+    — select: Ano / Ne
+    Varování (Ne): "Bez interních pravidel hrozí, že zaměstnanci vkládají
+    do AI citlivá data (osobní údaje zákazníků, obchodní tajemství, 
+    finanční data). Doporučujeme vytvořit směrnici."
+Risk: limited
+AI Act: čl. 4 + čl. 50 — AI gramotnost a transparentnost
+
+--- Q10: uses_copilot ---
+Text: "Používáte AI pro psaní kódu (GitHub Copilot, Cursor, apod.)?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Vývojáři používají GitHub Copilot, AI nástroje 
+  integrované v IDE, Amazon CodeWhisperer.
+Followup (Ano):
+  • copilot_tools — "Které nástroje?" — multi_select
+    Možnosti: GitHub Copilot, Cursor, Amazon CodeWhisperer, Tabnine, Jiný
+  • copilot_review — "Prochází AI kód code review?" — select: Ano / Ne
+    Varování (Ne): "AI generovaný kód může obsahovat bezpečnostní 
+    zranitelnosti nebo licenční problémy. Vždy provádějte code review."
+Risk: minimal
+AI Act: čl. 4 — AI gramotnost
+
+--- Q11: uses_ai_content ---
+Text: "Generujete obsah pomocí AI (obrázky, texty, prezentace)?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Marketing generuje obrázky v Midjourney, texty přes
+  Jasper AI, prezentace v Canva AI.
+Followup (Ano):
+  • content_tools — "Které nástroje?" — multi_select
+    Možnosti: Midjourney, DALL-E, Canva AI, Jasper AI, Copy.ai, Jiný
+  • content_labeled — "Označujete AI generovaný obsah?" — select: Ano / Ne
+    Varování (Ne): "Čl. 50 odst. 4 AI Act vyžaduje, aby obsah generovaný
+    AI byl jasně označen. Přidejte viditelný štítek nebo metadata."
+Risk: limited
+AI Act: čl. 50 odst. 4 — označování AI generovaného obsahu
+
+--- Q12: uses_deepfake ---
+Text: "Vytváříte AI videa, syntetický hlas nebo digitální avatary?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Marketingová videa s AI avatary (Synthesia, HeyGen),
+  klonování hlasu (ElevenLabs), syntetické fotografie.
+Followup (Ano):
+  • deepfake_tools — "Které nástroje?" — multi_select
+    Možnosti: Synthesia, HeyGen, ElevenLabs, D-ID, Jiný
+  • deepfake_labeled — "Označujete syntetický obsah jako AI?" — select: Ano / Ne
+    Varování (Ne): "Čl. 50 odst. 4 AI Act vyžaduje povinné označení
+    syntetického obsahu. Neoznačení = porušení nařízení. Přidejte viditelné
+    označení ke všem AI médiím."
+Risk: limited
+AI Act: čl. 50 odst. 4 — označování syntetického obsahu
+
+
+================================================================================
+================================================================================
+SEKCE 3: ZÁKAZNÍCI A KOMUNIKACE (id: customer_service)
+================================================================================
+Popis: "AI systémy v kontaktu se zákazníky vyžadují transparentnost."
+================================================================================
+
+--- Q13: uses_ai_chatbot ---
+Text: "Máte na webu chatbota nebo virtuálního asistenta?"
+Typ: yes_no_unknown
+Nápověda: Příklady: E-shop má Smartsupp chatbota, SaaS firma používá
+  Intercom, Restaurace má Tidio bota pro rezervace.
+Followup (Ano):
+  • chatbot_tool_name — "Které nástroje?" — multi_select
+    Možnosti: Smartsupp, Tidio, Intercom, Drift, Chatbot.cz, Jiné
+  • chatbot_disclosed — "Ví návštěvník, že komunikuje s AI?" — select: Ano / Ne
+    Varování (Ne): "Podle čl. 50 AI Act musí být zákazníci informováni,
+    že komunikují s AI systémem. Platí od 2. srpna 2025."
+Risk: limited
+AI Act: čl. 50 odst. 1 — povinnost informovat o interakci s AI
+
+--- Q14: uses_ai_email_auto ---
+Text: "Automaticky odpovídáte na emaily zákazníků pomocí AI?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Freshdesk AI odpovídá na dotazy, Zendesk AI třídí
+  tickety, Intercom auto-reply.
+Followup (Ano):
+  • email_tool — "Které nástroje?" — multi_select
+    Možnosti: Freshdesk AI, Zendesk AI, Intercom, Jiné
+  • email_disclosed — "Ví zákazník, že odpovídá AI?" — select: Ano / Ne
+    Varování (Ne): "Podle čl. 50 AI Act musí být zákazníci informováni,
+    že komunikují s AI systémem. Platí od 2. srpna 2025."
+Risk: limited
+AI Act: čl. 50 odst. 1 — povinnost informovat o AI
+
+--- Q15: uses_ai_decision ---
+Text: "Rozhoduje AI o reklamacích, slevách nebo přístupu ke službám?"
+Typ: yes_no_unknown
+Nápověda: Příklady: E-shop zamítá reklamace pomocí AI, AI určuje výši slevy,
+  Poskytovatel blokuje přístup na základě AI hodnocení.
+Followup (Ano):
+  • decision_scope — "O čem AI rozhoduje?" — multi_select
+    Možnosti: Reklamace, Slevy / ceny, Přístup ke službám, 
+    Schvalování žádostí, Jiné
+  • decision_human_review — "Je k dispozici lidský přezkum?" — select: Ano / Ne
+    Varování (Ne): "AI rozhodující o právech zákazníků bez možnosti 
+    lidského přezkumu porušuje čl. 14 AI Act. Zákazník má právo požadovat,
+    aby rozhodnutí přezkoumal člověk."
+Risk: high
+AI Act: čl. 14 — lidský dohled nad vysoce rizikovými systémy
+
+--- Q16: uses_dynamic_pricing ---
+Text: "Používáte AI k automatickému nastavování cen podle chování zákazníka?"
+Typ: yes_no_unknown
+Nápověda: Příklady: E-shop zvyšuje ceny víkendům, Letěnky zdražují podle
+  lokace, AI nabízí různé ceny různým zákazníkům.
+Followup (Ano):
+  • pricing_tool — "Které nástroje?" — multi_select
+    Možnosti: Prisync, Competera, Dynamic Yield, Jiný
+  • pricing_basis — "Na základě čeho se ceny mění?" — multi_select
+    Možnosti: Historie nákupů, Lokace zákazníka, Čas / sezóna, 
+    Profil zákazníka, Poptávka, Jiné
+  • pricing_disclosed — "Ví zákazník o personalizaci cen?" — select: Ano / Ne
+    Varování (Ne): "Personalizace cen bez informování zákazníka může 
+    představovat nekalou obchodní praktiku a porušení transparentnosti."
+Risk: limited
+AI Act: čl. 5 odst. 1 písm. a/b) — potenciálně manipulativní
+
+
+================================================================================
+================================================================================
+SEKCE 4: LIDSKÉ ZDROJE (id: hr)
+================================================================================
+Popis: "AI v HR je jednou z nejrizikovějších oblastí dle AI Act."
+================================================================================
+
+--- Q17: uses_ai_recruitment ---
+Text: "Používáte AI při náboru zaměstnanců?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Software třídí životopisy, AI hodnotí video pohovory,
+  LinkedIn Recruiter filtruje kandidáty pomocí AI.
+Followup (Ano):
+  • recruitment_tool — "Které nástroje?" — multi_select
+    Možnosti: Jobs.cz / LMC AI, LinkedIn Recruiter, Teamio, HireVue, Jiný
+  • recruitment_auto_filter — "Filtruje AI kandidáty automaticky?" 
+    — select: Ano / Ne
+    Varování (Ano): "AI systém pro automatické filtrování kandidátů je 
+    vysoce rizikový dle Přílohy III AI Act. Musíte zajistit lidský dohled,
+    transparentnost vůči kandidátům a posouzení shody."
+Risk: high
+AI Act: čl. 6 + Příloha III bod 4a — nábor zaměstnanců
+
+--- Q18: uses_ai_employee_monitoring ---
+Text: "Monitorujete zaměstnance pomocí AI?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Software sleduje aktivitu na počítači (Hubstaff,
+  Time Doctor), GPS sledování firemních vozidel, AI analýza produktivity.
+Followup (Ano):
+  • monitoring_tool — "Které nástroje?" — multi_select
+    Možnosti: Hubstaff, Time Doctor, ActivTrak, Teramind, GPS flotila, Jiný
+  • monitoring_consent — "Vědí o tom zaměstnanci?" — select: Ano / Ne
+    Varování (Ne): "Monitoring zaměstnanců bez jejich vědomí porušuje
+    pracovněprávní předpisy i GDPR. AI Act navíc klasifikuje AI monitoring
+    zaměstnanců jako vysoce rizikový."
+Risk: high
+AI Act: čl. 6 + Příloha III bod 4b — monitoring zaměstnanců
+
+--- Q19: uses_emotion_recognition ---
+Text: "Používáte AI k rozpoznávání emocí zaměstnanců nebo zákazníků?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Call centrum analyzuje tón hlasu, Kamerový systém 
+  detekuje únavu, Software měří "náladu týmu".
+Followup (Ano):
+  • emotion_tool — "Které systémy?" — multi_select
+    Možnosti: Call centrum s AI analýzou hlasu, Kamerový systém,
+    HR software s detekcí emocí, Jiný
+  • emotion_context — "Kde se používá?" — multi_select
+    Možnosti: Na pracovišti, Ve vzdělávání, V zákaznickém servisu, Jinde
+  • emotion_warning — ⚠️ INFO:
+    "🚫 ZAKÁZÁNO na pracovišti a ve vzdělávání! Čl. 5 odst. 1 písm. f) 
+    AI Act zakazuje rozpoznávání emocí na pracovišti a ve vzdělávacích 
+    institucích. Výjimky: bezpečnost (pilot, řidič) a zdravotnictví."
+Risk: high
+AI Act: čl. 5 odst. 1 písm. f) — zákaz rozpoznávání emocí
+
+
+================================================================================
+================================================================================
+SEKCE 5: FINANCE A POJIŠŤOVNICTVÍ (id: finance)
+================================================================================
+Popis: "AI ve financích a pojišťovnictví je dle AI Act vysoce riziková oblast."
+================================================================================
+
+--- Q20: uses_ai_accounting ---
+Text: "Používáte AI v účetnictví nebo finančním řízení?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Účetní software automaticky kategorizuje faktury 
+  (Money S5, Pohoda, ABRA), Fakturoid navrhuje účetní zápisy, AI cash flow.
+Followup (Ano):
+  • accounting_tool — "Které systémy?" — multi_select
+    Možnosti: Money S5, Pohoda, ABRA, Fakturoid, SAP, Jiné
+  • accounting_auto_decisions — "Dělá AI v účetnictví automatická rozhodnutí?"
+    — select: Ano / Ne
+    Varování (Ano): "AI automaticky rozhodující o finančních záležitostech
+    vyžaduje audit trail a lidský dohled."
+Risk: limited
+AI Act: čl. 4 + GDPR čl. 22
+
+--- Q21: uses_ai_creditscoring ---
+Text: "Hodnotíte platební schopnost zákazníků pomocí AI?"
+Typ: yes_no_unknown
+Nápověda: Příklady: E-shop automaticky schvaluje platbu na fakturu,
+  ERP hodnotí platební morálku, faktoring s AI scoringem.
+Followup (Ano):
+  • credit_tool — "Které systémy?" — multi_select
+    Možnosti: Vlastní ERP scoring, CRIF, Bisnode, E-shop interní, Jiné
+  • credit_auto — "Rozhoduje AI o poskytnutí služby automaticky?"
+    — select: Ano / Ne
+    Varování (Ano): "AI v kreditním scoringu je vysoce rizikový dle
+    Přílohy III bod 5b. Vyžaduje conformity assessment a právo zákazníka
+    na vysvětlení rozhodnutí."
+Risk: high
+AI Act: čl. 6 + Příloha III bod 5b — přístup k veřejným službám a 
+  hodnocení úvěruschopnosti
+
+--- Q22: uses_ai_insurance ---
+Text: "Používáte AI v pojišťovnictví (oceňování rizik, likvidace pojistných 
+  událostí)?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Software automaticky stanovuje výši pojistného,
+  AI likviduje menší škody, pojistné na základě AI analýzy.
+Followup (Ano):
+  • insurance_tool — "Které systémy?" — multi_select
+    Možnosti: Guidewire, NESS / Allianz AI, ČPP / ČSOB interní AI, Jiný
+  • insurance_impact — "Ovlivňuje AI cenu nebo dostupnost pojištění?"
+    — select: Ano / Ne
+    Varování (Ano): "AI systém ovlivňující cenu/dostupnost pojištění je
+    vysoce rizikový dle Přílohy III bod 5a. Musíte zajistit posouzení shody,
+    registraci v EU databázi, monitorování a právo na vysvětlení."
+Risk: high
+AI Act: čl. 6 + Příloha III bod 5a — pojišťovnictví
+
+
+================================================================================
+================================================================================
+SEKCE 6: ZAKÁZANÉ PRAKTIKY (id: prohibited_systems)
+================================================================================
+Popis: "Systémy, které AI Act výslovně zakazuje (čl. 5). Většina firem žádný
+nepoužívá — ověřte si to."
+================================================================================
+
+--- Q23: uses_social_scoring ---
+Text: "Hodnotíte lidi komplexním skóre chování, které ovlivňuje jejich přístup 
+  ke službám?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Banka odmítne úvěr kvůli skóre z jiné oblasti, E-shop 
+  nabízí horší ceny na základě interního skóre, Pojišťovna zvýší pojistné 
+  podle sociálního profilu. Nepatří sem běžné věrnostní programy.
+Followup (Ano):
+  • scoring_tool_name — "Které systémy?" — multi_select
+    Možnosti: Salesforce, HubSpot, Jiný CRM, Jiný
+  • scoring_scope — "Kdo je hodnocen?" — multi_select
+    Možnosti: Zaměstnanci, Zákazníci
+Risk: high (ZAKÁZANÝ SYSTÉM)
+AI Act: čl. 5 odst. 1 písm. c) — zákaz sociálního scoringu
+
+--- Q24: uses_subliminal_manipulation ---
+Text: "Používáte AI k ovlivňování lidí bez jejich vědomí?"
+Typ: yes_no_unknown
+Nápověda: Příklady: E-shop zvyšuje ceny při detekci frustrace, Reklama
+  cílí na seniory v tísni, Skryté manipulativní UX vzory řízené AI.
+Followup (Ano):
+  • manipulation_type — "O jaký typ?" — multi_select
+    Možnosti: Dynamické ceny podle emocí, Cílení na zranitelné skupiny,
+    Skryté manipulativní UX vzory, Jiné
+  • manipulation_warning — INFO:
+    "🚫 ZAKÁZANÝ SYSTÉM — Podprahová manipulace je výslovně zakázána 
+    čl. 5. Pokuta až 35 mil. EUR nebo 7 % obratu. V tomto případě 
+    nedokážeme pomoct — jedná se o protiprávní jednání."
+Risk: high (ZAKÁZANÝ SYSTÉM)
+AI Act: čl. 5 odst. 1 písm. a) — zákaz podprahové manipulace
+
+--- Q25: uses_realtime_biometric ---
+Text: "Používáte biometrickou identifikaci (obličej, otisk prstu, hlas)?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Docházkový systém na otisk prstu, Kamerový systém
+  s rozpoznáváním obličejů, Vstupní brána na rozpoznání hlasu.
+Followup (Ano):
+  • biometric_tool_name — "Které systémy?" — multi_select
+    Možnosti: Kamerový systém, Docházkový systém, Přístupový systém, Jiný
+  • biometric_purpose — "Účel?" — multi_select
+    Možnosti: Docházka zaměstnanců, Kontrola přístupu, Identifikace 
+    zákazníků, Bezpečnost, Jiné
+Risk: high
+AI Act: čl. 5 odst. 1 písm. d/e) — biometrická identifikace v reálném čase
+
+
+================================================================================
+================================================================================
+SEKCE 7: BEZPEČNOST A INFRASTRUKTURA (id: infrastructure_safety)
+================================================================================
+Popis: "AI v kritické infrastruktuře spadá do kategorie vysokého rizika."
+================================================================================
+
+--- Q26: uses_ai_critical_infra ---
+Text: "Řídí AI něco kritického ve vaší firmě?"
+Typ: yes_no_unknown
+Nápověda: Příklady: AI distribuční síť elektřiny, Optimalizace čištění 
+  vody, AI predikce údržby vozového parku.
+Followup (Ano):
+  • infra_tool_name — "Které systémy?" — multi_select
+    Možnosti: Siemens MindSphere, ABB Ability, Honeywell Forge, Jiný
+  • infra_sector — "Sektor?" — multi_select
+    Možnosti: Energetika, Doprava, Vodohospodářství, Telekomunikace,
+    Zdravotnictví, Jiné
+Risk: high
+AI Act: čl. 6 + Příloha III bod 2 — kritická infrastruktura
+
+--- Q27: uses_ai_safety_component ---
+Text: "Je AI součástí bezpečnostní komponenty vašeho produktu?"
+Typ: yes_no_unknown
+Nápověda: Příklady: AI řídí brzdný systém, AI monitoruje bezpečnost
+  výrobní linky, AI součást zdravotnického přístroje.
+Followup (Ano):
+  • safety_product — "O jaký produkt jde?" — multi_select
+    Možnosti: Zdravotnický přístroj, Průmyslový stroj, 
+    Automobil / dopravní prostředek, Bezpečnostní systém, Jiný
+  • safety_ce_mark — "Má produkt CE označení?" — select: Ano / Ne
+  • safety_ce_mark_info — INFO:
+    "ℹ️ CE označení = prohlášení výrobce o shodě s EU legislativou. 
+    AI Act rozšiřuje CE požadavky na vysoce rizikové AI systémy."
+Risk: high
+AI Act: čl. 6 odst. 1 — AI jako bezpečnostní komponenta
+
+
+================================================================================
+================================================================================
+SEKCE 8: OCHRANA DAT (id: data_protection)
+================================================================================
+Popis: "AI Act doplňuje GDPR — obě nařízení platí současně."
+================================================================================
+
+--- Q28: ai_processes_personal_data ---
+Text: "Zpracovávají vaše AI systémy osobní údaje?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Do ChatGPT vkládáte jména a emaily zákazníků,
+  HR nahrává životopisy do AI, Účetní zpracovává rodná čísla v AI.
+Followup (Ano):
+  • personal_data_types — "Jaké osobní údaje?" — multi_select
+    Možnosti: Jména a kontakty, Rodná čísla / OP, Zdravotní údaje,
+    Finanční údaje, Fotografie / video, Lokační data, Jiné
+  • dpia_done — "Provedli jste DPIA?" — select: Ano / Ne
+    Varování (Ne): "U AI systémů zpracovávajících osobní údaje se 
+    důrazně doporučuje DPIA dle GDPR čl. 35. Zařídíme za Vás."
+Risk: limited
+AI Act: GDPR čl. 35 (DPIA) + AI Act čl. 10/27
+
+--- Q29: ai_data_stored_eu ---
+Text: "Jsou data vašich AI systémů uložena v EU?"
+Typ: yes_no_unknown
+Nápověda: Příklady: ChatGPT ukládá data v USA, Google Gemini — USA i EU,
+  Vlastní AI na českém VPS.
+Followup (Nevím):  ← pozor, followup je na "unknown", ne "yes"!
+  • data_location_hint — "Pomůžeme vám zjistit — které AI nástroje?" 
+    — multi_select
+    Možnosti: ChatGPT (OpenAI — USA), Google Gemini (USA/EU), 
+    Microsoft Copilot (EU i USA), Claude (Anthropic — USA), 
+    Vlastní server v ČR/EU, Jiný
+  • data_location_info — INFO:
+    "ℹ️ Většina velkých AI poskytovatelů ukládá data primárně v USA. 
+    Pro GDPR soulad zvažte EU hosting nebo smluvní záruky (SCC)."
+Risk: limited
+AI Act: GDPR čl. 44+ — přenos dat do třetích zemí
+
+
+================================================================================
+================================================================================
+SEKCE 9: AI GRAMOTNOST (id: ai_literacy)
+================================================================================
+Popis: "Od února 2025 musí firmy zajistit 'dostatečnou úroveň AI gramotnosti'
+svých zaměstnanců."
+================================================================================
+
+--- Q30: has_ai_training ---
+Text: "Proškolili jste zaměstnance o tom, jak bezpečně používat AI nástroje?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Workshop "Bezpečné používání ChatGPT", Online kurz
+  AI gramotnosti, Interní prezentace o rizicích AI.
+Followup (Ano):
+  • training_attendance — "Máte prezenční listinu?" — select: Ano / Ne
+    Varování (Ne): "Pro čl. 4 AI Act je vhodné mít prezenční listinu.
+    AIshield dodá školící prezentaci + šablonu prezenční listiny."
+  • training_audience_size — "Kolik lidí potřebuje proškolit?" — select
+    Možnosti: 1–5 osob, 6–20 osob, 21–50 osob, 51–100 osob, 100+ osob
+  • training_audience_level — "Technická úroveň?" — select
+    Možnosti: Netechničtí, Středně techničtí, Techničtí, Mix
+  • training_info — INFO: "ℹ️ Součástí AIshield balíčků je školící 
+    prezentace (PowerPoint) a dokumentace + šablona prezenční listiny."
+Followup (Ne):
+  • training_no_warning — INFO:
+    "⚠️ Článek 4 AI Act vyžaduje AI gramotnost — platí od 2. 2. 2025.
+    Nesplnění → pokuta až 15 mil. EUR. AIshield dodá kompletní školící 
+    prezentaci + šablonu prezenční listiny."
+Risk: limited
+AI Act: čl. 4
+
+--- Q31: has_ai_guidelines ---
+Text: "Máte ve firmě pravidla pro používání AI?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Interní směrnice "Co se smí a nesmí do ChatGPT",
+  Etický kodex pro AI v marketingu, Pravidla pro sdílení dat s AI.
+Followup (Ano):
+  • guidelines_scope — "Co pokrývají?" — multi_select
+    Možnosti: Které AI nástroje smí zaměstnanci používat, Jaká data se 
+    smí do AI vkládat, Kdo schvaluje nové AI nástroje, Pravidla pro AI 
+    generovaný obsah, Ochrana osobních údajů, Postup při AI incidentu
+  • guidelines_format — "V jakém formátu?" — select
+    Možnosti: Písemná směrnice, Součást jiného dokumentu, Ústní pravidla
+  • guidelines_ok_info — INFO:
+    "✅ Výborně! Vaši stávající směrnici rozšíříme o požadavky AI Act."
+Followup (Ne):
+  • guidelines_no_warning — INFO:
+    "⚠️ Bez směrnice zaměstnanci nevědí, jaká data smí do AI vkládat.
+    Dle čl. 4 AI Act musí organizace zajistit odpovědné používání AI.
+    AIshield dodá šablonu směrnice 'Pravidla pro používání AI ve firmě'."
+Risk: limited
+AI Act: čl. 4
+
+
+================================================================================
+================================================================================
+SEKCE 10: LIDSKÝ DOHLED NAD AI (id: human_oversight)
+================================================================================
+Popis: "AI Act vyžaduje, aby nad vysoce rizikovými AI systémy dohlížely 
+kompetentní osoby."
+================================================================================
+
+--- Q32: has_oversight_person ---
+Text: "Máte určenou osobu/tým zodpovědný za dohled nad AI systémy?"
+Typ: yes_no_unknown
+Nápověda: Příklady: IT manažer pověřený dohledem, Compliance officer
+  monitorující rozhodovací procesy, Tým AI governance.
+Followup (Ano):
+  • oversight_role — "Jakou roli má osoba?" — select
+    Možnosti: Jednatel / majitel, IT manažer, Compliance officer,
+    DPO, Tým AI governance, Jiná role
+  • oversight_person_name — "Jméno odpovědné osoby:" — text
+  • oversight_person_email — "E-mail odpovědné osoby:" — text
+  • oversight_person_phone — "Telefon odpovědné osoby:" — text
+  • oversight_scope — "Na co dohlíží?" — multi_select
+    Možnosti: Chatbot, Interní AI nástroje, AI analytiku, 
+    AI v zákaznickém servisu, AI v HR, AI v účetnictví, 
+    Vše — zastřešuje kompletní AI governance
+Followup (Ne):
+  • oversight_warning — INFO:
+    "⚠️ Článek 14 AI Act vyžaduje lidský dohled. Musíte určit odpovědnou
+    osobu. Uveďte prosím její kontakt."
+  • oversight_no_person_name — "Jméno odpovědné osoby:" — text
+  • oversight_no_person_email — "E-mail odpovědné osoby:" — text
+  • oversight_no_person_phone — "Telefon odpovědné osoby:" — text
+Risk: high
+AI Act: čl. 14 — lidský dohled
+
+--- Q33: can_override_ai ---
+Text: "Mohou vaši zaměstnanci přepsat nebo zrušit rozhodnutí AI systému?"
+Typ: yes_no_unknown
+Nápověda: Příklady: HR manažer může přepsat AI doporučení, Operátor může 
+  změnit automatické třídění, Schvalovací proces vyžaduje lidský podpis.
+Followup: žádný pro "Ano"
+Followup (Ne):
+  • override_warning — INFO:
+    "⚠️ Článek 14 odst. 4 písm. d) vyžaduje možnost nepoužít, přepsat 
+    nebo zrušit rozhodnutí AI. AIshield pomůže nastavit procesy."
+Risk: high
+AI Act: čl. 14 odst. 4 písm. d)
+
+--- Q34: ai_decision_logging ---
+Text: "Zaznamenáváte rozhodnutí, která AI systémy dělají nebo doporučují?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Log chatbotových odpovědí, Archivace AI doporučení
+  v CRM, Záznam automatizovaných rozhodnutí.
+Followup: žádný pro "Ano"
+Followup (Ne):
+  • logging_warning — INFO:
+    "⚠️ Článek 26 odst. 1 písm. f) AI Act vyžaduje uchovávání automaticky
+    generovaných protokolů po dobu nejméně 6 měsíců."
+  • logging_internal_note — INFO:
+    "⚠️ Důležité: Logování rozhodnutí AI je interní záležitost vaší firmy
+    — vy nejlépe znáte své systémy a procesy. AIshield vám poskytne šablonu
+    logovacího protokolu, ale samotné logování musíte nastavit ve svých 
+    interních systémech."
+Risk: limited
+AI Act: čl. 26 odst. 1 písm. f) — uchovávání protokolů
+
+
+================================================================================
+================================================================================
+SEKCE 11: VAŠE ROLE V AI EKOSYSTÉMU (id: ai_role)
+================================================================================
+Popis: "AI Act rozlišuje různé povinnosti pro poskytovatele (výrobce) a 
+zavádějící (uživatele) AI systémů."
+================================================================================
+
+--- Q35: develops_own_ai (2. výskyt — DUPLICITA!) ---
+Text: "Vyvíjíte vlastní AI modely nebo systémy?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Vlastní ML model, Interní chatbot na firemních datech,
+  AI algoritmus pro logistiku.
+Followup (Ano):
+  • ai_provider_warning — INFO:
+    "⚠️ Jako poskytovatel AI systému máte rozsáhlejší povinnosti: 
+    technická dokumentace (příloha IV), posouzení shody (čl. 16), 
+    CE označení, systém řízení kvality."
+Risk: high
+AI Act: čl. 3 bod 3 — definice poskytovatele, čl. 16 — povinnosti
+⚠️ DUPLICITA Q08! Totožný key "develops_own_ai" — ale jiné followup!
+  Q08 se ptá na roli (provider/deployer/importer),
+  Q35 zobrazuje varování o povinnostech poskytovatele.
+  → DOPORUČENÍ: Sloučit do jedné otázky s oběma followup částmi.
+
+--- Q36: modifies_ai_purpose ---
+Text: "Měníte účel nebo podstatně upravujete zakoupený AI systém?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Přetrénování ChatGPT API na vlastních datech,
+  Fine-tuning jazykového modelu, Změna účelu (z marketingu na HR).
+Followup (Ano):
+  • modified_ai_warning — INFO:
+    "⚠️ Pokud podstatně měníte účel AI systému, můžete se stát jeho 
+    poskytovatelem (čl. 25) a přebíráte odpovídající povinnosti."
+Risk: high
+AI Act: čl. 25 — další zavádějící, kteří se považují za poskytovatele
+
+
+================================================================================
+================================================================================
+SEKCE 12: ŘÍZENÍ AI INCIDENTŮ (id: incident_management)
+================================================================================
+Popis: "Připravenost na situace, kdy AI systém selže nebo způsobí újmu."
+================================================================================
+
+--- Q37: has_incident_plan ---
+Text: "Máte plán pro případ, že AI systém udělá chybu nebo způsobí škodu?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Postup při chybné AI odpovědi, Eskalační proces 
+  při diskriminačním výstupu, Plán okamžitého vypnutí AI.
+Followup (Ano):
+  • incident_plan_scope — "Co plán pokrývá?" — multi_select
+    Možnosti: Postup při chybné odpovědi, Eskalační proces, Odstavení 
+    systému, Hlášení dozorové autoritě, Informování osob, Dokumentace
+  • incident_escalation_chain — "Kdo je v eskalačním řetězci?" — multi_select
+    Možnosti: Operátor, Vedoucí, IT, Jednatel, DPO/Compliance, 
+    Externí právní poradce
+  • incident_communication — "Jak komunikujete incidenty?" — multi_select
+    Možnosti: E-mail, Telefon, Chat (Teams/Slack), Ticketovací systém,
+    Nemáme definovaný kanál
+  • incident_existing_ok — INFO:
+    "✅ Výborně! Doplníme váš plán o požadavky AI Act — zejména povinné 
+    hlášení závažných incidentů dle čl. 73."
+Followup (Ne):
+  • incident_warning — INFO:
+    "⚠️ Nařízení vyžaduje sledování závažných incidentů a jejich hlášení
+    (čl. 73). AIshield dodá šablonu plánu řízení AI incidentů."
+Risk: high
+AI Act: čl. 73 — hlášení závažných incidentů
+
+--- Q38: monitors_ai_outputs ---
+Text: "Pravidelně kontrolujete kvalitu a správnost výstupů vašich AI systémů?"
+Typ: yes_no_unknown
+Scope hint: Tato otázka se týká firem, které aktivně provozují AI systémy 
+  v kontaktu s klienty nebo pro interní rozhodování. Pokud AI nástroje pouze
+  občas používáte (např. ChatGPT), odpovězte "Ne".
+Nápověda: Táže se, jestli někdo ve vaší firmě pravidelně kontroluje, že AI
+  dělá to, co má.
+  Příklady ANO: Vedoucí čte náhodné odpovědi chatbota, Tým měsíčně 
+  kontroluje AI doporučení, Vývojář monitoruje přesnost ML modelu.
+  Příklady NE: AI chatbot běží a nikdo nekontroluje, AI generuje reporty 
+  přímo zákazníkům.
+  Pokud AI používáte jen občas pro sebe, odpovězte Ne.
+Followup: žádný pro "Ano"
+Followup (Ne):
+  • monitoring_warning — INFO:
+    "⚠️ Článek 9 AI Act vyžaduje průběžné řízení rizik včetně monitoringu.
+    AIshield pomůže nastavit efektivní monitoring."
+  • monitoring_internal_note — INFO:
+    "⚠️ Důležité: Monitoring kvality AI výstupů je interní záležitost.
+    Vy nejlépe znáte své procesy. AIshield poskytne kontrolní seznam 
+    (checklist), CO monitorovat — ale samotné kontroly musíte provádět vy."
+Risk: limited
+AI Act: čl. 9 — systém řízení rizik
+
+--- Q39: tracks_ai_changes ---
+Text: "Dokumentujete změny ve vlastních AI systémech, které provozujete 
+  nebo vyvíjíte?"
+Typ: yes_no_unknown
+Scope hint: Týká se firem provozujících/vyvíjejících vlastní AI řešení.
+  OSVČ pouze používající ChatGPT → odpovězte "Ne".
+Nápověda: Příklady: Záznam o aktualizaci chatbota, Poznámka o změně 
+  poskytovatele, Dokumentace přechodu na jiný AI nástroj.
+  Nejedná se o sledování aktualizací třetích stran.
+Followup: žádný pro "Ano"
+Followup (Ne):
+  • changes_warning — INFO:
+    "⚠️ Příloha IV bod 6 vyžaduje popis všech změn během životního 
+    cyklu AI systému. AIshield pomůže zavést jednoduché verzování."
+  • changes_internal_note — INFO:
+    "⚠️ Důležité: Evidenci změn si musíte vést interně — stačí tabulka
+    s datem, názvem systému a popisem změny. AIshield dodá šablonu."
+Risk: limited
+AI Act: příloha IV bod 6 — popis změn během životního cyklu
+
+
+================================================================================
+================================================================================
+ANALÝZA DUPLICIT
+================================================================================
+
+Nalezena 1 duplicita:
+
+1. "develops_own_ai" — klíč Q08 (sekce "O vaší firmě") a Q35 (sekce 
+   "Vaše role v AI ekosystému").
+   
+   Q08 verze: Ptá se na roli firmy (provider/deployer/importer/distributor)
+   → multi_select followup.
+   
+   Q35 verze: Zobrazuje pouze varování o povinnostech poskytovatele 
+   → info followup.
+   
+   DOPORUČENÍ: Smazat Q35 ze sekce ai_role a sloučit jeho varování
+   do Q08 followupu (přidat info pole k existujícímu multi_select).
+   To by snížilo počet otázek z 39 na 38.
+
+
+================================================================================
+================================================================================
+NALEZENÉ PROBLÉMY A NÁVRHY NA OPRAVU
+================================================================================
+
+1. DUPLICITA develops_own_ai (viz výše)
+   → Sloučit do jedné otázky v sekci "O vaší firmě"
+
+2. Q29 ai_data_stored_eu — followup je na "unknown" místo "yes"
+   → Neobvyklý vzor. Když uživatel odpoví "Ano" (data JSOU v EU), 
+   nedostane žádný followup. Zvážit přidání followupu i pro "yes" 
+   (typ: "Kde přesně?" — select: Azure EU, AWS Frankfurt, vlastní ČR).
+
+3. Q15 uses_ai_decision vs Q33 can_override_ai — překryv
+   → Obě otázky se ptají na lidský přezkum/dohled nad AI rozhodnutími.
+   Q15 followup se ptá "Je k dispozici lidský přezkum?" a Q33 se ptá
+   "Mohou zaměstnanci přepsat rozhodnutí AI?". To je v podstatě totéž
+   jinak formulované. Zvážit sloučení nebo jasnější odlišení.
+
+4. Q08/Q35 develops_own_ai vs Q36 modifies_ai_purpose — nejasné hranice
+   → Uživatel, který fine-tunuje GPT API, by mohl odpovědět "Ano" na obě.
+   Nápověda by měla jasněji rozlišit "vyvíjím od nuly" vs "upravuji 
+   existující".
+
+5. Chybí followup pro "Ano" u Q33, Q34, Q38, Q39
+   → Tyto otázky nemají pozitivní followup (Ano = nic se nezobrazí).
+   Zvážit přidání alespoň ✅ potvrzení nebo doplňujících otázek.
+
+6. "Nevím" odpovědi na Q01-Q04 (textová pole) — nemají smysl
+   → Typ "text" nepodporuje "Nevím", ale backend severity mapa 
+   některé textové otázky neobsahuje. OK — není problém.
+
+7. Q07 company_annual_revenue — dříve mělo "Nechci uvádět" (odstraněno ✅)
+   → Opraveno v předchozím patchi.
+
+
+================================================================================
+================================================================================
+STATISTIKY
+================================================================================
+
+Celkem otázek: 39 (38 unikátních)
+  • Typ text: 4 (Q01-Q04)
+  • Typ multi_select: 1 (Q05)
+  • Typ single_select: 2 (Q06-Q07)
+  • Typ yes_no_unknown: 32 (Q08-Q39)
+
+Riziková klasifikace (hlavní otázky):
+  • none: 6 otázek (Q01-Q06 identifikační)
+  • high: 15 otázek (zakázané praktiky, HR, finance, infrastruktura, dohled)
+  • limited: 15 otázek (AI nástroje, obsah, zákazníci, data, gramotnost)
+  • minimal: 1 otázka (uses_copilot)
+
+Otázky s followup (Ano): 24
+Otázky s followup (Ne): 12
+Otázky s followup (Nevím): 1 (ai_data_stored_eu)
+Otázky bez followupu: ~5
+
+Celkem followup polí: ~60 (multi_select, select, text, info)
+Celkem varování (warning): ~15
+Celkem info cedulek: ~12
+
+
+================================================================================
+================================================================================
+5 NÁVRHŮ NOVÝCH OTÁZEK
+================================================================================
+
+NÁVRH 1: has_ai_register (sekce: ai_literacy nebo human_oversight)
+─────────────────────────────────────────────────────────────────
+Text: "Vedete registr (seznam) všech AI systémů používaných ve firmě?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Excel tabulka se seznamem všech AI nástrojů, jejich 
+  dodavateli, účelem použití a rizikovostí. Interní wiki s přehledem AI 
+  systémů. Včetně nástrojů třetích stran (ChatGPT, Copilot, atd.).
+Followup (Ano):
+  • register_format — "V jakém formátu?" — select
+    Možnosti: Excel/tabulka, Interní wiki/Confluence, Dedikovaný nástroj,
+    Součást jiné dokumentace, Jiné
+  • register_info — INFO: "✅ Výborně! AIshield váš registr rozšíří o 
+    povinné informace dle AI Act (riziková kategorie, AI Act článek, 
+    datum nasazení, odpovědná osoba)."
+Followup (Ne):
+  • register_warning — INFO: "⚠️ Čl. 26 odst. 1 AI Act vyžaduje, aby 
+    zavádějící osoby vedly záznamy o AI systémech. Bez registru nevíte, 
+    kolik AI systémů máte a zda jsou v souladu. AIshield vám dodá šablonu 
+    registru AI systémů."
+Risk: limited
+AI Act: čl. 26 odst. 1 — povinnosti zavádějící osoby
+DŮVOD: Registr AI systémů je základ compliance. Bez něj firma ani neví,
+co má regulovat. Aktuálně v dotazníku chybí.
+
+NÁVRH 2: has_ai_vendor_contracts (sekce: data_protection)
+─────────────────────────────────────────────────────────
+Text: "Máte s dodavateli AI nástrojů uzavřené smlouvy pokrývající ochranu 
+  dat a AI Act povinnosti?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Data Processing Agreement (DPA) s OpenAI, Smlouva 
+  o zpracování osobních údajů se Smartsupp, SLA s garantovanou dostupností 
+  AI služby. Většina velkých AI poskytovatelů nabízí DPA ve svém nastavení 
+  účtu.
+Followup (Ano):
+  • vendor_contracts_scope — "Co smlouvy pokrývají?" — multi_select
+    Možnosti: Zpracování osobních údajů (DPA), Místo uložení dat, 
+    SLA / dostupnost, Odpovědnost za chyby AI, Právo na audit, Jiné
+Followup (Ne):
+  • vendor_warning — INFO: "⚠️ Bez smluvního pokrytí nesete veškerou 
+    odpovědnost za chyby a úniky dat AI systémů. AIshield vám pomůže 
+    identifikovat, kde potřebujete DPA."
+Risk: limited
+AI Act: GDPR čl. 28 + AI Act čl. 26 — smlouvy s poskytovateli
+DŮVOD: Většina firem používá AI od třetích stran bez jakékoli smlouvy.
+To je GDPR i AI Act problém.
+
+NÁVRH 3: ai_output_published_externally (sekce: customer_service)
+─────────────────────────────────────────────────────────────────
+Text: "Publikujete AI-generovaný obsah přímo zákazníkům bez lidské kontroly?"
+Typ: yes_no_unknown
+Nápověda: Příklady: AI chatbot odpovídá zákazníkům bez kontroly, AI píše
+  blogové příspěvky publikované automaticky, AI generuje produktové popisy 
+  na e-shop bez editace. Nepatří sem interní použití (emaily kolegům apod.).
+Followup (Ano):
+  • published_scope — "Kde se publikuje?" — multi_select
+    Možnosti: Web / blog, Sociální sítě, E-mail marketing, 
+    Zákaznický servis (chatbot, email), E-shop produktové popisy, Jiné
+  • published_labeled — "Je obsah označen jako AI-generovaný?" 
+    — select: Ano / Ne
+    Varování (Ne): "Čl. 50 AI Act vyžaduje označení AI obsahu a informování
+    o interakci s AI. Zákazník musí vědět, že komunikuje s AI."
+Risk: limited
+AI Act: čl. 50 — transparentnost
+DŮVOD: Mnoho firem automaticky publikuje AI obsah bez kontroly (chatbot,
+AI blog, AI produktové popisy). Aktuální dotazník se ptá na chatbota 
+a emaily, ale ne na ostatní kanály.
+
+NÁVRH 4: has_ai_bias_check (sekce: incident_management)
+───────────────────────────────────────────────────────
+Text: "Testujete, zda vaše AI systémy nediskriminují určité skupiny lidí?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Kontrola, zda AI nábor nepreferuje muže před ženami, 
+  Test, zda AI chatbot neodpovídá jinak česky vs. slovensky, Audit AI 
+  cenové nabídky — dostávají všechny věkové skupiny stejné ceny?
+  
+  Bias = AI systém systematicky znevýhodňuje určitou skupinu lidí 
+  (věk, pohlaví, národnost, lokalita).
+Followup (Ano):
+  • bias_method — "Jak testujete?" — multi_select
+    Možnosti: Manuální kontrola vzorků, Statistická analýza výstupů,
+    A/B testování, Externí audit, Jiné
+Followup (Ne):
+  • bias_warning — INFO: "⚠️ Čl. 9 a čl. 10 AI Act vyžadují, aby vysoce 
+    rizikové AI systémy byly testovány na předpojatost (bias). I u 
+    omezeně rizikových systémů je testování dobrá praxe. AIshield vám 
+    poskytne checklist pro testování bias."
+Risk: limited
+AI Act: čl. 9 + čl. 10 — řízení rizik a správa dat
+DŮVOD: Anti-diskriminace je jedním z hlavních cílů AI Act a aktuální
+dotazník se na to vůbec neptá.
+
+NÁVRH 5: uses_ai_for_children (sekce: prohibited_systems nebo hr)
+─────────────────────────────────────────────────────────────────
+Text: "Jsou vaše AI systémy určeny pro děti nebo mladistvé (do 18 let)?"
+Typ: yes_no_unknown
+Nápověda: Příklady: Vzdělávací platforma s AI tutorem pro žáky, AI hra 
+  pro děti, E-shop s dětským zbožím a AI doporučováním, Škola používající
+  AI pro hodnocení studentů.
+  
+  AI Act poskytuje zvýšenou ochranu dětem a mladistvým — jsou považováni
+  za zranitelnou skupinu.
+Followup (Ano):
+  • children_scope — "Jak AI interaguje s dětmi?" — multi_select
+    Možnosti: Vzdělávací obsah / tutoring, Hry a zábava, 
+    Doporučování produktů, Hodnocení výkonu / známkování,
+    Komunikace (chatbot), Jiné
+  • children_consent — "Máte souhlas rodičů / zákonných zástupců?"
+    — select: Ano / Ne
+    Varování (Ne): "AI systémy určené pro děti vyžadují zvýšenou ochranu
+    dle AI Act i GDPR. Souhlas zákonného zástupce je nezbytný."
+Risk: high
+AI Act: čl. 5 + příloha III — zvýšená ochrana zranitelných skupin
+DŮVOD: AI Act explicitně chrání děti jako zranitelnou skupinu. Vzdělávací
+AI systémy (tutoring, hodnocení) jsou vysoce rizikové dle Přílohy III.
+Aktuální dotazník se na cílovou skupinu vůbec neptá.
+
+
+================================================================================
+================================================================================
+SOUHRN DOPORUČENÍ PRO DALŠÍ ITERACI
+================================================================================
+
+PRIORITY:
+1. ⚠️ Smazat duplicitu develops_own_ai (Q35) — sloučit do Q08
+2. ⚠️ Zvážit sloučení Q15/Q33 (lidský přezkum AI rozhodnutí)
+3. ➕ Přidat otázku o registru AI systémů (has_ai_register)
+4. ➕ Přidat otázku o smlouvách s AI dodavateli (has_ai_vendor_contracts)
+5. ➕ Přidat otázku o testování bias/diskriminace (has_ai_bias_check)
+6. 💡 Přidat followup (Ano) pro Q33, Q34, Q38, Q39 — alespoň potvrzení
+7. 💡 Q29 ai_data_stored_eu — přidat followup i pro "yes"
+
+CELKOVÝ POČET PO ÚPRAVÁCH:
+  Stávající: 39 otázek (38 unikátních)
+  Po smazání duplicity: 38
+  Po přidání 5 nových: 43
+  Po sloučení Q15/Q33: 42
+  → Doporučený cílový stav: 40-42 otázek (6-7 minut vyplňování)
+
+================================================================================
+KONEC DOKUMENTU
+================================================================================

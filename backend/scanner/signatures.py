@@ -990,6 +990,187 @@ AI_SIGNATURES: list[AISignature] = [
 ]
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# NON-AI TRACKERY A ANALYTIKA — nespadají pod AI Act, ale detekujeme je
+# pro zvýšení důvěryhodnosti testu. Klient vidí, že skener odhalí vše.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@dataclass
+class TrackerSignature:
+    """Signatura non-AI sledovacího systému."""
+    name: str
+    category: str  # tracking, analytics, advertising, consent
+    signatures: list[str]
+    script_patterns: list[str] = field(default_factory=list)
+    cookie_patterns: list[str] = field(default_factory=list)
+    description_cs: str = ""
+    icon: str = ""  # emoji for frontend
+
+
+NON_AI_TRACKERS: list[TrackerSignature] = [
+
+    # ── Google ──
+    TrackerSignature(
+        name="Google Tag Manager",
+        category="tracking",
+        signatures=["googletagmanager.com", "gtm.js", "GTM-"],
+        script_patterns=["googletagmanager.com/gtm.js"],
+        cookie_patterns=["_gtm"],
+        description_cs="Správce tagů pro marketing a analytiku. Koordinuje ostatní sledovací skripty na webu.",
+        icon="🏷️",
+    ),
+    TrackerSignature(
+        name="Google Analytics 4",
+        category="analytics",
+        signatures=["gtag(", "google-analytics.com", "googletagmanager.com/gtag", "G-", "ga('"],
+        script_patterns=["googletagmanager.com/gtag", "google-analytics.com/analytics.js"],
+        cookie_patterns=["_ga", "_gid", "_gat"],
+        description_cs="Webová analytika od Google — sleduje návštěvnost, chování uživatelů a konverze.",
+        icon="📊",
+    ),
+    TrackerSignature(
+        name="Google Ads (Conversion Tracking)",
+        category="advertising",
+        signatures=["googleads.g.doubleclick.net", "googlesyndication.com", "conversion.js", "AW-"],
+        script_patterns=["googleads.g.doubleclick.net", "pagead2.googlesyndication.com"],
+        cookie_patterns=["_gcl", "IDE", "DSID"],
+        description_cs="Sledování konverzí pro Google Ads kampaně. Měří efektivitu reklam.",
+        icon="📢",
+    ),
+
+    # ── Meta / Facebook ──
+    TrackerSignature(
+        name="Meta Pixel (Facebook)",
+        category="advertising",
+        signatures=["fbq(", "connect.facebook.net", "facebook.com/tr", "fb-pixel"],
+        script_patterns=["connect.facebook.net/en_US/fbevents.js"],
+        cookie_patterns=["_fbp", "_fbc"],
+        description_cs="Sledovací pixel Facebooku — měří konverze z reklam na Facebooku a Instagramu.",
+        icon="📘",
+    ),
+
+    # ── Microsoft ──
+    TrackerSignature(
+        name="Microsoft Clarity",
+        category="analytics",
+        signatures=["clarity.ms", "clarity("],
+        script_patterns=["clarity.ms/tag"],
+        cookie_patterns=["_clck", "_clsk"],
+        description_cs="Heatmapy a záznamy relací od Microsoftu. Vizualizuje, jak uživatelé interagují se stránkou.",
+        icon="🔍",
+    ),
+
+    # ── Hotjar ──
+    TrackerSignature(
+        name="Hotjar",
+        category="analytics",
+        signatures=["hotjar", "hj(", "hjSiteSettings"],
+        script_patterns=["static.hotjar.com"],
+        cookie_patterns=["_hj"],
+        description_cs="Heatmapy, záznamy relací a zpětná vazba od návštěvníků.",
+        icon="🔥",
+    ),
+
+    # ── Seznam.cz ──
+    TrackerSignature(
+        name="Seznam Sklik",
+        category="advertising",
+        signatures=["sklik.js", "c.imedia.cz", "im.imedia.cz"],
+        script_patterns=["c.imedia.cz/js", "im.imedia.cz"],
+        cookie_patterns=["szn"],
+        description_cs="Reklamní systém Seznamu — sledování konverzí z kampaní na Seznam.cz.",
+        icon="🔎",
+    ),
+    TrackerSignature(
+        name="Seznam Retargeting",
+        category="advertising",
+        signatures=["sznRetargeting", "retargeting.seznam.cz"],
+        script_patterns=["retargeting.seznam.cz"],
+        description_cs="Retargetingový pixel Seznamu pro opakované oslovení návštěvníků.",
+        icon="🔄",
+    ),
+
+    # ── Heureka ──
+    TrackerSignature(
+        name="Heureka Ověřeno zákazníky",
+        category="tracking",
+        signatures=["heureka.cz/direct", "overeno-zakazniky"],
+        script_patterns=["heureka.cz"],
+        description_cs="Systém sběru recenzí a ověření zákazníků od Heureky.",
+        icon="⭐",
+    ),
+
+    # ── Cookie consent ──
+    TrackerSignature(
+        name="Cookiebot",
+        category="consent",
+        signatures=["cookiebot.com", "Cookiebot", "CookieConsent"],
+        script_patterns=["consent.cookiebot.com"],
+        cookie_patterns=["CookieConsent"],
+        description_cs="Platforma pro správu souhlasu s cookies dle GDPR.",
+        icon="🍪",
+    ),
+    TrackerSignature(
+        name="Cookie Consent Banner",
+        category="consent",
+        signatures=["cookie-consent", "cookie-notice", "cookie-banner", "cookie-policy",
+                     "gdpr-consent", "consent-banner"],
+        description_cs="Obecný cookie consent banner pro správu souhlasu dle GDPR.",
+        icon="🍪",
+    ),
+
+    # ── LinkedIn ──
+    TrackerSignature(
+        name="LinkedIn Insight Tag",
+        category="advertising",
+        signatures=["linkedin.com/px", "snap.licdn.com", "_linkedin_data_partner_id"],
+        script_patterns=["snap.licdn.com/li.lms-analytics"],
+        cookie_patterns=["li_sugr", "bcookie", "lidc"],
+        description_cs="Sledovací tag LinkedIn pro B2B marketing a konverze z reklam.",
+        icon="💼",
+    ),
+
+    # ── Twitter / X ──
+    TrackerSignature(
+        name="X (Twitter) Pixel",
+        category="advertising",
+        signatures=["twq(", "static.ads-twitter.com", "analytics.twitter.com"],
+        script_patterns=["static.ads-twitter.com/uwt.js"],
+        description_cs="Konverzní pixel platformy X (dříve Twitter) pro měření reklam.",
+        icon="🐦",
+    ),
+
+    # ── TikTok ──
+    TrackerSignature(
+        name="TikTok Pixel",
+        category="advertising",
+        signatures=["ttq.load", "analytics.tiktok.com"],
+        script_patterns=["analytics.tiktok.com"],
+        description_cs="Sledovací pixel TikToku pro měření konverzí z reklam.",
+        icon="🎵",
+    ),
+
+    # ── Ostatní ──
+    TrackerSignature(
+        name="Matomo (Piwik)",
+        category="analytics",
+        signatures=["matomo", "piwik", "_paq.push"],
+        script_patterns=["matomo.js", "piwik.js"],
+        cookie_patterns=["_pk_id", "_pk_ses"],
+        description_cs="Open-source webová analytika — alternativa ke Google Analytics.",
+        icon="📈",
+    ),
+    TrackerSignature(
+        name="Zboží.cz",
+        category="tracking",
+        signatures=["zbozi.cz/conversion", "zboziKonverze"],
+        script_patterns=["zbozi.cz"],
+        description_cs="Konverzní měření pro srovnávač cen Zboží.cz od Seznamu.",
+        icon="🛒",
+    ),
+]
+
+
 def get_all_signatures() -> list[AISignature]:
     """Vrátí všechny signatury."""
     return AI_SIGNATURES
@@ -998,3 +1179,8 @@ def get_all_signatures() -> list[AISignature]:
 def get_signatures_by_category(category: str) -> list[AISignature]:
     """Vrátí signatury podle kategorie."""
     return [s for s in AI_SIGNATURES if s.category == category]
+
+
+def get_all_trackers() -> list[TrackerSignature]:
+    """Vrátí všechny non-AI tracker signatury."""
+    return NON_AI_TRACKERS

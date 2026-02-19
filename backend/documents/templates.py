@@ -318,9 +318,15 @@ def render_compliance_report(data: dict) -> str:
           risk_breakdown{}, overall_risk, recommendations[]
     """
     company = data.get("company_name", "Neznámá firma")
+    ico = data.get("q_company_ico", "")
+    address = data.get("q_company_address", "")
+    industry = data.get("q_company_industry", "")
+    company_size = data.get("q_company_size", "")
+    revenue = data.get("q_company_annual_revenue", "")
     url = data.get("url", "")
     findings = data.get("findings", [])
     q_systems = data.get("questionnaire_ai_systems", 0)
+    ai_declared = data.get("ai_systems_declared", [])
     risk = data.get("risk_breakdown", {"high": 0, "limited": 0, "minimal": 0})
     recommendations = data.get("recommendations", [])
     overall = data.get("overall_risk", "minimal")
@@ -406,18 +412,110 @@ def render_compliance_report(data: dict) -> str:
     </div>
     """
 
+    # Sekce: AI systémy deklarované v dotazníku
+    declared_html = ""
+    if ai_declared:
+        declared_rows = ""
+        for d in ai_declared:
+            tool = d.get("tool_name", "AI systém")
+            key_label = d.get("key", "").replace("uses_", "").replace("_", " ").title()
+            declared_rows += f'<tr><td style="font-weight:600">{tool}</td><td>{key_label}</td><td>Dotazník</td></tr>'
+        declared_html = f"""
+    <div class="glass-card">
+        <h2>AI systémy deklarované v dotazníku</h2>
+        <p style="color:var(--color-muted);font-size:13px;margin-bottom:12px">
+            Na základě odpovědí v dotazníku firma používá <strong>{len(ai_declared)} interních AI systémů</strong>.
+        </p>
+        <table>
+            <thead><tr><th>Nástroj</th><th>Oblast</th><th>Zdroj</th></tr></thead>
+            <tbody>{declared_rows}</tbody>
+        </table>
+    </div>"""
+
+    # Firemní údaje
+    company_details = ""
+    if ico:
+        company_details += f'<p><strong>IČO:</strong> {ico}</p>'
+    if address:
+        company_details += f'<p><strong>Sídlo:</strong> {address}</p>'
+    if industry:
+        company_details += f'<p><strong>Odvětví:</strong> {industry}</p>'
+    if company_size:
+        company_details += f'<p><strong>Velikost:</strong> {company_size}</p>'
+    if revenue:
+        company_details += f'<p><strong>Roční obrat:</strong> {revenue}</p>'
+
+    # Sekce: Přehled vygenerovaných dokumentů podle rizikového profilu
+    eligible_docs = data.get("eligible_documents", {})
+    skipped_docs = data.get("skipped_documents", [])
+
+    doc_overview_html = ""
+    if eligible_docs or skipped_docs:
+        gen_rows = ""
+        for tkey, reason in eligible_docs.items():
+            tname = TEMPLATE_NAMES.get(tkey, tkey)
+            gen_rows += f"""
+            <tr>
+                <td><span style="color:var(--color-minimal);font-weight:700">✓</span> {tname}</td>
+                <td style="color:var(--color-muted);font-size:12px">{reason}</td>
+            </tr>"""
+        # PPTX je vždy
+        gen_rows += """
+            <tr>
+                <td><span style="color:var(--color-minimal);font-weight:700">✓</span> Školení AI Literacy — Prezentace (PPTX)</td>
+                <td style="color:var(--color-muted);font-size:12px">Povinné školení dle čl. 4 AI Act</td>
+            </tr>"""
+
+        skip_rows = ""
+        for sk in skipped_docs:
+            skip_rows += f"""
+            <tr>
+                <td><span style="color:var(--color-muted)">—</span> {sk['name']}</td>
+                <td style="color:var(--color-muted);font-size:12px">{sk['reason']}</td>
+            </tr>"""
+
+        total_gen = len(eligible_docs) + 1  # +1 PPTX
+
+        skipped_section = ""
+        if skipped_docs:
+            skipped_section = (
+                '<h3 style="margin-top:20px">Přeskočené dokumenty</h3>'
+                '<p style="color:var(--color-muted);font-size:13px;margin-bottom:12px">'
+                "Následující dokumenty nejsou pro váš rizikový profil relevantní:</p>"
+                "<table><thead><tr><th>Dokument</th><th>Důvod přeskočení</th></tr></thead>"
+                f"<tbody>{skip_rows}</tbody></table>"
+            )
+
+        doc_overview_html = f"""
+    <div class="glass-card">
+        <h2>Přehled vygenerovaných dokumentů</h2>
+        <p style="color:var(--color-muted);font-size:13px;margin-bottom:12px">
+            Na základě vašeho rizikového profilu (<strong>{_risk_badge(overall)}</strong>)
+            jsme vygenerovali <strong>{total_gen} z {total_gen + len(skipped_docs)} možných dokumentů</strong>.
+            Dokumenty, které vaše firma nepotřebuje, nebyly generovány — ušetříte čas a náklady.
+        </p>
+        <table>
+            <thead><tr><th>Vygenerovaný dokument</th><th>Důvod</th></tr></thead>
+            <tbody>{gen_rows}</tbody>
+        </table>
+        {skipped_section}
+    </div>"""
+
     body = f"""
     <div class="glass-card">
         <h2>Souhrnné hodnocení</h2>
         <p><strong>Firma:</strong> {company}</p>
+        {company_details}
         <p><strong>Analyzovaný web:</strong> {url}</p>
         <p><strong>Celkové riziko:</strong> {_risk_badge(overall)}</p>
     </div>
     {metrics_html}
     {deadline_html}
     {findings_html}
+    {declared_html}
     {q_html}
     {recs_html}
+    {doc_overview_html}
     """
 
     return _wrap_page(
@@ -609,6 +707,9 @@ def render_ai_register(data: dict) -> str:
     company = data.get("company_name", "Firma")
     findings = data.get("findings", [])
     questionnaire_recs = data.get("recommendations", [])
+    ai_declared = data.get("ai_systems_declared", [])
+    oversight = data.get("oversight_person", {})
+    dots = "................................................."
 
     # Webové systémy
     web_rows = ""
@@ -625,11 +726,27 @@ def render_ai_register(data: dict) -> str:
             <td style="font-size:12px">Automatický sken</td>
         </tr>"""
 
-    # Interní systémy z dotazníku
+    # Interní systémy — preferovat ai_declared z dotazníku (přesnější data)
     internal_rows = ""
-    for j, r in enumerate(questionnaire_recs, len(findings) + 1):
-        rl = r.get("risk_level", "minimal")
-        internal_rows += f"""
+    start_idx = len(findings) + 1
+    if ai_declared:
+        for j, d in enumerate(ai_declared, start_idx):
+            tool = d.get("tool_name", "AI systém")
+            key_label = d.get("key", "").replace("uses_", "").replace("_", " ").title()
+            internal_rows += f"""
+        <tr>
+            <td>{j}</td>
+            <td style="font-weight:600">{tool}</td>
+            <td>{key_label}</td>
+            <td>—</td>
+            <td style="font-size:12px">—</td>
+            <td>Interní</td>
+            <td style="font-size:12px">Dotazník</td>
+        </tr>"""
+    else:
+        for j, r in enumerate(questionnaire_recs, start_idx):
+            rl = r.get("risk_level", "minimal")
+            internal_rows += f"""
         <tr>
             <td>{j}</td>
             <td style="font-weight:600">{r.get('tool_name', 'AI systém')}</td>
@@ -639,6 +756,11 @@ def render_ai_register(data: dict) -> str:
             <td>Interní</td>
             <td style="font-size:12px">Dotazník</td>
         </tr>"""
+
+    # Odpovědná osoba — vyplnit z dotazníku pokud máme data
+    person_name = oversight.get("name") or dots
+    person_role = oversight.get("role") or dots
+    person_email = oversight.get("email") or dots
 
     body = f"""
     <div class="glass-card">
@@ -669,10 +791,10 @@ def render_ai_register(data: dict) -> str:
     <div class="glass-card">
         <h3>C. Odpovědná osoba</h3>
         <table>
-            <tr><td style="width:200px;color:var(--color-muted)">Jméno a příjmení</td><td>.................................................</td></tr>
-            <tr><td style="color:var(--color-muted)">Funkce</td><td>.................................................</td></tr>
-            <tr><td style="color:var(--color-muted)">Email</td><td>.................................................</td></tr>
-            <tr><td style="color:var(--color-muted)">Datum jmenování</td><td>.................................................</td></tr>
+            <tr><td style="width:200px;color:var(--color-muted)">Jméno a příjmení</td><td>{person_name}</td></tr>
+            <tr><td style="color:var(--color-muted)">Funkce</td><td>{person_role}</td></tr>
+            <tr><td style="color:var(--color-muted)">Email</td><td>{person_email}</td></tr>
+            <tr><td style="color:var(--color-muted)">Datum jmenování</td><td>{dots}</td></tr>
         </table>
     </div>
 
@@ -770,13 +892,15 @@ def render_chatbot_notices(data: dict) -> str:
 def render_ai_policy(data: dict) -> str:
     """Interní AI politika firmy — šablona k přizpůsobení."""
     company = data.get("company_name", "Firma")
+    oversight = data.get("oversight_person", {})
+    dots = "................................................."
 
     body = f"""
     <div class="glass-card">
         <h2>Interní politika používání umělé inteligence</h2>
         <p><strong>Firma:</strong> {company}</p>
-        <p><strong>Platnost od:</strong> .................................................</p>
-        <p><strong>Schválil/a:</strong> .................................................</p>
+        <p><strong>Platnost od:</strong> {dots}</p>
+        <p><strong>Schválil/a:</strong> {dots}</p>
     </div>
 
     <div class="glass-card">
@@ -834,10 +958,11 @@ def render_ai_policy(data: dict) -> str:
     <div class="glass-card">
         <h2>6. Odpovědnost a dohled</h2>
         <table>
-            <tr><td style="width:200px;color:var(--color-muted)">Odpovědná osoba za AI</td><td>.................................................</td></tr>
-            <tr><td style="color:var(--color-muted)">Kontakt</td><td>.................................................</td></tr>
+            <tr><td style="width:200px;color:var(--color-muted)">Odpovědná osoba za AI</td><td>{oversight.get('name') or dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Funkce</td><td>{oversight.get('role') or dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Kontakt</td><td>{oversight.get('email') or dots}</td></tr>
             <tr><td style="color:var(--color-muted)">Frekvence revize politiky</td><td>Minimálně 1× ročně</td></tr>
-            <tr><td style="color:var(--color-muted)">Další revize</td><td>.................................................</td></tr>
+            <tr><td style="color:var(--color-muted)">Další revize</td><td>{dots}</td></tr>
         </table>
     </div>
 
@@ -892,6 +1017,14 @@ def render_ai_policy(data: dict) -> str:
 def render_training_outline(data: dict) -> str:
     """Osnova školení AI literacy — povinné dle čl. 4 AI Act."""
     company = data.get("company_name", "Firma")
+    training = data.get("training", {})
+    audience_size = training.get("audience_size", "")
+    audience_level = training.get("audience_level", "")
+    audience_info = ""
+    if audience_size:
+        audience_info += f' &bull; <strong>Počet:</strong> {audience_size}'
+    if audience_level:
+        audience_info += f' &bull; <strong>Úroveň:</strong> {audience_level}'
 
     body = f"""
     <div class="glass-card">
@@ -899,7 +1032,7 @@ def render_training_outline(data: dict) -> str:
         <p>Povinné školení zaměstnanců dle čl. 4 Nařízení (EU) 2024/1689.</p>
         <p style="color:var(--color-muted);font-size:13px">
             <strong>Rozsah:</strong> 2–3 hodiny &bull;
-            <strong>Cílová skupina:</strong> Všichni zaměstnanci společnosti {company} &bull;
+            <strong>Cílová skupina:</strong> Všichni zaměstnanci společnosti {company}{audience_info} &bull;
             <strong>Frekvence:</strong> Při nástupu + 1× ročně refresher
         </p>
     </div>
@@ -990,6 +1123,804 @@ def render_training_outline(data: dict) -> str:
 
 
 # ══════════════════════════════════════════════════════════════════════
+# 8. INCIDENT RESPONSE PLAN — plán řízení AI incidentů (čl. 73)
+# ══════════════════════════════════════════════════════════════════════
+
+def render_incident_response_plan(data: dict) -> str:
+    """Plán řízení AI incidentů — povinný dle čl. 73 AI Act."""
+    company = data.get("company_name", "Firma")
+    oversight = data.get("oversight_person", {})
+    contact_email = data.get("q_company_contact_email", data.get("contact_email", ""))
+
+    # Odpovědná osoba za AI
+    person_name = oversight.get("name", "")
+    person_email = oversight.get("email", "")
+    person_phone = oversight.get("phone", "")
+    dots = "................................................."
+
+    body = f"""
+    <div class="glass-card">
+        <h2>Plán řízení AI incidentů</h2>
+        <p><strong>Firma:</strong> {company}</p>
+        <p><strong>Platnost od:</strong> {_now_str()}</p>
+        <p style="color:var(--color-muted);font-size:13px">
+            Dokument stanoví postupy pro řešení incidentů souvisejících s umělou inteligencí
+            dle čl. 73 Nařízení (EU) 2024/1689 (AI Act).
+        </p>
+    </div>
+
+    <div class="glass-card">
+        <h2>1. Definice AI incidentu</h2>
+        <p>Za AI incident se považuje situace, kdy systém umělé inteligence:</p>
+        <ul>
+            <li>Poskytne nesprávnou, zavádějící nebo diskriminační odpověď zákazníkovi</li>
+            <li>Způsobí nebo přispěje k rozhodnutí poškozujícímu práva jednotlivce</li>
+            <li>Zpracuje osobní údaje v rozporu s GDPR</li>
+            <li>Selže technicky a nedostupnost ovlivní provoz firmy</li>
+            <li>Vygeneruje obsah porušující autorská práva nebo zákony</li>
+            <li>Se stane obětí kyberútoku (prompt injection, data poisoning)</li>
+        </ul>
+    </div>
+
+    <div class="glass-card">
+        <h2>2. Klasifikace závažnosti</h2>
+        <table>
+            <thead><tr><th>Stupeň</th><th>Popis</th><th>Příklad</th><th>Reakční doba</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>{_risk_badge('high')}</td>
+                    <td>Kritický — ohrožení práv, zdraví nebo bezpečnosti</td>
+                    <td>AI diskriminuje zákazníky, únik osobních údajů</td>
+                    <td><strong>Do 1 hodiny</strong></td>
+                </tr>
+                <tr>
+                    <td>{_risk_badge('limited')}</td>
+                    <td>Střední — chybná rozhodnutí, zavádějící informace</td>
+                    <td>Chatbot poskytne špatnou informaci, chybná AI analýza</td>
+                    <td><strong>Do 24 hodin</strong></td>
+                </tr>
+                <tr>
+                    <td>{_risk_badge('minimal')}</td>
+                    <td>Nízký — drobné nepřesnosti, technické problémy</td>
+                    <td>Překlep v AI odpovědi, pomalá odezva</td>
+                    <td><strong>Do 72 hodin</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>3. Eskalační řetězec</h2>
+        <table>
+            <thead><tr><th>Krok</th><th>Kdo</th><th>Kontakt</th><th>Akce</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Zaměstnanec, který incident zjistí</td>
+                    <td>—</td>
+                    <td>Zaznamenat incident, informovat odpovědnou osobu</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Odpovědná osoba za AI</td>
+                    <td>{person_name or dots}<br>
+                        {person_email or dots}<br>
+                        {person_phone or dots}</td>
+                    <td>Posoudit závažnost, rozhodnout o dalším postupu</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Vedení firmy / jednatel</td>
+                    <td>{dots}</td>
+                    <td>Schválit odstavení systému, komunikaci navenek</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>IT správce / dodavatel AI</td>
+                    <td>{dots}</td>
+                    <td>Technická náprava, analýza příčin</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>DPO / právní poradce</td>
+                    <td>{dots}</td>
+                    <td>Posouzení povinnosti hlášení (GDPR / AI Act)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>4. Postup při incidentu</h2>
+
+        <h3 style="color:var(--color-high)">Fáze 1 — Okamžitá reakce (0–1 h)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Zastavit / omezit AI systém, který incident způsobil</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Zajistit důkazy (screenshot, logy, čas, popis)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Informovat odpovědnou osobu za AI</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>U kritických incidentů: okamžitě odstavit AI systém</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-limited)">Fáze 2 — Vyhodnocení (1–24 h)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Klasifikovat závažnost incidentu (viz tabulka výše)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Identifikovat dotčené osoby (zákazníci, zaměstnanci)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Posoudit, zda došlo k porušení GDPR (únik osobních údajů)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Rozhodnout, zda je nutné hlášení dozorové autoritě</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-secondary)">Fáze 3 — Náprava (24–72 h)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Opravit AI systém / změnit konfiguraci</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Informovat dotčené osoby (pokud jde o závažný incident)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Aktualizovat registr AI systémů</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dokumentovat příčinu a přijatá opatření</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3>Fáze 4 — Prevence (do 30 dní)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Provést root-cause analýzu</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Zavést preventivní opatření</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Aktualizovat interní AI politiku (pokud je třeba)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Proškolit relevantní zaměstnance</p></div></div>
+    </div>
+
+    <div class="glass-card">
+        <h2>5. Povinné hlášení dle AI Act (čl. 73)</h2>
+        <div class="highlight-box">
+            <p><strong>Závažný incident</strong> (serious incident) se MUSÍ nahlásit dozorovému orgánu
+            <strong>do 15 dnů</strong> od zjištění. Za závažný incident se považuje:</p>
+            <ul>
+                <li>Úmrtí nebo vážné poškození zdraví osoby</li>
+                <li>Závažné a neodvratné porušení základních práv</li>
+                <li>Závažné poškození majetku nebo životního prostředí</li>
+            </ul>
+        </div>
+        <p style="color:var(--color-muted);font-size:13px;margin-top:12px">
+            Dozorový orgán v ČR: Český telekomunikační úřad (ČTÚ) — dosud nepotvrzeno,
+            může se změnit. Sledujte aktuální informace na stránkách Ministerstva průmyslu a obchodu.
+        </p>
+    </div>
+
+    <div class="glass-card">
+        <h2>6. Záznamový formulář incidentu</h2>
+        <table>
+            <tr><td style="width:220px;color:var(--color-muted)">Datum a čas incidentu</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Zjištěno kým</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Dotčený AI systém</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Popis incidentu</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Stupeň závažnosti</td><td>🔴 Kritický / 🟡 Střední / 🟢 Nízký</td></tr>
+            <tr><td style="color:var(--color-muted)">Dotčené osoby</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Přijatá opatření</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Nahlášeno dozor. orgánu?</td><td>ANO / NE (datum: .............)</td></tr>
+            <tr><td style="color:var(--color-muted)">Datum uzavření</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Podpis odpovědné osoby</td><td>{dots}</td></tr>
+        </table>
+    </div>
+
+    <div class="highlight-box">
+        <strong>Důležité:</strong> Tento plán aktualizujte minimálně 1× ročně a po každém závažném incidentu.
+        Uchovávejte záznamy o incidentech minimálně 10 let dle čl. 18 AI Act.
+    </div>
+    """
+
+    return _wrap_page(
+        f"Plán řízení AI incidentů — {company}",
+        "Postupy dle čl. 73 Nařízení (EU) 2024/1689",
+        body,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 9. DPIA ŠABLONA — posouzení vlivu na ochranu osobních údajů
+# ══════════════════════════════════════════════════════════════════════
+
+def render_dpia_template(data: dict) -> str:
+    """
+    DPIA (Data Protection Impact Assessment) — předvyplněná šablona.
+    Povinná dle GDPR čl. 35 + AI Act čl. 27 pro vysoce rizikové AI systémy.
+    """
+    company = data.get("company_name", "Firma")
+    ico = data.get("q_company_ico", "")
+    address = data.get("q_company_address", "")
+    contact_email = data.get("q_company_contact_email", data.get("contact_email", ""))
+    industry = data.get("q_company_industry", "")
+    company_size = data.get("q_company_size", "")
+    oversight = data.get("oversight_person", {})
+    ai_systems = data.get("ai_systems_declared", [])
+    data_prot = data.get("data_protection", {})
+    findings = data.get("findings", [])
+    risk = data.get("risk_breakdown", {})
+    overall_risk = data.get("overall_risk", "minimal")
+    dots = "................................................."
+
+    # ── Seznam AI systémů s riziky ──
+    ai_systems_rows = ""
+    for sys in ai_systems:
+        name = sys.get("tool_name", sys.get("key", "AI systém"))
+        details = sys.get("details", {})
+        risk_level = details.get("risk_level", "minimal")
+        ai_systems_rows += f"""
+        <tr>
+            <td>{name}</td>
+            <td>{_risk_badge(risk_level)}</td>
+            <td>{dots}</td>
+            <td>{dots}</td>
+        </tr>"""
+
+    # Z findings (sken webu)
+    for f in findings:
+        name = f.get("name", f.get("type", "AI systém"))
+        risk_level = f.get("risk_level", "minimal")
+        desc = f.get("description", "")[:60]
+        ai_systems_rows += f"""
+        <tr>
+            <td>{name} <span style="color:var(--color-muted);font-size:11px">(ze skenu webu)</span></td>
+            <td>{_risk_badge(risk_level)}</td>
+            <td>{desc}</td>
+            <td>{dots}</td>
+        </tr>"""
+
+    if not ai_systems_rows:
+        ai_systems_rows = f"""
+        <tr>
+            <td colspan="4" style="color:var(--color-muted);text-align:center">
+                Žádné AI systémy nebyly identifikovány — doplňte ručně
+            </td>
+        </tr>"""
+
+    # ── Metriky ──
+    total_systems = len(ai_systems) + len(findings)
+    high_count = risk.get("high", 0)
+    processes_pd = "Ano" if data_prot.get("processes_personal_data") else "Ne / Nevím"
+    data_in_eu = "Ano" if data_prot.get("data_in_eu") else "Ne / Nevím"
+
+    body = f"""
+    <div class="glass-card">
+        <h2>Posouzení vlivu na ochranu osobních údajů (DPIA)</h2>
+        <p><strong>Firma:</strong> {company}</p>
+        {"<p><strong>IČO:</strong> " + ico + "</p>" if ico else ""}
+        {"<p><strong>Adresa:</strong> " + address + "</p>" if address else ""}
+        <p><strong>Datum zpracování:</strong> {_now_str()}</p>
+        <p><strong>Verze:</strong> 1.0 — vygenerováno automaticky, vyžaduje doplnění a revizi</p>
+        <p style="color:var(--color-muted);font-size:13px;margin-top:8px">
+            Posouzení vlivu dle čl. 35 Nařízení (EU) 2016/679 (GDPR) a čl. 27 
+            Nařízení (EU) 2024/1689 (AI Act) — povinné pro nasazení AI systémů, 
+            které systematicky zpracovávají osobní údaje.
+        </p>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-primary)">{total_systems}</div>
+            <div class="metric-label">AI systémů celkem</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-high)">{high_count}</div>
+            <div class="metric-label">Vysoce rizikových</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-secondary)">{processes_pd}</div>
+            <div class="metric-label">Zpracování os. údajů</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h2>1. Odpovědné osoby</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Správce osobních údajů</td><td>{company}</td></tr>
+            <tr><td style="color:var(--color-muted)">Odpovědná osoba za AI</td><td>{oversight.get("name", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">E-mail</td><td>{oversight.get("email", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">Role / funkce</td><td>{oversight.get("role", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">Pověřenec (DPO)</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Kontakt na DPO</td><td>{dots}</td></tr>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>2. Popis zpracování osobních údajů</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Účel zpracování</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Právní základ (čl. 6 GDPR)</td><td>☐ Souhlas &nbsp; ☐ Smlouva &nbsp; ☐ Oprávněný zájem &nbsp; ☐ Zákonná povinnost</td></tr>
+            <tr><td style="color:var(--color-muted)">Kategorie subjektů údajů</td><td>☐ Zákazníci &nbsp; ☐ Zaměstnanci &nbsp; ☐ Dodavatelé &nbsp; ☐ Návštěvníci webu</td></tr>
+            <tr><td style="color:var(--color-muted)">Kategorie osobních údajů</td><td>☐ Identifikační &nbsp; ☐ Kontaktní &nbsp; ☐ Behaviorální &nbsp; ☐ Biometrické &nbsp; ☐ Zvláštní (čl. 9)</td></tr>
+            <tr><td style="color:var(--color-muted)">Předpokládaný počet dotčených osob</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Doba uchovávání</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Data uložena v EU?</td><td>{"✅ Ano" if data_prot.get("data_in_eu") else "❓ Vyplňte"}</td></tr>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>3. Přehled AI systémů zpracovávajících osobní údaje</h2>
+        <p style="color:var(--color-muted);font-size:12px;margin-bottom:12px">
+            Pro každý AI systém doplňte typ osobních údajů a legitimní účel zpracování.
+        </p>
+        <table>
+            <thead>
+                <tr><th>AI systém</th><th>Riziko (AI Act)</th><th>Typ os. údajů</th><th>Účel zpracování</th></tr>
+            </thead>
+            <tbody>
+                {ai_systems_rows}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>4. Posouzení nezbytnosti a přiměřenosti</h2>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Zpracování je nezbytné pro splnění uvedeného účelu</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Neexistují méně invazivní alternativy ke zpracování</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Rozsah zpracovávaných údajů je minimalizován (data minimisation)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Doba uchovávání je přiměřená účelu</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Subjekty údajů byly informovány o zpracování (čl. 13/14 GDPR)</p></div></div>
+    </div>
+
+    <div class="glass-card">
+        <h2>5. Posouzení rizik pro práva a svobody</h2>
+        <table>
+            <thead><tr><th>Riziko</th><th>Pravděpodobnost</th><th>Dopad</th><th>Opatření ke zmírnění</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Neoprávněný přístup k osobním údajům</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+                <tr>
+                    <td>Diskriminace na základě AI rozhodování</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+                <tr>
+                    <td>Chybné automatizované rozhodnutí</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+                <tr>
+                    <td>Nepřesnost / zastaralost dat vstupujících do AI</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+                <tr>
+                    <td>Předávání údajů mimo EU/EHP</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+                <tr>
+                    <td>Ztráta kontroly subjektem údajů (čl. 22 GDPR)</td>
+                    <td>☐ Nízká &nbsp; ☐ Střední &nbsp; ☐ Vysoká</td>
+                    <td>☐ Nízký &nbsp; ☐ Střední &nbsp; ☐ Vysoký</td>
+                    <td>{dots}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>6. Technická a organizační opatření</h2>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Šifrování</strong> — data jsou šifrována při přenosu (TLS) i v úložišti</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Přístupová práva</strong> — přístup k AI systémům mají jen oprávněné osoby</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Logování</strong> — všechny přístupy a operace AI systémů jsou logovány</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Lidský dohled</strong> — nad rozhodnutími AI je zajištěn lidský dohled (čl. 14 AI Act)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Anonymizace / pseudonymizace</strong> — data vstupující do AI jsou anonymizována</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Pravidelné audity</strong> — AI systémy jsou pravidelně přehodnocovány</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Incident response</strong> — existuje plán pro řešení incidentů (viz Plán řízení AI incidentů)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Smluvní zajištění</strong> — dodavatelé AI mají smluvně pokryty povinnosti (viz Dodavatelský checklist)</p></div></div>
+    </div>
+
+    <div class="glass-card">
+        <h2>7. Závěr a doporučení</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Celkové riziko (AI Act)</td><td>{_risk_badge(overall_risk)}</td></tr>
+            <tr><td style="color:var(--color-muted)">DPIA závěr</td><td>☐ Zpracování je přípustné &nbsp; ☐ Nutná dodatečná opatření &nbsp; ☐ Konzultace s ÚOOÚ</td></tr>
+            <tr><td style="color:var(--color-muted)">Další kroky</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Datum příští revize DPIA</td><td>{dots}</td></tr>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>8. Podpisy</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Zpracoval</td><td>{dots}</td><td>Datum: {dots}</td><td>Podpis: {dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Schválil (DPO)</td><td>{dots}</td><td>Datum: {dots}</td><td>Podpis: {dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Schválil (vedení)</td><td>{dots}</td><td>Datum: {dots}</td><td>Podpis: {dots}</td></tr>
+        </table>
+    </div>
+
+    <div class="highlight-box">
+        <strong>⚠️ Důležité:</strong> Tato DPIA šablona je předvyplněna na základě údajů z dotazníku 
+        a skenu webu. Pro finální platnost je nutné:<br>
+        1) Doplnit všechna pole označená tečkami<br>
+        2) Nechat posoudit pověřencem pro ochranu osobních údajů (DPO)<br>
+        3) Aktualizovat při každé změně AI systémů nebo zpracování údajů<br>
+        4) Uchovávat jako důkaz souladu s GDPR čl. 35 a AI Act čl. 27
+    </div>
+    """
+
+    return _wrap_page(
+        f"DPIA — Posouzení vlivu — {company}",
+        "Předvyplněná šablona dle GDPR čl. 35 + AI Act čl. 27",
+        body,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 10. DODAVATELSKÝ CHECKLIST — smlouvy s dodavateli AI
+# ══════════════════════════════════════════════════════════════════════
+
+def render_vendor_checklist(data: dict) -> str:
+    """
+    Kontrolní seznam pro smlouvy s dodavateli AI systémů.
+    Dle AI Act čl. 25 (povinnosti dovozců) a čl. 26 (povinnosti nasazovatelů).
+    """
+    company = data.get("company_name", "Firma")
+    ai_systems = data.get("ai_systems_declared", [])
+    findings = data.get("findings", [])
+    data_prot = data.get("data_protection", {})
+    has_contracts = data_prot.get("has_vendor_contracts")
+    dots = "................................................."
+
+    # Sestavit seznam dodavatelů z AI systémů
+    vendor_rows = ""
+    all_systems = []
+    for sys in ai_systems:
+        name = sys.get("tool_name") or sys.get("key") or "AI systém"
+        details = sys.get("details") or {}
+        risk_level = details.get("risk_level") or "minimal"
+        all_systems.append((name, risk_level, "dotazník"))
+
+    for f in findings:
+        name = f.get("name") or f.get("type") or "AI systém"
+        risk_level = f.get("risk_level") or "minimal"
+        all_systems.append((name, risk_level, "sken webu"))
+
+    # Mapování AI nástroj → dodavatel
+    vendor_map = {
+        "ChatGPT": "OpenAI, Inc.", "GPT": "OpenAI, Inc.", "OpenAI": "OpenAI, Inc.",
+        "Copilot": "Microsoft Corp.", "Microsoft": "Microsoft Corp.",
+        "Gemini": "Google LLC", "Google": "Google LLC", "Bard": "Google LLC",
+        "Claude": "Anthropic PBC", "Anthropic": "Anthropic PBC",
+        "Midjourney": "Midjourney, Inc.",
+        "DALL-E": "OpenAI, Inc.", "DALL·E": "OpenAI, Inc.",
+        "Stable Diffusion": "Stability AI Ltd.",
+        "Perplexity": "Perplexity AI, Inc.",
+        "Jasper": "Jasper AI, Inc.",
+        "Grammarly": "Grammarly, Inc.",
+        "DeepL": "DeepL SE",
+        "Notion AI": "Notion Labs, Inc.",
+        "Canva AI": "Canva Pty Ltd.",
+        "HubSpot AI": "HubSpot, Inc.",
+        "Salesforce Einstein": "Salesforce, Inc.",
+    }
+
+    for name, risk_level, source in all_systems:
+        # Zkusit najít dodavatele
+        vendor = "—"
+        name_safe = (name or "AI systém")
+        for key, val in vendor_map.items():
+            if key.lower() in name_safe.lower():
+                vendor = val
+                break
+        vendor_rows += f"""
+        <tr>
+            <td>{name}</td>
+            <td>{vendor}</td>
+            <td>{_risk_badge(risk_level)}</td>
+            <td><span style="color:var(--color-muted);font-size:11px">{source}</span></td>
+        </tr>"""
+
+    if not vendor_rows:
+        vendor_rows = f"""
+        <tr><td colspan="4" style="color:var(--color-muted);text-align:center">
+            Žádné AI systémy nebyly identifikovány — doplňte ručně
+        </td></tr>"""
+
+    # Status smluv
+    contract_status = ""
+    if has_contracts:
+        contract_status = '<span style="color:var(--color-minimal)">✅ Firma uvádí, že má smlouvy s dodavateli AI</span>'
+    else:
+        contract_status = '<span style="color:var(--color-high)">⚠️ Firma dosud nemá smluvně ošetřeny dodavatele AI — je potřeba to řešit</span>'
+
+    body = f"""
+    <div class="glass-card">
+        <h2>Kontrolní seznam — Smlouvy s dodavateli AI</h2>
+        <p><strong>Firma:</strong> {company}</p>
+        <p><strong>Datum:</strong> {_now_str()}</p>
+        <p style="margin-top:8px">{contract_status}</p>
+        <p style="color:var(--color-muted);font-size:13px;margin-top:8px">
+            AI Act (čl. 25–26) vyžaduje, aby nasazovatel zajistil smluvní pokrytí 
+            s dodavateli AI systémů. Tento checklist pomáhá ověřit, že vaše smlouvy 
+            obsahují všechny povinné náležitosti.
+        </p>
+    </div>
+
+    <div class="glass-card">
+        <h2>1. Přehled AI systémů a dodavatelů</h2>
+        <table>
+            <thead><tr><th>AI systém</th><th>Dodavatel</th><th>Riziková kategorie</th><th>Zdroj</th></tr></thead>
+            <tbody>{vendor_rows}</tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>2. Povinné smluvní náležitosti dle AI Act</h2>
+        <p style="color:var(--color-muted);font-size:12px;margin-bottom:12px">
+            Pro KAŽDÝ AI systém ve vaší firmě zkontrolujte, zda smlouva s dodavatelem obsahuje:
+        </p>
+
+        <h3 style="color:var(--color-high);margin-top:16px">A. Transparentnost a informace (čl. 13)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel poskytl návod k použití AI systému v češtině / angličtině</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel deklaroval účel a zamýšlené použití AI systému</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel poskytl informace o výkonnosti a omezeních AI systému</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel sděluje, jaké tréningové datasety byly použity</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-limited);margin-top:16px">B. Ochrana osobních údajů (GDPR)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Smlouva o zpracování osobních údajů (DPA) je uzavřena</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Definovány kategorie zpracovávaných osobních údajů</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Stanovena doba uchovávání a podmínky výmazu</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel garantuje zpracování v EU/EHP nebo adekvátní záruky (SCC)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel nepoužívá vaše data k trénování modelů (opt-out)</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-secondary);margin-top:16px">C. Technické záruky a SLA</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Definovaná dostupnost služby (SLA — uptime)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Maximální reakční doba při incidentu</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Postup eskalace a kontaktní osoba dodavatele</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Notifikace při změnách modelu / verze AI systému</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Právo na audit ze strany nasazovatele</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="margin-top:16px">D. Odpovědnost a rizika (čl. 25–26)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Jasné vymezení odpovědnosti dodavatele vs. nasazovatele</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Odpovědnost za škodu způsobenou AI systémem (AI Liability Directive)</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Pojištění odpovědnosti dodavatele</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Podmínky ukončení smlouvy a migrace dat</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p>Spolupráce při hlášení incidentů dozorovým orgánům (čl. 73)</p></div></div>
+    </div>
+
+    <div class="glass-card">
+        <h2>3. Per-dodavatel checklist</h2>
+        <p style="color:var(--color-muted);font-size:12px;margin-bottom:12px">
+            Pro hlavní dodavatele AI vytiskněte tuto stránku a vyplňte:
+        </p>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Název dodavatele</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">AI systém / produkt</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Číslo smlouvy / datum</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">DPA uzavřena?</td><td>☐ Ano &nbsp; ☐ Ne &nbsp; ☐ V řešení</td></tr>
+            <tr><td style="color:var(--color-muted)">Data v EU?</td><td>☐ Ano &nbsp; ☐ Ne (SCC podepsáno: ☐ Ano ☐ Ne)</td></tr>
+            <tr><td style="color:var(--color-muted)">Opt-out z trénování?</td><td>☐ Ano &nbsp; ☐ Ne &nbsp; ☐ Není relevantní</td></tr>
+            <tr><td style="color:var(--color-muted)">SLA definováno?</td><td>☐ Ano ({dots} % uptime) &nbsp; ☐ Ne</td></tr>
+            <tr><td style="color:var(--color-muted)">Notifikace o změnách?</td><td>☐ Ano &nbsp; ☐ Ne</td></tr>
+            <tr><td style="color:var(--color-muted)">Vyhodnocení</td><td>☐ OK &nbsp; ☐ Nutný doplněk &nbsp; ☐ Nevyhovuje</td></tr>
+        </table>
+    </div>
+
+    <div class="highlight-box">
+        <strong>💡 Doporučení:</strong> Vytiskněte per-dodavatel checklist pro každého dodavatele AI zvlášť.
+        U velkých poskytovatelů (OpenAI, Google, Microsoft) bývá DPA součástí standardních podmínek — 
+        zkontrolujte, zda jste ji aktivně přijali ve svém účtu.
+    </div>
+    """
+
+    return _wrap_page(
+        f"Dodavatelský checklist — {company}",
+        "Kontrolní seznam pro smlouvy s dodavateli AI dle čl. 25–26 AI Act",
+        body,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 11. MONITORING PLÁN — plán monitoringu AI výstupů
+# ══════════════════════════════════════════════════════════════════════
+
+def render_monitoring_plan(data: dict) -> str:
+    """
+    Plán monitoringu AI výstupů — CO, JAK a JAK ČASTO monitorovat.
+    Povinnost dle AI Act čl. 9 (řízení rizik) a čl. 72 (post-market monitoring).
+    Zahrnuje bias/fairness testing jako integrální součást.
+    """
+    company = data.get("company_name", "Firma")
+    oversight = data.get("oversight_person", {})
+    ai_systems = data.get("ai_systems_declared", [])
+    findings = data.get("findings", [])
+    incident = data.get("incident", {})
+    risk = data.get("risk_breakdown", {})
+    overall_risk = data.get("overall_risk", "minimal")
+    dots = "................................................."
+
+    monitors_outputs = incident.get("monitors_outputs", False)
+    has_bias_check = incident.get("has_bias_check", False)
+
+    # Status
+    monitoring_status = ""
+    if monitors_outputs:
+        monitoring_status = '<span style="color:var(--color-minimal)">✅ Firma již monitoruje výstupy AI</span>'
+    else:
+        monitoring_status = '<span style="color:var(--color-limited)">⚠️ Firma zatím nemonitoruje výstupy AI — tento plán pomůže začít</span>'
+
+    bias_status = ""
+    if has_bias_check:
+        bias_status = '<span style="color:var(--color-minimal)">✅ Firma testuje férovost AI výstupů</span>'
+    else:
+        bias_status = '<span style="color:var(--color-limited)">⚠️ Testování férovosti není zavedeno</span>'
+
+    # ── Per-systém monitoring tabulka ──
+    system_rows = ""
+    all_systems = []
+    for sys in ai_systems:
+        name = sys.get("tool_name", sys.get("key", "AI systém"))
+        details = sys.get("details", {})
+        risk_level = details.get("risk_level", "minimal")
+        all_systems.append((name, risk_level))
+
+    for f in findings:
+        name = f.get("name", f.get("type", "AI systém"))
+        risk_level = f.get("risk_level", "minimal")
+        all_systems.append((name, risk_level))
+
+    # Frekvence podle rizika
+    freq_map = {"high": "Denně / týdně", "limited": "Týdně / měsíčně", "minimal": "Měsíčně / čtvrtletně"}
+
+    for name, risk_level in all_systems:
+        freq = freq_map.get(risk_level, "Měsíčně")
+        system_rows += f"""
+        <tr>
+            <td>{name}</td>
+            <td>{_risk_badge(risk_level)}</td>
+            <td>{freq}</td>
+            <td>{dots}</td>
+        </tr>"""
+
+    if not system_rows:
+        system_rows = f"""
+        <tr><td colspan="4" style="color:var(--color-muted);text-align:center">
+            Žádné AI systémy — doplňte ručně
+        </td></tr>"""
+
+    total_systems = len(all_systems)
+    high_count = risk.get("high", 0)
+
+    body = f"""
+    <div class="glass-card">
+        <h2>Plán monitoringu AI výstupů</h2>
+        <p><strong>Firma:</strong> {company}</p>
+        <p><strong>Datum:</strong> {_now_str()}</p>
+        <p style="margin-top:8px">{monitoring_status}</p>
+        <p>{bias_status}</p>
+        <p style="color:var(--color-muted);font-size:13px;margin-top:8px">
+            AI Act čl. 9 vyžaduje průběžné řízení rizik po celou dobu životního cyklu AI systému.
+            Čl. 72 požaduje post-market monitoring. Tento plán definuje, co a jak monitorovat.
+        </p>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-primary)">{total_systems}</div>
+            <div class="metric-label">AI systémů k monitoringu</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-high)">{high_count}</div>
+            <div class="metric-label">Vysoce rizikových</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" style="color:var(--color-secondary)">{_risk_badge(overall_risk)}</div>
+            <div class="metric-label">Celkové riziko</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h2>1. Odpovědnost za monitoring</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Odpovědná osoba</td><td>{oversight.get("name", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">E-mail</td><td>{oversight.get("email", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">Role</td><td>{oversight.get("role", dots)}</td></tr>
+            <tr><td style="color:var(--color-muted)">Zástupce</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Frekvence reportingu vedení</td><td>☐ Měsíčně &nbsp; ☐ Čtvrtletně &nbsp; ☐ Ročně</td></tr>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>2. Přehled monitorovaných AI systémů</h2>
+        <table>
+            <thead><tr><th>AI systém</th><th>Riziko</th><th>Frekvence kontroly</th><th>Zodpovědná osoba</th></tr></thead>
+            <tbody>{system_rows}</tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>3. CO monitorovat — KPI a metriky</h2>
+
+        <h3 style="color:var(--color-high);margin-top:16px">A. Přesnost a kvalita výstupů</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Míra chybných odpovědí</strong> — % odpovědí, které jsou fakticky nesprávné</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Halucinace</strong> — AI vymýšlí neexistující fakta, zdroje, data</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Relevance</strong> — odpovídá AI na to, na co se ptá uživatel?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Konzistence</strong> — dává AI na stejný dotaz konzistentní odpovědi?</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-limited);margin-top:16px">B. Férovost a bias (testování férovosti)</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Genderový bias</strong> — testovat dotazy s různým pohlavím (on/ona) — liší se odpovědi?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Etnický / národnostní bias</strong> — testovat dotazy s různými jmény / původy</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Věkový bias</strong> — liší se AI doporučení pro různé věkové skupiny?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Socioekonomický bias</strong> — nezvýhodňuje AI určité skupiny zákazníků?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Jazykový bias</strong> — kvalita AI pro češtinu vs. angličtinu</p></div></div>
+        <div class="highlight-box">
+            <strong>Jak testovat:</strong> Připravte si 10–20 testovacích dotazů, kde změníte pouze 
+            demografickou charakteristiku (jméno, pohlaví, věk). Porovnejte odpovědi AI. 
+            Pokud se liší, máte potenciální bias.
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="color:var(--color-secondary);margin-top:16px">C. Bezpečnost a stabilita</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Prompt injection</strong> — zkouší někdo manipulovat AI přes vstupy?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Data leakage</strong> — nevypisuje AI interní/citlivé informace?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Dostupnost</strong> — uptime AI systému, reakční doba</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Model drift</strong> — mění se kvalita výstupů po aktualizaci modelu?</p></div></div>
+
+        <div class="section-divider"></div>
+
+        <h3 style="margin-top:16px">D. Compliance a regulace</h3>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Transparenční oznámení</strong> — jsou viditelná a aktuální na webu?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Registr AI</strong> — obsahuje všechny aktuální systémy?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>Souhlas uživatelů</strong> — je správně implementován?</p></div></div>
+        <div class="checkbox-item"><div class="checkbox"></div><div><p><strong>GDPR compliance</strong> — osobní údaje v AI jsou řádně zpracovány?</p></div></div>
+    </div>
+
+    <div class="glass-card">
+        <h2>4. Plán měsíčního monitoringu</h2>
+        <table>
+            <thead><tr><th>Týden</th><th>Aktivita</th><th>Zodpovědný</th><th>Splněno</th></tr></thead>
+            <tbody>
+                <tr><td>1. týden</td><td>Review přesnosti AI výstupů (vzorek 20 odpovědí)</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>1. týden</td><td>Kontrola transparenčních oznámení na webu</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>2. týden</td><td>Bias test — 10 testovacích dotazů s různými demografiemi</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>2. týden</td><td>Bezpečnostní test — 5 prompt injection pokusů</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>3. týden</td><td>Aktualizace registru AI systémů (nové nástroje?)</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>3. týden</td><td>Review stížností / zpětné vazby od uživatelů na AI</td><td>{dots}</td><td>☐</td></tr>
+                <tr><td>4. týden</td><td>Souhrnný report vedení + akční body na další měsíc</td><td>{dots}</td><td>☐</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card">
+        <h2>5. Záznamový list — měsíční monitoring</h2>
+        <table>
+            <tr><td style="width:240px;color:var(--color-muted)">Měsíc / rok</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Kontroloval</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Počet zkontrolovaných AI výstupů</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Nalezené problémy</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Bias test — výsledek</td><td>☐ OK &nbsp; ☐ Nalezen bias (popis: {dots})</td></tr>
+            <tr><td style="color:var(--color-muted)">Bezpečnostní test — výsledek</td><td>☐ OK &nbsp; ☐ Nalezena zranitelnost (popis: {dots})</td></tr>
+            <tr><td style="color:var(--color-muted)">Přijatá nápravná opatření</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Datum</td><td>{dots}</td></tr>
+            <tr><td style="color:var(--color-muted)">Podpis</td><td>{dots}</td></tr>
+        </table>
+    </div>
+
+    <div class="highlight-box">
+        <strong>💡 Tip:</strong> Vytiskněte si „Záznamový list" pro každý měsíc zvlášť — 
+        při auditu poslouží jako důkaz pravidelného monitoringu. Archivujte minimálně 
+        po dobu provozu AI systému + 10 let (čl. 18 AI Act).
+    </div>
+    """
+
+    return _wrap_page(
+        f"Monitoring plán — {company}",
+        "Plán monitoringu AI výstupů dle čl. 9 a 72 AI Act (včetně testování férovosti)",
+        body,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════
 # EXPORT — mapa všech šablon
 # ══════════════════════════════════════════════════════════════════════
 
@@ -1001,6 +1932,10 @@ TEMPLATE_RENDERERS = {
     "chatbot_notices": render_chatbot_notices,
     "ai_policy": render_ai_policy,
     "training_outline": render_training_outline,
+    "incident_response_plan": render_incident_response_plan,
+    "dpia_template": render_dpia_template,
+    "vendor_checklist": render_vendor_checklist,
+    "monitoring_plan": render_monitoring_plan,
 }
 
 TEMPLATE_NAMES = {
@@ -1011,4 +1946,8 @@ TEMPLATE_NAMES = {
     "chatbot_notices": "Texty AI oznámení",
     "ai_policy": "Interní AI politika",
     "training_outline": "Školení AI Literacy",
+    "incident_response_plan": "Plán řízení AI incidentů",
+    "dpia_template": "DPIA — Posouzení vlivu",
+    "vendor_checklist": "Dodavatelský checklist",
+    "monitoring_plan": "Monitoring plán AI",
 }

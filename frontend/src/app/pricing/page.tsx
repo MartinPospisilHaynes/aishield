@@ -15,7 +15,9 @@ const plans = [
         description: "Compliance Kit — dokumenty ke stažení",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (7 dokumentů)",
+            "AI Act Compliance Kit (až 12 dokumentů dle rizika)",
+            "Tištěná dokumentace v profesionální vazbě — připravená na kontrolu",
+            "Elektronická záloha veškeré dokumentace",
             "Transparenční stránka (HTML)",
             "Registr AI systémů",
             "Interní AI politika firmy",
@@ -43,6 +45,7 @@ const plans = [
         description: "Vše z BASIC + implementace na klíč",
         features: [
             "Vše z BASIC",
+            "Tištěná dokumentace v profesionální vazbě — připravená na kontrolu",
             "Instalace widgetu na váš web",
             "Nastavení transparenční stránky",
             "Úprava chatbot oznámení",
@@ -69,6 +72,7 @@ const plans = [
         description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Vše z PRO",
+            "Tištěná dokumentace v profesionální vazbě — připravená na kontrolu",
             "10 hodin konzultací s compliance specialistou",
             "Metodická kontrola veškeré dokumentace",
             "Rozšířený audit interních AI systémů",
@@ -352,7 +356,7 @@ export default function PricingPage() {
                                 {[
                                     "2× měsíčně automatický sken webu",
                                     "Vše z Monitoring",
-                                    "Aktualizace VŠECH 7 dokumentů",
+                                    "Aktualizace všech vygenerovaných dokumentů",
                                     "Implementace změn na webu klienta",
                                     "Prioritní emailová podpora",
                                     "Čtvrtletní souhrnný přehled",
@@ -401,7 +405,7 @@ export default function PricingPage() {
                     {(() => {
                         const FEATURES = [
                             { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
-                            { label: "Compliance Kit (7 dokumentů)", basic: true, pro: true, enterprise: true },
+                            { label: "Compliance Kit (až 12 dokumentů dle rizika)", basic: true, pro: true, enterprise: true },
                             { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
                             { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
                             { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
@@ -565,7 +569,7 @@ export default function PricingPage() {
                             },
                             {
                                 q: "Co dostanu po zaplacení?",
-                                a: "Okamžitě po platbě se vám odemkne Dashboard, kde najdete všech 7 compliance dokumentů v PDF — report, registr, transparenční stránku, oznámení, AI politiku, školení i záznamový list."
+                                a: "Po zaplacení se vám okamžitě odemkne Dashboard. Než obdržíte dokumenty, provedeme hloubkový 24hodinový sken vašeho webu — 24 nezávislých skenů v 6 kolech ze 7 zemí světa (CZ, GB, US, BR, JP, ZA, AU), střídavě z desktopu i mobilu přes rezidenční proxy. Poté naše dokumenty projdou interní kontrolou kvality (obvykle do 48 hodin, max. 7 pracovních dnů). Výsledkem je sada až 12 compliance dokumentů v PDF přizpůsobená vašemu rizikovému profilu."
                             },
                             {
                                 q: "Proč potřebuji měsíční monitoring?",

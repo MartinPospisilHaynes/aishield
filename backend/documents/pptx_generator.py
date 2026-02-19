@@ -272,22 +272,47 @@ def _create_disclaimer_slide(prs):
 def generate_training_pptx(data: dict) -> bytes:
     """
     Generuje kompletní PPTX prezentaci pro AI Act školení.
-    
+
     Args:
-        data: dict s company_name, findings, recommendations atd.
-    
+        data: dict s company_name, findings, questionnaire data, oversight atd.
+
     Returns:
         bytes — obsah PPTX souboru
     """
     company = data.get("company_name", "Firma")
     findings = data.get("findings", [])
+    ai_declared = data.get("ai_systems_declared", [])
+    oversight = data.get("oversight_person", {})
+    training = data.get("training", {})
+    incident = data.get("incident", {})
+    data_protection = data.get("data_protection", {})
+    prohibited = data.get("prohibited_systems", {})
+    industry = data.get("q_company_industry", "")
+    company_size = data.get("q_company_size", "")
+
+    # Celkový počet AI nástrojů (web scan + dotazník)
+    all_tool_names = set()
+    for f in findings:
+        name = f.get("name")
+        if name:
+            all_tool_names.add(name)
+    for s in ai_declared:
+        name = s.get("tool_name") or s.get("key") or "AI systém"
+        if name:
+            all_tool_names.add(name)
+    all_tool_names.discard(None)
 
     prs = Presentation()
     prs.slide_width = SLIDE_WIDTH
     prs.slide_height = SLIDE_HEIGHT
 
     # ── Slide 1: Titulní ──
-    _create_title_slide(prs, company)
+    subtitle_parts = ["Povinné školení dle čl. 4 Nařízení (EU) 2024/1689 (AI Act)"]
+    if industry:
+        subtitle_parts.append(f"Obor: {industry}")
+    if company_size:
+        subtitle_parts.append(f"Velikost firmy: {company_size}")
+    _create_title_slide(prs, company, subtitle="  •  ".join(subtitle_parts))
 
     # ── Slide 2: Agenda ──
     _create_content_slide(prs, "Agenda školení", [
@@ -295,7 +320,8 @@ def generate_training_pptx(data: dict) -> bytes:
         "Modul 2 — EU AI Act v kostce (45 min)",
         "Modul 3 — AI v naší firmě (30 min)",
         "Modul 4 — Bezpečné používání AI v praxi (30 min)",
-        "Modul 5 — Test a certifikace (15 min)",
+        "Modul 5 — Naše povinnosti (15 min)",
+        "Modul 6 — Test a certifikace (15 min)",
     ])
 
     # ── Slide 3: Co je AI ──
@@ -324,7 +350,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "🟡 OMEZENÉ RIZIKO — transparentnost (chatboty, deepfakes, generovaný obsah)",
         "🟢 MINIMÁLNÍ RIZIKO — bez povinností (spam filtry, doporučovací algoritmy)",
         "",
-        f"Pokuty: až 35 mil. EUR nebo 7 % celosvětového obratu firmy",
+        "Pokuty: až 35 mil. EUR nebo 7 % celosvětového obratu firmy",
     ])
 
     # ── Slide 6: Zakázané praktiky ──
@@ -337,47 +363,132 @@ def generate_training_pptx(data: dict) -> bytes:
         "Vytváření databází obličejů ze scraping internetu",
     ])
 
-    # ── Slide 7: AI v naší firmě ──
-    _create_content_slide(prs, f"Modul 3 — AI v {company}", [
-        f"Přehled AI systémů detekovaných na webu firmy ({len(findings)} nálezů)",
+    # ── Slide 7: AI v naší firmě — personalizovaný ──
+    slide7_bullets = []
+
+    if all_tool_names:
+        tools_str = ", ".join(sorted(all_tool_names)[:6])
+        if len(all_tool_names) > 6:
+            tools_str += f" a dalších {len(all_tool_names) - 6}"
+        slide7_bullets.append(f"Používáme {len(all_tool_names)} AI nástrojů: {tools_str}")
+    else:
+        slide7_bullets.append(f"Detekovány AI systémy na webu firmy ({len(findings)} nálezů)")
+
+    if oversight.get("has_person") and oversight.get("name"):
+        slide7_bullets.append(f"Odpovědná osoba za AI: {oversight['name']} ({oversight.get('role', 'AI Officer')})")
+    else:
+        slide7_bullets.append("Odpovědná osoba za AI — přiřadit co nejdříve (povinnost dle čl. 14)")
+
+    slide7_bullets.extend([
         "Registr AI systémů — interní dokument (součást Compliance Kitu)",
         "Interní AI politika — co smíme a co ne",
         "Pravidla pro vkládání dat do AI nástrojů",
-        "Odpovědná osoba za AI ve firmě",
     ])
+
+    _create_content_slide(prs, f"Modul 3 — AI v {company}", slide7_bullets)
 
     # ── Slide 8: Přehled rizik z dat ──
-    _create_risk_slide(prs, findings)
+    # Kombinovat web scan findings + declared systems
+    combined_findings = list(findings)
+    existing_names = {(f.get("name") or "").lower() for f in findings}
+    for sys in ai_declared:
+        tool_name = sys.get("tool_name") or sys.get("key") or "AI systém"
+        if tool_name.lower() not in existing_names:
+            combined_findings.append({
+                "name": tool_name,
+                "risk_level": "limited",  # default pro deklarovaný systém
+                "ai_act_article": "čl. 50 — transparentnost",
+            })
+    _create_risk_slide(prs, combined_findings)
 
     # ── Slide 9: Bezpečné používání AI ──
-    _create_content_slide(prs, "Modul 4 — Bezpečné používání AI", [
+    safe_bullets = [
         "ChatGPT / Claude / Copilot — jak správně a bezpečně používat",
         "Co do AI NIKDY nevkládat (osobní údaje, hesla, smlouvy, interní data)",
-        "Ověřování výstupů AI — „trust but verify" (AI halucinuje)",
+        'Ověřování výstupů AI — „trust but verify" (AI halucinuje)',
         "Označování AI-generovaného obsahu pro transparentnost",
-        "Hlášení incidentů — komu a jak postupovat",
-    ])
+    ]
+    if incident.get("has_plan"):
+        safe_bullets.append("Hlášení incidentů — postupujte dle interního Incident Response Plánu")
+    elif oversight.get("has_person") and oversight.get("email"):
+        safe_bullets.append(f"Hlášení incidentů → kontaktujte {oversight['email']}")
+    else:
+        safe_bullets.append("Hlášení incidentů — komu a jak postupovat (stanovit odpovědnou osobu)")
+    _create_content_slide(prs, "Modul 4 — Bezpečné používání AI", safe_bullets)
 
     # ── Slide 10: GDPR a AI ──
-    _create_content_slide(prs, "AI a ochrana osobních údajů (GDPR)", [
+    gdpr_bullets = [
         "AI zpracovává osobní údaje — platí GDPR",
         "Právní základ: souhlas, oprávněný zájem, plnění smlouvy",
         "DPIA (posouzení vlivu) — povinné pro AI s vysokým rizikem",
         "Právo na vysvětlení automatizovaného rozhodnutí (čl. 22 GDPR)",
         "Minimalizace dat — do AI jen to, co je nezbytné",
-    ])
+    ]
+    if data_protection.get("processes_personal_data"):
+        gdpr_bullets.append("⚠ Naše AI systémy zpracovávají osobní údaje — zvýšená pozornost!")
+    if not data_protection.get("data_in_eu"):
+        gdpr_bullets.append("⚠ Některá data mohou být uložena mimo EU — ověřte transfer mechanismy")
+    _create_content_slide(prs, "AI a ochrana osobních údajů (GDPR)", gdpr_bullets)
 
-    # ── Slide 11: Test ──
-    _create_content_slide(prs, "Modul 5 — Test a certifikace", [
+    # ── Slide 11: Naše konkrétní povinnosti ──
+    duty_bullets = []
+
+    # Zakázané praktiky check
+    any_prohibited = any(prohibited.get(k) for k in prohibited) if prohibited else False
+    if any_prohibited:
+        duty_bullets.append("🔴 POZOR: Identifikovány potenciálně zakázané AI praktiky — vyžadují okamžitou nápravu!")
+    else:
+        duty_bullets.append("✅ Žádné zakázané AI praktiky nebyly identifikovány")
+
+    # Incident plan
+    if incident.get("has_plan"):
+        duty_bullets.append("✅ Incident Response Plán existuje")
+    else:
+        duty_bullets.append("⚠ Incident Response Plán chybí — nutno vytvořit (čl. 73)")
+
+    # AI registr
+    if data.get("human_oversight", {}).get("has_register"):
+        duty_bullets.append("✅ Registr AI systémů je veden")
+    else:
+        duty_bullets.append("⚠ Registr AI systémů chybí — nutno zavést (čl. 49)")
+
+    # Data protection
+    if data_protection.get("has_vendor_contracts"):
+        duty_bullets.append("✅ Smlouvy s dodavateli AI jsou uzavřeny")
+    else:
+        duty_bullets.append("⚠ Smlouvy s AI dodavateli chybí — ošetřit zpracovatelské smlouvy")
+
+    # Training
+    if training.get("has_training"):
+        duty_bullets.append("✅ Školení AI gramotnosti probíhá")
+    else:
+        duty_bullets.append("⚠ Školení AI gramotnosti dosud neproběhlo — právě ho provádíme")
+
+    _create_content_slide(prs, "Modul 5 — Naše konkrétní povinnosti", duty_bullets)
+
+    # ── Slide 12: Test ──
+    test_bullets = [
         "Krátký test (10 otázek) — ověření porozumění",
         "Minimální skóre pro úspěšné absolvování: 70 %",
         "Certifikát o absolvování školení (evidenční účely)",
         "Uchovávejte evidenci minimálně 5 let (doporučení)",
-        "",
-        "Tip: Opakujte školení 1× ročně jako refresher",
-    ])
+    ]
+    audience = training.get("audience_size", "")
+    level = training.get("audience_level", "")
+    if audience or level:
+        info_parts = []
+        if audience:
+            info_parts.append(f"počet účastníků: {audience}")
+        if level:
+            level_labels = {"beginner": "začátečníci", "intermediate": "pokročilí", "advanced": "expertní"}
+            info_parts.append(f"úroveň: {level_labels.get(level, level)}")
+        test_bullets.append(f"Cílová skupina: {', '.join(info_parts)}")
+    else:
+        test_bullets.append("")
+    test_bullets.append("Tip: Opakujte školení 1× ročně jako refresher")
+    _create_content_slide(prs, "Modul 6 — Test a certifikace", test_bullets)
 
-    # ── Slide 12: Disclaimer ──
+    # ── Slide 13: Disclaimer ──
     _create_disclaimer_slide(prs)
 
     # Export to bytes

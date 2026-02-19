@@ -765,8 +765,65 @@ class AIDetector:
 
         return results
 
+    def detect_trackers(self, page: ScannedPage) -> list[dict]:
+        """
+        Detekuje non-AI sledovací systémy na stránce.
+        Vrací seznam {name, category, description_cs, icon, evidence}.
+        Tyto systémy NESPADAJÍ pod AI Act — zobrazujeme je pro důvěryhodnost.
+        """
+        from backend.scanner.signatures import get_all_trackers
+        trackers = get_all_trackers()
+        results: list[dict] = []
+        found_names: set[str] = set()
 
-def detect_ai_systems(page: ScannedPage) -> list[DetectedAI]:
+        html_lower = page.html.lower()
+        script_urls = [s.lower() for s in page.scripts]
+        cookies = page.cookies
+
+        for tracker in trackers:
+            matched: list[str] = []
+            evidence: list[str] = []
+
+            # HTML signature matching
+            for sig in tracker.signatures:
+                if sig.lower() in html_lower:
+                    matched.append(f"html:{sig}")
+                    idx = html_lower.find(sig.lower())
+                    snippet = page.html[max(0, idx-20):idx+len(sig)+30].strip()
+                    if snippet:
+                        evidence.append(f"HTML: ...{snippet[:80]}...")
+
+            # Script URL matching
+            for sp in tracker.script_patterns:
+                for su in script_urls:
+                    if sp.lower() in su:
+                        matched.append(f"script:{sp}")
+                        evidence.append(f"Script: {su[:120]}")
+
+            # Cookie matching
+            for cp in tracker.cookie_patterns:
+                for cookie in cookies:
+                    if cp.lower() in cookie["name"].lower():
+                        matched.append(f"cookie:{cp}")
+                        evidence.append(f"Cookie: {cookie['name']}")
+
+            if matched:
+                name = tracker.name
+                if name.lower() not in found_names:
+                    found_names.add(name.lower())
+                    results.append({
+                        "name": name,
+                        "category": tracker.category,
+                        "description_cs": tracker.description_cs,
+                        "icon": tracker.icon,
+                        "evidence": evidence[:3],
+                        "matched_count": len(matched),
+                    })
+
+        return results
+
+
+def detect_page(page) -> list:
     """Convenience funkce — detekuje AI systémy na stránce."""
     detector = AIDetector()
     return detector.detect(page)

@@ -2307,3 +2307,361 @@ async def crm_factory_reset(
         "message": "Factory reset dokončen" if success else "Factory reset s chybami",
         "results": results,
     }
+
+
+# ─────────────────────────────────────────────
+# SCAN MONITORING — přehled běžících 24h testů
+# ─────────────────────────────────────────────
+
+@router.get("/crm/scan-monitor")
+async def admin_scan_monitor(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
+    """
+    Vrátí kompletní přehled všech skenů — aktivní, probíhající deep scany,
+    dokončené i chybové. Pro admin monitoring panel.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    try:
+        # ── 1. Aktivní deep scany (running/pending) ──
+        active_deep = supabase.table("scans").select(
+            "id, company_id, url_scanned, status, scan_type, "
+            "deep_scan_status, deep_scan_started_at, deep_scan_finished_at, "
+            "deep_scan_total_findings, geo_countries_scanned, "
+            "started_at, finished_at, total_findings, created_at, error_message"
+        ).in_("deep_scan_status", ["pending", "running"]).order(
+            "created_at", desc=True
+        ).limit(50).execute()
+
+        # ── 2. Dokončené deep scany (posledních 365 dní) ──
+        thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=365)).isoformat()
+        completed_deep = supabase.table("scans").select(
+            "id, company_id, url_scanned, status, scan_type, "
+            "deep_scan_status, deep_scan_started_at, deep_scan_finished_at, "
+            "deep_scan_total_findings, geo_countries_scanned, "
+            "started_at, finished_at, total_findings, created_at, error_message"
+        ).in_("deep_scan_status", ["done", "error", "cancelled"]).gte(
+            "deep_scan_finished_at", thirty_days_ago
+        ).order("deep_scan_finished_at", desc=True).limit(100).execute()
+
+        # ── 3. Aktivní quick scany (queued/running) ──
+        active_quick = supabase.table("scans").select(
+            "id, company_id, url_scanned, status, scan_type, "
+            "started_at, total_findings, created_at, error_message"
+        ).in_("status", ["queued", "running"]).order(
+            "created_at", desc=True
+        ).limit(50).execute()
+
+        # ── 4. Doplnit company info ke skenům ──
+        all_scans = (active_deep.data or []) + (completed_deep.data or []) + (active_quick.data or [])
+        company_ids = list(set(s.get("company_id") for s in all_scans if s.get("company_id")))
+
+        company_map = {}
+        if company_ids:
+            # Batch fetch companies (max 100 at a time)
+            for i in range(0, len(company_ids), 100):
+                batch = company_ids[i:i+100]
+                companies_res = supabase.table("companies").select(
+                    "id, name, email, url"
+                ).in_("id", batch).execute()
+                for c in (companies_res.data or []):
+                    company_map[c["id"]] = c
+
+        def _enrich_scan(scan: dict) -> dict:
+            """Přidej company info + vypočítej progress."""
+            cid = scan.get("company_id")
+            company = company_map.get(cid, {})
+            scan["company_name"] = company.get("name", "—")
+            scan["company_email"] = company.get("email", "—")
+            scan["company_url"] = company.get("url", "—")
+
+            # Odhad progressu deep scanu (6 kol po ~4h = ~24h)
+            if scan.get("deep_scan_status") == "running" and scan.get("deep_scan_started_at"):
+                try:
+                    started = datetime.fromisoformat(scan["deep_scan_started_at"].replace("Z", "+00:00"))
+                    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+                    # 24h = 86400s → progress jako procenta
+                    progress = min(round((elapsed / 86400) * 100), 99)
+                    scan["deep_scan_progress"] = progress
+                    scan["elapsed_hours"] = round(elapsed / 3600, 1)
+
+                    # ── Detailní rozpis kol (round schedule) ──
+                    ROUND_INTERVAL = 4 * 3600  # 4h
+                    DEEP_ROUNDS = 6
+                    GEO_ALL = ["cz", "gb", "us", "br", "jp", "za", "au"]
+                    COUNTRIES_PER = 4
+                    # Nemůžeme znát shuffle pořadí → použijeme fixní rotaci
+                    round_schedule = []
+                    countries_done = scan.get("geo_countries_scanned") or []
+                    for rn in range(DEEP_ROUNDS):
+                        round_start = started + timedelta(seconds=rn * ROUND_INTERVAL)
+                        round_end = started + timedelta(seconds=(rn + 1) * ROUND_INTERVAL)
+                        # Rotující výběr zemí (simulace)
+                        start_idx = (rn * COUNTRIES_PER) % len(GEO_ALL)
+                        round_countries = []
+                        for ci in range(COUNTRIES_PER):
+                            idx = (start_idx + ci) % len(GEO_ALL)
+                            round_countries.append(GEO_ALL[idx])
+                        now_utc = datetime.now(timezone.utc)
+                        if now_utc >= round_end:
+                            status = "done"
+                        elif now_utc >= round_start:
+                            status = "running"
+                        else:
+                            status = "scheduled"
+                        round_schedule.append({
+                            "round": rn + 1,
+                            "status": status,
+                            "countries": round_countries,
+                            "starts_at": round_start.isoformat(),
+                            "ends_at": round_end.isoformat(),
+                        })
+                    scan["round_schedule"] = round_schedule
+                except Exception:
+                    scan["deep_scan_progress"] = 0
+                    scan["elapsed_hours"] = 0
+            elif scan.get("deep_scan_status") == "done":
+                scan["deep_scan_progress"] = 100
+                if scan.get("deep_scan_started_at") and scan.get("deep_scan_finished_at"):
+                    try:
+                        started = datetime.fromisoformat(scan["deep_scan_started_at"].replace("Z", "+00:00"))
+                        finished = datetime.fromisoformat(scan["deep_scan_finished_at"].replace("Z", "+00:00"))
+                        scan["elapsed_hours"] = round((finished - started).total_seconds() / 3600, 1)
+                    except Exception:
+                        scan["elapsed_hours"] = 0
+
+            return scan
+
+        enriched_active_deep = [_enrich_scan(s) for s in (active_deep.data or [])]
+        enriched_completed_deep = [_enrich_scan(s) for s in (completed_deep.data or [])]
+        enriched_active_quick = [_enrich_scan(s) for s in (active_quick.data or [])]
+
+        # ── 5. Zjistit, zda byl odeslán email po deep scanu ──
+        completed_scan_ids = [s["id"] for s in enriched_completed_deep]
+        email_status_map: dict[str, dict] = {}
+        if completed_scan_ids:
+            # Zkusíme outbound_emails tabulku
+            for scan_id in completed_scan_ids:
+                try:
+                    email_res = supabase.table("outbound_emails").select(
+                        "id, email_to, subject, sent_at, opened_at, clicked_at"
+                    ).eq("scan_id", scan_id).order("sent_at", desc=True).limit(1).execute()
+                    if email_res.data:
+                        email_status_map[scan_id] = {
+                            "sent": True,
+                            "email_to": email_res.data[0].get("email_to"),
+                            "sent_at": email_res.data[0].get("sent_at"),
+                            "opened_at": email_res.data[0].get("opened_at"),
+                            "clicked_at": email_res.data[0].get("clicked_at"),
+                        }
+                except Exception:
+                    pass
+
+        for scan in enriched_completed_deep:
+            email_info = email_status_map.get(scan["id"])
+            if email_info:
+                scan["email_status"] = email_info
+            else:
+                scan["email_status"] = {"sent": False}
+
+        # ── 6. Statistiky ──
+        stats = {
+            "active_deep_scans": len(enriched_active_deep),
+            "completed_deep_scans_year": len(enriched_completed_deep),
+            "active_quick_scans": len(enriched_active_quick),
+            "total_deep_done": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "done"]),
+            "total_deep_error": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "error"]),
+            "total_deep_cancelled": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "cancelled"]),
+        }
+
+        return {
+            "stats": stats,
+            "active_deep": enriched_active_deep,
+            "completed_deep": enriched_completed_deep,
+            "active_quick": enriched_active_quick,
+        }
+
+    except Exception as e:
+        logger.error(f"[Admin] Scan monitor error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/crm/scan/{scan_id}/cancel")
+async def admin_cancel_deep_scan(
+    scan_id: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Zruší probíhající deep scan. Nastaví deep_scan_status na 'cancelled'.
+    Worker si to přečte při dalším checku a gracefully se zastaví.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    try:
+        # Ověřit, že scan existuje a je running/pending
+        scan_res = supabase.table("scans").select(
+            "id, deep_scan_status, url_scanned, company_id"
+        ).eq("id", scan_id).limit(1).execute()
+
+        if not scan_res.data:
+            raise HTTPException(status_code=404, detail="Sken nenalezen")
+
+        scan = scan_res.data[0]
+        current_status = scan.get("deep_scan_status")
+
+        if current_status not in ("running", "pending"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Nelze zrušit — aktuální status: {current_status}. Lze zrušit pouze running/pending."
+            )
+
+        # Nastavit status na cancelled
+        finished = datetime.now(timezone.utc).isoformat()
+        supabase.table("scans").update({
+            "deep_scan_status": "cancelled",
+            "deep_scan_finished_at": finished,
+        }).eq("id", scan_id).execute()
+
+        logger.info(f"[Admin] Deep scan {scan_id} ZRUŠEN adminem ({scan.get('url_scanned')})")
+
+        return {
+            "status": "cancelled",
+            "scan_id": scan_id,
+            "url": scan.get("url_scanned"),
+            "previous_status": current_status,
+            "message": "Deep scan byl úspěšně zrušen. Worker se zastaví při dalším checku (do ~5 minut).",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Admin] Cancel deep scan error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/crm/scan/{scan_id}/findings")
+async def admin_scan_findings(
+    scan_id: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """Vrátí detailní findings pro konkrétní sken (pro admin rozbalení)."""
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    try:
+        findings = supabase.table("findings").select(
+            "id, name, category, risk_level, ai_act_article, "
+            "action_required, ai_classification_text, source, "
+            "confirmed_by_client, created_at"
+        ).eq("scan_id", scan_id).order("risk_level").execute()
+
+        deployed = [f for f in (findings.data or []) if f.get("source") != "ai_classified_fp"]
+        false_positives = [f for f in (findings.data or []) if f.get("source") == "ai_classified_fp"]
+
+        return {
+            "scan_id": scan_id,
+            "deployed": deployed,
+            "false_positives": false_positives,
+            "total_deployed": len(deployed),
+            "total_fp": len(false_positives),
+        }
+    except Exception as e:
+        logger.error(f"[Admin] Scan findings error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/crm/scan/{scan_id}/resend-report")
+async def admin_resend_report(
+    scan_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Znovu odešle report email klientovi pro daný sken.
+    Body (volitelné): { "email": "custom@email.cz" }
+    Pokud email není zadán, použije se email firmy.
+    """
+    from backend.database import get_supabase
+    from backend.outbound.email_engine import send_email
+    from backend.outbound.report_email import generate_report_email_html
+
+    supabase = get_supabase()
+
+    try:
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+
+        # Načteme sken
+        scan_res = supabase.table("scans").select(
+            "id, url_scanned, status, company_id, deep_scan_status, "
+            "total_findings, deep_scan_total_findings"
+        ).eq("id", scan_id).limit(1).execute()
+
+        if not scan_res.data:
+            raise HTTPException(status_code=404, detail="Sken nenalezen")
+
+        scan = scan_res.data[0]
+
+        # Načteme firmu
+        company_res = supabase.table("companies").select(
+            "name, email"
+        ).eq("id", scan["company_id"]).limit(1).execute()
+
+        if not company_res.data:
+            raise HTTPException(status_code=404, detail="Firma nenalezena")
+
+        company = company_res.data[0]
+        email_to = body.get("email") or company.get("email")
+
+        if not email_to:
+            raise HTTPException(status_code=400, detail="Žádný email — firma nemá email a nebyl zadán")
+
+        # Načteme findings
+        findings_res = supabase.table("findings").select(
+            "name, category, risk_level, ai_act_article, action_required, "
+            "ai_classification_text, source"
+        ).eq("scan_id", scan_id).execute()
+
+        deployed = [f for f in (findings_res.data or []) if f.get("source") != "ai_classified_fp"]
+
+        # Generujeme HTML
+        html = generate_report_email_html(
+            url=scan["url_scanned"],
+            company_name=company.get("name", "Neznámá firma"),
+            findings=deployed,
+            scan_id=scan_id,
+        )
+
+        total = scan.get("deep_scan_total_findings") or scan.get("total_findings") or len(deployed)
+        subject = f"AIshield.cz — Výsledky AI Act skenu pro {scan['url_scanned']} ({total} nálezů)"
+
+        result = await send_email(
+            to=email_to,
+            subject=subject,
+            html=html,
+            from_email="info@aishield.cz",
+            from_name="AIshield.cz",
+        )
+
+        logger.info(f"[Admin] Resend report scan={scan_id} to={email_to} by={user.email}")
+
+        return {
+            "status": "sent",
+            "email_to": email_to,
+            "subject": subject,
+            "scan_id": scan_id,
+            "findings_count": len(deployed),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Admin] Resend report error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

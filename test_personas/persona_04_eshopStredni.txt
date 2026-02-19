@@ -1,0 +1,74 @@
+PERSONA 04 — E-shop střední velikosti
+=======================================
+
+Jméno firmy:     BioKrása.cz s.r.o.
+Kontaktní osoba: Petr Dvořák, CEO
+Forma podnikání: s.r.o.
+IČO:             78901204
+Sídlo:           Na Příkopě 22, 110 00 Praha 1
+Telefon:         +420 604 444 004
+E-mail:          petr@biokrasa.cz
+Web:             www.biokrasa.cz
+
+Zaměstnanci:     35 (10-49)
+Roční obrat:     ~45 mil. Kč
+Odvětví:         E-shop / Online obchod
+
+Popis podnikání:
+- E-shop s přírodní kosmetikou, 15 000 produktů
+- AI chatbot na webu (Tidio s AI)
+- Doporučovací systém produktů (Algolia Recommend)
+- Dynamické ceny dle poptávky
+- ChatGPT pro marketing (produktové popisky)
+- Google Analytics + Meta Pixel
+- Zpracovává osobní data zákazníků
+
+Očekávané chování dotazníku:
+- Relevantní: chatbot, doporučování, dynamické ceny, GDPR, interní AI
+- Méně relevantní: HR screening (35 lidí — spíš ne), kritická infrastruktura, biometrika
+- Risk level: OMEZENÉ (chatbot + personal data + dynamic pricing)
+
+Odpovědi pro test:
+  company_legal_name: "BioKrása.cz s.r.o."
+  company_ico: "78901204"
+  company_address: "Na Příkopě 22, 110 00 Praha 1"
+  company_contact_email: "petr@biokrasa.cz"
+  company_industry: ["E-shop / Online obchod"]
+  company_size: "10–49 zaměstnanců"
+  company_annual_revenue: "10–50 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Tvorba obsahu", "Zákaznický servis"], chatgpt_data_type: ["Veřejné info"]
+  uses_copilot: "no"
+  uses_ai_content: "yes" → content_tool_name: ["ChatGPT / GPT-4o", "Canva AI"], content_published: ["Web / sociální sítě", "Reklamní kampaně"]
+  uses_deepfake: "no"
+  uses_ai_chatbot: "yes" → chatbot_tool_name: ["Tidio"]
+  uses_ai_email_auto: "yes" → email_tool: ["Mailchimp AI"]
+  uses_ai_decision: "no"
+  uses_dynamic_pricing: "yes" → pricing_tool: ["Vlastní řešení"], pricing_basis: ["Poptávka", "Konkurence"]
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "no"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "yes" → personal_data_types: ["E-maily", "Objednávky", "Adresy"], dpia_done: "Ne"
+  ai_data_stored_eu: "unknown"
+  has_ai_vendor_contracts: "no"
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "yes" → override_scope: ["Chatbot", "Pricing"]
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "no"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

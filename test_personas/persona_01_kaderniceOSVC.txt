@@ -1,0 +1,75 @@
+PERSONA 01 — Kadeřnice OSVČ
+================================
+
+Jméno:          Martina Nováková
+Povolání:       Kadeřnice a vizážistka
+Forma podnikání: OSVČ (živnostenský list)
+IČO:            12345601
+Sídlo:          Lipová 12, 370 01 České Budějovice
+Telefon:        +420 601 111 001
+E-mail:         martina.novakova@email.cz
+Web:            www.salon-martina.cz
+
+Zaměstnanci:    0 (jen ona sama)
+Roční obrat:    ~800 000 Kč
+Odvětví:        Kadeřnictví / Kosmetika
+
+Popis podnikání:
+- Provozuje malý kadeřnický salon
+- Rezervace přes objednávkový systém Reservio (není AI)
+- Občas si generuje obrázky účesů v ChatGPT pro Instagram
+- Používá Facebook (Meta Pixel) na webu
+- Nemá žádnou AI na webu, žádný chatbot
+- Nezbírá osobní data přes AI
+- Žádní zaměstnanci
+
+Očekávané chování dotazníku:
+- Měla by dostat VELMI KRÁTKÝ dotazník
+- Otázky o HR, náboru, credit scoring, pojišťovnictví, kritické infrastruktuře — IRELEVANTNÍ
+- Měla by se ptát max na: interní AI (ChatGPT), generování obsahu, GDPR základy
+- Risk level: MINIMÁLNÍ
+
+Odpovědi pro test:
+  company_legal_name: "Martina Nováková — Kadeřnictví"
+  company_ico: "12345601"
+  company_address: "Lipová 12, 370 01 České Budějovice"
+  company_contact_email: "martina.novakova@email.cz"
+  company_industry: ["Kadeřnictví / Kosmetika"]
+  company_size: "Jen já (OSVČ)"
+  company_annual_revenue: "Do 1 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Tvorba obsahu"], chatgpt_data_type: ["Veřejné info"]
+  uses_copilot: "no"
+  uses_ai_content: "yes" → content_tool_name: ["ChatGPT / GPT-4o"], content_published: ["Web / sociální sítě"]
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "no"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "no"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "no"
+  ai_data_stored_eu: "unknown"
+  has_ai_vendor_contracts: "no"
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "no"
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "no"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

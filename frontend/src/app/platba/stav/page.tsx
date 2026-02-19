@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase-browser";
+import { useAuth } from "@/lib/auth-context";
 import ContactForm from "@/components/contact-form";
 import { useAnalytics } from "@/lib/analytics";
 
@@ -26,7 +26,9 @@ const GATEWAY_NAMES: Record<PaymentGateway, string> = {
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const { track } = useAnalytics();
+    const { session } = useAuth();
     const gateway = (searchParams.get("gateway") || "stripe") as PaymentGateway;
     const paymentId = searchParams.get("id") || searchParams.get("session_id");
     const isSubscription = searchParams.get("type") === "subscription";
@@ -42,8 +44,6 @@ function PaymentStatusContent() {
     useEffect(() => {
         async function checkQuestionnaire() {
             try {
-                const supabase = createClient();
-                const { data: { session } } = await supabase.auth.getSession();
                 const token = session?.access_token;
                 if (!token) {
                     // No auth — can't check, leave null (don't show button)
@@ -61,8 +61,8 @@ function PaymentStatusContent() {
                 // On error, leave null — don't show the button
             }
         }
-        checkQuestionnaire();
-    }, []);
+        if (session) checkQuestionnaire();
+    }, [session]);
 
     useEffect(() => {
         // Bank transfer — no online gateway to check
@@ -98,6 +98,16 @@ function PaymentStatusContent() {
 
         checkStatus();
     }, [paymentId, gateway, isBankTransfer]);
+
+    // Auto-redirect to dashboard after successful Stripe payment (5 second delay)
+    useEffect(() => {
+        if (status?.is_paid && !isBankTransfer) {
+            const timer = setTimeout(() => {
+                router.push("/dashboard");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [status?.is_paid, isBankTransfer, router]);
 
     // Bank transfer — show confirmation immediately
     if (isBankTransfer) {
@@ -344,6 +354,7 @@ function PaymentStatusContent() {
                                     <a href="/dashboard" className={`${questionnaireComplete === false ? "btn-secondary" : "btn-primary"} w-full py-3 block text-center`}>
                                         Přejít na Dashboard
                                     </a>
+                                    <p className="text-xs text-slate-500 mt-2">Automatický přesun na dashboard za 5 sekund…</p>
                                 </>
                             )}
                         </div>

@@ -900,3 +900,129 @@ export async function factoryReset(confirm: string): Promise<{
     }
     return res.json();
 }
+
+
+// ── Scan Monitor (24h testy) ──
+
+export interface ScanMonitorEmailStatus {
+    sent: boolean;
+    email_to?: string;
+    sent_at?: string;
+    opened_at?: string | null;
+    clicked_at?: string | null;
+}
+
+export interface ScanRoundSchedule {
+    round: number;
+    status: "done" | "running" | "scheduled";
+    countries: string[];
+    starts_at: string;
+    ends_at: string;
+}
+
+export interface MonitoredScan {
+    id: string;
+    company_id: string;
+    url_scanned: string;
+    status: string;
+    scan_type?: string;
+    deep_scan_status?: string;
+    deep_scan_started_at?: string;
+    deep_scan_finished_at?: string;
+    deep_scan_total_findings?: number;
+    deep_scan_progress?: number;
+    elapsed_hours?: number;
+    geo_countries_scanned?: string[];
+    round_schedule?: ScanRoundSchedule[];
+    started_at?: string;
+    finished_at?: string;
+    total_findings: number;
+    created_at: string;
+    error_message?: string;
+    company_name: string;
+    company_email: string;
+    company_url: string;
+    email_status?: ScanMonitorEmailStatus;
+}
+
+export interface ScanMonitorStats {
+    active_deep_scans: number;
+    completed_deep_scans_year: number;
+    active_quick_scans: number;
+    total_deep_done: number;
+    total_deep_error: number;
+}
+
+export interface ScanMonitorData {
+    stats: ScanMonitorStats;
+    active_deep: MonitoredScan[];
+    completed_deep: MonitoredScan[];
+    active_quick: MonitoredScan[];
+}
+
+export interface ScanFinding {
+    id: string;
+    name: string;
+    category: string;
+    risk_level: string;
+    ai_act_article?: string;
+    action_required?: string;
+    ai_classification_text?: string;
+    source: string;
+    confirmed_by_client?: string;
+    created_at: string;
+}
+
+export interface ScanFindingsData {
+    scan_id: string;
+    deployed: ScanFinding[];
+    false_positives: ScanFinding[];
+    total_deployed: number;
+    total_fp: number;
+}
+
+export async function getScanMonitor(): Promise<ScanMonitorData> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scan-monitor`);
+    if (!res.ok) throw new Error("Chyba při načítání scan monitoru");
+    return res.json();
+}
+
+export async function getScanFindings(scanId: string): Promise<ScanFindingsData> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scan/${scanId}/findings`);
+    if (!res.ok) throw new Error("Chyba při načítání findings");
+    return res.json();
+}
+
+export async function cancelDeepScan(scanId: string): Promise<{
+    status: string;
+    scan_id: string;
+    url: string;
+    previous_status: string;
+    message: string;
+}> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scan/${scanId}/cancel`, {
+        method: "POST",
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při rušení deep scanu");
+    }
+    return res.json();
+}
+
+export async function resendScanReport(scanId: string, email?: string): Promise<{
+    status: string;
+    email_to: string;
+    subject: string;
+    findings_count: number;
+}> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scan/${scanId}/resend-report`, {
+        method: "POST",
+        body: JSON.stringify(email ? { email } : {}),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při odesílání reportu");
+    }
+    return res.json();
+}

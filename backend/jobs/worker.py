@@ -15,6 +15,7 @@ from arq.connections import RedisSettings
 
 from backend.config import get_settings
 from backend.database import get_supabase
+from backend.jobs.deep_scan import deep_scan_job
 
 logger = logging.getLogger(__name__)
 
@@ -340,6 +341,7 @@ class WorkerSettings:
         generate_compliance_kit_job,
         rescan_client_job,
         send_questionnaire_reminder_job,
+        deep_scan_job,
     ]
 
     # Cron jobs
@@ -353,9 +355,9 @@ class WorkerSettings:
 
     # Limity
     max_jobs = 5           # Max paralelních jobů (Playwright → RAM limit)
-    job_timeout = 600      # 10 minut max na jeden job
-    max_tries = 3          # 3 pokusy při selhání
-    retry_delay = 60       # 60s mezi pokusy
+    job_timeout = 90000    # 25 hodin max (deep scan trvá ~24h)
+    max_tries = 2          # 2 pokusy při selhání (deep scan = drahý)
+    retry_delay = 300      # 5min mezi pokusy
 
     # Logging
     log_results = True

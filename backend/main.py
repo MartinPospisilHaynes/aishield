@@ -3,13 +3,42 @@ AIshield.cz — Hlavní FastAPI aplikace
 Vstupní bod backendu. Všechny routery se registrují zde.
 """
 
-from fastapi import FastAPI
+import logging
+import sys
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import time
+import uuid
 
 # Načíst .env soubor (relativně k hlavnímu adresáři projektu)
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+# ══════════════════════════════════════════════════════════════════════
+# CENTRÁLNÍ KONFIGURACE LOGOVÁNÍ
+# Každý modul používá logging.getLogger(__name__)
+# Tady nastavujeme formát, úroveň a handler PRO CELOU APLIKACI.
+# ══════════════════════════════════════════════════════════════════════
+_LOG_FORMAT = "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
+_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=_LOG_FORMAT,
+    datefmt=_LOG_DATE_FORMAT,
+    stream=sys.stdout,
+    force=True,  # přepíše i dřívější basicConfig z jiných modulů
+)
+
+# Ztišit příliš upovídané knihovny
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("hpack").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("multipart").setLevel(logging.WARNING)
+
+logger = logging.getLogger("aishield.main")
 
 from backend.api.health import router as health_router
 from backend.api.scan import router as scan_router
@@ -76,6 +105,41 @@ app.include_router(export_router, prefix="/api/admin", tags=["Export"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
 app.include_router(contact_router, prefix="/api", tags=["Contact"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
+
+
+# ── Request logging middleware ──
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    """Loguje každý HTTP požadavek: metodu, cestu, status a dobu trvání."""
+    request_id = str(uuid.uuid4())[:8]
+    request.state.request_id = request_id
+    start = time.time()
+    method = request.method
+    path = request.url.path
+
+    # Přeskočit health check spam v logu
+    skip_log = path in ("/api/health", "/api/health/")
+
+    if not skip_log:
+        logger.info(f"[{request_id}] → {method} {path}")
+
+    response = await call_next(request)
+
+    elapsed_ms = (time.time() - start) * 1000
+    if not skip_log:
+        level = logging.WARNING if response.status_code >= 400 else logging.INFO
+        logger.log(level, f"[{request_id}] ← {method} {path} → {response.status_code} ({elapsed_ms:.0f}ms)")
+
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+
+logger.info("="*60)
+logger.info("AIshield.cz API starting up")
+logger.info(f"Python {sys.version}")
+logger.info(f"Debug mode: {_cfg.debug}")
+logger.info(f"Registered {len(app.routes)} routes")
+logger.info("="*60)
 
 
 @app.get("/")

@@ -1,0 +1,75 @@
+PERSONA 05 — Zdravotnická klinika
+====================================
+
+Jméno firmy:     MediCare Plus s.r.o.
+Kontaktní osoba: MUDr. Alena Švarcová, jednatelka
+Forma podnikání: s.r.o.
+IČO:             45678905
+Sídlo:           Pekařská 55, 602 00 Brno
+Telefon:         +420 605 555 005
+E-mail:          svarcova@medicareplus.cz
+Web:             www.medicareplus.cz
+
+Zaměstnanci:     22 (10-49)
+Roční obrat:     ~28 mil. Kč
+Odvětví:         Zdravotnictví
+
+Popis podnikání:
+- Ambulantní klinika (praktický lékař + odborné ambulance)
+- AI diagnostický asistent pro předtřídění symptomů (Infermedica API)
+- Objednávkový systém s AI chatbotem
+- Zpracovává citlivá zdravotní data (GDPR zvláštní kategorie)
+- EHR systém (elektronická zdravotní dokumentace)
+- Pacientský portál s AI doporučeními
+- Nemá DPIA
+
+Očekávané chování dotazníku:
+- VYSOCE RELEVANTNÍ: AI diagnostika, citlivá data, oversight, registrace, bezpečnostní komponenty
+- RELEVANTNÍ: chatbot, GDPR, AI training pro personál
+- MÉNĚ RELEVANTNÍ: dynamické ceny, credit scoring, subliminal manipulation
+- Risk level: VYSOKÉ (zdravotní data + AI diagnostika = high-risk AI system dle AI Act)
+
+Odpovědi pro test:
+  company_legal_name: "MediCare Plus s.r.o."
+  company_ico: "45678905"
+  company_address: "Pekařská 55, 602 00 Brno"
+  company_contact_email: "svarcova@medicareplus.cz"
+  company_industry: ["Zdravotnictví"]
+  company_size: "10–49 zaměstnanců"
+  company_annual_revenue: "10–50 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Překlad", "Administrativa"], chatgpt_data_type: ["Veřejné info"]
+  uses_copilot: "no"
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "yes" → chatbot_tool_name: ["Vlastní řešení"]
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "yes" → decision_scope: ["Diagnostická podpora"], decision_human_review: "yes"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "no"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "yes" → safety_domain: ["Zdravotnictví"], safety_description: "AI diagnostický asistent pro předtřídění symptomů"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Zdravotní data", "Rodná čísla", "E-maily"], dpia_done: "Ne"
+  ai_data_stored_eu: "yes"
+  has_ai_vendor_contracts: "yes" → vendor_names: ["Infermedica"]
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "yes" → override_scope: ["Diagnostická doporučení — vždy lékař"]
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "yes" → gpai_provider: ["Infermedica API"]
+  has_incident_plan: "no"
+  monitors_ai_outputs: "yes" → monitoring_method: "Lékař kontroluje každé AI doporučení"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

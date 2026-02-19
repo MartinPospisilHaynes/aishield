@@ -37,6 +37,10 @@ import {
     sendSubscriptionReminder,
     getAdminInvoices,
     factoryReset,
+    getScanMonitor,
+    getScanFindings,
+    resendScanReport,
+    cancelDeepScan,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -60,6 +64,10 @@ import type {
     AnalyticsSession,
     AnalyticsEvent,
     SubscriptionInfo,
+    ScanMonitorData,
+    MonitoredScan,
+    ScanFindingsData,
+    ScanFinding,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -130,7 +138,6 @@ type Tab =
     | "firmy"
     | "pipeline"
     | "emaily"
-    | "ulohy"
     | "monitoring"
     | "klienti"
     | "objednavky"
@@ -138,22 +145,21 @@ type Tab =
     | "nastroje"
     | "analytika"
     | "predplatne"
-    | "faktury";
+    | "testy24h";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
+    { id: "testy24h", icon: "🔬", label: "24h Testy" },
     { id: "klienti", icon: "💼", label: "Klienti & Platby" },
     { id: "objednavky", icon: "🧾", label: "Objednávky" },
     { id: "firmy", icon: "🏭", label: "Firmy" },
     { id: "pipeline", icon: "📈", label: "Pipeline" },
     { id: "emaily", icon: "📧", label: "Emaily" },
-    { id: "ulohy", icon: "🚀", label: "Úlohy" },
     { id: "monitoring", icon: "🔔", label: "Monitoring" },
     { id: "agentura", icon: "🤝", label: "Agentura" },
     { id: "nastroje", icon: "⚙️", label: "Nástroje" },
     { id: "analytika", icon: "📉", label: "Analytika" },
     { id: "predplatne", icon: "💳", label: "Předplatné" },
-    { id: "faktury", icon: "🧾", label: "Faktury" },
 ];
 
 const TASKS = [
@@ -401,6 +407,15 @@ export default function AdminPage() {
     const [adminInvoices, setAdminInvoices] = useState<import("@/lib/admin-api").AdminInvoice[]>([]);
     const [invoicesLoading, setInvoicesLoading] = useState(false);
 
+    // 24h Test Monitor
+    const [scanMonitor, setScanMonitor] = useState<ScanMonitorData | null>(null);
+    const [scanMonitorLoading, setScanMonitorLoading] = useState(false);
+    const [expandedScan, setExpandedScan] = useState<string | null>(null);
+    const [scanFindings, setScanFindings] = useState<ScanFindingsData | null>(null);
+    const [scanFindingsLoading, setScanFindingsLoading] = useState(false);
+    const [resendingScan, setResendingScan] = useState<string | null>(null);
+    const [resendResult, setResendResult] = useState<string | null>(null);
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -464,9 +479,9 @@ export default function AdminPage() {
 
     const loadEmails = useCallback(async () => {
         try {
-            const [el, h] = await Promise.all([getAdminEmailLog(200), getEmailHealth()]);
+            const el = await getAdminEmailLog(200);
             setEmails(el.emails || []);
-            setHealth(h);
+            // health is already loaded by loadDashboard — no duplicate call
         } catch (e) {
             console.error("Emails load error:", e);
             setLoadError(`Emaily: ${e}`);
@@ -563,6 +578,19 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadScanMonitor = useCallback(async () => {
+        setScanMonitorLoading(true);
+        try {
+            const d = await getScanMonitor();
+            setScanMonitor(d);
+        } catch (e) {
+            console.error("Scan monitor load error:", e);
+            setLoadError(`24h Testy: ${e}`);
+        } finally {
+            setScanMonitorLoading(false);
+        }
+    }, []);
+
     // ── Initial load ──
     useEffect(() => {
         if (!authed) return;
@@ -588,11 +616,11 @@ export default function AdminPage() {
         if (tab === "monitoring") loadMonitoring();
         if (tab === "agentura") loadAgency();
         if (tab === "klienti") loadClientManagement();
-        if (tab === "objednavky") loadOrders();
+        if (tab === "objednavky") { loadOrders(); loadInvoices(); }
         if (tab === "analytika") loadAnalytics();
         if (tab === "predplatne") loadSubscriptions();
-        if (tab === "faktury") loadInvoices();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices]);
+        if (tab === "testy24h") loadScanMonitor();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -758,7 +786,7 @@ export default function AdminPage() {
                         <span className="text-3xl">🛡️</span>
                         <div>
                             <div className="font-bold text-lg text-white">AIshield</div>
-                            <div className="text-xs text-gray-500">Admin CRM Dashboard</div>
+                            <div className="text-xs text-gray-500">Administrátorský panel</div>
                         </div>
                     </div>
                 </div>
@@ -854,10 +882,11 @@ export default function AdminPage() {
                                 if (tab === "monitoring") loadMonitoring();
                                 if (tab === "agentura") loadAgency();
                                 if (tab === "klienti") loadClientManagement();
-                                if (tab === "objednavky") loadOrders();
+                                if (tab === "objednavky") { loadOrders(); loadInvoices(); }
                                 if (tab === "analytika") loadAnalytics();
                                 if (tab === "predplatne") loadSubscriptions();
-                                if (tab === "faktury") loadInvoices();
+                                if (tab === "nastroje") loadDashboard();
+                                if (tab === "testy24h") loadScanMonitor();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -887,8 +916,8 @@ export default function AdminPage() {
                         <>
                             {/* ═══ SEKCE 1: HLAVNÍ KPI ═══ */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
-                                <StatCard icon="💰" label="Revenue celkem" value={fmtMoney(bizOverview?.revenue?.total ?? crmStats?.orders?.paid_amount ?? 0)} accent="green" />
-                                <StatCard icon="📈" label="Revenue tento měsíc" value={fmtMoney(bizOverview?.revenue?.this_month ?? 0)} accent="green" />
+                                <StatCard icon="💰" label="Tržby celkem" value={fmtMoney(bizOverview?.revenue?.total ?? crmStats?.orders?.paid_amount ?? 0)} accent="green" />
+                                <StatCard icon="📈" label="Tržby tento měsíc" value={fmtMoney(bizOverview?.revenue?.this_month ?? 0)} accent="green" />
                                 <StatCard icon="🛒" label="Objednávky" value={`${bizOverview?.orders?.breakdown?.paid ?? 0} / ${bizOverview?.orders?.breakdown?.total ?? crmStats?.orders?.total ?? 0}`} sub="zaplaceno / celkem" accent="cyan" />
                                 <StatCard icon="🔁" label="Předplatné (MRR)" value={fmtMoney(bizOverview?.subscriptions?.monthly_recurring_revenue ?? 0)} sub={`${bizOverview?.subscriptions?.active ?? 0} aktivních`} accent="fuchsia" />
                                 <StatCard icon="✅" label="Doručeno" value={fmtNum(bizOverview?.fulfillment?.delivered ?? 0)} accent="green" />
@@ -901,7 +930,7 @@ export default function AdminPage() {
                             {bizOverview?.revenue?.chart && bizOverview.revenue.chart.length > 0 && (
                                 <Panel className="p-6">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-lg font-semibold text-green-400">📊 Revenue (časový graf)</h2>
+                                        <h2 className="text-lg font-semibold text-green-400">📊 Tržby (časový graf)</h2>
                                         <div className="flex gap-1">
                                             {(["day", "week", "month"] as const).map(m => (
                                                 <button key={m} onClick={() => setRevenueMode(m)} className={`px-3 py-1 rounded text-xs font-medium transition-all ${revenueMode === m ? "bg-green-500/20 text-green-400 border border-green-500/30" : "text-gray-500 hover:text-gray-300"}`}>
@@ -1058,7 +1087,7 @@ export default function AdminPage() {
                                                     <div className="flex items-center gap-3">
                                                         <span className="text-lg">{type === "one_time" ? "🛒" : type === "subscription" ? "🔁" : "💵"}</span>
                                                         <span className="text-white font-medium">{type === "one_time" ? "Jednorázové" : type === "subscription" ? "Předplatné" : type === "subscription_recurrence" ? "Opakovaná platba" : type}</span>
-                                                        <span className="text-gray-500 text-sm">{data.count}x, {data.paid}x paid</span>
+                                                        <span className="text-gray-500 text-sm">{data.count}x, {data.paid}x zaplaceno</span>
                                                     </div>
                                                     <span className="text-green-400 font-bold">{fmtMoney(data.revenue)}</span>
                                                 </div>
@@ -1113,63 +1142,36 @@ export default function AdminPage() {
                             )}
 
                             {/* ═══ SEKCE 7: SKENY ═══ */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {bizOverview?.scans && (
-                                    <Panel className="p-6">
-                                        <h2 className="text-lg font-semibold text-yellow-400 mb-4">🔍 Skeny</h2>
-                                        <div className="grid grid-cols-3 gap-4 mb-4">
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-white">{fmtNum(bizOverview.scans.total)}</div>
-                                                <div className="text-xs text-gray-500">Celkem</div>
-                                            </div>
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-green-400">{fmtNum(bizOverview.scans.done)}</div>
-                                                <div className="text-xs text-gray-500">Hotovo</div>
-                                            </div>
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-red-400">{fmtNum(bizOverview.scans.error)}</div>
-                                                <div className="text-xs text-gray-500">Chyby</div>
-                                            </div>
+                            {bizOverview?.scans && (
+                                <Panel className="p-6">
+                                    <h2 className="text-lg font-semibold text-yellow-400 mb-4">🔍 Skeny</h2>
+                                    <div className="grid grid-cols-3 gap-4 mb-4">
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-white">{fmtNum(bizOverview.scans.total)}</div>
+                                            <div className="text-xs text-gray-500">Celkem</div>
                                         </div>
-                                        {Object.entries(bizOverview.scans.by_trigger).length > 0 && (
-                                            <div className="space-y-2">
-                                                <div className="text-xs text-gray-500 uppercase tracking-wider">Podle zdroje</div>
-                                                {Object.entries(bizOverview.scans.by_trigger).map(([trigger, count]) => (
-                                                    <div key={trigger} className="flex justify-between text-sm">
-                                                        <span className="text-gray-300">{trigger}</span>
-                                                        <span className="text-white font-medium">{count}x</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </Panel>
-                                )}
-
-                                {/* Subscription detail */}
-                                {bizOverview?.subscriptions && (
-                                    <Panel className="p-6">
-                                        <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🔁 Předplatné (Monitoring)</h2>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-green-400">{bizOverview.subscriptions.active}</div>
-                                                <div className="text-xs text-gray-500">Aktivní</div>
-                                            </div>
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-red-400">{bizOverview.subscriptions.cancelled}</div>
-                                                <div className="text-xs text-gray-500">Zrušeno</div>
-                                            </div>
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-cyan-400">{fmtMoney(bizOverview.subscriptions.monthly_recurring_revenue)}</div>
-                                                <div className="text-xs text-gray-500">MRR (měsíční příjem)</div>
-                                            </div>
-                                            <div className="bg-black/20 rounded-xl p-3 text-center">
-                                                <div className="text-2xl font-bold text-green-400">{fmtMoney(bizOverview.subscriptions.total_charged)}</div>
-                                                <div className="text-xs text-gray-500">Celkem inkasováno</div>
-                                            </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-green-400">{fmtNum(bizOverview.scans.done)}</div>
+                                            <div className="text-xs text-gray-500">Hotovo</div>
                                         </div>
-                                    </Panel>
-                                )}
-                            </div>
+                                        <div className="bg-black/20 rounded-xl p-3 text-center">
+                                            <div className="text-2xl font-bold text-red-400">{fmtNum(bizOverview.scans.error)}</div>
+                                            <div className="text-xs text-gray-500">Chyby</div>
+                                        </div>
+                                    </div>
+                                    {Object.entries(bizOverview.scans.by_trigger).length > 0 && (
+                                        <div className="space-y-2">
+                                            <div className="text-xs text-gray-500 uppercase tracking-wider">Podle zdroje</div>
+                                            {Object.entries(bizOverview.scans.by_trigger).map(([trigger, count]) => (
+                                                <div key={trigger} className="flex justify-between text-sm">
+                                                    <span className="text-gray-300">{trigger}</span>
+                                                    <span className="text-white font-medium">{count}x</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Panel>
+                            )}
 
                             {/* ═══ SEKCE 8: POSLEDNÍ UDÁLOSTI ═══ */}
                             {bizOverview?.recent_events && bizOverview.recent_events.length > 0 && (
@@ -1217,18 +1219,6 @@ export default function AdminPage() {
                                 </Panel>
                             )}
 
-                            {/* Cron schedule */}
-                            <Panel className="p-6">
-                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">🕐 Cron Schedule (VPS)</h2>
-                                <div className="space-y-2 text-sm font-mono">
-                                    {CRON_SCHEDULE.map((c) => (
-                                        <div key={c.time} className="flex gap-4">
-                                            <span className="text-fuchsia-400 w-16">{c.time}</span>
-                                            <span className="text-gray-300">{c.desc}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Panel>
                         </>
                     )}
 
@@ -1428,7 +1418,7 @@ export default function AdminPage() {
                                     {/* Workflow funnel */}
                                     <Panel className="p-6">
                                         <h2 className="text-lg font-semibold text-cyan-400 mb-5">
-                                            🔄 Workflow Status Pipeline
+                                            🔄 Stavový přehled
                                         </h2>
                                         <div className="space-y-3">
                                             {Object.entries(WORKFLOW_STATUSES).map(([key, info]) => (
@@ -1446,10 +1436,10 @@ export default function AdminPage() {
                                         </div>
                                     </Panel>
 
-                                    {/* Payment Status */}
+                                    {/* Stav plateb */}
                                     <Panel className="p-6">
                                         <h2 className="text-lg font-semibold text-fuchsia-400 mb-5">
-                                            💳 Payment Status
+                                            💳 Stav plateb
                                         </h2>
                                         <div className="space-y-3">
                                             {Object.entries(PAYMENT_STATUSES).map(([key, info]) => (
@@ -1467,7 +1457,7 @@ export default function AdminPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Revenue */}
                                         <Panel className="p-6">
-                                            <h2 className="text-lg font-semibold text-green-400 mb-4">💰 Revenue</h2>
+                                            <h2 className="text-lg font-semibold text-green-400 mb-4">💰 Tržby</h2>
                                             <div className="space-y-4">
                                                 <div>
                                                     <div className="text-xs text-gray-500">Celkový počet objednávek</div>
@@ -1663,7 +1653,7 @@ export default function AdminPage() {
                             <Panel className="overflow-hidden">
                                 <div className="p-4 border-b border-white/10 flex items-center justify-between">
                                     <h2 className="text-lg font-semibold text-cyan-400">
-                                        📧 Email Log ({emails.length})
+                                        📧 Historie emailů ({emails.length})
                                     </h2>
                                 </div>
                                 <div className="overflow-x-auto">
@@ -1730,99 +1720,7 @@ export default function AdminPage() {
                         </>
                     )}
 
-                    {/* ══════════════════════════════════════════ */}
-                    {/*  TAB: Úlohy (Tasks)                       */}
-                    {/* ══════════════════════════════════════════ */}
-                    {tab === "ulohy" && (
-                        <>
-                            <Panel className="p-6">
-                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">
-                                    🚀 Manuální spuštění úloh
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {TASKS.map((task) => (
-                                        <button
-                                            key={task.name}
-                                            onClick={() => handleRunTask(task.name)}
-                                            disabled={runningTask !== null}
-                                            className={`p-4 rounded-xl border text-left transition-all ${runningTask === task.name
-                                                ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
-                                                : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
-                                                }`}
-                                        >
-                                            <div className="font-medium text-white">{task.label}</div>
-                                            <div className="text-xs text-gray-400 mt-1">{task.desc}</div>
-                                            {runningTask === task.name && (
-                                                <div className="text-xs text-cyan-400 mt-2 animate-pulse">⏳ Běží…</div>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                                {taskResult && (
-                                    <pre className="mt-4 p-4 bg-black/50 rounded-xl text-xs text-green-400 overflow-x-auto max-h-80">
-                                        {taskResult}
-                                    </pre>
-                                )}
-                            </Panel>
-
-                            {/* Recent logs */}
-                            {adminStats && adminStats.recent_logs.length > 0 && (
-                                <Panel className="overflow-hidden">
-                                    <div className="p-4 border-b border-white/10">
-                                        <h2 className="text-lg font-semibold text-cyan-400">📋 Poslední logy úloh</h2>
-                                    </div>
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-white/5">
-                                            <tr>
-                                                <th className="text-left p-3 text-gray-400">Čas</th>
-                                                <th className="text-left p-3 text-gray-400">Úloha</th>
-                                                <th className="text-left p-3 text-gray-400">Status</th>
-                                                <th className="text-left p-3 text-gray-400">Výsledek / Chyba</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {adminStats.recent_logs.map((log) => (
-                                                <tr key={log.id} className="border-t border-white/5 hover:bg-white/5">
-                                                    <td className="p-3 text-gray-400 whitespace-nowrap text-xs">
-                                                        {fmtDateTime(log.started_at)}
-                                                    </td>
-                                                    <td className="p-3 text-white font-medium">{log.task_name}</td>
-                                                    <td className="p-3">
-                                                        <span
-                                                            className={`px-2 py-0.5 rounded text-xs ${log.status === "completed"
-                                                                ? "bg-green-500/20 text-green-400"
-                                                                : log.status === "running"
-                                                                    ? "bg-cyan-500/20 text-cyan-400"
-                                                                    : "bg-red-500/20 text-red-400"
-                                                                }`}
-                                                        >
-                                                            {log.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-3 text-gray-300 text-xs font-mono truncate max-w-md">
-                                                        {log.error || (log.result ? JSON.stringify(log.result) : "—")}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </Panel>
-                            )}
-
-                            {/* Cron schedule */}
-                            <Panel className="p-6">
-                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">🕐 Cron Schedule</h2>
-                                <div className="space-y-2 text-sm font-mono">
-                                    {CRON_SCHEDULE.map((c) => (
-                                        <div key={c.time} className="flex gap-4">
-                                            <span className="text-fuchsia-400 w-16">{c.time}</span>
-                                            <span className="text-gray-300">{c.desc}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Panel>
-                        </>
-                    )}
+                    {/* TAB Úlohy odstraněn — obsah přesunut do Nástroje */}
 
                     {/* ══════════════════════════════════════════ */}
                     {/*  TAB: Monitoring                          */}
@@ -2435,7 +2333,7 @@ export default function AdminPage() {
                                                             <div className="w-20 text-right">
                                                                 {client.scan_age_days != null ? (
                                                                     <div className={`text-xs font-mono ${client.scan_age_days > 30 ? "text-orange-400" : "text-gray-400"}`}>
-                                                                        {client.scan_age_days}d ago
+                                                                        před {client.scan_age_days}d
                                                                     </div>
                                                                 ) : (
                                                                     <div className="text-xs text-gray-600">—</div>
@@ -3010,6 +2908,68 @@ export default function AdminPage() {
                                     </div>
                                 )}
                             </Panel>
+
+                            {/* ═══ FAKTURY (sloučeno z původního tabu Faktury) ═══ */}
+                            {invoicesLoading ? (
+                                <div className="text-center py-8 text-gray-400">Načítám faktury…</div>
+                            ) : adminInvoices.length > 0 && (
+                                <Panel className="p-6">
+                                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
+                                        📄 Vydané faktury
+                                        <span className="ml-2 inline-flex items-center rounded-full bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 text-xs font-medium">{adminInvoices.length}</span>
+                                    </h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="text-left text-gray-500 border-b border-white/5">
+                                                    <th className="py-2 px-3">Číslo faktury</th>
+                                                    <th className="py-2 px-3">Objednávka</th>
+                                                    <th className="py-2 px-3">Email</th>
+                                                    <th className="py-2 px-3">Odběratel</th>
+                                                    <th className="py-2 px-3">Plán</th>
+                                                    <th className="py-2 px-3 text-right">Částka</th>
+                                                    <th className="py-2 px-3">Datum</th>
+                                                    <th className="py-2 px-3">PDF</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {adminInvoices.map((inv) => (
+                                                    <tr key={inv.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                                                        <td className="py-2.5 px-3 font-mono text-xs text-cyan-400">{inv.invoice_number}</td>
+                                                        <td className="py-2.5 px-3 font-mono text-xs text-slate-400">{inv.order_number}</td>
+                                                        <td className="py-2.5 px-3 text-slate-300">{inv.email}</td>
+                                                        <td className="py-2.5 px-3 text-slate-300">
+                                                            <div>{inv.buyer_name}</div>
+                                                            {inv.buyer_ico && <div className="text-xs text-slate-500">IČO: {inv.buyer_ico}</div>}
+                                                        </td>
+                                                        <td className="py-2.5 px-3">
+                                                            <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-purple-500/10 text-purple-400">
+                                                                {inv.plan?.toUpperCase()}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2.5 px-3 text-right font-medium text-slate-200">
+                                                            {new Intl.NumberFormat("cs-CZ").format(inv.amount)} Kč
+                                                        </td>
+                                                        <td className="py-2.5 px-3 text-slate-400 text-xs">
+                                                            {new Date(inv.issued_at).toLocaleDateString("cs-CZ")}
+                                                        </td>
+                                                        <td className="py-2.5 px-3">
+                                                            {inv.pdf_url ? (
+                                                                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-xs">
+                                                                    📥 Stáhnout
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-gray-600 text-xs">—</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </Panel>
+                            )}
                         </>
                     )}
 
@@ -3018,11 +2978,99 @@ export default function AdminPage() {
                     {/* ══════════════════════════════════════════ */}
                     {tab === "nastroje" && (
                         <>
+                            {/* ═══ Manuální spuštění úloh (přesunuto z Úlohy) ═══ */}
+                            <Panel className="p-6">
+                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">
+                                    🚀 Manuální spuštění úloh
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {TASKS.map((task) => (
+                                        <button
+                                            key={task.name}
+                                            onClick={() => handleRunTask(task.name)}
+                                            disabled={runningTask !== null}
+                                            className={`p-4 rounded-xl border text-left transition-all ${runningTask === task.name
+                                                ? "border-cyan-500/50 bg-cyan-500/10 animate-pulse"
+                                                : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-fuchsia-500/30"
+                                                }`}
+                                        >
+                                            <div className="font-medium text-white">{task.label}</div>
+                                            <div className="text-xs text-gray-400 mt-1">{task.desc}</div>
+                                            {runningTask === task.name && (
+                                                <div className="text-xs text-cyan-400 mt-2 animate-pulse">⏳ Běží…</div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                {taskResult && (
+                                    <pre className="mt-4 p-4 bg-black/50 rounded-xl text-xs text-green-400 overflow-x-auto max-h-80">
+                                        {taskResult}
+                                    </pre>
+                                )}
+                            </Panel>
+
+                            {/* Poslední logy úloh */}
+                            {adminStats && adminStats.recent_logs.length > 0 && (
+                                <Panel className="overflow-hidden">
+                                    <div className="p-4 border-b border-white/10">
+                                        <h2 className="text-lg font-semibold text-cyan-400">📋 Poslední logy úloh</h2>
+                                    </div>
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-white/5">
+                                            <tr>
+                                                <th className="text-left p-3 text-gray-400">Čas</th>
+                                                <th className="text-left p-3 text-gray-400">Úloha</th>
+                                                <th className="text-left p-3 text-gray-400">Status</th>
+                                                <th className="text-left p-3 text-gray-400">Výsledek / Chyba</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {adminStats.recent_logs.map((log) => (
+                                                <tr key={log.id} className="border-t border-white/5 hover:bg-white/5">
+                                                    <td className="p-3 text-gray-400 whitespace-nowrap text-xs">
+                                                        {fmtDateTime(log.started_at)}
+                                                    </td>
+                                                    <td className="p-3 text-white font-medium">{log.task_name}</td>
+                                                    <td className="p-3">
+                                                        <span
+                                                            className={`px-2 py-0.5 rounded text-xs ${log.status === "completed"
+                                                                ? "bg-green-500/20 text-green-400"
+                                                                : log.status === "running"
+                                                                    ? "bg-cyan-500/20 text-cyan-400"
+                                                                    : "bg-red-500/20 text-red-400"
+                                                                }`}
+                                                        >
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3 text-gray-300 text-xs font-mono truncate max-w-md">
+                                                        {log.error || (log.result ? JSON.stringify(log.result) : "—")}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </Panel>
+                            )}
+
+                            {/* Plán úloh (CRON) */}
+                            <Panel className="p-6">
+                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">🕐 Plán úloh (CRON)</h2>
+                                <div className="space-y-2 text-sm font-mono">
+                                    {CRON_SCHEDULE.map((c) => (
+                                        <div key={c.time} className="flex gap-4">
+                                            <span className="text-fuchsia-400 w-16">{c.time}</span>
+                                            <span className="text-gray-300">{c.desc}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Panel>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {/* Data cleanup */}
                                 <Panel className="p-6">
                                     <div className="text-3xl mb-3">🧹</div>
-                                    <h3 className="font-semibold text-white mb-2">Data Cleanup</h3>
+                                    <h3 className="font-semibold text-white mb-2">Čištění dat</h3>
                                     <p className="text-xs text-gray-400 mb-4">
                                         Vyčistí duplicitní firmy, opraví formáty URL/email, odstraní test záznamy.
                                     </p>
@@ -3083,25 +3131,10 @@ export default function AdminPage() {
                                     </button>
                                 </Panel>
 
-                                {/* Legislative alert shortcut */}
-                                <Panel className="p-6">
-                                    <div className="text-3xl mb-3">📢</div>
-                                    <h3 className="font-semibold text-white mb-2">Legislativní alert</h3>
-                                    <p className="text-xs text-gray-400 mb-4">
-                                        Rychlý přístup k odeslání legislativního upozornění klientům.
-                                    </p>
-                                    <button
-                                        onClick={() => setTab("monitoring")}
-                                        className="w-full px-4 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-xl hover:bg-orange-500/20 transition-all text-sm font-medium"
-                                    >
-                                        📢 Přejít na Monitoring
-                                    </button>
-                                </Panel>
-
                                 {/* FACTORY RESET */}
                                 <Panel className="p-6 border-2 border-red-500/30 bg-red-950/20">
                                     <div className="text-3xl mb-3">💣</div>
-                                    <h3 className="font-semibold text-red-400 mb-2">Factory Reset</h3>
+                                    <h3 className="font-semibold text-red-400 mb-2">Tovární reset</h3>
                                     <p className="text-xs text-red-300/70 mb-4">
                                         Smaže VŠECHNA data: uživatele, firmy, objednávky, skeny, emaily, dokumenty. Ponechá RAG knowledge base.
                                     </p>
@@ -3173,26 +3206,6 @@ export default function AdminPage() {
                                 </Panel>
                             )}
 
-                            {/* System info */}
-                            <Panel className="p-6">
-                                <h2 className="text-lg font-semibold text-cyan-400 mb-4">ℹ️ Systémové informace</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="bg-black/30 rounded-xl p-4">
-                                        <div className="text-xs text-gray-500 mb-1">Backend API</div>
-                                        <div className="text-sm text-cyan-400 font-mono">
-                                            {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}
-                                        </div>
-                                    </div>
-                                    <div className="bg-black/30 rounded-xl p-4">
-                                        <div className="text-xs text-gray-500 mb-1">Frontend</div>
-                                        <div className="text-sm text-fuchsia-400 font-mono">Next.js 14 + Tailwind</div>
-                                    </div>
-                                    <div className="bg-black/30 rounded-xl p-4">
-                                        <div className="text-xs text-gray-500 mb-1">Verze</div>
-                                        <div className="text-sm text-green-400 font-mono">CRM Dashboard v2.0</div>
-                                    </div>
-                                </div>
-                            </Panel>
                         </>
                     )}
 
@@ -3229,8 +3242,8 @@ export default function AdminPage() {
                                     {/* Overview stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <StatCard icon="👁️" label="Celkem eventů" value={fmtNum(Object.values(analyticsStats.event_types).reduce((a, b) => a + b, 0))} accent="cyan" />
-                                        <StatCard icon="🧑" label="Unikátní sessions" value={fmtNum(analyticsSessions.length)} accent="fuchsia" />
-                                        <StatCard icon="📄" label="Page views" value={fmtNum(analyticsStats.event_types["page_view"] || 0)} accent="green" />
+                                        <StatCard icon="🧑" label="Unikátní relace" value={fmtNum(analyticsSessions.length)} accent="fuchsia" />
+                                        <StatCard icon="📄" label="Zobrazení stránek" value={fmtNum(analyticsStats.event_types["page_view"] || 0)} accent="green" />
                                         <StatCard icon="🔍" label="Skenů" value={fmtNum((analyticsStats.event_types["scan_started"] || 0))} accent="yellow" />
                                     </div>
 
@@ -3238,8 +3251,8 @@ export default function AdminPage() {
                                     <div className="flex gap-2">
                                         {([
                                             { id: "funnel" as const, icon: "📊", label: "Konverzní funnel" },
-                                            { id: "events" as const, icon: "📋", label: "Live eventy" },
-                                            { id: "sessions" as const, icon: "🧑", label: "Sessions" },
+                                            { id: "events" as const, icon: "📋", label: "Živé události" },
+                                            { id: "sessions" as const, icon: "🧑", label: "Relace" },
                                             { id: "questionnaire" as const, icon: "📝", label: "Dotazník" },
                                         ]).map(st => (
                                             <button
@@ -3381,7 +3394,7 @@ export default function AdminPage() {
                                     {analyticsTab === "events" && (
                                         <Panel className="p-6">
                                             <div className="flex items-center justify-between mb-4">
-                                                <h2 className="text-lg font-semibold text-cyan-400">📋 Live eventy</h2>
+                                                <h2 className="text-lg font-semibold text-cyan-400">📋 Živé události</h2>
                                                 <div className="flex items-center gap-2">
                                                     <select
                                                         value={analyticsEventFilter}
@@ -3443,7 +3456,7 @@ export default function AdminPage() {
                                     {/* Sessions tab */}
                                     {analyticsTab === "sessions" && (
                                         <Panel className="p-6">
-                                            <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🧑 Sessions ({analyticsSessions.length})</h2>
+                                            <h2 className="text-lg font-semibold text-fuchsia-400 mb-4">🧑 Relace ({analyticsSessions.length})</h2>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
@@ -3476,7 +3489,7 @@ export default function AdminPage() {
                                                     </tbody>
                                                 </table>
                                                 {analyticsSessions.length === 0 && (
-                                                    <div className="text-center text-gray-500 py-8">Zatím žádné sessions</div>
+                                                    <div className="text-center text-gray-500 py-8">Zatím žádné relace</div>
                                                 )}
                                             </div>
                                         </Panel>
@@ -3685,77 +3698,441 @@ export default function AdminPage() {
                         </>
                     )}
 
-                    {/* ── Invoices Tab ── */}
-                    {tab === "faktury" && (
+                    {/* TAB Faktury odstraněn — obsah sloučen do Objednávky */}
+                    {/* ══════════════════════════════════════════ */}
+                    {/*  TAB: 24h Testy (Scan Monitor)           */}
+                    {/* ══════════════════════════════════════════ */}
+                    {tab === "testy24h" && (
                         <>
-                            {invoicesLoading ? (
-                                <div className="text-center py-12 text-gray-400">Načítám faktury…</div>
-                            ) : (
-                                <Panel className="p-6">
-                                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
-                                        📄 Vydané faktury
-                                        <span className="ml-2 inline-flex items-center rounded-full bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 text-xs font-medium">{adminInvoices.length}</span>
-                                    </h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="text-left text-gray-500 border-b border-white/5">
-                                                    <th className="py-2 px-3">Číslo faktury</th>
-                                                    <th className="py-2 px-3">Objednávka</th>
-                                                    <th className="py-2 px-3">Email</th>
-                                                    <th className="py-2 px-3">Odběratel</th>
-                                                    <th className="py-2 px-3">Plán</th>
-                                                    <th className="py-2 px-3 text-right">Částka</th>
-                                                    <th className="py-2 px-3">Datum</th>
-                                                    <th className="py-2 px-3">PDF</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {adminInvoices.map((inv) => (
-                                                    <tr key={inv.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                                                        <td className="py-2.5 px-3 font-mono text-xs text-cyan-400">{inv.invoice_number}</td>
-                                                        <td className="py-2.5 px-3 font-mono text-xs text-slate-400">{inv.order_number}</td>
-                                                        <td className="py-2.5 px-3 text-slate-300">{inv.email}</td>
-                                                        <td className="py-2.5 px-3 text-slate-300">
-                                                            <div>{inv.buyer_name}</div>
-                                                            {inv.buyer_ico && <div className="text-xs text-slate-500">IČO: {inv.buyer_ico}</div>}
-                                                        </td>
-                                                        <td className="py-2.5 px-3">
-                                                            <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-purple-500/10 text-purple-400">
-                                                                {inv.plan?.toUpperCase()}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-2.5 px-3 text-right font-medium text-slate-200">
-                                                            {new Intl.NumberFormat("cs-CZ").format(inv.amount)} Kč
-                                                        </td>
-                                                        <td className="py-2.5 px-3 text-slate-400 text-xs">
-                                                            {new Date(inv.issued_at).toLocaleDateString("cs-CZ")}
-                                                        </td>
-                                                        <td className="py-2.5 px-3">
-                                                            {inv.pdf_url ? (
-                                                                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
-                                                                    className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 text-xs">
-                                                                    📥 Stáhnout
-                                                                </a>
-                                                            ) : (
-                                                                <span className="text-gray-600 text-xs">—</span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                        {adminInvoices.length === 0 && (
-                                            <div className="text-center text-gray-500 py-8">
-                                                <div className="text-3xl mb-2">📄</div>
-                                                Zatím žádné faktury
-                                            </div>
-                                        )}
+                            {scanMonitorLoading && !scanMonitor ? (
+                                <div className="text-center py-12">
+                                    <div className="text-4xl mb-3 animate-bounce">🔬</div>
+                                    <div className="text-cyan-400 animate-pulse">Načítám data o testech…</div>
+                                </div>
+                            ) : scanMonitor ? (
+                                <>
+                                    {/* KPI karty */}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        <StatCard icon="🔄" label="Aktivní deep scany" value={scanMonitor.stats.active_deep_scans} accent="fuchsia" />
+                                        <StatCard icon="⏳" label="Aktivní quick scany" value={scanMonitor.stats.active_quick_scans} accent="yellow" />
+                                        <StatCard icon="✅" label="Dokončeno (rok)" value={scanMonitor.stats.total_deep_done} accent="green" />
+                                        <StatCard icon="❌" label="Chyby (rok)" value={scanMonitor.stats.total_deep_error} accent="red" />
+                                        <StatCard icon="📊" label="Celkem (rok)" value={scanMonitor.stats.completed_deep_scans_year} accent="cyan" />
                                     </div>
-                                </Panel>
+
+                                    {/* Aktivní 24h deep scany */}
+                                    {scanMonitor.active_deep.length > 0 && (
+                                        <Panel className="overflow-hidden">
+                                            <div className="px-5 py-4 border-b border-white/10">
+                                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                                    <span className="text-fuchsia-400">🔬</span> Probíhající 24h testy
+                                                    <span className="ml-2 px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400 text-xs border border-fuchsia-500/30">
+                                                        {scanMonitor.active_deep.length}
+                                                    </span>
+                                                </h3>
+                                            </div>
+                                            <div className="divide-y divide-white/5">
+                                                {scanMonitor.active_deep.map((scan) => {
+                                                    const flags: Record<string, string> = { cz: "🇨🇿", gb: "🇬🇧", us: "🇺🇸", br: "🇧🇷", jp: "🇯🇵", za: "🇿🇦", au: "🇦🇺" };
+                                                    const countryNames: Record<string, string> = { cz: "Česko", gb: "Británie", us: "USA", br: "Brazílie", jp: "Japonsko", za: "J. Afrika", au: "Austrálie" };
+                                                    return (
+                                                        <div key={scan.id} className="px-5 py-4 hover:bg-white/[0.02] transition-colors">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse" />
+                                                                    <span className="font-medium text-white">{scan.company_name}</span>
+                                                                    <span className="text-xs text-gray-500">{scan.url_scanned}</span>
+                                                                </div>
+                                                                <span className={`px-2 py-0.5 rounded text-xs ${scan.deep_scan_status === "running" ? "bg-fuchsia-500/20 text-fuchsia-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                                                                    {scan.deep_scan_status === "running" ? "🔄 Probíhá" : "⏳ Čeká"}
+                                                                </span>
+                                                            </div>
+                                                            {/* Progress bar */}
+                                                            {scan.deep_scan_status === "running" && (
+                                                                <div className="mt-2">
+                                                                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                                                        <span>Průběh: {scan.deep_scan_progress ?? 0}%</span>
+                                                                        <span>{scan.elapsed_hours ?? 0}h / 24h</span>
+                                                                    </div>
+                                                                    <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                                                                        <div
+                                                                            className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 transition-all duration-1000"
+                                                                            style={{ width: `${scan.deep_scan_progress ?? 0}%` }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {/* ── Round Schedule (collapsible) ── */}
+                                                            {scan.round_schedule && scan.round_schedule.length > 0 && (
+                                                                <details className="mt-3 rounded-lg border border-white/[0.08] bg-white/[0.02] overflow-hidden group">
+                                                                    <summary className="px-3 py-2 border-b border-white/[0.06] bg-white/[0.02] cursor-pointer select-none flex items-center gap-2 hover:bg-white/[0.04] transition-colors list-none">
+                                                                        <svg className="w-3 h-3 text-slate-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                                                        <span className="text-xs font-semibold text-slate-300">📋 Rozpis 6 kol · 4h intervaly · 4 země/kolo</span>
+                                                                        <span className="ml-auto text-[10px] text-slate-500">{scan.round_schedule.filter(r => r.status === 'done').length}/{scan.round_schedule.length} dokončeno</span>
+                                                                    </summary>
+                                                                    <div className="divide-y divide-white/[0.04]">
+                                                                        {scan.round_schedule.map((round) => {
+                                                                            const isRunning = round.status === "running";
+                                                                            const isDone = round.status === "done";
+                                                                            const isScheduled = round.status === "scheduled";
+                                                                            const startDate = new Date(round.starts_at);
+                                                                            const endDate = new Date(round.ends_at);
+                                                                            const now = new Date();
+                                                                            // Countdown
+                                                                            let countdown = "";
+                                                                            if (isScheduled) {
+                                                                                const diffMs = startDate.getTime() - now.getTime();
+                                                                                const diffH = Math.floor(diffMs / 3600000);
+                                                                                const diffM = Math.floor((diffMs % 3600000) / 60000);
+                                                                                countdown = diffH > 0 ? `za ${diffH}h ${diffM}min` : `za ${diffM}min`;
+                                                                            } else if (isRunning) {
+                                                                                const diffMs = endDate.getTime() - now.getTime();
+                                                                                const diffH = Math.floor(diffMs / 3600000);
+                                                                                const diffM = Math.floor((diffMs % 3600000) / 60000);
+                                                                                countdown = diffH > 0 ? `zbývá ${diffH}h ${diffM}min` : `zbývá ${diffM}min`;
+                                                                            }
+                                                                            const timeStr = startDate.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Prague" });
+                                                                            const endTimeStr = endDate.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Prague" });
+                                                                            return (
+                                                                                <div key={round.round} className={`px-3 py-2 flex items-center gap-3 text-xs ${isRunning ? "bg-fuchsia-500/[0.06]" : ""}`}>
+                                                                                    {/* Round number + status icon */}
+                                                                                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isDone ? "bg-green-500/20 text-green-400 border border-green-500/30" : isRunning ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 animate-pulse" : "bg-white/[0.05] text-slate-500 border border-white/10"}`}>
+                                                                                        {isDone ? "✓" : round.round}
+                                                                                    </div>
+                                                                                    {/* Time */}
+                                                                                    <div className={`w-[90px] flex-shrink-0 font-mono ${isDone ? "text-green-400/70" : isRunning ? "text-fuchsia-300" : "text-slate-500"}`}>
+                                                                                        {timeStr}–{endTimeStr}
+                                                                                    </div>
+                                                                                    {/* Countries */}
+                                                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                                                        {round.countries.map((c, ci) => (
+                                                                                            <span key={ci} className={`${isDone ? "opacity-60" : isRunning ? "" : "opacity-40"}`} title={`${flags[c] || ""} ${countryNames[c] || c.toUpperCase()}`}>
+                                                                                                {flags[c] || c.toUpperCase()}
+                                                                                            </span>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                    {/* Country names */}
+                                                                                    <div className={`hidden sm:block text-[10px] ${isDone ? "text-green-400/50" : isRunning ? "text-fuchsia-300/70" : "text-slate-600"}`}>
+                                                                                        {round.countries.map((c) => countryNames[c] || c.toUpperCase()).join(", ")}
+                                                                                    </div>
+                                                                                    {/* Status badge + countdown */}
+                                                                                    <div className="ml-auto flex items-center gap-2">
+                                                                                        {isDone && <span className="text-green-400 text-[10px]">✅ Dokončeno</span>}
+                                                                                        {isRunning && (
+                                                                                            <span className="flex items-center gap-1">
+                                                                                                <span className="relative flex h-1.5 w-1.5">
+                                                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75" />
+                                                                                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-fuchsia-500" />
+                                                                                                </span>
+                                                                                                <span className="text-fuchsia-400 text-[10px] font-medium">Probíhá · {countdown}</span>
+                                                                                            </span>
+                                                                                        )}
+                                                                                        {isScheduled && (
+                                                                                            <span className="text-slate-500 text-[10px]">⏱ {countdown}</span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </details>
+                                                            )}
+                                                            {/* Geo countries scanned so far */}
+                                                            {scan.geo_countries_scanned && scan.geo_countries_scanned.length > 0 && (
+                                                                <div className="mt-2 flex items-center gap-1">
+                                                                    <span className="text-xs text-gray-500">Otestované země:</span>
+                                                                    {scan.geo_countries_scanned.map((c) => (
+                                                                        <span key={c} className="text-sm" title={c.toUpperCase()}>{flags[c.toLowerCase()] || c}</span>
+                                                                    ))}
+                                                                    <span className="text-xs text-gray-600 ml-1">({scan.geo_countries_scanned.length}/7)</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="mt-1 text-xs text-gray-500">
+                                                                Zahájeno: {fmtDateTime(scan.deep_scan_started_at)} · Email: {scan.company_email || "—"}
+                                                                {scan.deep_scan_total_findings != null && scan.deep_scan_total_findings > 0 && (
+                                                                    <span className="ml-2 text-cyan-400">· Nalezeno: {scan.deep_scan_total_findings} AI systémů</span>
+                                                                )}
+                                                            </div>
+                                                            {/* Cancel button */}
+                                                            <div className="mt-3 flex items-center gap-3">
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (!confirm(`Opravdu chcete zrušit 24h test pro ${scan.company_name}?\n\nURL: ${scan.url_scanned}\n\nTest bude zastaven do ~5 minut.`)) return;
+                                                                        try {
+                                                                            const result = await cancelDeepScan(scan.id);
+                                                                            alert(`✅ ${result.message}`);
+                                                                            await loadScanMonitor();
+                                                                        } catch (err: unknown) {
+                                                                            alert(`❌ Chyba: ${err instanceof Error ? err.message : "Neznámá chyba"}`);
+                                                                        }
+                                                                    }}
+                                                                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 transition-all"
+                                                                >
+                                                                    ⛔ Zastavit test
+                                                                </button>
+                                                                <span className="text-[10px] text-gray-600">Worker zastaví do ~5 min</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </Panel>
+                                    )}
+
+                                    {/* Aktivní quick scany */}
+                                    {scanMonitor.active_quick.length > 0 && (
+                                        <Panel className="overflow-hidden">
+                                            <div className="px-5 py-4 border-b border-white/10">
+                                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                                    <span className="text-yellow-400">⚡</span> Aktivní quick scany
+                                                    <span className="ml-2 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs border border-yellow-500/30">
+                                                        {scanMonitor.active_quick.length}
+                                                    </span>
+                                                </h3>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead>
+                                                        <tr className="text-xs text-gray-500 border-b border-white/5">
+                                                            <th className="text-left px-4 py-2">Firma</th>
+                                                            <th className="text-left px-4 py-2">URL</th>
+                                                            <th className="text-left px-4 py-2">Status</th>
+                                                            <th className="text-left px-4 py-2">Zahájeno</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-white/5">
+                                                        {scanMonitor.active_quick.map((scan) => (
+                                                            <tr key={scan.id} className="hover:bg-white/[0.02]">
+                                                                <td className="px-4 py-2 text-white">{scan.company_name}</td>
+                                                                <td className="px-4 py-2 text-gray-400 truncate max-w-[200px]">{scan.url_scanned}</td>
+                                                                <td className="px-4 py-2">
+                                                                    <span className={`px-2 py-0.5 rounded text-xs ${scan.status === "running" ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-500/20 text-gray-400"}`}>
+                                                                        {scan.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-2 text-gray-500 text-xs">{fmtDateTime(scan.started_at || scan.created_at)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </Panel>
+                                    )}
+
+                                    {/* Dokončené 24h testy (30 dní) */}
+                                    <Panel className="overflow-hidden">
+                                        <div className="px-5 py-4 border-b border-white/10">
+                                            <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                                <span className="text-green-400">📋</span> Dokončené 24h testy (posledních 12 měsíců)
+                                                <span className="ml-2 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs border border-green-500/30">
+                                                    {scanMonitor.completed_deep.length}
+                                                </span>
+                                            </h3>
+                                        </div>
+                                        <div className="divide-y divide-white/5">
+                                            {scanMonitor.completed_deep.length === 0 ? (
+                                                <div className="text-center text-gray-500 py-8">
+                                                    <div className="text-3xl mb-2">🔬</div>
+                                                    Žádné dokončené 24h testy za poslední rok
+                                                </div>
+                                            ) : (
+                                                scanMonitor.completed_deep.map((scan) => (
+                                                    <div key={scan.id} className="hover:bg-white/[0.02] transition-colors">
+                                                        {/* Hlavní řádek */}
+                                                        <div
+                                                            className="px-5 py-4 cursor-pointer"
+                                                            onClick={async () => {
+                                                                if (expandedScan === scan.id) {
+                                                                    setExpandedScan(null);
+                                                                    setScanFindings(null);
+                                                                } else {
+                                                                    setExpandedScan(scan.id);
+                                                                    setScanFindingsLoading(true);
+                                                                    try {
+                                                                        const f = await getScanFindings(scan.id);
+                                                                        setScanFindings(f);
+                                                                    } catch (e) {
+                                                                        console.error("Findings load error:", e);
+                                                                    } finally {
+                                                                        setScanFindingsLoading(false);
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="text-lg">
+                                                                        {scan.deep_scan_status === "done" ? "✅" : "❌"}
+                                                                    </span>
+                                                                    <div>
+                                                                        <div className="font-medium text-white">{scan.company_name}</div>
+                                                                        <div className="text-xs text-gray-500">{scan.url_scanned}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-4">
+                                                                    {/* Findings count */}
+                                                                    <div className="text-right">
+                                                                        <div className="text-lg font-bold text-white">
+                                                                            {scan.deep_scan_total_findings ?? scan.total_findings ?? 0}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500">nálezů</div>
+                                                                    </div>
+                                                                    {/* Email status */}
+                                                                    <div className="text-right min-w-[100px]">
+                                                                        {scan.email_status?.sent ? (
+                                                                            <div>
+                                                                                <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+                                                                                    📧 Odesláno
+                                                                                </span>
+                                                                                {scan.email_status.opened_at && (
+                                                                                    <div className="text-xs text-cyan-400 mt-0.5">👁 Otevřeno</div>
+                                                                                )}
+                                                                                {scan.email_status.clicked_at && (
+                                                                                    <div className="text-xs text-fuchsia-400 mt-0.5">🔗 Kliknuto</div>
+                                                                                )}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="px-2 py-0.5 rounded text-xs bg-orange-500/20 text-orange-400">
+                                                                                ⚠️ Neodesláno
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    {/* Resend button */}
+                                                                    <button
+                                                                        onClick={async (e) => {
+                                                                            e.stopPropagation();
+                                                                            setResendingScan(scan.id);
+                                                                            setResendResult(null);
+                                                                            try {
+                                                                                const r = await resendScanReport(scan.id);
+                                                                                setResendResult(`✅ Email odeslán na ${r.email_to} (${r.findings_count} nálezů)`);
+                                                                                // Refresh data
+                                                                                await loadScanMonitor();
+                                                                            } catch (err) {
+                                                                                setResendResult(`❌ ${err}`);
+                                                                            } finally {
+                                                                                setResendingScan(null);
+                                                                                setTimeout(() => setResendResult(null), 5000);
+                                                                            }
+                                                                        }}
+                                                                        disabled={resendingScan === scan.id}
+                                                                        className="px-3 py-1.5 rounded-lg text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all disabled:opacity-40"
+                                                                        title="Znovu odeslat report email klientovi"
+                                                                    >
+                                                                        {resendingScan === scan.id ? "⏳" : "📤"} Odeslat report
+                                                                    </button>
+                                                                    {/* Expand arrow */}
+                                                                    <span className={`text-gray-500 transition-transform ${expandedScan === scan.id ? "rotate-180" : ""}`}>
+                                                                        ▼
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {/* Meta info */}
+                                                            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                                                <span>Trvání: {scan.elapsed_hours ?? "?"}h</span>
+                                                                <span>Dokončeno: {fmtDateTime(scan.deep_scan_finished_at)}</span>
+                                                                <span>Email: {scan.company_email || "—"}</span>
+                                                                {scan.geo_countries_scanned && (
+                                                                    <span className="flex items-center gap-0.5">
+                                                                        Země: {scan.geo_countries_scanned.map((c) => {
+                                                                            const flags: Record<string, string> = { cz: "🇨🇿", gb: "🇬🇧", us: "🇺🇸", br: "🇧🇷", jp: "🇯🇵", za: "🇿🇦", au: "🇦🇺" };
+                                                                            return <span key={c} title={c.toUpperCase()}>{flags[c.toLowerCase()] || c}</span>;
+                                                                        })}
+                                                                    </span>
+                                                                )}
+                                                                {scan.error_message && (
+                                                                    <span className="text-red-400">⚠ {scan.error_message}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Rozbalený detail — findings */}
+                                                        {expandedScan === scan.id && (
+                                                            <div className="px-5 pb-4">
+                                                                {scanFindingsLoading ? (
+                                                                    <div className="text-center py-4 text-cyan-400 animate-pulse text-sm">Načítám výsledky…</div>
+                                                                ) : scanFindings ? (
+                                                                    <div className="bg-white/[0.03] rounded-xl border border-white/10 overflow-hidden">
+                                                                        <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                                                                            <div className="text-sm font-medium text-white">
+                                                                                🔍 Výsledky: {scanFindings.total_deployed} nasazených AI systémů
+                                                                                {scanFindings.total_fp > 0 && (
+                                                                                    <span className="text-gray-500 ml-2">+ {scanFindings.total_fp} falešně pozitivních</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        {scanFindings.deployed.length > 0 ? (
+                                                                            <table className="w-full text-sm">
+                                                                                <thead>
+                                                                                    <tr className="text-xs text-gray-500 border-b border-white/5">
+                                                                                        <th className="text-left px-4 py-2">Název</th>
+                                                                                        <th className="text-left px-4 py-2">Kategorie</th>
+                                                                                        <th className="text-left px-4 py-2">Riziko</th>
+                                                                                        <th className="text-left px-4 py-2">AI Act článek</th>
+                                                                                        <th className="text-left px-4 py-2">Zdroj</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody className="divide-y divide-white/5">
+                                                                                    {scanFindings.deployed.map((f) => {
+                                                                                        const riskColors: Record<string, string> = {
+                                                                                            unacceptable: "bg-red-500/20 text-red-400 border-red-500/30",
+                                                                                            high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+                                                                                            limited: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+                                                                                            minimal: "bg-green-500/20 text-green-400 border-green-500/30",
+                                                                                        };
+                                                                                        const riskLabels: Record<string, string> = {
+                                                                                            unacceptable: "Nepřijatelné",
+                                                                                            high: "Vysoké",
+                                                                                            limited: "Omezené",
+                                                                                            minimal: "Minimální",
+                                                                                        };
+                                                                                        return (
+                                                                                            <tr key={f.id} className="hover:bg-white/[0.02]">
+                                                                                                <td className="px-4 py-2 text-white font-medium">{f.name}</td>
+                                                                                                <td className="px-4 py-2 text-gray-400">{f.category}</td>
+                                                                                                <td className="px-4 py-2">
+                                                                                                    <span className={`px-2 py-0.5 rounded text-xs border ${riskColors[f.risk_level] || "bg-gray-500/20 text-gray-400 border-gray-500/30"}`}>
+                                                                                                        {riskLabels[f.risk_level] || f.risk_level}
+                                                                                                    </span>
+                                                                                                </td>
+                                                                                                <td className="px-4 py-2 text-gray-400 text-xs">{f.ai_act_article || "—"}</td>
+                                                                                                <td className="px-4 py-2 text-gray-500 text-xs">{f.source}</td>
+                                                                                            </tr>
+                                                                                        );
+                                                                                    })}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        ) : (
+                                                                            <div className="text-center text-gray-500 py-6 text-sm">
+                                                                                Žádné nasazené AI systémy nebyly nalezeny
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                ) : null}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </Panel>
+
+                                    {/* Resend result toast */}
+                                    {resendResult && (
+                                        <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl border shadow-2xl text-sm font-medium ${resendResult.startsWith("✅") ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-red-500/20 border-red-500/30 text-red-400"}`}>
+                                            {resendResult}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-center text-gray-500 py-12">
+                                    <div className="text-3xl mb-2">🔬</div>
+                                    Nepodařilo se načíst data o testech
+                                </div>
                             )}
                         </>
                     )}
+
                 </div>
             </main>
         </div>

@@ -176,12 +176,17 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                 "client_id", client_id
             ).execute()
             if quest_res.data:
-                # Count total required questions dynamically
+                # Count total required questions dynamically — only yes/no/unknown type
+                # (text fields like company name may be empty and are not required for completion)
                 from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
                 all_question_keys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+                required_yesno = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"] if q.get("type") in ("yes_no_unknown", "yes_unknown", "multi_select")}
                 required_count = len(all_question_keys)
                 answered_count = len(quest_res.data)
-                if answered_count >= required_count:
+                answered_yesno = len([r for r in quest_res.data if r["question_key"] in required_yesno])
+                # Mark as completed when user answered at least 80% of yes/no questions
+                # or when total answers match required
+                if answered_count >= required_count or (len(required_yesno) > 0 and answered_yesno >= len(required_yesno) * 0.8):
                     questionnaire_status = "dokončen"
                 else:
                     questionnaire_status = f"rozpracován ({answered_count}/{required_count})"

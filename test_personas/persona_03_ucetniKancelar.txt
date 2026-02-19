@@ -1,0 +1,73 @@
+PERSONA 03 — Účetní kancelář
+==============================
+
+Jméno firmy:     EkoÚčto s.r.o.
+Kontaktní osoba: Jana Procházková, jednatelka
+Forma podnikání: s.r.o.
+IČO:             45678903
+Sídlo:           Havlíčkova 5, 586 01 Jihlava
+Telefon:         +420 603 333 003
+E-mail:          jana@ekoúcto.cz
+Web:             www.ekoucto.cz
+
+Zaměstnanci:     8 (2-9)
+Roční obrat:     ~4 mil. Kč
+Odvětví:         Účetnictví / Finance
+
+Popis podnikání:
+- Zpracovává daňová přiznání a účetnictví pro 120 klientů
+- Používá Pohodu s AI fakturovacím modulem
+- Zaměstnanci denně používají ChatGPT pro daňové dotazy
+- Zpracovává osobní data klientů (rodná čísla, příjmy)
+- Nemá chatbota na webu, nemá AI recruitment
+- Žádná kritická infrastruktura
+
+Očekávané chování dotazníku:
+- Důležité: interní AI, účetnictví, ochrana dat, GDPR
+- IRELEVANTNÍ: HR screening, kritická infrastruktura, deepfake, biometrika
+- Risk level: OMEZENÉ (osobní data v AI, žádná vlastní AI)
+
+Odpovědi pro test:
+  company_legal_name: "EkoÚčto s.r.o."
+  company_ico: "45678903"
+  company_address: "Havlíčkova 5, 586 01 Jihlava"
+  company_contact_email: "jana@ekoúcto.cz"
+  company_industry: ["Účetnictví / Finance"]
+  company_size: "2–9 zaměstnanců"
+  company_annual_revenue: "1–5 mil. Kč"
+  develops_own_ai: "no"
+  uses_chatgpt: "yes" → chatgpt_tool_name: ["ChatGPT"], chatgpt_purpose: ["Analýza dat", "Tvorba obsahu"], chatgpt_data_type: ["Firemní dokumenty", "Osobní údaje"]
+  uses_copilot: "no"
+  uses_ai_content: "no"
+  uses_deepfake: "no"
+  uses_ai_chatbot: "no"
+  uses_ai_email_auto: "no"
+  uses_ai_decision: "no"
+  uses_dynamic_pricing: "no"
+  uses_ai_for_children: "no"
+  uses_ai_recruitment: "no"
+  uses_ai_employee_monitoring: "no"
+  uses_emotion_recognition: "no"
+  uses_ai_accounting: "yes" → accounting_tool: ["Pohoda"], accounting_decisions: "Ne, jen doporučuje"
+  uses_ai_creditscoring: "no"
+  uses_ai_insurance: "no"
+  uses_social_scoring: "no"
+  uses_subliminal_manipulation: "no"
+  uses_realtime_biometric: "no"
+  uses_ai_critical_infra: "no"
+  uses_ai_safety_component: "no"
+  ai_processes_personal_data: "yes" → personal_data_types: ["Rodná čísla", "Příjmy", "Adresy"], dpia_done: "Ne"
+  ai_data_stored_eu: "unknown"
+  has_ai_vendor_contracts: "no"
+  has_ai_training: "no"
+  has_ai_guidelines: "no"
+  has_oversight_person: "no"
+  can_override_ai: "yes" → override_scope: ["Účetní systém"]
+  ai_decision_logging: "no"
+  has_ai_register: "no"
+  modifies_ai_purpose: "no"
+  uses_gpai_api: "no"
+  has_incident_plan: "no"
+  monitors_ai_outputs: "no"
+  tracks_ai_changes: "no"
+  has_ai_bias_check: "no"

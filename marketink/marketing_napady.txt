@@ -1,0 +1,42 @@
+═══════════════════════════════════════════════════════════════
+AIshield.cz — MARKETINGOVÉ NÁPADY
+═══════════════════════════════════════════════════════════════
+
+Tento soubor slouží k zápisu marketingových nápadů.
+Nápady budou následně předloženy 10 AI modelům k hodnocení
+a výstupy zpracujeme společně.
+
+───────────────────────────────────────────────────────────────
+NÁPAD #1: Enterprise zdarma výměnou za reference
+Datum: 19. února 2026
+───────────────────────────────────────────────────────────────
+
+POPIS:
+Oslovit velké firmy (ideálně na Olomoucku) a nabídnout jim
+náš Enterprise program (39.999 Kč) úplně ZDARMA, výměnou za:
+  - Souhlas s uvedením v referencích na webu
+  - Možnost zmínit, že používají AIshield.cz pro AI Act compliance
+  - Případně krátký testimonial / citace
+
+ARGUMENTY PRO:
+  ✓ Pro nás jsou náklady prakticky NULOVÉ — vše běží na AI,
+    databáze je zdarma, hlavní práci udělá zákazník vyplněním dotazníku
+  ✓ Orchestrátor (Martin) jen zkontroluje, potvrdí platbu,
+    nechá vytisknout a pošle dokumenty
+  ✓ Silné reference = obrovská konkurenční výhoda
+  ✓ Jako začínající firma s nulovými referencemi to může být game-changer
+  ✓ Každý návštěvník webu uvidí známé firmy = důvěra
+  ✓ Lokální firmě na Olomoucku se dá snáz nabídnout osobně
+
+K DISKUZI:
+  ? Kolik firem oslovit? (5-10?)
+  ? Jaká kritéria pro výběr? (velikost, odvětví, viditelnost)
+  ? Smluvní podmínky — jak to právně ošetřit?
+  ? Časový limit na bezplatné poskytnutí?
+  ? Měly by firmy aktivně propagovat AIshield, nebo stačí logo na webu?
+
+STATUS: K diskuzi s AI modely
+
+───────────────────────────────────────────────────────────────
+(Další nápady budou přidávány níže)
+───────────────────────────────────────────────────────────────
