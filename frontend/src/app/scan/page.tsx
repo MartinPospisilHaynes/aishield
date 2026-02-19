@@ -289,6 +289,7 @@ function ScanPageInner() {
     const [emailSent, setEmailSent] = useState(false);
     const [emailSending, setEmailSending] = useState(false);
     const [isCached, setIsCached] = useState(false);
+    const [retryAfter, setRetryAfter] = useState(0);
     const [countdown, setCountdown] = useState(120); // 2 min static countdown
     const countdownRef = useRef<NodeJS.Timeout | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -410,6 +411,7 @@ function ScanPageInner() {
             // Cached result — skip animation, show results immediately
             if (result.status === "cached") {
                 setIsCached(true);
+                setRetryAfter(result.retry_after || 0);
                 track("scan_cached", { url: normalizedUrl, scan_id: result.scan_id });
                 const status = await getScanStatus(result.scan_id);
                 setScanResult(status);
@@ -678,10 +680,13 @@ function ScanPageInner() {
 
                         {/* ── INFO BANNER: cached výsledky ── */}
                         {isCached && (
-                            <div className="rounded-lg bg-slate-500/8 border border-slate-500/20 px-4 py-3 flex items-center gap-2.5">
-                                <IconInfo className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                <p className="text-xs text-slate-400">
-                                    Zobrazujeme výsledky z předchozího skenu (posledních 24 h). Nový sken bude možný zítra.
+                            <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-3 flex items-center gap-2.5">
+                                <IconInfo className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                <p className="text-xs text-blue-300">
+                                    Zobrazujeme výsledky z předchozího skenu.
+                                    {retryAfter > 0 && (
+                                        <> Nový sken bude možný za <strong>{Math.ceil(retryAfter / 60)} min</strong>.</>
+                                    )}
                                 </p>
                             </div>
                         )}

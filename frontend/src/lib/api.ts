@@ -79,6 +79,7 @@ export interface ScanResponse {
     url: string;
     status: string;
     message: string;
+    retry_after?: number;  // seconds until next scan allowed
 }
 
 export interface ScanStatus {
@@ -167,6 +168,7 @@ export async function startScan(url: string): Promise<ScanResponse> {
                     url,
                     status: "cached",
                     message: msg,
+                    retry_after: data.retry_after || 0,
                 };
             }
 

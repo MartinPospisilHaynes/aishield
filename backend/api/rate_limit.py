@@ -19,7 +19,7 @@ from threading import Lock
 logger = logging.getLogger(__name__)
 
 # ── Konfigurace ──
-URL_COOLDOWN_SECONDS = 24 * 60 * 60   # 24 hodin
+URL_COOLDOWN_SECONDS = 60 * 60             # 1 hodina
 IP_LIMIT_ANON = 5                      # skenů za hodinu pro nepřihlášené
 IP_LIMIT_AUTH = 10                     # skenů za hodinu pro přihlášené
 IP_WINDOW_SECONDS = 60 * 60           # 1 hodina
@@ -155,16 +155,15 @@ class ScanRateLimiter:
                 age = now - entry.scanned_at
                 if age < URL_COOLDOWN_SECONDS:
                     remaining = int(URL_COOLDOWN_SECONDS - age)
-                    hours = remaining // 3600
-                    mins = (remaining % 3600) // 60
+                    mins = remaining // 60
                     logger.info(
                         f"[RateLimit] URL cache hit: {normalized} "
-                        f"(scanned {int(age)}s ago, retry in {hours}h {mins}m)"
+                        f"(scanned {int(age)}s ago, retry in {mins}m)"
                     )
                     return RateLimitResult(
                         allowed=False,
-                        reason=f"Tento web byl již skenován. Další sken bude možný za {hours}h {mins}min. "
-                               f"Výsledky předchozího skenu jsou stále k dispozici.",
+                        reason=f"Tento web byl skenován před {int(age) // 60} minutami. "
+                               f"Další sken bude možný za {mins} min.",
                         cached_scan_id=entry.scan_id,
                         cached_company_id=entry.company_id,
                         retry_after=remaining,

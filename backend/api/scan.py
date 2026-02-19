@@ -171,6 +171,49 @@ async def create_scan(
             headers={"Retry-After": str(limit_result.retry_after)},
         )
 
+    # ── DB-backed domain cooldown (survives restarts) ──
+    if not is_admin:
+        try:
+            from backend.api.rate_limit import URL_COOLDOWN_SECONDS
+            from datetime import timedelta
+            from dateutil.parser import parse as dt_parse
+            domain_norm = scan_limiter.normalize_url(url).split("/")[0]
+            one_hour_ago = (datetime.now(timezone.utc) - timedelta(seconds=URL_COOLDOWN_SECONDS)).isoformat()
+            recent = supabase.table("scans").select(
+                "id, company_id, url_scanned, finished_at, created_at, status"
+            ).gte(
+                "created_at", one_hour_ago
+            ).in_(
+                "status", ["done", "running", "queued"]
+            ).limit(50).execute()
+
+            for row in (recent.data or []):
+                row_domain = scan_limiter.normalize_url(row["url_scanned"]).split("/")[0]
+                if row_domain == domain_norm:
+                    # Found a recent scan on this domain — block
+                    from dateutil.parser import parse as dt_parse
+                    scan_time = dt_parse(row["finished_at"] or row.get("created_at", "") or "")
+                    age_s = (datetime.now(timezone.utc) - scan_time).total_seconds()
+                    remaining = max(1, int(URL_COOLDOWN_SECONDS - age_s))
+                    mins_ago = max(1, int(age_s // 60))
+                    mins_left = remaining // 60
+                    # Register in memory cache too
+                    scan_limiter.register_scan(url, row["id"], row["company_id"])
+                    logger.info(f"[Scan] DB cooldown hit: {domain_norm} scanned {mins_ago}m ago")
+                    return JSONResponse(
+                        status_code=429,
+                        content={
+                            "detail": f"Tento web byl skenován před {mins_ago} minutami. "
+                                      f"Další sken bude možný za {mins_left} min.",
+                            "cached_scan_id": row["id"],
+                            "cached_company_id": row["company_id"],
+                            "retry_after": remaining,
+                        },
+                        headers={"Retry-After": str(remaining)},
+                    )
+        except Exception as e:
+            logger.warning(f"[Scan] DB cooldown check failed (allowing scan): {e}")
+
     try:
         # 1. Hledáme firmu podle URL
         existing = supabase.table("companies").select("id, name, email").eq("url", url).limit(1).execute()
