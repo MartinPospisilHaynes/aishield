@@ -716,7 +716,7 @@ export default function DashboardPage() {
                                     )}
                                     <div className="mt-auto pt-3 space-y-2">
                                         {/* Pulsating button to trigger deep scan — hidden when quest is done (focus shifts to Objednávka) */}
-                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !deepScanTriggered && !hasQuest && (
+                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !hasQuest && (
                                             <div className="space-y-2">
                                                 <p className="text-[10px] text-cyan-300/80 leading-relaxed">
                                                     Rychlý scan zachytil jen to, co bylo vidět v okamžiku testu.
@@ -746,7 +746,7 @@ export default function DashboardPage() {
                                             </div>
                                         )}
                                         {/* Subtle deep scan link when quest done but deep scan not started */}
-                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && !deepScanTriggered && hasQuest && (
+                                        {hasScans && !deepDone && !deepRunning && deepStatus !== 'cooldown' && hasQuest && (
                                             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
                                                 <button
                                                     onClick={handleTriggerDeepScan}
@@ -758,8 +758,8 @@ export default function DashboardPage() {
                                                 <p className="text-[10px] text-slate-500 mt-0.5">24 skenů ze 7 zemí za 24 hodin — není nutné pro objednávku</p>
                                             </div>
                                         )}
-                                        {/* Deep scan just triggered — success */}
-                                        {hasScans && deepScanTriggered && !deepDone && (deepRunning || deepStatus === 'pending') && (
+                                        {/* Deep scan running — success */}
+                                        {hasScans && !deepDone && deepRunning && (
                                             <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-2">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-green-400 text-base">✅</span>
@@ -771,9 +771,7 @@ export default function DashboardPage() {
                                                 </p>
                                             </div>
                                         )}
-                                        {deepRunning && !deepScanTriggered && (
-                                            <p className="text-[10px] text-purple-400 font-medium">Hloubkový scan běží — výsledky se zobrazí automaticky.</p>
-                                        )}
+
                                         {/* Cooldown info */}
                                         {deepStatus === 'cooldown' && (
                                             <div className="rounded-lg border border-slate-500/15 bg-slate-500/5 p-2.5">
@@ -906,7 +904,7 @@ export default function DashboardPage() {
                                 // Deep scan state (local to this panel)
                                 const latestScan = data?.scans?.[0];
                                 const ds = latestScan?.deep_scan_status;
-                                const deepRunningLocal = ds === 'pending' || ds === 'running' || (deepScanTriggered && ds !== 'done' && ds !== 'cooldown');
+                                const deepRunningLocal = ds === 'pending' || ds === 'running';
                                 const deepDoneLocal = ds === 'done' || ds === 'cooldown';
                                 const noDeepYet = !ds || (!['pending', 'running', 'done', 'cooldown'].includes(ds));
 
@@ -1005,7 +1003,7 @@ export default function DashboardPage() {
                                                 <span className="text-[10px] text-purple-300">24h test probíhá</span>
                                             </div>
                                         )}
-                                        {noDeepYet && !deepScanTriggered && hasScans && (
+                                        {noDeepYet && hasScans && (
                                             <div className="mt-2 flex items-center gap-1.5">
                                                 <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                                                 <span className="text-[10px] text-amber-300">Hloubkový test zatím nespuštěn</span>
@@ -1175,12 +1173,12 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             onClick: onStartScan,
         },
         {
-            done: deepDone || deepRunning || deepScanTriggered,
+            done: deepDone || deepRunning,
             optional: true,
-            label: (deepRunning || deepScanTriggered) && !deepDone ? "24h test ⏳" : "24h test",
+            label: deepRunning && !deepDone ? "24h test ⏳" : "24h test",
             desc: deepDone
                 ? "Hloubkový scan ze 7 zemí a 6 kontinentů byl úspěšně dokončen"
-                : deepRunning || deepScanTriggered
+                : deepRunning
                     ? "Hloubkový scan probíhá na pozadí ze 7 zemí — mezitím pokračujte dotazníkem"
                     : hasScans
                         ? "Spusťte 24hodinový hloubkový test ze 7 zemí a 6 kontinentů"
@@ -1274,7 +1272,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                     {steps.map((step, i) => {
                         const isCurrent = i === currentStepIndex;
                         const isSkipped = !step.done && (step as any).optional && i < (currentStepIndex >= 0 ? currentStepIndex : steps.length);
-                        const isRunning = i === 1 && (deepRunning || deepScanTriggered) && !deepDone;
+                        const isRunning = i === 1 && deepRunning && !deepDone;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
                                 {/* Node circle */}
@@ -1333,7 +1331,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                         {currentStep.cta === "__deep_scan_custom__" ? (
                             <div className="ml-0 sm:ml-9 space-y-3">
                                 {/* Not triggered yet → Big pulsating button */}
-                                {!deepScanTriggered && !deepRunning && (
+                                {!deepRunning && !deepDone && (
                                     <div className="space-y-3">
                                         <p className="text-xs text-slate-400 leading-relaxed">
                                             Chatboti a AI nástroje se často zobrazují jen v určitou hodinu, z určité lokace nebo na mobilním zařízení — rychlý scan je nemůže odhalit všechny.
@@ -1363,8 +1361,8 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
                                         </p>
                                     </div>
                                 )}
-                                {/* Just triggered or running → Success message + dotazník */}
-                                {(deepScanTriggered || deepRunning) && !deepDone && (
+                                {/* Running → Success message + dotazník */}
+                                {deepRunning && !deepDone && (
                                     <div className="space-y-4">
                                         <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-5">
                                             <div className="flex items-center gap-3 mb-3">
@@ -1412,7 +1410,7 @@ function TabPrehled({ data, onStartScan, scanLoading, hasScans: hasScansOverride
             </div>
 
             {/* 24h deep scan running banner — always visible when test is in progress */}
-            {(deepRunning || deepScanTriggered) && !deepDone && currentStepIndex !== 1 && (
+            {deepRunning && !deepDone && currentStepIndex !== 1 && (
                 <div className="glass border-cyan-500/20">
                     <div className="flex items-start gap-4">
                         <div className="flex-shrink-0 h-10 w-10 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">

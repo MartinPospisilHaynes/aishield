@@ -323,6 +323,11 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
                 "total_findings": s.get("total_findings", 0),
                 "created_at": s.get("created_at", ""),
                 "finished_at": s.get("finished_at"),
+                "deep_scan_status": s.get("deep_scan_status"),
+                "deep_scan_started_at": s.get("deep_scan_started_at"),
+                "deep_scan_finished_at": s.get("deep_scan_finished_at"),
+                "deep_scan_total_findings": s.get("deep_scan_total_findings"),
+                "geo_countries_scanned": s.get("geo_countries_scanned"),
             }
             for s in (scans_res.data or [])
         ],

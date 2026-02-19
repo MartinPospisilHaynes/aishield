@@ -148,63 +148,9 @@ function TypingIndicator() {
     );
 }
 
-/* ═══════════════════════════════════════════
-   PRIVACY SHIELD BADGE
-   ═══════════════════════════════════════════ */
 
-function PrivacyBadge() {
-    const [expanded, setExpanded] = useState(false);
-    return (
-        <div className="mb-4">
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-2 text-xs text-slate-400 hover:text-neon-cyan transition-colors group"
-            >
-                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-                <span className="group-hover:text-emerald-300 transition-colors">Vaše data jsou v bezpečí — GDPR</span>
-                <svg className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-            </button>
-            {expanded && (
-                <div className="mt-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-xs text-slate-400 leading-relaxed space-y-1">
-                    <p>Veškeré informace zůstávají výhradně u nás v AIshield.cz. Žádná třetí strana k nim nemá přístup.</p>
-                    <p>Všechna data jsou šifrovaná (AES-256) a uložená na zabezpečených serverech v EU.</p>
-                    <p>Porušení ochrany dat by nás stálo pokutu až <strong className="text-emerald-400">20 milionů EUR</strong> nebo <strong className="text-emerald-400">4 % celosvětového obratu</strong> dle Nařízení GDPR (EU 2016/679, čl. 83 odst. 5).</p>
-                    <p>Podléháme dozoru <strong className="text-white">ÚOOÚ</strong> dle zákona č. 110/2019 Sb. Kdykoli můžete požádat o smazání svých dat (GDPR čl. 17).</p>
-                </div>
-            )}
-        </div>
-    );
-}
 
-/* ═══════════════════════════════════════════
-   SMART DISCLAIMER BANNER
-   ═══════════════════════════════════════════ */
 
-function DisclaimerBanner() {
-    return (
-        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-neon-purple/5 to-neon-cyan/5 border border-white/[0.06]">
-            <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-neon-cyan flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-                <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
-                    <p>
-                        <strong className="text-slate-300">Uršula Vám pomůže připravit kompletní dokumentaci k EU AI Act.</strong>{" "}
-                        Naše výstupy jsou nejlepší podklady, které můžete svému právnímu oddělení poskytnout — šetří čas i peníze.
-                    </p>
-                    <p>
-                        Na konci analýzy objektivně zhodnotíme, zda je ve Vašem konkrétním případě nutné i právní poradenství.
-                        Ve většině případů to <strong className="text-emerald-400">nutné není</strong> — naše dokumenty pokrývají vše potřebné.
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 /* ═══════════════════════════════════════════
    PROGRESS BAR
@@ -250,19 +196,9 @@ function Mart1nPageInner() {
     const [isResuming, setIsResuming] = useState(false);
     const [bubbleOverrides, setBubbleOverrides] = useState<Record<string, string>>({});
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
-    // Scroll to bottom when messages change
-    const scrollToBottom = useCallback(() => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-    }, []);
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages, sending, scrollToBottom]);
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
@@ -530,14 +466,8 @@ function Mart1nPageInner() {
             </header>
 
             {/* ── Chat Messages ── */}
-            <div className="flex-1 overflow-y-auto">
-                <div className="max-w-3xl mx-auto px-4 py-6 space-y-1">
-                    {/* Privacy badge at top */}
-                    <PrivacyBadge />
-
-                    {/* Disclaimer: positive framing */}
-                    <DisclaimerBanner />
-
+            <div className="flex-1 overflow-y-auto flex flex-col-reverse">
+                <div className="max-w-3xl mx-auto px-4 py-6 space-y-1 w-full">
                     {/* Resumption badge */}
                     {isResuming && (
                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neon-cyan/5 border border-neon-cyan/20 mb-2">
@@ -626,8 +556,6 @@ function Mart1nPageInner() {
                             </button>
                         </div>
                     )}
-
-                    <div ref={messagesEndRef} />
                 </div>
             </div>
 
