@@ -532,10 +532,13 @@ def render_compliance_report(data: dict) -> str:
 def render_transparency_page(data: dict) -> str:
     """
     Transparenční stránka — klient ji vloží na svůj web (/ai-transparence).
+    Design: neutrální, adaptivní — přizpůsobí se CSS stylu webu klienta.
+    Používá inherit, currentColor a CSS custom properties místo AIshield brandingu.
     """
     company = data.get("company_name", "Naše firma")
     findings = data.get("findings", [])
     last_updated = data.get("last_updated", _now_str())
+    contact_email = data.get("contact_email", data.get("q_company_contact_email", "info@firma.cz"))
 
     items_html = ""
     for f in findings:
@@ -547,54 +550,153 @@ def render_transparency_page(data: dict) -> str:
         }
         purpose = purpose_map.get(f.get("category", ""), "Podpora provozu webových stránek.")
         rl = f.get("risk_level", "minimal")
+        risk_labels = {"high": "Vysoké", "limited": "Omezené", "minimal": "Minimální"}
+        risk_colors = {"high": "#dc2626", "limited": "#d97706", "minimal": "#16a34a"}
         items_html += f"""
-        <div class="glass-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <h3 style="margin:0">{f.get('name', 'AI systém')}</h3>
-                {_risk_badge(rl)}
+        <div class="ait-card">
+            <div class="ait-card-header">
+                <h3>{f.get('name', 'AI systém')}</h3>
+                <span class="ait-badge" style="border-color:{risk_colors.get(rl, '#6b7280')};color:{risk_colors.get(rl, '#6b7280')}">{risk_labels.get(rl, rl)} riziko</span>
             </div>
-            <p style="color:var(--color-muted);font-size:13px"><strong>Účel:</strong> {purpose}</p>
-            <p style="color:var(--color-muted);font-size:13px"><strong>Riziková kategorie dle AI Act:</strong> {rl}</p>
-            <p style="color:var(--color-muted);font-size:13px"><strong>Relevantní článek:</strong> {f.get('ai_act_article', 'čl. 50')}</p>
+            <p><strong>Účel:</strong> {purpose}</p>
+            <p><strong>Riziková kategorie dle AI Act:</strong> {risk_labels.get(rl, rl)}</p>
+            <p><strong>Relevantní článek:</strong> {f.get('ai_act_article', 'čl. 50')}</p>
         </div>"""
 
-    body = f"""
-    <div class="glass-card">
-        <h2>Informace o využití umělé inteligence</h2>
+    no_items = '<p class="ait-muted">Na tomto webu aktuálně nevyužíváme žádné systémy umělé inteligence spadající pod regulaci AI Act.</p>'
+
+    return f"""<!--
+  AIshield.cz — Transparenční stránka (čl. 50 AI Act)
+  Vygenerováno: {_now_str()}
+  Firma: {company}
+
+  INSTRUKCE PRO NASAZENÍ:
+  1) Vložte tento HTML kód na stránku /ai-transparence na vašem webu
+  2) Stránka se automaticky přizpůsobí designu vašeho webu (barvy, fonty)
+  3) Pokud chcete přizpůsobit barvy, nastavte CSS proměnné:
+     --ait-accent: váš primární odstín;
+     --ait-radius: zaoblení rohů;
+-->
+<style>
+  .ait-wrapper {{
+    --ait-accent: currentColor;
+    --ait-text: inherit;
+    --ait-muted: #6b7280;
+    --ait-border: rgba(128,128,128,0.2);
+    --ait-card-bg: rgba(128,128,128,0.04);
+    --ait-radius: 12px;
+    font-family: inherit;
+    color: inherit;
+    line-height: 1.6;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    font-size: inherit;
+  }}
+  .ait-wrapper h1 {{
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 0.3em;
+    color: inherit;
+  }}
+  .ait-wrapper h2 {{
+    font-size: 1.3em;
+    font-weight: 600;
+    margin: 1.5em 0 0.6em;
+    color: inherit;
+  }}
+  .ait-wrapper h3 {{
+    font-size: 1.05em;
+    font-weight: 600;
+    margin: 0;
+    color: inherit;
+  }}
+  .ait-wrapper p {{
+    margin: 0.4em 0;
+    font-size: 0.95em;
+  }}
+  .ait-muted {{
+    color: var(--ait-muted);
+    font-size: 0.85em;
+  }}
+  .ait-card {{
+    background: var(--ait-card-bg);
+    border: 1px solid var(--ait-border);
+    border-radius: var(--ait-radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }}
+  .ait-card-header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }}
+  .ait-badge {{
+    display: inline-block;
+    padding: 2px 10px;
+    border: 1.5px solid;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: 600;
+    white-space: nowrap;
+  }}
+  .ait-wrapper ul {{
+    padding-left: 1.4em;
+    margin: 0.5em 0;
+  }}
+  .ait-wrapper li {{
+    margin-bottom: 0.4em;
+    font-size: 0.95em;
+  }}
+  .ait-footer {{
+    margin-top: 2em;
+    padding-top: 1.2em;
+    border-top: 1px solid var(--ait-border);
+    font-size: 0.8em;
+    color: var(--ait-muted);
+    text-align: center;
+  }}
+</style>
+
+<div class="ait-wrapper">
+    <h1>Transparence AI — {company}</h1>
+    <p class="ait-muted">Informace o využití umělé inteligence dle Nařízení EU 2024/1689</p>
+
+    <div class="ait-card">
+        <h2 style="margin-top:0">Informace o využití umělé inteligence</h2>
         <p>V souladu s Nařízením Evropského parlamentu a Rady (EU) 2024/1689 (AI Act)
         informujeme návštěvníky našeho webu o systémech umělé inteligence,
         které používáme.</p>
-        <p style="color:var(--color-muted);font-size:12px">Poslední aktualizace: {last_updated}</p>
+        <p class="ait-muted">Poslední aktualizace: {last_updated}</p>
     </div>
 
     <h2>Přehled AI systémů na tomto webu</h2>
-    {items_html if items_html else '<p style="color:var(--color-muted)">Na tomto webu aktuálně nevyužíváme žádné systémy umělé inteligence spadající pod regulaci AI Act.</p>'}
+    {items_html if items_html else no_items}
 
-    <div class="glass-card">
-        <h2>Vaše práva</h2>
+    <div class="ait-card">
+        <h2 style="margin-top:0">Vaše práva</h2>
         <ul>
             <li>Máte právo vědět, že komunikujete se systémem umělé inteligence</li>
             <li>Máte právo na lidský kontakt — napište nám na email níže</li>
             <li>Máte právo podat stížnost u příslušného dozorového orgánu</li>
         </ul>
-        <p style="margin-top:12px"><strong>Kontakt:</strong> {data.get('contact_email', 'info@firma.cz')}</p>
+        <p style="margin-top:12px"><strong>Kontakt:</strong> {contact_email}</p>
     </div>
 
-    <div class="glass-card">
-        <h2>O AI Act</h2>
-        <p style="color:var(--color-muted);font-size:13px">
-            Nařízení (EU) 2024/1689 — Akt o umělé inteligenci — je první komplexní právní
-            úprava AI na světě. Stanoví pravidla pro vývoj, nasazení a používání AI systémů
-            v Evropské unii. Plná účinnost od 2. srpna 2026.
-        </p>
+    <div class="ait-card">
+        <h2 style="margin-top:0">O AI Act</h2>
+        <p>Nařízení (EU) 2024/1689 — Akt o umělé inteligenci — je první komplexní právní
+        úprava AI na světě. Stanoví pravidla pro vývoj, nasazení a používání AI systémů
+        v Evropské unii. Plná účinnost od 2. srpna 2026.</p>
     </div>
-    """
 
-    return _wrap_page(
-        f"Transparence AI — {company}",
-        "Informace o využití umělé inteligence dle Nařízení EU 2024/1689",
-        body,
-    )
+    <div class="ait-footer">
+        Vygenerováno platformou AIshield.cz &mdash; automatizovaný compliance nástroj pro AI Act
+    </div>
+</div>"""
 
 
 # ══════════════════════════════════════════════════════════════════════

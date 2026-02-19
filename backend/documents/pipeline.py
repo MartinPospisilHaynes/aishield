@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 
 from backend.database import get_supabase
 from backend.documents.templates import TEMPLATE_RENDERERS, TEMPLATE_NAMES
-from backend.documents.pdf_generator import generate_document_pdf, save_to_supabase_storage
+from backend.documents.pdf_generator import html_to_pdf, generate_document_pdf, save_to_supabase_storage
+from backend.documents.unified_pdf import render_unified_pdf_html
 
 logger = logging.getLogger(__name__)
 
@@ -184,10 +185,9 @@ class ComplianceKitResult:
             "skipped_documents": self.skipped_documents,
             "generated_at": self.generated_at,
             "summary": {
-                "total_possible": len(TEMPLATE_RENDERERS) + 1,  # +1 for PPTX
-                "eligible": self.success_count + self.error_count,
+                "total_outputs": 3,  # 1 PDF + 1 HTML + 1 PPTX
                 "generated": self.success_count,
-                "skipped": len(self.skipped_documents),
+                "skipped_sections": len(self.skipped_documents),
                 "failed": self.error_count,
             },
         }
@@ -516,9 +516,9 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
     """
     Hlavní funkce — vygeneruje kompletní AI Act Compliance Kit.
 
-    Výstup: samostatné soubory pro každý typ dokumentu
-      - N × PDF  — každý compliance dokument jako samostatný PDF
-      - 1 × HTML — transparenční stránka (klient si ji vloží na web)
+    Výstup: přesně 3 soubory:
+      - 1 × PDF  — Unified PDF (titulní strana, obsah, všechny sekce, VOP)
+      - 1 × HTML — transparenční stránka (adaptive — klient si ji vloží na web)
       - 1 × PPTX — školící prezentace AI Literacy
 
     Returns: ComplianceKitResult s metadaty o všech dokumentech
@@ -577,51 +577,69 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
         logger.info(f"  ⊘ {sk['name']}: {sk['reason']}")
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    eligible_keys = list(eligible.keys())
 
-    # ── 3. Generovat PDF jen pro eligible šablony ──
-    for template_key, renderer in TEMPLATE_RENDERERS.items():
-        if template_key not in eligible:
-            continue  # přeskočit — dokument není pro tohoto klienta relevatní
+    # ── 3. UNIFIED PDF — jeden velký PDF se vším ──
+    try:
+        unified_html = render_unified_pdf_html(template_data, eligible_keys)
+        pdf_bytes = html_to_pdf(unified_html)
 
+        pdf_filename = f"ai_act_compliance_kit_{timestamp}.pdf"
+        pdf_url = save_to_supabase_storage(
+            pdf_bytes, pdf_filename, client_id,
+            content_type="application/pdf",
+        )
+
+        pdf_info = {
+            "template_key": "compliance_kit_unified",
+            "template_name": "AI Act Compliance Kit (PDF)",
+            "filename": pdf_filename,
+            "download_url": pdf_url,
+            "size_bytes": len(pdf_bytes),
+            "format": "pdf",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        result.documents.append(pdf_info)
+        _save_document_record(client_id, pdf_info)
+        logger.info(f"  ✓ Unified PDF ({len(pdf_bytes):,} bytes, {len(eligible_keys)} sekcí)")
+
+    except Exception as e:
+        error_msg = f"unified_pdf: {str(e)}"
+        result.errors.append(error_msg)
+        logger.error(f"  ✗ Unified PDF: {error_msg}", exc_info=True)
+
+    # ── 4. HTML — transparenční stránka (standalone, adaptive CSS) ──
+    if "transparency_page" in eligible:
         try:
-            # Transparenční stránka → HTML soubor (ne PDF)
-            if template_key == "transparency_page":
-                html_content = renderer(template_data)
-                html_bytes = html_content.encode("utf-8")
+            renderer = TEMPLATE_RENDERERS["transparency_page"]
+            html_content = renderer(template_data)
+            html_bytes = html_content.encode("utf-8")
 
-                html_filename = f"transparencni_stranka_{timestamp}.html"
-                html_url = save_to_supabase_storage(
-                    html_bytes, html_filename, client_id,
-                    content_type="text/html",
-                )
+            html_filename = f"transparencni_stranka_{timestamp}.html"
+            html_url = save_to_supabase_storage(
+                html_bytes, html_filename, client_id,
+                content_type="text/html",
+            )
 
-                doc_info = {
-                    "template_key": template_key,
-                    "template_name": TEMPLATE_NAMES[template_key],
-                    "filename": html_filename,
-                    "download_url": html_url,
-                    "size_bytes": len(html_bytes),
-                    "format": "html",
-                    "generated_at": datetime.now(timezone.utc).isoformat(),
-                }
-            else:
-                # Ostatní → HTML → PDF
-                doc_info = generate_document_pdf(
-                    template_key=template_key,
-                    data=template_data,
-                    client_id=client_id,
-                )
-
-            result.documents.append(doc_info)
-            _save_document_record(client_id, doc_info)
-            logger.info(f"  ✓ {doc_info.get('template_name', template_key)} ({doc_info['format']})")
+            html_info = {
+                "template_key": "transparency_page",
+                "template_name": TEMPLATE_NAMES["transparency_page"],
+                "filename": html_filename,
+                "download_url": html_url,
+                "size_bytes": len(html_bytes),
+                "format": "html",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            result.documents.append(html_info)
+            _save_document_record(client_id, html_info)
+            logger.info(f"  ✓ Transparenční stránka HTML ({len(html_bytes):,} bytes)")
 
         except Exception as e:
-            error_msg = f"{template_key}: {str(e)}"
+            error_msg = f"transparency_page: {str(e)}"
             result.errors.append(error_msg)
-            logger.error(f"  ✗ {error_msg}", exc_info=True)
+            logger.error(f"  ✗ HTML: {error_msg}", exc_info=True)
 
-    # ── 4. PPTX — školící prezentace (vždy — čl. 4 AI Act) ──
+    # ── 5. PPTX — školící prezentace (vždy — čl. 4 AI Act) ──
     try:
         from backend.documents.pptx_generator import generate_training_pptx
         pptx_bytes = generate_training_pptx(template_data)

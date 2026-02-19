@@ -83,8 +83,8 @@ def _add_bullet_list(slide, left, top, width, height, items, font_size=16):
     return txBox
 
 
-def _add_branded_header(slide, title_text):
-    """Přidá AIshield branded header na slide."""
+def _add_branded_header(slide, title_text, client_info=None):
+    """Přidá AIshield branded header na slide + klientské info vpravo nahoře."""
     # Brand logo text
     _add_text_box(
         slide,
@@ -93,6 +93,23 @@ def _add_branded_header(slide, title_text):
         text="AIshield.cz",
         font_size=14, color=COLOR_PRIMARY, bold=True,
     )
+
+    # Client info — vpravo nahoře (firma, osoba)
+    if client_info:
+        info_parts = []
+        if client_info.get("company"):
+            info_parts.append(client_info["company"])
+        if client_info.get("person"):
+            info_parts.append(client_info["person"])
+        if info_parts:
+            _add_text_box(
+                slide,
+                left=Inches(8), top=Inches(0.2),
+                width=Inches(5), height=Inches(0.6),
+                text="  •  ".join(info_parts),
+                font_size=11, color=COLOR_MUTED,
+                alignment=PP_ALIGN.RIGHT,
+            )
 
     # Fuchsia accent line
     shape = slide.shapes.add_shape(
@@ -114,7 +131,34 @@ def _add_branded_header(slide, title_text):
     )
 
 
-def _create_title_slide(prs, company_name, subtitle=""):
+def _add_client_footer(slide, client_info):
+    """Přidá zápatí s kontaktními údaji klienta na slide."""
+    if not client_info:
+        return
+
+    parts = []
+    if client_info.get("company"):
+        parts.append(client_info["company"])
+    if client_info.get("person"):
+        parts.append(client_info["person"])
+    if client_info.get("phone"):
+        parts.append(client_info["phone"])
+    if client_info.get("email"):
+        parts.append(client_info["email"])
+
+    if parts:
+        footer_text = "  •  ".join(parts)
+        _add_text_box(
+            slide,
+            left=Inches(0.5), top=Inches(6.9),
+            width=Inches(12), height=Inches(0.4),
+            text=footer_text,
+            font_size=9, color=COLOR_MUTED,
+            alignment=PP_ALIGN.CENTER,
+        )
+
+
+def _create_title_slide(prs, company_name, subtitle="", client_info=None):
     """Titulní slide s velkým logem a názvem firmy."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
     _set_slide_bg(slide)
@@ -171,12 +215,15 @@ def _create_title_slide(prs, company_name, subtitle=""):
         alignment=PP_ALIGN.CENTER,
     )
 
+    # Client footer
+    _add_client_footer(slide, client_info)
 
-def _create_content_slide(prs, title, bullets):
+
+def _create_content_slide(prs, title, bullets, client_info=None):
     """Standardní obsahový slide s nadpisem a odrážkami."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank
     _set_slide_bg(slide)
-    _add_branded_header(slide, title)
+    _add_branded_header(slide, title, client_info=client_info)
     _add_bullet_list(
         slide,
         left=Inches(0.8), top=Inches(2.2),
@@ -184,13 +231,14 @@ def _create_content_slide(prs, title, bullets):
         items=bullets,
         font_size=18,
     )
+    _add_client_footer(slide, client_info)
 
 
-def _create_risk_slide(prs, findings):
+def _create_risk_slide(prs, findings, client_info=None):
     """Slide s přehledem rizik — barevně kódované."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide)
-    _add_branded_header(slide, "AI systémy v naší firmě — přehled rizik")
+    _add_branded_header(slide, "AI systémy v naší firmě — přehled rizik", client_info=client_info)
 
     if not findings:
         _add_text_box(
@@ -232,6 +280,8 @@ def _create_risk_slide(prs, findings):
         )
 
         y_pos += Inches(0.55)
+
+    _add_client_footer(slide, client_info)
 
 
 def _create_disclaimer_slide(prs):
@@ -290,6 +340,20 @@ def generate_training_pptx(data: dict) -> bytes:
     industry = data.get("q_company_industry", "")
     company_size = data.get("q_company_size", "")
 
+    # ── Client info pro záhlaví/zápatí na každém slidu ──
+    client_info = {"company": company}
+    # Kontaktní osoba — z oversight nebo z dotazníku
+    if oversight.get("name"):
+        client_info["person"] = oversight["name"]
+    if oversight.get("phone"):
+        client_info["phone"] = oversight["phone"]
+    if oversight.get("email"):
+        client_info["email"] = oversight["email"]
+    elif data.get("contact_email"):
+        client_info["email"] = data["contact_email"]
+    elif data.get("q_company_contact_email"):
+        client_info["email"] = data["q_company_contact_email"]
+
     # Celkový počet AI nástrojů (web scan + dotazník)
     all_tool_names = set()
     for f in findings:
@@ -312,7 +376,7 @@ def generate_training_pptx(data: dict) -> bytes:
         subtitle_parts.append(f"Obor: {industry}")
     if company_size:
         subtitle_parts.append(f"Velikost firmy: {company_size}")
-    _create_title_slide(prs, company, subtitle="  •  ".join(subtitle_parts))
+    _create_title_slide(prs, company, subtitle="  •  ".join(subtitle_parts), client_info=client_info)
 
     # ── Slide 2: Agenda ──
     _create_content_slide(prs, "Agenda školení", [
@@ -322,7 +386,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "Modul 4 — Bezpečné používání AI v praxi (30 min)",
         "Modul 5 — Naše povinnosti (15 min)",
         "Modul 6 — Test a certifikace (15 min)",
-    ])
+    ], client_info=client_info)
 
     # ── Slide 3: Co je AI ──
     _create_content_slide(prs, "Modul 1 — Co je umělá inteligence", [
@@ -331,7 +395,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "Příklady AI v každodenním životě (navigace, doporučení, chatboty)",
         "AI vs. automatizace — jaký je rozdíl?",
         "Demonstrace: live ukázka ChatGPT / Claude",
-    ])
+    ], client_info=client_info)
 
     # ── Slide 4: AI Act overview ──
     _create_content_slide(prs, "Modul 2 — EU AI Act v kostce", [
@@ -341,7 +405,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "Zakázané praktiky (čl. 5) — co NESMÍME dělat",
         "Povinnosti transparentnosti (čl. 50)",
         "Povinnost AI gramotnosti (čl. 4) — proto jsme tady",
-    ])
+    ], client_info=client_info)
 
     # ── Slide 5: Rizikové kategorie ──
     _create_content_slide(prs, "4 kategorie rizik AI Act", [
@@ -351,7 +415,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "🟢 MINIMÁLNÍ RIZIKO — bez povinností (spam filtry, doporučovací algoritmy)",
         "",
         "Pokuty: až 35 mil. EUR nebo 7 % celosvětového obratu firmy",
-    ])
+    ], client_info=client_info)
 
     # ── Slide 6: Zakázané praktiky ──
     _create_content_slide(prs, "Zakázané AI praktiky (čl. 5)", [
@@ -361,7 +425,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "Prediktivní policing na základě profilingu",
         "Emotion recognition na pracovišti / ve školství (výjimky: bezpečnost)",
         "Vytváření databází obličejů ze scraping internetu",
-    ])
+    ], client_info=client_info)
 
     # ── Slide 7: AI v naší firmě — personalizovaný ──
     slide7_bullets = []
@@ -385,7 +449,7 @@ def generate_training_pptx(data: dict) -> bytes:
         "Pravidla pro vkládání dat do AI nástrojů",
     ])
 
-    _create_content_slide(prs, f"Modul 3 — AI v {company}", slide7_bullets)
+    _create_content_slide(prs, f"Modul 3 — AI v {company}", slide7_bullets, client_info=client_info)
 
     # ── Slide 8: Přehled rizik z dat ──
     # Kombinovat web scan findings + declared systems
@@ -399,7 +463,7 @@ def generate_training_pptx(data: dict) -> bytes:
                 "risk_level": "limited",  # default pro deklarovaný systém
                 "ai_act_article": "čl. 50 — transparentnost",
             })
-    _create_risk_slide(prs, combined_findings)
+    _create_risk_slide(prs, combined_findings, client_info=client_info)
 
     # ── Slide 9: Bezpečné používání AI ──
     safe_bullets = [
@@ -414,7 +478,7 @@ def generate_training_pptx(data: dict) -> bytes:
         safe_bullets.append(f"Hlášení incidentů → kontaktujte {oversight['email']}")
     else:
         safe_bullets.append("Hlášení incidentů — komu a jak postupovat (stanovit odpovědnou osobu)")
-    _create_content_slide(prs, "Modul 4 — Bezpečné používání AI", safe_bullets)
+    _create_content_slide(prs, "Modul 4 — Bezpečné používání AI", safe_bullets, client_info=client_info)
 
     # ── Slide 10: GDPR a AI ──
     gdpr_bullets = [
@@ -428,7 +492,7 @@ def generate_training_pptx(data: dict) -> bytes:
         gdpr_bullets.append("⚠ Naše AI systémy zpracovávají osobní údaje — zvýšená pozornost!")
     if not data_protection.get("data_in_eu"):
         gdpr_bullets.append("⚠ Některá data mohou být uložena mimo EU — ověřte transfer mechanismy")
-    _create_content_slide(prs, "AI a ochrana osobních údajů (GDPR)", gdpr_bullets)
+    _create_content_slide(prs, "AI a ochrana osobních údajů (GDPR)", gdpr_bullets, client_info=client_info)
 
     # ── Slide 11: Naše konkrétní povinnosti ──
     duty_bullets = []
@@ -464,7 +528,7 @@ def generate_training_pptx(data: dict) -> bytes:
     else:
         duty_bullets.append("⚠ Školení AI gramotnosti dosud neproběhlo — právě ho provádíme")
 
-    _create_content_slide(prs, "Modul 5 — Naše konkrétní povinnosti", duty_bullets)
+    _create_content_slide(prs, "Modul 5 — Naše konkrétní povinnosti", duty_bullets, client_info=client_info)
 
     # ── Slide 12: Test ──
     test_bullets = [
@@ -486,7 +550,7 @@ def generate_training_pptx(data: dict) -> bytes:
     else:
         test_bullets.append("")
     test_bullets.append("Tip: Opakujte školení 1× ročně jako refresher")
-    _create_content_slide(prs, "Modul 6 — Test a certifikace", test_bullets)
+    _create_content_slide(prs, "Modul 6 — Test a certifikace", test_bullets, client_info=client_info)
 
     # ── Slide 13: Disclaimer ──
     _create_disclaimer_slide(prs)
