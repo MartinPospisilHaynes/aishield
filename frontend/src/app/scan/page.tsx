@@ -13,7 +13,7 @@ import {
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
 /* ── ScrollReveal — triggers CSS keyframe animation on scroll into view ── */
-/* Scan-page version: snappy (0.7s), tight stagger (0.12s/unit), inline styles */
+/* Used for pre-scan content (info boxes etc.) that appears below the fold */
 const SCAN_KEYFRAME_MAP: Record<string, string> = {
     "fade-up": "revealUp",
     "slide-left": "revealLeft",
@@ -65,6 +65,40 @@ function ScrollReveal({
 
     return (
         <div ref={ref} className={className} style={animStyle}>
+            {children}
+        </div>
+    );
+}
+
+/* ── ResultReveal — mount-triggered cascade animation for scan results ── */
+/* Unlike ScrollReveal, this fires on mount (not scroll), so results that
+   appear after state change cascade in with a clear visible stagger */
+function ResultReveal({
+    children,
+    className = "",
+    step = 0,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    step?: number;
+}) {
+    const [show, setShow] = useState(false);
+
+    useEffect(() => {
+        const ms = step * 150;          // 150ms between groups — clearly visible
+        const t = setTimeout(() => setShow(true), ms);
+        return () => clearTimeout(t);
+    }, [step]);
+
+    return (
+        <div
+            className={className}
+            style={{
+                opacity: show ? 1 : 0,
+                transform: show ? "translateY(0)" : "translateY(24px)",
+                transition: "opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+        >
             {children}
         </div>
     );
@@ -654,7 +688,7 @@ function ScanPageInner() {
 
                         {/* ── ZELENÝ POZITIVNÍ BANNER ── */}
                         {hasFindings && (
-                            <ScrollReveal variant="fade-up">
+                            <ResultReveal step={0}>
                                 <div className="rounded-2xl bg-green-500/10 border-2 border-green-500/40 p-5">
                                     <div className="flex items-start gap-3">
                                         <IconCheckCircle className="w-7 h-7 text-green-400 flex-shrink-0 mt-0.5" />
@@ -674,11 +708,11 @@ function ScanPageInner() {
                                         </div>
                                     </div>
                                 </div>
-                            </ScrollReveal>
+                            </ResultReveal>
                         )}
 
                         {/* ── HLAVNÍ VÝSLEDKOVÁ KARTA ── */}
-                        <ScrollReveal delay={1} variant="fade-up">
+                        <ResultReveal step={1}>
                             <div className="rounded-2xl border-2 border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                 {/* Status bar */}
                                 <div className={"px-5 py-3 flex items-center justify-between " + (hasFindings ? "bg-red-500/10 border-b border-red-500/20" : "bg-green-500/8 border-b border-green-500/15")}>
@@ -750,11 +784,11 @@ function ScanPageInner() {
                                     )}
                                 </div>
                             </div>
-                        </ScrollReveal>
+                        </ResultReveal>
 
                         {/* ── Non-AI trackery (pro důvěryhodnost) ── */}
                         {trackers.length > 0 && (
-                            <ScrollReveal variant="fade-up" delay={2}>
+                            <ResultReveal step={2}>
                                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                     <div className="px-5 py-3 bg-slate-500/8 border-b border-slate-500/15">
                                         <div className="flex items-center justify-between">
@@ -790,12 +824,12 @@ function ScanPageInner() {
                                         </div>
                                     </div>
                                 </div>
-                            </ScrollReveal>
+                            </ResultReveal>
                         )}
 
                         {/* ── CTA: 24h hloubkový scan — ZDARMA ── */}
                         {hasFindings && (
-                            <ScrollReveal variant="fade-up" delay={3}>
+                            <ResultReveal step={3}>
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-fuchsia-500/8 border-2 border-fuchsia-500/25 p-6 text-center relative overflow-hidden">
                                     <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-fuchsia-500/10 blur-3xl" />
                                     <h3 className="font-bold text-white text-lg">
@@ -819,21 +853,21 @@ function ScanPageInner() {
                                     </a>
                                     <p className="text-xs text-slate-500 mt-2">Registrace zdarma • Výsledek na email do 24 h</p>
                                 </div>
-                            </ScrollReveal>
+                            </ResultReveal>
                         )}
 
                         {/* ── Seznam nálezů ── */}
                         {hasFindings ? (
                             <div>
-                                <ScrollReveal variant="fade-up" delay={4}>
+                                <ResultReveal step={4}>
                                     <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                                         <IconCpu className="w-5 h-5 text-fuchsia-400" />
                                         Nalezené AI systémy
                                     </h3>
-                                </ScrollReveal>
+                                </ResultReveal>
                                 <div className="space-y-3">
                                     {findings.map((f, fIdx) => (
-                                        <ScrollReveal key={f.id} variant="fade-up" delay={5 + Math.min(fIdx, 5)}>
+                                        <ResultReveal key={f.id} step={5 + Math.min(fIdx, 4)}>
                                             <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex items-center gap-2.5 min-w-0">
@@ -871,12 +905,12 @@ function ScanPageInner() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </ScrollReveal>
+                                        </ResultReveal>
                                     ))}
                                 </div>
                             </div>
                         ) : (
-                            <ScrollReveal>
+                            <ResultReveal step={2}>
                                 <div className="space-y-4">
                                     {/* Hlavní karta — varování nebo žádné nálezy */}
                                     {scanResult.scan_warning ? (() => {
@@ -922,11 +956,11 @@ function ScanPageInner() {
                                         </div>
                                     )}
                                 </div>
-                            </ScrollReveal>
+                            </ResultReveal>
                         )}
 
                         {/* ── Odeslat report / Dashboard redirect ── */}
-                        <ScrollReveal variant="fade-up" delay={8}>
+                        <ResultReveal step={hasFindings ? 9 : 3}>
                             {isLoggedIn ? (
                                 <div className="rounded-xl border border-green-500/15 bg-green-500/5 p-5 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -976,10 +1010,10 @@ function ScanPageInner() {
                                     <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
                                 </div>
                             )}
-                        </ScrollReveal>
+                        </ResultReveal>
 
                         {/* ── CTA ceník ── */}
-                        <ScrollReveal variant="fade-up" delay={9}>
+                        <ResultReveal step={hasFindings ? 10 : 4}>
                             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
                                 <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
                                 <p className="text-sm text-slate-400 mt-1">
@@ -989,7 +1023,7 @@ function ScanPageInner() {
                                     Zobrazit ceník služeb →
                                 </a>
                             </div>
-                        </ScrollReveal>
+                        </ResultReveal>
                     </div>
                 )}
 
