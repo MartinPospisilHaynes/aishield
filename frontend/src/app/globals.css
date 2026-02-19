@@ -151,6 +151,7 @@
         opacity: 0;
         transform: translateY(40px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -162,6 +163,7 @@
         opacity: 0;
         transform: translateX(-50px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -173,6 +175,7 @@
         opacity: 0;
         transform: translateX(50px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -184,6 +187,7 @@
         opacity: 0;
         transform: scale(0.88);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -192,10 +196,13 @@
 
 /* ── Neon CTA pulse — strong, eye-catching continuous pulse ── */
 @keyframes neonPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 0 20px rgba(232, 121, 249, 0.3), 0 0 40px rgba(232, 121, 249, 0.1);
     }
+
     50% {
         transform: scale(1.06);
         box-shadow: 0 0 35px rgba(232, 121, 249, 0.6), 0 0 70px rgba(232, 121, 249, 0.25), 0 0 100px rgba(192, 38, 211, 0.15);
@@ -204,10 +211,13 @@
 
 /* ── Subtle glow shimmer for highlighted panels ── */
 @keyframes glowShimmer {
-    0%, 100% {
+
+    0%,
+    100% {
         border-color: rgba(232, 121, 249, 0.2);
         box-shadow: 0 0 15px rgba(232, 121, 249, 0.05);
     }
+
     50% {
         border-color: rgba(34, 211, 238, 0.25);
         box-shadow: 0 0 25px rgba(34, 211, 238, 0.08);
@@ -216,8 +226,15 @@
 
 /* ── Floating bob for visual elements ── */
 @keyframes floatBob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
 }
 
 .scroll-reveal {
@@ -241,14 +258,37 @@
 }
 
 /* Stagger delays — clearly perceptible cascade */
-.scroll-reveal[data-delay="1"] { animation-delay: 0.15s; }
-.scroll-reveal[data-delay="2"] { animation-delay: 0.30s; }
-.scroll-reveal[data-delay="3"] { animation-delay: 0.45s; }
-.scroll-reveal[data-delay="4"] { animation-delay: 0.60s; }
-.scroll-reveal[data-delay="5"] { animation-delay: 0.75s; }
-.scroll-reveal[data-delay="6"] { animation-delay: 0.90s; }
-.scroll-reveal[data-delay="7"] { animation-delay: 1.05s; }
-.scroll-reveal[data-delay="8"] { animation-delay: 1.20s; }
+.scroll-reveal[data-delay="1"] {
+    animation-delay: 0.15s;
+}
+
+.scroll-reveal[data-delay="2"] {
+    animation-delay: 0.30s;
+}
+
+.scroll-reveal[data-delay="3"] {
+    animation-delay: 0.45s;
+}
+
+.scroll-reveal[data-delay="4"] {
+    animation-delay: 0.60s;
+}
+
+.scroll-reveal[data-delay="5"] {
+    animation-delay: 0.75s;
+}
+
+.scroll-reveal[data-delay="6"] {
+    animation-delay: 0.90s;
+}
+
+.scroll-reveal[data-delay="7"] {
+    animation-delay: 1.05s;
+}
+
+.scroll-reveal[data-delay="8"] {
+    animation-delay: 1.20s;
+}
 
 /* ── Persistent CTA pulse (always animating, not scroll-triggered) ── */
 .cta-pulse {

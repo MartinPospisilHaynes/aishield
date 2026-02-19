@@ -498,68 +498,68 @@ export default function HomePage() {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-20 lg:py-28 text-center">
                     {/* Countdown */}
                     <ScrollReveal variant="fade-up">
-                    <div className="mb-6">
-                        <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-4">
-                            Do plné účinnosti AI Act zbývá
-                        </p>
-                        <Countdown />
-                    </div>
+                        <div className="mb-6">
+                            <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-4">
+                                Do plné účinnosti AI Act zbývá
+                            </p>
+                            <Countdown />
+                        </div>
                     </ScrollReveal>
 
                     {/* Headline */}
                     <ScrollReveal variant="fade-up" delay={1}>
-                    <h1 className="mx-auto max-w-5xl text-2xl xs:text-3xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-8 sm:mt-10">
-                        Porušuje Váš web{" "}
-                        <span className="neon-text">nový zákon EU</span>
-                        {" "}o umělé inteligenci?
-                    </h1>
+                        <h1 className="mx-auto max-w-5xl text-2xl xs:text-3xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-8 sm:mt-10">
+                            Porušuje Váš web{" "}
+                            <span className="neon-text">nový zákon EU</span>
+                            {" "}o umělé inteligenci?
+                        </h1>
                     </ScrollReveal>
 
                     {/* Subheadline */}
                     <ScrollReveal variant="fade-up" delay={2}>
-                    <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-slate-400 leading-relaxed">
-                        Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
-                        Nestačí jen přidat zmínku o AI na cookie lištu — zákon vyžaduje mnohem víc.
-                    </p>
+                        <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-slate-400 leading-relaxed">
+                            Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
+                            Nestačí jen přidat zmínku o AI na cookie lištu — zákon vyžaduje mnohem víc.
+                        </p>
                     </ScrollReveal>
 
                     {/* CTA — Scanner Input — hned pod subheadline */}
                     <ScrollReveal variant="scale-up" delay={3}>
-                    <div className="mx-auto mt-8 max-w-xl">
-                        <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
-                            const form = e.currentTarget;
-                            const input = form.querySelector('input[name="url"]') as HTMLInputElement;
-                            let val = input.value.trim();
-                            if (val && !val.match(/^https?:\/\//i)) {
-                                val = 'https://' + val;
-                            }
-                            input.value = val;
-                        }}>
-                            <input
-                                type="text"
-                                name="url"
-                                placeholder="vasefirma.cz"
-                                required
-                                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white text-lg
+                        <div className="mx-auto mt-8 max-w-xl">
+                            <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
+                                const form = e.currentTarget;
+                                const input = form.querySelector('input[name="url"]') as HTMLInputElement;
+                                let val = input.value.trim();
+                                if (val && !val.match(/^https?:\/\//i)) {
+                                    val = 'https://' + val;
+                                }
+                                input.value = val;
+                            }}>
+                                <input
+                                    type="text"
+                                    name="url"
+                                    placeholder="vasefirma.cz"
+                                    required
+                                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white text-lg
                                     placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
                                     focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
-                            />
-                            <button type="submit" className="btn-primary cta-pulse whitespace-nowrap text-lg px-10 py-4 w-full sm:w-auto">
-                                Skenovat ZDARMA
-                            </button>
-                        </form>
-                        <p className="text-sm text-slate-400 mt-3 text-center">
-                            Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je <strong className="text-white">zdarma a nezávazné</strong>.
-                        </p>
-                    </div>
+                                />
+                                <button type="submit" className="btn-primary cta-pulse whitespace-nowrap text-lg px-10 py-4 w-full sm:w-auto">
+                                    Skenovat ZDARMA
+                                </button>
+                            </form>
+                            <p className="text-sm text-slate-400 mt-3 text-center">
+                                Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je <strong className="text-white">zdarma a nezávazné</strong>.
+                            </p>
+                        </div>
                     </ScrollReveal>
 
                     {/* Povinnosti — odrážky */}
                     <div className="mx-auto mt-12 max-w-2xl text-left">
                         <ScrollReveal variant="fade-up">
-                        <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
-                            Co zákon vyžaduje od webů a e-shopů
-                        </h3>
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
+                                Co zákon vyžaduje od webů a e-shopů
+                            </h3>
                         </ScrollReveal>
                         <div className="grid sm:grid-cols-2 gap-3">
                             {[
@@ -650,21 +650,21 @@ export default function HomePage() {
                                 },
                             ].map((item, i) => (
                                 <ScrollReveal key={i} variant={i % 2 === 0 ? "slide-left" : "slide-right"} delay={i + 1}>
-                                <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
-                                    <span className="mt-0.5 flex-shrink-0">{item.icon}</span>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-200">{item.title}</p>
-                                        <ul className="mt-1.5 space-y-1">
-                                            {item.bullets.map((b, j) => (
-                                                <li key={j} className="flex items-start gap-1.5 text-xs text-slate-400 leading-relaxed">
-                                                    <span className="text-slate-600 mt-1 flex-shrink-0">•</span>
-                                                    {b}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <p className="text-xs text-fuchsia-400/70 mt-2 font-medium">✦ {item.solution}</p>
+                                    <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
+                                        <span className="mt-0.5 flex-shrink-0">{item.icon}</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-200">{item.title}</p>
+                                            <ul className="mt-1.5 space-y-1">
+                                                {item.bullets.map((b, j) => (
+                                                    <li key={j} className="flex items-start gap-1.5 text-xs text-slate-400 leading-relaxed">
+                                                        <span className="text-slate-600 mt-1 flex-shrink-0">•</span>
+                                                        {b}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <p className="text-xs text-fuchsia-400/70 mt-2 font-medium">✦ {item.solution}</p>
+                                        </div>
                                     </div>
-                                </div>
                                 </ScrollReveal>
                             ))}
                         </div>
@@ -672,26 +672,26 @@ export default function HomePage() {
 
                     {/* Warning box */}
                     <ScrollReveal variant="scale-up">
-                    <div className="mx-auto mt-8 max-w-2xl">
-                        <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5 glow-border">
-                            <div className="flex items-start gap-3">
-                                <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
-                                </svg>
-                                <div className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                                    <p className="font-medium">
-                                        Po 2. srpnu 2026 začne EU{" "}
-                                        <strong className="text-white">systematicky kontrolovat weby a e-shopy</strong>{" "}
-                                        pomocí automatizovaných nástrojů.
-                                    </p>
-                                    <p className="mt-2 text-slate-400">
-                                        Náš sken funguje na stejném principu — odhalí přesně to, co najdou kontrolní orgány.
-                                        Zjistěte stav svého webu dříve, než to udělá někdo jiný.
-                                    </p>
+                        <div className="mx-auto mt-8 max-w-2xl">
+                            <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5 glow-border">
+                                <div className="flex items-start gap-3">
+                                    <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
+                                    </svg>
+                                    <div className="text-sm sm:text-base text-slate-300 leading-relaxed">
+                                        <p className="font-medium">
+                                            Po 2. srpnu 2026 začne EU{" "}
+                                            <strong className="text-white">systematicky kontrolovat weby a e-shopy</strong>{" "}
+                                            pomocí automatizovaných nástrojů.
+                                        </p>
+                                        <p className="mt-2 text-slate-400">
+                                            Náš sken funguje na stejném principu — odhalí přesně to, co najdou kontrolní orgány.
+                                            Zjistěte stav svého webu dříve, než to udělá někdo jiný.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     </ScrollReveal>
                 </div>
             </section>
@@ -703,23 +703,23 @@ export default function HomePage() {
 
                 <div className="mx-auto max-w-5xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-12 sm:mb-16">
-                        <div className="neon-divider mb-6" />
-                        <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                            </span>
-                            Unikátní v ČR
+                        <div className="text-center mb-12 sm:mb-16">
+                            <div className="neon-divider mb-6" />
+                            <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                                </span>
+                                Unikátní v ČR
+                            </div>
+                            <h2 className="text-3xl font-extrabold sm:text-5xl leading-tight">
+                                24hodinový hloubkový <span className="neon-text">scan</span>
+                            </h2>
+                            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+                                Jeden rychlý scan nestačí. AI systémy se na webu chovají různě podle času, lokace i&nbsp;zařízení.
+                                Proto provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze&nbsp;7 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
+                            </p>
                         </div>
-                        <h2 className="text-3xl font-extrabold sm:text-5xl leading-tight">
-                            24hodinový hloubkový <span className="neon-text">scan</span>
-                        </h2>
-                        <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-                            Jeden rychlý scan nestačí. AI systémy se na webu chovají různě podle času, lokace i&nbsp;zařízení.
-                            Proto provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze&nbsp;7 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
-                        </p>
-                    </div>
                     </ScrollReveal>
 
                     {/* Globe visual + features */}
@@ -727,30 +727,30 @@ export default function HomePage() {
 
                         {/* Left — Globe / map visual */}
                         <ScrollReveal variant="scale-up" delay={1}>
-                        <div className="relative">
-                            <div className="glass p-8 sm:p-10 text-center float-bob">
-                                <div className="text-6xl sm:text-7xl mb-4">🌍</div>
-                                <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
-                                    {[
-                                        { flag: "🇨🇿", code: "CZ" },
-                                        { flag: "🇬🇧", code: "GB" },
-                                        { flag: "🇺🇸", code: "US" },
-                                        { flag: "🇧🇷", code: "BR" },
-                                        { flag: "🇯🇵", code: "JP" },
-                                        { flag: "🇿🇦", code: "ZA" },
-                                        { flag: "🇦🇺", code: "AU" },
-                                    ].map((c) => (
-                                        <div key={c.code} className="flex flex-col items-center gap-1 rounded-lg bg-white/5 border border-white/10 py-2 px-1">
-                                            <span className="text-xl">{c.flag}</span>
-                                            <span className="text-[10px] text-slate-500 font-mono">{c.code}</span>
-                                        </div>
-                                    ))}
+                            <div className="relative">
+                                <div className="glass p-8 sm:p-10 text-center float-bob">
+                                    <div className="text-6xl sm:text-7xl mb-4">🌍</div>
+                                    <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
+                                        {[
+                                            { flag: "🇨🇿", code: "CZ" },
+                                            { flag: "🇬🇧", code: "GB" },
+                                            { flag: "🇺🇸", code: "US" },
+                                            { flag: "🇧🇷", code: "BR" },
+                                            { flag: "🇯🇵", code: "JP" },
+                                            { flag: "🇿🇦", code: "ZA" },
+                                            { flag: "🇦🇺", code: "AU" },
+                                        ].map((c) => (
+                                            <div key={c.code} className="flex flex-col items-center gap-1 rounded-lg bg-white/5 border border-white/10 py-2 px-1">
+                                                <span className="text-xl">{c.flag}</span>
+                                                <span className="text-[10px] text-slate-500 font-mono">{c.code}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-sm text-slate-400">
+                                        <strong className="text-white">24 skenů</strong> z rezidenčních IP adres v&nbsp;7 zemích za 24 hodin
+                                    </p>
                                 </div>
-                                <p className="text-sm text-slate-400">
-                                    <strong className="text-white">24 skenů</strong> z rezidenčních IP adres v&nbsp;7 zemích za 24 hodin
-                                </p>
                             </div>
-                        </div>
                         </ScrollReveal>
 
                         {/* Right — Feature list */}
@@ -786,15 +786,15 @@ export default function HomePage() {
                                 },
                             ].map((item, i) => (
                                 <ScrollReveal key={i} variant="scale-up" delay={i + 1}>
-                                <div className="flex gap-4 items-start">
-                                    <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                        {item.icon}
+                                    <div className="flex gap-4 items-start">
+                                        <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-white">{item.title}</h3>
+                                            <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-white">{item.title}</h3>
-                                        <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
-                                    </div>
-                                </div>
                                 </ScrollReveal>
                             ))}
                         </div>
@@ -802,22 +802,22 @@ export default function HomePage() {
 
                     {/* CTA */}
                     <ScrollReveal variant="scale-up">
-                    <div className="mt-12 sm:mt-16 text-center">
-                        <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
-                            <h3 className="text-xl sm:text-2xl font-bold mb-3">
-                                Chcete kompletní přehled?
-                            </h3>
-                            <p className="text-slate-400 mb-6">
-                                Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
-                                O&nbsp;výsledku vás budeme informovat e-mailem.
-                            </p>
-                            <a href="/registrace" className="btn-primary cta-pulse text-base px-10 py-4 inline-flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
-                                Registrovat se a spustit 24h scan
-                            </a>
-                            <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
+                        <div className="mt-12 sm:mt-16 text-center">
+                            <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
+                                <h3 className="text-xl sm:text-2xl font-bold mb-3">
+                                    Chcete kompletní přehled?
+                                </h3>
+                                <p className="text-slate-400 mb-6">
+                                    Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
+                                    O&nbsp;výsledku vás budeme informovat e-mailem.
+                                </p>
+                                <a href="/registrace" className="btn-primary cta-pulse text-base px-10 py-4 inline-flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
+                                    Registrovat se a spustit 24h scan
+                                </a>
+                                <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
+                            </div>
                         </div>
-                    </div>
                     </ScrollReveal>
                 </div>
             </section>
@@ -835,23 +835,23 @@ export default function HomePage() {
                             { value: "94 %", label: "Webů s alespoň 1 AI", color: "text-orange-400" },
                         ].map((stat, i) => (
                             <ScrollReveal key={i} variant="fade-up" delay={i + 1}>
-                            <div className="glass p-5 sm:p-6 text-center">
-                                <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${stat.color}`}>
-                                    {stat.value}
-                                </p>
-                                <p className="text-xs sm:text-sm text-slate-500 mt-1">{stat.label}</p>
-                            </div>
+                                <div className="glass p-5 sm:p-6 text-center">
+                                    <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${stat.color}`}>
+                                        {stat.value}
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-slate-500 mt-1">{stat.label}</p>
+                                </div>
                             </ScrollReveal>
                         ))}
                     </div>
 
                     {/* ── Testimonials carousel ── */}
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-8">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
-                    </div>
-                    <TestimonialCarousel />
+                        <div className="text-center mb-8">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
+                        </div>
+                        <TestimonialCarousel />
                     </ScrollReveal>
                 </div>
             </section>
@@ -859,35 +859,35 @@ export default function HomePage() {
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-10 sm:mb-12">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            Proč by vás to mělo <span className="neon-text">zajímat</span>?
-                        </h2>
-                        <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
-                            A týká se i VAŠÍ firmy.
-                        </p>
-                    </div>
+                        <div className="text-center mb-10 sm:mb-12">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Proč by vás to mělo <span className="neon-text">zajímat</span>?
+                            </h2>
+                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
+                                Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
+                                A týká se i VAŠÍ firmy.
+                            </p>
+                        </div>
                     </ScrollReveal>
 
                     {/* First in CZ panel */}
                     <ScrollReveal variant="scale-up" delay={1}>
-                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
-                        <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
-                            <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
+                        <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
+                            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
+                                <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
+                            <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                                Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
+                                přes kompletní dokumentaci, až po průběžný monitoring.
+                                Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
+                                My Vám pomůžeme splnit zákon jednoduše a bez stresu.
+                                Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
+                                než je byrokracie z Bruselu. Jako je například Vaše podnikání.
+                            </p>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
-                        <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                            Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
-                            přes kompletní dokumentaci, až po průběžný monitoring.
-                            Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
-                            My Vám pomůžeme splnit zákon jednoduše a bez stresu.
-                            Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
-                            než je byrokracie z Bruselu. Jako je například Vaše podnikání.
-                        </p>
-                    </div>
                     </ScrollReveal>
                 </div>
             </section>
@@ -896,76 +896,76 @@ export default function HomePage() {
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-12 sm:mb-16">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            Jak to <span className="neon-text">funguje</span>?
-                        </h2>
-                        <p className="mt-4 text-slate-400">
-                            Čtyři jednoduché kroky — a máte vše vyřešeno.
-                        </p>
-                    </div>
+                        <div className="text-center mb-12 sm:mb-16">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Jak to <span className="neon-text">funguje</span>?
+                            </h2>
+                            <p className="mt-4 text-slate-400">
+                                Čtyři jednoduché kroky — a máte vše vyřešeno.
+                            </p>
+                        </div>
                     </ScrollReveal>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                         {/* Krok 1 */}
                         <ScrollReveal variant="fade-up" delay={1}>
-                        <div className="glass p-5 sm:p-8 text-center relative">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-sm font-bold">1</div>
-                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                            <div className="glass p-5 sm:p-8 text-center relative">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-sm font-bold">1</div>
+                                <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-fuchsia" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold mb-2">Sken vašeho webu</h3>
+                                <p className="text-xs sm:text-sm text-slate-400">
+                                    Zadáte adresu webu. Náš robot ho proskenuje
+                                    a najde všechny AI systémy — zcela zdarma.
+                                </p>
                             </div>
-                            <h3 className="text-base sm:text-lg font-semibold mb-2">Sken vašeho webu</h3>
-                            <p className="text-xs sm:text-sm text-slate-400">
-                                Zadáte adresu webu. Náš robot ho proskenuje
-                                a najde všechny AI systémy — zcela zdarma.
-                            </p>
-                        </div>
                         </ScrollReveal>
 
                         {/* Krok 2 */}
                         <ScrollReveal variant="fade-up" delay={2}>
-                        <div className="glass p-5 sm:p-8 text-center relative">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold">2</div>
-                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                            <div className="glass p-5 sm:p-8 text-center relative">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold">2</div>
+                                <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-neon-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold mb-2">Vyberete si služby</h3>
+                                <p className="text-xs sm:text-sm text-slate-400">
+                                    Na základě výsledků si zvolíte, co potřebujete.
+                                    Celý balíček nebo jen vybrané dokumenty.
+                                </p>
                             </div>
-                            <h3 className="text-base sm:text-lg font-semibold mb-2">Vyberete si služby</h3>
-                            <p className="text-xs sm:text-sm text-slate-400">
-                                Na základě výsledků si zvolíte, co potřebujete.
-                                Celý balíček nebo jen vybrané dokumenty.
-                            </p>
-                        </div>
                         </ScrollReveal>
 
                         {/* Krok 3 */}
                         <ScrollReveal variant="fade-up" delay={3}>
-                        <div className="glass p-5 sm:p-8 text-center relative">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-sm font-bold">3</div>
-                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                            <div className="glass p-5 sm:p-8 text-center relative">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-sm font-bold">3</div>
+                                <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold mb-2">Vyplníte dotazník</h3>
+                                <p className="text-xs sm:text-sm text-slate-400">
+                                    AI Act se netýká jen webu — reguluje i interní nástroje (ChatGPT, účetnictví, HR…).
+                                    Dotazník pokryje celou AI politiku firmy. 5 minut, většinou jen klikáte.
+                                </p>
                             </div>
-                            <h3 className="text-base sm:text-lg font-semibold mb-2">Vyplníte dotazník</h3>
-                            <p className="text-xs sm:text-sm text-slate-400">
-                                AI Act se netýká jen webu — reguluje i interní nástroje (ChatGPT, účetnictví, HR…).
-                                Dotazník pokryje celou AI politiku firmy. 5 minut, většinou jen klikáte.
-                            </p>
-                        </div>
                         </ScrollReveal>
 
                         {/* Krok 4 */}
                         <ScrollReveal variant="fade-up" delay={4}>
-                        <div className="glass p-5 sm:p-8 text-center relative">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-sm font-bold">4</div>
-                            <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                            <div className="glass p-5 sm:p-8 text-center relative">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-sm font-bold">4</div>
+                                <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                                </div>
+                                <h3 className="text-base sm:text-lg font-semibold mb-2">Dostanete dokumenty</h3>
+                                <p className="text-xs sm:text-sm text-slate-400">
+                                    Do 7 dnů obdržíte vše, co váš balíček obsahuje.
+                                    Kompletní servis — máte vyřešeno, můžete být v klidu.
+                                </p>
                             </div>
-                            <h3 className="text-base sm:text-lg font-semibold mb-2">Dostanete dokumenty</h3>
-                            <p className="text-xs sm:text-sm text-slate-400">
-                                Do 7 dnů obdržíte vše, co váš balíček obsahuje.
-                                Kompletní servis — máte vyřešeno, můžete být v klidu.
-                            </p>
-                        </div>
                         </ScrollReveal>
                     </div>
                 </div>
@@ -974,22 +974,22 @@ export default function HomePage() {
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-10 sm:mb-16">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            Až 12 dokumentů <span className="neon-text">na míru</span>
-                        </h2>
-                        <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                            Generujeme jen dokumenty, které vaše firma skutečně potřebuje — podle rizikového profilu.
-                            Klikněte na položku pro podrobný popis.
-                        </p>
-                    </div>
+                        <div className="text-center mb-10 sm:mb-16">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Až 12 dokumentů <span className="neon-text">na míru</span>
+                            </h2>
+                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
+                                Generujeme jen dokumenty, které vaše firma skutečně potřebuje — podle rizikového profilu.
+                                Klikněte na položku pro podrobný popis.
+                            </p>
+                        </div>
                     </ScrollReveal>
 
                     <div className="mx-auto max-w-2xl space-y-2">
                         {DELIVERABLES.map((item, i) => (
                             <ScrollReveal key={i} variant="fade-up" delay={Math.min(i + 1, 6)}>
-                            <DeliverableCard item={item} />
+                                <DeliverableCard item={item} />
                             </ScrollReveal>
                         ))}
                     </div>
@@ -999,22 +999,22 @@ export default function HomePage() {
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-10 sm:mb-16">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">Časté <span className="neon-text">otázky</span></h2>
-                    </div>
+                        <div className="text-center mb-10 sm:mb-16">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">Časté <span className="neon-text">otázky</span></h2>
+                        </div>
                     </ScrollReveal>
 
                     <div className="space-y-4">
                         {FAQ_ITEMS.map((item, i) => (
                             <ScrollReveal key={i} variant="fade-up" delay={Math.min(i + 1, 8)}>
-                            <details className="glass group cursor-pointer">
-                                <summary className="flex items-center justify-between font-semibold text-slate-200 list-none">
-                                    {item.q}
-                                    <svg className="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                </summary>
-                                <p className="mt-3 text-sm text-slate-400 leading-relaxed">{item.a}</p>
-                            </details>
+                                <details className="glass group cursor-pointer">
+                                    <summary className="flex items-center justify-between font-semibold text-slate-200 list-none">
+                                        {item.q}
+                                        <svg className="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </summary>
+                                    <p className="mt-3 text-sm text-slate-400 leading-relaxed">{item.a}</p>
+                                </details>
                             </ScrollReveal>
                         ))}
                     </div>
@@ -1024,34 +1024,34 @@ export default function HomePage() {
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
                     <ScrollReveal variant="fade-up">
-                    <div className="text-center mb-10">
-                        <div className="neon-divider mb-6" />
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">
-                            Máte <span className="neon-text">otázku</span>?
-                        </h2>
-                        <p className="mt-4 text-slate-400 max-w-xl mx-auto">
-                            Napište nám nebo zavolejte — poradíme vám nezávazně a zdarma.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-                            <a
-                                href="tel:+420732716141"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-green-500/25 hover:bg-green-500 transition"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
-                                +420 732 716 141
-                            </a>
-                            <a
-                                href="mailto:info@aishield.cz"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/15 transition"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-                                info@aishield.cz
-                            </a>
+                        <div className="text-center mb-10">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Máte <span className="neon-text">otázku</span>?
+                            </h2>
+                            <p className="mt-4 text-slate-400 max-w-xl mx-auto">
+                                Napište nám nebo zavolejte — poradíme vám nezávazně a zdarma.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                                <a
+                                    href="tel:+420732716141"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-green-500/25 hover:bg-green-500 transition"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
+                                    +420 732 716 141
+                                </a>
+                                <a
+                                    href="mailto:info@aishield.cz"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/15 transition"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                                    info@aishield.cz
+                                </a>
+                            </div>
                         </div>
-                    </div>
                     </ScrollReveal>
                     <ScrollReveal variant="scale-up" delay={1}>
-                    <ContactForm />
+                        <ContactForm />
                     </ScrollReveal>
                 </div>
             </section>
@@ -1064,29 +1064,29 @@ export default function HomePage() {
 
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
                     <ScrollReveal variant="fade-up">
-                    <h2 className="text-3xl font-extrabold sm:text-4xl">
-                        Nečekejte na pokutu.
-                    </h2>
-                    <p className="mt-4 text-slate-400">
-                        Zjistěte stav vašeho webu teď — skenování je <strong className="text-white">zdarma</strong> a trvá méně než minutu.
-                    </p>
+                        <h2 className="text-3xl font-extrabold sm:text-4xl">
+                            Nečekejte na pokutu.
+                        </h2>
+                        <p className="mt-4 text-slate-400">
+                            Zjistěte stav vašeho webu teď — skenování je <strong className="text-white">zdarma</strong> a trvá méně než minutu.
+                        </p>
                     </ScrollReveal>
                     <ScrollReveal variant="scale-up" delay={1}>
-                    <div className="mt-8 flex justify-center">
-                        <a href="/scan" className="btn-primary cta-pulse text-base px-10 py-4">
-                            Skenovat můj web ZDARMA
-                        </a>
-                    </div>
+                        <div className="mt-8 flex justify-center">
+                            <a href="/scan" className="btn-primary cta-pulse text-base px-10 py-4">
+                                Skenovat můj web ZDARMA
+                            </a>
+                        </div>
                     </ScrollReveal>
 
                     {/* Bottom countdown */}
                     <ScrollReveal variant="fade-up" delay={2}>
-                    <div className="mt-12">
-                        <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-3">
-                            Do plné účinnosti AI Act zbývá
-                        </p>
-                        <Countdown className="" />
-                    </div>
+                        <div className="mt-12">
+                            <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-3">
+                                Do plné účinnosti AI Act zbývá
+                            </p>
+                            <Countdown className="" />
+                        </div>
                     </ScrollReveal>
                 </div>
             </section>
