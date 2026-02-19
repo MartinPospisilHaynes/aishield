@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Countdown from "@/components/countdown";
 import ContactForm from "@/components/contact-form";
+import ScrollReveal from "@/components/scroll-reveal";
 import { useScrollTracking } from "@/lib/analytics";
 
 /* ─── Inline SVG icons (no emoji) ─── */
@@ -496,27 +497,34 @@ export default function HomePage() {
 
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-20 lg:py-28 text-center">
                     {/* Countdown */}
+                    <ScrollReveal variant="fade-up">
                     <div className="mb-6">
                         <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-4">
                             Do plné účinnosti AI Act zbývá
                         </p>
                         <Countdown />
                     </div>
+                    </ScrollReveal>
 
                     {/* Headline */}
+                    <ScrollReveal variant="fade-up" delay={1}>
                     <h1 className="mx-auto max-w-5xl text-2xl xs:text-3xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-tight mt-8 sm:mt-10">
                         Porušuje Váš web{" "}
                         <span className="neon-text">nový zákon EU</span>
                         {" "}o umělé inteligenci?
                     </h1>
+                    </ScrollReveal>
 
                     {/* Subheadline */}
+                    <ScrollReveal variant="fade-up" delay={2}>
                     <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-slate-400 leading-relaxed">
                         Od <strong className="text-white">2. srpna 2026</strong> platí EU AI Act.
                         Nestačí jen přidat zmínku o AI na cookie lištu — zákon vyžaduje mnohem víc.
                     </p>
+                    </ScrollReveal>
 
                     {/* CTA — Scanner Input — hned pod subheadline */}
+                    <ScrollReveal variant="scale-up" delay={3}>
                     <div className="mx-auto mt-8 max-w-xl">
                         <form className="flex flex-col sm:flex-row gap-3" action="/scan" onSubmit={(e) => {
                             const form = e.currentTarget;
@@ -536,7 +544,7 @@ export default function HomePage() {
                                     placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
                                     focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
                             />
-                            <button type="submit" className="btn-primary whitespace-nowrap text-lg px-10 py-4 w-full sm:w-auto">
+                            <button type="submit" className="btn-primary cta-pulse whitespace-nowrap text-lg px-10 py-4 w-full sm:w-auto">
                                 Skenovat ZDARMA
                             </button>
                         </form>
@@ -544,12 +552,15 @@ export default function HomePage() {
                             Zjistěte za minutu, jaké AI systémy běží na vašem webu. Skenování je <strong className="text-white">zdarma a nezávazné</strong>.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     {/* Povinnosti — odrážky */}
                     <div className="mx-auto mt-12 max-w-2xl text-left">
+                        <ScrollReveal variant="fade-up">
                         <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
                             Co zákon vyžaduje od webů a e-shopů
                         </h3>
+                        </ScrollReveal>
                         <div className="grid sm:grid-cols-2 gap-3">
                             {[
                                 {
@@ -638,7 +649,8 @@ export default function HomePage() {
                                     solution: "Vytvoříme AI Policy na míru vaší firmě",
                                 },
                             ].map((item, i) => (
-                                <div key={i} className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
+                                <ScrollReveal key={i} variant={i % 2 === 0 ? "slide-left" : "slide-right"} delay={i + 1}>
+                                <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
                                     <span className="mt-0.5 flex-shrink-0">{item.icon}</span>
                                     <div>
                                         <p className="text-sm font-semibold text-slate-200">{item.title}</p>
@@ -653,13 +665,15 @@ export default function HomePage() {
                                         <p className="text-xs text-fuchsia-400/70 mt-2 font-medium">✦ {item.solution}</p>
                                     </div>
                                 </div>
+                                </ScrollReveal>
                             ))}
                         </div>
                     </div>
 
                     {/* Warning box */}
+                    <ScrollReveal variant="scale-up">
                     <div className="mx-auto mt-8 max-w-2xl">
-                        <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5">
+                        <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5 glow-border">
                             <div className="flex items-start gap-3">
                                 <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
@@ -678,10 +692,9 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
+                    </ScrollReveal>
                 </div>
             </section>
-
-            {/* ── 24H HLOUBKOVÝ SCAN ── */}
             <section className="border-t border-white/[0.06] py-16 sm:py-24 relative overflow-hidden">
                 <div className="absolute inset-0 -z-10">
                     <div className="absolute top-[30%] left-[10%] h-[500px] w-[500px] rounded-full bg-cyan-600/8 blur-[120px]" />
@@ -689,6 +702,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-12 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
@@ -706,13 +720,15 @@ export default function HomePage() {
                             Proto provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze&nbsp;7 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     {/* Globe visual + features */}
                     <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
 
                         {/* Left — Globe / map visual */}
+                        <ScrollReveal variant="scale-up" delay={1}>
                         <div className="relative">
-                            <div className="glass p-8 sm:p-10 text-center">
+                            <div className="glass p-8 sm:p-10 text-center float-bob">
                                 <div className="text-6xl sm:text-7xl mb-4">🌍</div>
                                 <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
                                     {[
@@ -735,6 +751,7 @@ export default function HomePage() {
                                 </p>
                             </div>
                         </div>
+                        </ScrollReveal>
 
                         {/* Right — Feature list */}
                         <div className="space-y-5">
@@ -768,7 +785,8 @@ export default function HomePage() {
                                     desc: "Po dokončení všech 24 skenů vám pošleme kompletní report — deduplikovaný přehled všech nalezených AI systémů s označením, kde a kdy byly detekovány."
                                 },
                             ].map((item, i) => (
-                                <div key={i} className="flex gap-4 items-start">
+                                <ScrollReveal key={i} variant="scale-up" delay={i + 1}>
+                                <div className="flex gap-4 items-start">
                                     <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                                         {item.icon}
                                     </div>
@@ -777,11 +795,13 @@ export default function HomePage() {
                                         <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
                                     </div>
                                 </div>
+                                </ScrollReveal>
                             ))}
                         </div>
                     </div>
 
                     {/* CTA */}
+                    <ScrollReveal variant="scale-up">
                     <div className="mt-12 sm:mt-16 text-center">
                         <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
                             <h3 className="text-xl sm:text-2xl font-bold mb-3">
@@ -791,13 +811,14 @@ export default function HomePage() {
                                 Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
                                 O&nbsp;výsledku vás budeme informovat e-mailem.
                             </p>
-                            <a href="/registrace" className="btn-primary text-base px-10 py-4 inline-flex items-center gap-2">
+                            <a href="/registrace" className="btn-primary cta-pulse text-base px-10 py-4 inline-flex items-center gap-2">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
                                 Registrovat se a spustit 24h scan
                             </a>
                             <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
                         </div>
                     </div>
+                    </ScrollReveal>
                 </div>
             </section>
 
@@ -813,26 +834,31 @@ export default function HomePage() {
                             { value: "3,4", label: "Průměr AI systémů na web", color: "text-purple-400" },
                             { value: "94 %", label: "Webů s alespoň 1 AI", color: "text-orange-400" },
                         ].map((stat, i) => (
-                            <div key={i} className="glass p-5 sm:p-6 text-center">
+                            <ScrollReveal key={i} variant="fade-up" delay={i + 1}>
+                            <div className="glass p-5 sm:p-6 text-center">
                                 <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${stat.color}`}>
                                     {stat.value}
                                 </p>
                                 <p className="text-xs sm:text-sm text-slate-500 mt-1">{stat.label}</p>
                             </div>
+                            </ScrollReveal>
                         ))}
                     </div>
 
                     {/* ── Testimonials carousel ── */}
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-8">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
                     </div>
                     <TestimonialCarousel />
+                    </ScrollReveal>
                 </div>
             </section>
 
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-10 sm:mb-12">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -843,9 +869,11 @@ export default function HomePage() {
                             A týká se i VAŠÍ firmy.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     {/* First in CZ panel */}
-                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center">
+                    <ScrollReveal variant="scale-up" delay={1}>
+                    <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
                         <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
                             <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                             <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
@@ -860,12 +888,14 @@ export default function HomePage() {
                             než je byrokracie z Bruselu. Jako je například Vaše podnikání.
                         </p>
                     </div>
+                    </ScrollReveal>
                 </div>
             </section>
 
             {/* ══════ JAK TO FUNGUJE ══════ */}
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-12 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -875,9 +905,11 @@ export default function HomePage() {
                             Čtyři jednoduché kroky — a máte vše vyřešeno.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                         {/* Krok 1 */}
+                        <ScrollReveal variant="fade-up" delay={1}>
                         <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-sm font-bold">1</div>
                             <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
@@ -889,8 +921,10 @@ export default function HomePage() {
                                 a najde všechny AI systémy — zcela zdarma.
                             </p>
                         </div>
+                        </ScrollReveal>
 
                         {/* Krok 2 */}
+                        <ScrollReveal variant="fade-up" delay={2}>
                         <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold">2</div>
                             <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -902,8 +936,10 @@ export default function HomePage() {
                                 Celý balíček nebo jen vybrané dokumenty.
                             </p>
                         </div>
+                        </ScrollReveal>
 
                         {/* Krok 3 */}
+                        <ScrollReveal variant="fade-up" delay={3}>
                         <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-sm font-bold">3</div>
                             <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
@@ -915,8 +951,10 @@ export default function HomePage() {
                                 Dotazník pokryje celou AI politiku firmy. 5 minut, většinou jen klikáte.
                             </p>
                         </div>
+                        </ScrollReveal>
 
                         {/* Krok 4 */}
+                        <ScrollReveal variant="fade-up" delay={4}>
                         <div className="glass p-5 sm:p-8 text-center relative">
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-sm font-bold">4</div>
                             <div className="mt-4 mb-4 mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -928,12 +966,14 @@ export default function HomePage() {
                                 Kompletní servis — máte vyřešeno, můžete být v klidu.
                             </p>
                         </div>
+                        </ScrollReveal>
                     </div>
                 </div>
             </section>
 
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -944,10 +984,13 @@ export default function HomePage() {
                             Klikněte na položku pro podrobný popis.
                         </p>
                     </div>
+                    </ScrollReveal>
 
                     <div className="mx-auto max-w-2xl space-y-2">
                         {DELIVERABLES.map((item, i) => (
-                            <DeliverableCard key={i} item={item} />
+                            <ScrollReveal key={i} variant="fade-up" delay={Math.min(i + 1, 6)}>
+                            <DeliverableCard item={item} />
+                            </ScrollReveal>
                         ))}
                     </div>
                 </div>
@@ -955,20 +998,24 @@ export default function HomePage() {
 
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-10 sm:mb-16">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">Časté <span className="neon-text">otázky</span></h2>
                     </div>
+                    </ScrollReveal>
 
                     <div className="space-y-4">
                         {FAQ_ITEMS.map((item, i) => (
-                            <details key={i} className="glass group cursor-pointer">
+                            <ScrollReveal key={i} variant="fade-up" delay={Math.min(i + 1, 8)}>
+                            <details className="glass group cursor-pointer">
                                 <summary className="flex items-center justify-between font-semibold text-slate-200 list-none">
                                     {item.q}
                                     <svg className="w-5 h-5 text-slate-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </summary>
                                 <p className="mt-3 text-sm text-slate-400 leading-relaxed">{item.a}</p>
                             </details>
+                            </ScrollReveal>
                         ))}
                     </div>
                 </div>
@@ -976,6 +1023,7 @@ export default function HomePage() {
 
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
                     <div className="text-center mb-10">
                         <div className="neon-divider mb-6" />
                         <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -1001,7 +1049,10 @@ export default function HomePage() {
                             </a>
                         </div>
                     </div>
+                    </ScrollReveal>
+                    <ScrollReveal variant="scale-up" delay={1}>
                     <ContactForm />
+                    </ScrollReveal>
                 </div>
             </section>
 
@@ -1012,25 +1063,31 @@ export default function HomePage() {
                 </div>
 
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
+                    <ScrollReveal variant="fade-up">
                     <h2 className="text-3xl font-extrabold sm:text-4xl">
                         Nečekejte na pokutu.
                     </h2>
                     <p className="mt-4 text-slate-400">
                         Zjistěte stav vašeho webu teď — skenování je <strong className="text-white">zdarma</strong> a trvá méně než minutu.
                     </p>
+                    </ScrollReveal>
+                    <ScrollReveal variant="scale-up" delay={1}>
                     <div className="mt-8 flex justify-center">
-                        <a href="/scan" className="btn-primary text-base px-10 py-4">
+                        <a href="/scan" className="btn-primary cta-pulse text-base px-10 py-4">
                             Skenovat můj web ZDARMA
                         </a>
                     </div>
+                    </ScrollReveal>
 
                     {/* Bottom countdown */}
+                    <ScrollReveal variant="fade-up" delay={2}>
                     <div className="mt-12">
                         <p className="text-sm font-medium uppercase tracking-wider text-red-400 mb-3">
                             Do plné účinnosti AI Act zbývá
                         </p>
                         <Countdown className="" />
                     </div>
+                    </ScrollReveal>
                 </div>
             </section>
         </>
