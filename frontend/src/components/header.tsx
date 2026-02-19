@@ -42,7 +42,6 @@ export default function Header() {
     }, [mobileOpen]);
 
     const NAV_LINKS = [
-        { href: "/scan", icon: (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>), label: "Skenovat web", desc: "AI audit vašeho webu zdarma" },
         { href: "/pricing", icon: (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>), label: "Ceník", desc: "Balíčky a ceny služeb" },
         { href: "/about", icon: (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>), label: "Jak to funguje", desc: "Postup naší práce" },
     ];
@@ -72,9 +71,6 @@ export default function Header() {
 
                 {/* Desktop nav */}
                 <div className="hidden md:flex items-center gap-8">
-                    <a href="/scan" className={`text-base transition-colors ${isActive("/scan") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
-                        Skenovat web
-                    </a>
                     <a href="/pricing" className={`text-base transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
@@ -133,6 +129,11 @@ export default function Header() {
                             </a>
                         </>
                     )}
+
+                    {/* Main CTA — always visible */}
+                    <a href="/scan" className="btn-primary cta-pulse text-sm px-5 py-2.5 whitespace-nowrap">
+                        Skenovat WEB
+                    </a>
                 </div>
 
                 {/* ── Mobile hamburger ── */}
@@ -202,6 +203,23 @@ export default function Header() {
                                 <div className="text-[15px] font-semibold text-fuchsia-400">HELPLINKA</div>
                                 <div className="text-xs text-slate-400 mt-0.5">732 716 141 — volejte kdykoliv</div>
                             </div>
+                        </a>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mx-6 border-t border-white/[0.06]" />
+
+                    {/* Scan CTA */}
+                    <div className="px-4 py-3">
+                        <a
+                            href="/scan"
+                            onClick={() => setMobileOpen(false)}
+                            className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl btn-primary cta-pulse text-base font-semibold active:scale-[0.98] transition-all"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                            Skenovat WEB
                         </a>
                     </div>
 
