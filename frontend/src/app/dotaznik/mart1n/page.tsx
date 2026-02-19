@@ -18,6 +18,12 @@ interface ExtractedAnswer {
     tool_name?: string;
 }
 
+interface MultiMessage {
+    text: string;
+    delay_ms: number;
+    bubbles?: string[];
+}
+
 interface Mart1nMessage {
     role: "user" | "assistant";
     content: string;          // display text (markdown for assistant)
@@ -187,7 +193,7 @@ function DisclaimerBanner() {
                 </svg>
                 <div className="text-xs text-slate-400 leading-relaxed space-y-1.5">
                     <p>
-                        <strong className="text-slate-300">MART1N Vám pomůže připravit kompletní dokumentaci k EU AI Act.</strong>{" "}
+                        <strong className="text-slate-300">Uršula Vám pomůže připravit kompletní dokumentaci k EU AI Act.</strong>{" "}
                         Naše výstupy jsou nejlepší podklady, které můžete svému právnímu oddělení poskytnout — šetří čas i peníze.
                     </p>
                     <p>
@@ -242,6 +248,7 @@ function Mart1nPageInner() {
     const [isComplete, setIsComplete] = useState(false);
     const [initLoading, setInitLoading] = useState(true);
     const [isResuming, setIsResuming] = useState(false);
+    const [bubbleOverrides, setBubbleOverrides] = useState<Record<string, string>>({});
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -352,7 +359,7 @@ function Mart1nPageInner() {
             } catch {
                 setMessages([{
                     role: "assistant",
-                    content: "Dobrý den! Jsem **MART1N**, umělá inteligence platformy AIshield.cz. Omlouvám se, mám momentálně technické potíže. Zkuste stránku obnovit.",
+                    content: "Ahoj! Jsem **Uršula**, umělá inteligence platformy AIshield.cz. Omlouvám se, mám momentálně technické potíže. Zkuste stránku obnovit.",
                     bubbles: [],
                     timestamp: Date.now(),
                 }]);
@@ -362,13 +369,13 @@ function Mart1nPageInner() {
         })();
     }, [companyId]);
 
-    // Send message to MART1N API (server-side mode — sends single message)
-    const sendMessage = useCallback(async (text: string) => {
+    // Send message to Uršula API (server-side mode — sends single message)
+    const sendMessage = useCallback(async (text: string, displayText?: string) => {
         if (!text.trim() || sending || isComplete) return;
 
         const userMsg: Mart1nMessage = {
             role: "user",
-            content: text.trim(),
+            content: (displayText || text).trim(),
             timestamp: Date.now(),
         };
 
@@ -384,7 +391,7 @@ function Mart1nPageInner() {
                 body: JSON.stringify({
                     session_id: sessionId,
                     company_id: companyId,
-                    message: text.trim(),   // NEW: single message (server loads history)
+                    message: text.trim(),   // Send original text to backend
                 }),
             });
 
@@ -395,16 +402,55 @@ function Mart1nPageInner() {
 
             const data = await res.json();
 
-            const assistantMsg: Mart1nMessage = {
-                role: "assistant",
-                content: data.message,
-                bubbles: data.bubbles || [],
-                progress: data.progress || 0,
-                isComplete: data.is_complete || false,
-                timestamp: Date.now(),
-            };
+            // Store bubble overrides for next interaction
+            if (data.bubble_overrides && Object.keys(data.bubble_overrides).length > 0) {
+                setBubbleOverrides(data.bubble_overrides);
+            } else {
+                setBubbleOverrides({});
+            }
 
-            setMessages(prev => [...prev, assistantMsg]);
+            // ── Multi-message sequential display ──
+            if (data.multi_messages && data.multi_messages.length > 0) {
+                for (let i = 0; i < data.multi_messages.length; i++) {
+                    const mm = data.multi_messages[i] as MultiMessage;
+
+                    // Show typing indicator during delay
+                    if (mm.delay_ms > 0) {
+                        setSending(true);
+                        await new Promise(resolve => setTimeout(resolve, mm.delay_ms));
+                    }
+
+                    setSending(false);
+                    const assistantMsg: Mart1nMessage = {
+                        role: "assistant",
+                        content: mm.text,
+                        bubbles: mm.bubbles || [],
+                        progress: data.progress || 0,
+                        isComplete: i === data.multi_messages.length - 1 ? (data.is_complete || false) : false,
+                        timestamp: Date.now(),
+                    };
+                    setMessages(prev => [...prev, assistantMsg]);
+
+                    // Brief typing pause between messages (even without explicit delay)
+                    if (i < data.multi_messages.length - 1) {
+                        setSending(true);
+                        await new Promise(resolve => setTimeout(resolve, 600));
+                    }
+                }
+            } else {
+                // ── Normal single message ──
+                setSending(false);
+                const assistantMsg: Mart1nMessage = {
+                    role: "assistant",
+                    content: data.message,
+                    bubbles: data.bubbles || [],
+                    progress: data.progress || 0,
+                    isComplete: data.is_complete || false,
+                    timestamp: Date.now(),
+                };
+                setMessages(prev => [...prev, assistantMsg]);
+            }
+
             setProgress(data.progress || 0);
 
             if (data.is_complete) {
@@ -412,6 +458,7 @@ function Mart1nPageInner() {
             }
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : "Neočekávaná chyba";
+            setSending(false);
             setMessages(prev => [...prev, {
                 role: "assistant",
                 content: `Omlouvám se, nepodařilo se zpracovat odpověď: ${errorMsg}. Zkuste to prosím znovu.`,
@@ -424,10 +471,11 @@ function Mart1nPageInner() {
         }
     }, [sending, isComplete, sessionId, companyId]);
 
-    // Handle bubble click
+    // Handle bubble click (with optional text override for NE→ANO swap)
     const handleBubbleClick = useCallback((bubble: string) => {
-        sendMessage(bubble);
-    }, [sendMessage]);
+        const displayText = bubbleOverrides[bubble] || bubble;
+        sendMessage(bubble, displayText);
+    }, [sendMessage, bubbleOverrides]);
 
     // Handle textarea submit (Enter key)
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -455,7 +503,7 @@ function Mart1nPageInner() {
                         <Mart1nAvatar size={32} />
                         <div>
                             <h1 className="text-sm font-bold text-white tracking-tight">
-                                MART<span className="text-neon-cyan">1</span>N
+                                Uršula
                             </h1>
                             <p className="text-xs text-slate-500">AI Act compliance analýza</p>
                         </div>
@@ -618,7 +666,7 @@ function Mart1nPageInner() {
                         </button>
                     </div>
                     <p className="text-[10px] text-slate-600 mt-2 text-center">
-                        MART1N je umělá inteligence (čl. 50 AI Act). Data chráněna dle GDPR.
+                        Uršula je umělá inteligence (čl. 50 AI Act). Data chráněna dle GDPR.
                     </p>
                 </div>
             </div>
@@ -636,7 +684,7 @@ export default function Mart1nPage() {
             <div className="flex items-center justify-center h-screen bg-dark-950">
                 <div className="flex flex-col items-center gap-4">
                     <Mart1nAvatar size={64} />
-                    <p className="text-sm text-slate-500">Načítám MART1N...</p>
+                    <p className="text-sm text-slate-500">Načítám Uršulu...</p>
                 </div>
             </div>
         }>
