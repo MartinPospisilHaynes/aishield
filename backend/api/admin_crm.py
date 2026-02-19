@@ -2665,3 +2665,64 @@ async def admin_resend_report(
     except Exception as e:
         logger.error(f"[Admin] Resend report error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/crm/scan/{scan_id}/preview-report")
+async def admin_preview_report(
+    scan_id: str,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Vrátí HTML náhled reportu, který by se odeslal klientovi.
+    Neposílá žádný email — jen renderuje HTML.
+    """
+    from backend.database import get_supabase
+    from backend.outbound.report_email import generate_report_email_html
+    from fastapi.responses import HTMLResponse
+
+    supabase = get_supabase()
+
+    try:
+        # Načteme sken
+        scan_res = supabase.table("scans").select(
+            "id, url_scanned, status, company_id, deep_scan_status, "
+            "total_findings, deep_scan_total_findings"
+        ).eq("id", scan_id).limit(1).execute()
+
+        if not scan_res.data:
+            raise HTTPException(status_code=404, detail="Sken nenalezen")
+
+        scan = scan_res.data[0]
+
+        # Načteme firmu
+        company_res = supabase.table("companies").select(
+            "name, email"
+        ).eq("id", scan["company_id"]).limit(1).execute()
+
+        company = company_res.data[0] if company_res.data else {"name": "Neznámá firma", "email": "—"}
+
+        # Načteme findings
+        findings_res = supabase.table("findings").select(
+            "name, category, risk_level, ai_act_article, action_required, "
+            "ai_classification_text, source"
+        ).eq("scan_id", scan_id).execute()
+
+        deployed = [f for f in (findings_res.data or []) if f.get("source") != "ai_classified_fp"]
+
+        # Generujeme HTML
+        html = generate_report_email_html(
+            url=scan["url_scanned"],
+            company_name=company.get("name", "Neznámá firma"),
+            findings=deployed,
+            scan_id=scan_id,
+        )
+
+        logger.info(f"[Admin] Preview report scan={scan_id} by={user.email}")
+
+        return HTMLResponse(content=html, status_code=200)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Admin] Preview report error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1026,3 +1026,15 @@ export async function resendScanReport(scanId: string, email?: string): Promise<
     }
     return res.json();
 }
+
+export async function previewScanReport(scanId: string): Promise<void> {
+    const res = await adminFetch(`${API_URL}/api/admin/crm/scan/${scanId}/preview-report`);
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při načítání náhledu");
+    }
+    const html = await res.text();
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener");
+}

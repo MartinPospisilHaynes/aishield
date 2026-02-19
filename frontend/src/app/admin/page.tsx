@@ -41,6 +41,7 @@ import {
     getScanFindings,
     resendScanReport,
     cancelDeepScan,
+    previewScanReport,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -3998,6 +3999,20 @@ export default function AdminPage() {
                                                                         )}
                                                                     </div>
                                                                     {/* Resend button */}
+                                                                    <button
+                                                                        onClick={async (e) => {
+                                                                            e.stopPropagation();
+                                                                            try {
+                                                                                await previewScanReport(scan.id);
+                                                                            } catch (err) {
+                                                                                alert(`Chyba náhledu: ${err}`);
+                                                                            }
+                                                                        }}
+                                                                        className="px-3 py-1.5 rounded-lg text-xs bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-all"
+                                                                        title="Náhled emailu, který se odešle klientovi"
+                                                                    >
+                                                                        👁 Náhled
+                                                                    </button>
                                                                     <button
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation();
