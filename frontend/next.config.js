@@ -31,6 +31,16 @@ const nextConfig = {
             },
         ];
     },
+    // Redirect /dotaznik/ursula → /dotaznik/mart1n (keeps query params)
+    async redirects() {
+        return [
+            {
+                source: "/dotaznik/ursula",
+                destination: "/dotaznik/mart1n",
+                permanent: true,
+            },
+        ];
+    },
 };
 
 module.exports = nextConfig;
