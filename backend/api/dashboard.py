@@ -38,10 +38,12 @@ async def get_dashboard_data(user_email: str, user: AuthUser = Depends(get_curre
         raise HTTPException(status_code=403, detail="Přístup odepřen")
 
     web_url = user.metadata.get("web_url", "") if user.metadata else ""
-    return await _load_dashboard(user_email, web_url=web_url)
+    ico = user.metadata.get("ico", "") if user.metadata else ""
+    company_name = user.metadata.get("company_name", "") if user.metadata else ""
+    return await _load_dashboard(user_email, web_url=web_url, ico=ico, company_name=company_name)
 
 
-async def _load_dashboard(user_email: str, web_url: str = ""):
+async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", company_name: str = ""):
     """Interní funkce — načte dashboard data pro daný email."""
     supabase = get_supabase()
 
@@ -51,6 +53,20 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
     ).execute()
 
     company = company_res.data[0] if company_res.data else None
+
+    # 1a. Doplnit chybějící IČO/název z user_metadata
+    if company and (ico or company_name):
+        update_data = {}
+        if ico and not company.get("ico"):
+            update_data["ico"] = ico
+        if company_name and (not company.get("name") or company.get("name") == company.get("url", "")):
+            update_data["name"] = company_name
+        if update_data:
+            try:
+                supabase.table("companies").update(update_data).eq("id", company["id"]).execute()
+                company.update(update_data)
+            except Exception:
+                pass
 
     # 1b. Fallback: zkusit najít podle web_url z user_metadata
     #     (pro případ, že sken proběhl dříve než se propojil email)
@@ -67,10 +83,15 @@ async def _load_dashboard(user_email: str, web_url: str = ""):
             ).limit(1).execute()
             if company_res2.data:
                 company = company_res2.data[0]
-                # Propojíme — nastavíme email na company, aby příště fungovalo rovnou
+                # Propojíme — doplníme email, IČO a název
                 try:
+                    update_data = {"email": user_email}
+                    if ico and not company.get("ico"):
+                        update_data["ico"] = ico
+                    if company_name and (not company.get("name") or company["name"] == url_v):
+                        update_data["name"] = company_name
                     supabase.table("companies").update(
-                        {"email": user_email}
+                        update_data
                     ).eq("id", company["id"]).execute()
                 except Exception:
                     pass

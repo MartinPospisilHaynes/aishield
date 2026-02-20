@@ -221,14 +221,20 @@ async def create_scan(
         user_email = user.email if user else None
         user_meta = user.metadata if user else {}
         company_name_from_meta = user_meta.get("company_name", "")
+        ico_from_meta = user_meta.get("ico", "")
 
         if existing.data:
             company_id = existing.data[0]["id"]
-            # Pokud je uživatel přihlášený a firma nemá email → propojíme
-            if user_email and not existing.data[0].get("email"):
-                update_data = {"email": user_email}
-                if company_name_from_meta:
-                    update_data["name"] = company_name_from_meta
+            existing_company = existing.data[0]
+            # Doplníme chybějící údaje z user_metadata (email, IČO, název)
+            update_data = {}
+            if user_email and not existing_company.get("email"):
+                update_data["email"] = user_email
+            if company_name_from_meta and (not existing_company.get("name") or existing_company["name"] == re.sub(r"^https?://", "", url).split("/")[0]):
+                update_data["name"] = company_name_from_meta
+            if ico_from_meta and not existing_company.get("ico"):
+                update_data["ico"] = ico_from_meta
+            if update_data:
                 supabase.table("companies").update(update_data).eq("id", company_id).execute()
         else:
             # Vytvoříme novou firmu — s emailem pokud je uživatel přihlášený
@@ -240,6 +246,8 @@ async def create_scan(
             }
             if user_email:
                 insert_data["email"] = user_email
+            if ico_from_meta:
+                insert_data["ico"] = ico_from_meta
             new_company = supabase.table("companies").insert(insert_data).execute()
             company_id = new_company.data[0]["id"]
 
