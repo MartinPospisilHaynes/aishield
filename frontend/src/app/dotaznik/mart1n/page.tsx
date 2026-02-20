@@ -228,6 +228,8 @@ function Mart1nPageInner() {
     const analyserRef = useRef<AnalyserNode | null>(null);
     const animFrameRef = useRef<number>(0);
     const sendMessageRef = useRef<(text: string) => void>(() => { });
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
@@ -353,6 +355,29 @@ function Mart1nPageInner() {
         })();
     }, [companyId]);
 
+    // Stop generation — abort the current stream, remove partial response AND the user message
+    const stopGeneration = useCallback(() => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        setIsStreaming(false);
+        setSending(false);
+        // Remove last assistant message (partial) + the user message that triggered it
+        setMessages(prev => {
+            const updated = [...prev];
+            // Remove trailing assistant message (streaming placeholder / partial)
+            if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
+                updated.pop();
+            }
+            // Also remove the user message that preceded it
+            if (updated.length > 0 && updated[updated.length - 1].role === "user") {
+                updated.pop();
+            }
+            return updated;
+        });
+    }, []);
+
     // Send message to Uršula API via SSE streaming
     const sendMessage = useCallback(async (text: string, displayText?: string) => {
         if (!text.trim() || sending || isComplete) return;
@@ -368,6 +393,10 @@ function Mart1nPageInner() {
         setSending(true);
         setIsResuming(false);
 
+        // Create abort controller for this request
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         try {
             const res = await fetch(`${API_URL}/api/mart1n/chat/stream`, {
                 method: "POST",
@@ -377,6 +406,7 @@ function Mart1nPageInner() {
                     company_id: companyId,
                     message: text.trim(),
                 }),
+                signal: controller.signal,
             });
 
             if (!res.ok) {
@@ -405,6 +435,7 @@ function Mart1nPageInner() {
                 return [...prev, streamingMsg];
             });
             setSending(false); // Show the message bubble immediately (streaming)
+            setIsStreaming(true);
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -596,7 +627,19 @@ function Mart1nPageInner() {
                     }
                 }
             }
+            // Stream completed successfully
+            setIsStreaming(false);
+            abortControllerRef.current = null;
         } catch (err: unknown) {
+            setIsStreaming(false);
+            abortControllerRef.current = null;
+
+            // User clicked stop → don't retry, just clean up
+            if (err instanceof DOMException && err.name === "AbortError") {
+                setSending(false);
+                return;
+            }
+
             const errorMsg = err instanceof Error ? err.message : "Neočekávaná chyba";
             console.warn("[MART1N] Request failed, will auto-retry:", errorMsg);
 
@@ -1111,7 +1154,7 @@ function Mart1nPageInner() {
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
                                     placeholder={isComplete ? "Analýza je dokončena" : "Nevidíte správnou odpověď? Napište nám ji."}
-                                    disabled={sending || isComplete || initLoading}
+                                    disabled={sending || isStreaming || isComplete || initLoading}
                                     rows={1}
                                     className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
                                                px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600
@@ -1127,7 +1170,7 @@ function Mart1nPageInner() {
                         <div className="relative flex-shrink-0">
                             <button
                                 onClick={toggleRecording}
-                                disabled={isTranscribing || sending || isComplete || initLoading}
+                                disabled={isTranscribing || sending || isStreaming || isComplete || initLoading}
                                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                     ${isRecording
                                         ? "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
@@ -1163,20 +1206,34 @@ function Mart1nPageInner() {
                             </span>
                         </div>
 
-                        {/* Send button — identical styling to mic button */}
-                        <button
-                            onClick={() => sendMessage(input)}
-                            disabled={!input.trim() || sending || isComplete || initLoading}
-                            title="Odeslat zprávu"
-                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
-                                       bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25
-                                       hover:brightness-110
-                                       disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
-                        >
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                            </svg>
-                        </button>
+                        {/* Send / Stop button */}
+                        {(sending || isStreaming) ? (
+                            <button
+                                onClick={stopGeneration}
+                                title="Zastavit odpověď"
+                                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                           bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/25
+                                           hover:brightness-110 animate-pulse"
+                            >
+                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                                </svg>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => sendMessage(input)}
+                                disabled={!input.trim() || isComplete || initLoading}
+                                title="Odeslat zprávu"
+                                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                           bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25
+                                           hover:brightness-110
+                                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                            >
+                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
                     <p className="text-[10px] text-white/90 mt-2 text-center leading-relaxed">
                         Uršula je umělá inteligence (čl. 50 AI Act). Vaše data jsou šifrována a&nbsp;zůstávají pouze mezi Vámi a&nbsp;AIshield — žádná třetí strana k&nbsp;nim nemá přístup. Porušení ochrany osobních údajů dle GDPR (nařízení EU&nbsp;2016/679) podléhá pokutě až&nbsp;20&nbsp;mil.&nbsp;€ nebo 4&nbsp;% ročního obratu.
