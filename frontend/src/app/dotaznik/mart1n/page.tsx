@@ -1079,13 +1079,13 @@ function Mart1nPageInner() {
                             <button
                                 onClick={toggleRecording}
                                 disabled={isTranscribing || sending || isComplete || initLoading}
-                                className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg shadow-purple-500/20
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                     ${isRecording
-                                        ? "bg-red-500 animate-pulse hover:bg-red-600 shadow-red-500/30"
+                                        ? "bg-red-500 animate-pulse hover:bg-red-600 shadow-lg shadow-red-500/30"
                                         : isTranscribing
                                             ? "bg-amber-500/30 cursor-wait"
-                                            : "bg-gradient-to-r from-[#d946ef] to-[#9333ea] hover:brightness-110"}
-                                    disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none`}
+                                            : "bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25 hover:brightness-110"}
+                                    disabled:cursor-not-allowed disabled:hover:brightness-100`}
                                 title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
                             >
                                 {isTranscribing ? (
@@ -1114,13 +1114,14 @@ function Mart1nPageInner() {
                             </span>
                         </div>
 
+                        {/* Send button — identical styling to mic button */}
                         <button
                             onClick={() => sendMessage(input)}
                             disabled={!input.trim() || sending || isComplete || initLoading}
                             title="Odeslat zprávu"
-                            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
-                                       bg-gradient-to-r from-[#d946ef] to-[#9333ea]
-                                       hover:brightness-110 transition-all shadow-lg shadow-purple-500/20
+                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                       bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25
+                                       hover:brightness-110
                                        disabled:cursor-not-allowed disabled:hover:brightness-100"
                         >
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
