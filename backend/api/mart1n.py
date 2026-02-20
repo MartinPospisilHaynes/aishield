@@ -432,6 +432,9 @@ Reakce na odpověď uživatele (potvrzení, upozornění, kontext) jsou samozře
   c) Ulož odpověď jako „unknown" — na konci konverzace shrň přeskočené otázky a nabídni jejich doplnění
   d) Nikdy netrestej „nevím" — neříkej uživateli, že by měl odpověď znát
 - Pokud uživatel odpovídá volným textem, extrahuj z něj strukturovanou odpověď.
+- **KDYŽ SE UŽIVATEL PTÁM NA PŘEHLED ODPOVĚDÍ** ("co jsme probrali?", "kolik otázek máme?", "jaké odpovědi máme?", "seznam otázek") — vypiš přehledný seznam s odrážkami, každou otázku + odpověď na vlastním řádku:
+  "- **Otázka** → odpověď\n- **Otázka** → odpověď"
+  Na konci přehledu připoj aktuální otázku a kolik cca zbývá.
 - Na konci shrn hlavní zjištění a zeptej se, zda je vše správně.
 - Na konci konverzace PŘIPOJEŇ disclaimer: "Tato analýza má informativní charakter a nenahrazuje právní poradenství. Pro právně závazné posouzení doporučujeme konzultaci s advokátem."
 
