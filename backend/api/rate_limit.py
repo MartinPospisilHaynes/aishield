@@ -27,9 +27,8 @@ GLOBAL_LIMIT = 200                     # skenů za hodinu globálně
 GLOBAL_WINDOW_SECONDS = 60 * 60       # 1 hodina
 
 # Domény vyloučené z URL cooldownu (pro testování)
-WHITELISTED_DOMAINS: set[str] = {
-    "desperados-design.cz",
-}
+# PRÁZDNÉ — žádná doména nesmí obejít cooldown
+WHITELISTED_DOMAINS: set[str] = set()
 
 
 @dataclass
@@ -162,7 +161,7 @@ class ScanRateLimiter:
                     )
                     return RateLimitResult(
                         allowed=False,
-                        reason=f"Tento web byl skenován před {int(age) // 60} minutami. "
+                        reason=f"Tento web byl skenován před {max(1, int(age) // 60)} minutami. "
                                f"Další sken bude možný za {mins} min.",
                         cached_scan_id=entry.scan_id,
                         cached_company_id=entry.company_id,
