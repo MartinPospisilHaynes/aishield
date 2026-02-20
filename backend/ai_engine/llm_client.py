@@ -36,7 +36,7 @@ from backend.config import get_settings
 logger = logging.getLogger(__name__)
 
 # ── Modely ──
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+CLAUDE_MODEL = "claude-opus-4-6"
 GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
@@ -170,7 +170,7 @@ async def _call_claude_vision(
         raise RuntimeError("ANTHROPIC_API_KEY není nastavený")
 
     client = anthropic.Anthropic(api_key=api_key)
-    use_model = model or "claude-3-5-haiku-20241022"
+    use_model = model or "claude-opus-4-6"
 
     response = client.messages.create(
         model=use_model,

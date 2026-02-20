@@ -258,7 +258,7 @@ class LLMUsageTracker:
                 client = anthropic.Anthropic(api_key=key)
                 # Minimal API call to verify key works
                 resp = client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                    model="claude-opus-4-6",
                     max_tokens=1,
                     messages=[{"role": "user", "content": "hi"}],
                 )

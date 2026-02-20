@@ -139,7 +139,7 @@ class AIClassifier:
     Ověřuje, zda jsou nalezené AI systémy skutečně nasazené.
     """
 
-    def __init__(self, api_key: str | None = None, model: str = "claude-sonnet-4-20250514"):
+    def __init__(self, api_key: str | None = None, model: str = "claude-opus-4-6"):
         settings = get_settings()
         self.api_key = api_key or settings.anthropic_api_key
         self.model = model
