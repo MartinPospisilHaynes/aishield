@@ -282,14 +282,27 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
         finished = datetime.now(timezone.utc).isoformat()
 
         # Celkový počet unikátních findings (quick + deep dohromady)
-        all_findings_res = supabase.table("findings").select("name").eq(
+        all_findings_res = supabase.table("findings").select(
+            "name, category, risk_level, ai_act_article, action_required, ai_classification_text"
+        ).eq(
             "scan_id", scan_id
         ).neq("source", "ai_classified_fp").neq("risk_level", "none").execute()
 
         unique_names = set()
+        # Deduplikované findings z DB pro email (quick + deep scan dohromady)
+        db_findings_map: dict[str, dict] = {}
         for f in (all_findings_res.data or []):
-            unique_names.add(f["name"].lower().strip())
+            key = f["name"].lower().strip()
+            unique_names.add(key)
+            if key not in db_findings_map:
+                db_findings_map[key] = f
         total_unique = len(unique_names)
+
+        # Quick scan je vždy 1 scan z CZ (běží na serveru) — zahrnout do statistik
+        # Pokud deep scan úspěšně proskenoval země, přidáme quick scan
+        if "cz" not in countries_scanned:
+            countries_scanned.insert(0, "cz")  # Quick scan = ze serveru v ČR
+        total_scans_with_quick = total_scans_done + 1  # +1 za quick scan
 
         # Uložit trackery jako JSON
         import json as _json
@@ -306,7 +319,7 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
 
         logger.info(
             f"[DeepScan] HOTOVO: {total_unique} unikátních systémů, "
-            f"{rounds_completed} kol, {total_scans_done} scanů, "
+            f"{rounds_completed} kol, {total_scans_done} deep scanů + 1 quick, "
             f"{len(countries_scanned)} zemí"
         )
 
@@ -320,14 +333,28 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
                 email_to = company.data[0]["email"]
                 company_name = company.data[0].get("name", url)
 
+                # Použít ALL findings z DB (ne jen deployed z deep scanu)
+                # Vytvoříme lightweight objekty pro email template
+                class _EmailFinding:
+                    """Lehký objekt pro email template — z DB findings."""
+                    def __init__(self, data: dict):
+                        self.name = data.get("name", "N/A")
+                        self.category = data.get("category", "")
+                        self.risk_level = data.get("risk_level", "limited")
+                        self.ai_act_article = data.get("ai_act_article", "")
+                        self.action_required = data.get("action_required", "")
+                        self.description_cs = data.get("ai_classification_text", "")
+
+                email_findings = [_EmailFinding(f) for f in db_findings_map.values()]
+
                 from backend.outbound.email_engine import send_email
                 html = _build_deep_scan_email(
                     company_name=company_name,
                     url=url,
                     total_findings=total_unique,
-                    findings=deployed,
+                    findings=email_findings,
                     countries_scanned=countries_scanned,
-                    total_scans=total_scans_done,
+                    total_scans=total_scans_with_quick,
                     scan_id=scan_id,
                     trackers=list(all_trackers.values()),
                 )
@@ -350,7 +377,7 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
             "deployed": len(deployed),
             "false_positives": len(not_deployed),
             "rounds": rounds_completed,
-            "scans": total_scans_done,
+            "scans": total_scans_with_quick,
             "countries": countries_scanned,
         }
 
