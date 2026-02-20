@@ -439,19 +439,35 @@ function Mart1nPageInner() {
                                 // Check for Claude multi_messages
                                 const claudeMulti = meta.multi_messages || [];
                                 if (claudeMulti.length > 0) {
-                                    // Replace streamed message with multi_messages
+                                    // Replace streamed message with multi_messages.
+                                    // If the streamed text has content and differs from the first
+                                    // multi_message, keep it as a separate bubble so it's not lost.
                                     setMessages(prev => {
                                         const updated = [...prev];
                                         const idx = streamMsgIndex >= 0 ? streamMsgIndex : updated.length - 1;
-                                        // Replace the streaming message with multi_messages
+                                        const existingText = (updated[idx]?.content || "").trim();
+                                        const firstMmText = (claudeMulti[0]?.text || "").trim();
+
                                         const multiMsgs: Mart1nMessage[] = claudeMulti.map((mm: MultiMessage, i: number) => ({
                                             role: "assistant" as const,
                                             content: mm.text,
                                             bubbles: (i === claudeMulti.length - 1) ? (mm.bubbles || []) : [],
                                             progress: meta.progress || 0,
-                                            timestamp: Date.now() + i,
+                                            timestamp: Date.now() + i + 1,
                                         }));
-                                        updated.splice(idx, 1, ...multiMsgs);
+
+                                        if (existingText && existingText !== firstMmText) {
+                                            // Keep the streamed message, update it, then append multi_messages after
+                                            updated[idx] = {
+                                                ...updated[idx],
+                                                bubbles: [],
+                                                progress: meta.progress || 0,
+                                            };
+                                            updated.splice(idx + 1, 0, ...multiMsgs);
+                                        } else {
+                                            // Streamed text matches first multi_message or is empty — replace
+                                            updated.splice(idx, 1, ...multiMsgs);
+                                        }
                                         return updated;
                                     });
                                 } else {

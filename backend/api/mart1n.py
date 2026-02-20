@@ -2001,6 +2001,12 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     claude_multi = parsed.get("multi_messages", [])
     if claude_multi and isinstance(claude_multi, list) and len(claude_multi) > 0:
         # Claude sent multi_messages (e.g. warning + question separated)
+        # If Claude also put content in "message", prepend it so it isn't lost
+        msg_text = parsed.get("message", "").strip()
+        if msg_text:
+            first_mm_text = claude_multi[0].get("text", "").strip() if isinstance(claude_multi[0], dict) else ""
+            if msg_text != first_mm_text:
+                claude_multi = [{"text": msg_text, "delay_ms": 0, "bubbles": []}] + claude_multi
         mm_list = [
             MultiMessage(
                 text=mm.get("text", ""),
@@ -2329,11 +2335,23 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
 
             # ── Check for Claude multi_messages ──
             claude_multi = parsed.get("multi_messages", [])
+            if not isinstance(claude_multi, list):
+                claude_multi = []
+
+            # If Claude put content in both "message" and "multi_messages",
+            # prepend the message as the first multi_message so it isn't lost
+            # when the frontend replaces the streamed text with multi_messages.
+            msg_text = parsed.get("message", "").strip()
+            if msg_text and claude_multi:
+                # Only prepend if it's not already the first multi_message text
+                first_mm_text = claude_multi[0].get("text", "").strip() if isinstance(claude_multi[0], dict) else ""
+                if msg_text != first_mm_text:
+                    claude_multi = [{"text": msg_text, "delay_ms": 0, "bubbles": []}] + claude_multi
 
             # Build metadata for the frontend
             meta = {
                 "bubbles": parsed.get("bubbles", [])[:5],
-                "multi_messages": claude_multi if isinstance(claude_multi, list) else [],
+                "multi_messages": claude_multi,
                 "extracted_answers": [ea.dict() for ea in extracted],
                 "progress": min(100, max(0, parsed.get("progress", 0))),
                 "current_section": parsed.get("current_section", ""),
@@ -2347,7 +2365,13 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             yield _sse_event("done", "{}")
 
             # Log
-            log_text = parsed.get("message", reply_text)
+            if claude_multi:
+                log_text = "\n\n".join(
+                    mm.get("text", "") if isinstance(mm, dict) else str(mm)
+                    for mm in claude_multi
+                )
+            else:
+                log_text = parsed.get("message", reply_text)
             _log_mart1n_message(
                 req.session_id, req.company_id, "assistant", log_text,
                 extracted_answers=[ea.dict() for ea in extracted] if extracted else None,
