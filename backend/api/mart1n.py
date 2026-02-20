@@ -1991,7 +1991,6 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             temperature=1,  # Required when using extended thinking
             thinking={
                 "type": "adaptive",
-                "budget_tokens": 4096,
             },
             output_config={
                 "format": {
@@ -2300,7 +2299,6 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 temperature=1,  # Required when using extended thinking
                 thinking={
                     "type": "adaptive",
-                    "budget_tokens": 4096,
                 },
                 output_config={
                     "format": {
