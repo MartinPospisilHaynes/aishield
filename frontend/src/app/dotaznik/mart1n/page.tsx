@@ -565,13 +565,186 @@ function Mart1nPageInner() {
             }
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : "Neočekávaná chyba";
-            setSending(false);
-            setMessages(prev => [...prev, {
-                role: "assistant",
-                content: `Omlouvám se, nepodařilo se zpracovat odpověď: ${errorMsg}. Zkuste to prosím znovu.`,
-                bubbles: ["Zkusit znovu"],
-                timestamp: Date.now(),
-            }]);
+            console.warn("[MART1N] Request failed, will auto-retry:", errorMsg);
+
+            // Auto-retry: wait for backend to come back (systemd restarts in ~5s)
+            const MAX_RETRIES = 3;
+            const RETRY_DELAYS = [5000, 8000, 12000]; // escalating delays
+
+            // Show "thinking" state while retrying
+            setMessages(prev => {
+                const updated = [...prev];
+                // Remove the streaming placeholder if it exists
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === "assistant" && !updated[lastIdx].content) {
+                    updated.splice(lastIdx, 1);
+                }
+                return [...updated, {
+                    role: "assistant",
+                    content: "Moment, mám drobné technické potíže...",
+                    bubbles: [],
+                    timestamp: Date.now(),
+                }];
+            });
+
+            let retrySuccess = false;
+            for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+
+                // Check if backend is alive via health endpoint
+                try {
+                    const healthRes = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(3000) });
+                    if (!healthRes.ok) continue;
+                } catch {
+                    continue; // Backend still down, try again
+                }
+
+                // Backend is back — retry the original message
+                try {
+                    const retryRes = await fetch(`${API_URL}/api/mart1n/chat/stream`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            session_id: sessionId,
+                            company_id: companyId,
+                            message: text.trim(),
+                        }),
+                    });
+
+                    if (!retryRes.ok) continue;
+
+                    // Success — remove the "technické potíže" message
+                    setMessages(prev => {
+                        const updated = [...prev];
+                        const potizeIdx = updated.findIndex(m =>
+                            m.role === "assistant" && m.content === "Moment, mám drobné technické potíže..."
+                        );
+                        if (potizeIdx >= 0) updated.splice(potizeIdx, 1);
+                        return updated;
+                    });
+
+                    // Add recovery message + process the retried response
+                    setMessages(prev => [...prev, {
+                        role: "assistant",
+                        content: "Omlouvám se, měla jsem menší technické potíže, ale už jsem zpět a můžeme pokračovat tam, kde jsme skončili.",
+                        bubbles: [],
+                        timestamp: Date.now(),
+                    }]);
+
+                    // Process the retry stream response
+                    const retryReader = retryRes.body?.getReader();
+                    if (retryReader) {
+                        const retryDecoder = new TextDecoder();
+                        let retryBuffer = "";
+                        let retryStreamedText = "";
+                        let retryStreamMsgIndex = -1;
+
+                        // Add streaming placeholder
+                        setMessages(prev => {
+                            retryStreamMsgIndex = prev.length;
+                            return [...prev, { role: "assistant", content: "", bubbles: [], timestamp: Date.now() }];
+                        });
+
+                        while (true) {
+                            const { done, value } = await retryReader.read();
+                            if (done) break;
+                            retryBuffer += retryDecoder.decode(value, { stream: true });
+
+                            const lines = retryBuffer.split("\n");
+                            retryBuffer = lines.pop() || "";
+                            let retryEventType = "";
+
+                            for (const line of lines) {
+                                if (line.startsWith("event: ")) {
+                                    retryEventType = line.slice(7).trim();
+                                } else if (line.startsWith("data: ")) {
+                                    const retryData = line.slice(6);
+                                    if (retryEventType === "token") {
+                                        try {
+                                            const t = JSON.parse(retryData);
+                                            retryStreamedText += t.token || "";
+                                            setMessages(prev => {
+                                                const u = [...prev];
+                                                const idx = retryStreamMsgIndex >= 0 ? retryStreamMsgIndex : u.length - 1;
+                                                if (u[idx] && u[idx].role === "assistant") {
+                                                    u[idx] = { ...u[idx], content: retryStreamedText };
+                                                }
+                                                return u;
+                                            });
+                                        } catch { /* skip */ }
+                                    } else if (retryEventType === "meta") {
+                                        try {
+                                            const meta = JSON.parse(retryData);
+                                            setMessages(prev => {
+                                                const u = [...prev];
+                                                const idx = retryStreamMsgIndex >= 0 ? retryStreamMsgIndex : u.length - 1;
+                                                if (u[idx] && u[idx].role === "assistant") {
+                                                    u[idx] = {
+                                                        ...u[idx],
+                                                        content: retryStreamedText || meta.message || u[idx].content,
+                                                        bubbles: meta.bubbles || [],
+                                                        progress: meta.progress || 0,
+                                                        isComplete: meta.is_complete || false,
+                                                    };
+                                                }
+                                                return u;
+                                            });
+                                            setProgress(meta.progress || 0);
+                                            if (meta.is_complete) setIsComplete(true);
+                                        } catch { /* skip */ }
+                                    } else if (retryEventType === "full") {
+                                        try {
+                                            const fullData = JSON.parse(retryData);
+                                            // Remove streaming placeholder
+                                            setMessages(prev => {
+                                                const u = [...prev];
+                                                const idx = retryStreamMsgIndex >= 0 ? retryStreamMsgIndex : u.length - 1;
+                                                u.splice(idx, 1);
+                                                return u;
+                                            });
+                                            // Show multi_messages
+                                            if (fullData.multi_messages?.length > 0) {
+                                                for (const mm of fullData.multi_messages) {
+                                                    if (mm.delay_ms > 0) await new Promise(r => setTimeout(r, mm.delay_ms));
+                                                    setMessages(prev => [...prev, {
+                                                        role: "assistant", content: mm.text, bubbles: mm.bubbles || [],
+                                                        progress: fullData.progress || 0, timestamp: Date.now(),
+                                                    }]);
+                                                }
+                                            }
+                                            setProgress(fullData.progress || 0);
+                                            if (fullData.is_complete) setIsComplete(true);
+                                        } catch { /* skip */ }
+                                    }
+                                    retryEventType = "";
+                                }
+                            }
+                        }
+                    }
+
+                    retrySuccess = true;
+                    break;
+                } catch {
+                    continue; // Retry failed, try again
+                }
+            }
+
+            if (!retrySuccess) {
+                // All retries exhausted — show manual retry option
+                setMessages(prev => {
+                    const updated = [...prev];
+                    const potizeIdx = updated.findIndex(m =>
+                        m.role === "assistant" && m.content === "Moment, mám drobné technické potíže..."
+                    );
+                    if (potizeIdx >= 0) updated.splice(potizeIdx, 1);
+                    return [...updated, {
+                        role: "assistant",
+                        content: "Omlouvám se, mám delší technický výpadek. Zkuste to prosím za chvilku znovu, nebo zavolejte na **732 716 141**.",
+                        bubbles: ["Zkusit znovu"],
+                        timestamp: Date.now(),
+                    }];
+                });
+            }
         } finally {
             setSending(false);
         }
