@@ -43,8 +43,8 @@ GEMINI_API_URL = (
 )
 
 # ── Cenové tarify (USD per token) ──
-CLAUDE_COST_INPUT = 3.0 / 1_000_000   # $3 / 1M input
-CLAUDE_COST_OUTPUT = 15.0 / 1_000_000  # $15 / 1M output
+CLAUDE_COST_INPUT = 5.0 / 1_000_000   # $5 / 1M input  (Opus 4.6)
+CLAUDE_COST_OUTPUT = 25.0 / 1_000_000  # $25 / 1M output (Opus 4.6)
 GEMINI_COST_INPUT = 0.15 / 1_000_000   # $0.15 / 1M input
 GEMINI_COST_OUTPUT = 0.60 / 1_000_000  # $0.60 / 1M output
 
