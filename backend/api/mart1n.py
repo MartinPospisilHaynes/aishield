@@ -2008,12 +2008,16 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             messages=claude_messages,
         )
 
-        # Extract text from response (skip thinking blocks)
+        # Extract text from response (skip thinking blocks and empty text blocks)
         reply_text = ""
         for block in response.content:
-            if block.type == "text":
+            if block.type == "text" and block.text.strip():
                 reply_text = block.text.strip()
-                break
+                # Don't break — take the LAST non-empty text block
+                # (with adaptive thinking, first text block may be empty prefix)
+
+        if not reply_text:
+            logger.warning(f"[MART1N] No text found in response blocks. Types: {[b.type for b in response.content]}")
 
         # Track usage (thinking tokens billed at output rate)
         try:
