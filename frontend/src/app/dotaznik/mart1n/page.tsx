@@ -1025,7 +1025,7 @@ function Mart1nPageInner() {
                                         ? "bg-red-500 animate-pulse hover:bg-red-600"
                                         : isTranscribing
                                             ? "bg-amber-500/30 cursor-wait"
-                                            : "bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.12]"}
+                                            : "bg-gradient-to-r from-neon-fuchsia to-neon-purple hover:brightness-110"}
                                     disabled:opacity-30 disabled:cursor-not-allowed`}
                                 title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
                             >
@@ -1035,7 +1035,7 @@ function Mart1nPageInner() {
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                                     </svg>
                                 ) : (
-                                    <svg className={`w-5 h-5 ${isRecording ? "text-white" : "text-slate-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                                     </svg>
                                 )}
@@ -1052,7 +1052,7 @@ function Mart1nPageInner() {
                                             opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200
                                             pointer-events-none z-50">
                                 🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
-                                Nahrávka se po přepisu okamžitě smaže. Nevkládejte citlivé osobní údaje hlasem.
+                                Nahrávka se po přepisu okamžitě smaže.
                             </div>
                         </div>
 
