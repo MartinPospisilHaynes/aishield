@@ -108,13 +108,23 @@ def _build_questionnaire_knowledge() -> str:
                 lines.append(f"Článek AI Act: {q['ai_act_article']}")
             if q.get("followup"):
                 fu = q["followup"]
-                lines.append(f"Followup (podmínka: {fu.get('condition', 'any')}):")
+                lines.append(f"POVINNÉ followup otázky (podmínka: {fu.get('condition', 'any')}) — MUSÍŠ se zeptat na VŠECHNY:")
                 for f in fu.get("fields", []):
                     if f["type"] == "info":
-                        lines.append(f"  - INFO: {f['label'][:300]}")
+                        lines.append(f"  - INFO (zobraz uživateli): {f['label'][:300]}")
                     else:
                         opts = f.get("options", [])
-                        lines.append(f"  - {f['key']} ({f['type']}): {f['label']}"
+                        lines.append(f"  - ⚠️ POVINNÉ: {f['key']} ({f['type']}): {f['label']}"
+                                     + (f" [{', '.join(opts[:6])}]" if opts else ""))
+            if q.get("followup_no"):
+                fu_no = q["followup_no"]
+                lines.append(f"Followup při odpovědi NE:")
+                for f in fu_no.get("fields", []):
+                    if f["type"] == "info":
+                        lines.append(f"  - INFO (zobraz uživateli): {f['label'][:300]}")
+                    else:
+                        opts = f.get("options", [])
+                        lines.append(f"  - ⚠️ POVINNÉ: {f['key']} ({f['type']}): {f['label']}"
                                      + (f" [{', '.join(opts[:6])}]" if opts else ""))
     return "\n".join(lines)
 
@@ -166,10 +176,27 @@ TVÉ HLAVNÍ ÚKOLY
 1. SBÍRÁŠ ODPOVĚDI — vedeš přirozený rozhovor a postupně zjišťuješ informace ekvivalentní dotazníku (viz ZNALOSTNÍ BÁZE níže).
 2. KLADEŠ JASNÉ OTÁZKY — formuluj otázky tak, aby uživatel NIKDY nemusel odpovídat "jak to myslíš?". Každá otázka musí být konkrétní, s příkladem, v běžném jazyce. Pokud přesto nerozumí, zjednoduš na jednu větu.
 3. STRUKTURUJEŠ — z volného textu uživatele extrahuj strukturované odpovědi.
-4. NEVYNECHÁŠ NIC DŮLEŽITÉHO — musíš pokrýt všechny relevantní sekce.
+4. NEVYNECHÁŠ NIC DŮLEŽITÉHO — musíš pokrýt všechny relevantní sekce. **POZOR: Followup otázky jsou POVINNÉ!** Viz pravidla níže.
 5. PŘESKAKUJEŠ IRELEVANTNÍ — pokud firma zjevně nepoužívá něco (např. OSVČ nemá HR AI), přeskoč příslušné sekce.
 6. INFORMUJEŠ O CENĚ A SLUŽBÁCH — pokud se uživatel zeptá, poskytuješ přesné informace o balíčcích a cenách (viz sekce OBCHODNÍ INFORMACE).
 7. ODKÁŽEŠ NA DALŠÍ KROKY — pokud situace firmy vyžaduje kroky mimo rozsah AIshield (registrace, právník, regulátor), jasně to sdělíš.
+
+═══════════════════════════════════════════════════════════════
+POVINNÉ FOLLOWUP OTÁZKY — BEZ NICH JE DOKUMENTACE NEÚPLNÁ
+═══════════════════════════════════════════════════════════════
+Každá otázka v ZNALOSTNÍ BÁZI může mít "Followup" pole. Tato pole jsou POVINNÁ — bez nich nelze vytvořit kompletní dokumentaci.
+
+PRAVIDLA:
+1. Když uživatel odpoví na hlavní otázku (např. "ano, používáme ChatGPT"), MUSÍŠ se zeptat na VŠECHNY followup pole (typu text, select, multi_select). Pole typu "info" jsou informační — ty ZOBRAZÍŠ, ale neptáš se na ně.
+2. NIKDY nepřeskakuj followup otázku — každé pole potřebujeme pro dokumentaci.
+3. Ptej se na followupy POSTUPNĚ (jedna otázka na zprávu), ne všechny najednou.
+4. U kontaktních údajů (jméno, email, telefon) se VŽDY ptej na VŠECHNY TŘI — nestačí jen jméno.
+5. Pokud uživatel u followupu řekne "nevím", zapiš "unknown" a pokračuj na další followup — ale NEPTEJ se znovu na hlavní otázku.
+
+PŘÍKLAD (oversight_person):
+- Hlavní otázka: "Máte osobu zodpovědnou za dohled nad AI?" → Ano
+- MUSÍŠ se zeptat na: oversight_role, oversight_person_name, oversight_person_email, oversight_person_phone, oversight_scope
+- NESMÍŠ přeskočit email nebo telefon — potřebujeme kompletní kontakt pro dokumentaci
 
 ═══════════════════════════════════════════════════════════════
 OCHRANA DAT A SOUKROMÍ — KLÍČOVÉ SDĚLENÍ
