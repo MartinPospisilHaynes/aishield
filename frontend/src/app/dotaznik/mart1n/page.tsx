@@ -863,7 +863,13 @@ function Mart1nPageInner() {
             setIsRecording(true);
         } catch (err) {
             console.error("Microphone access error:", err);
-            alert("Přístup k mikrofonu byl zamítnut. Povolte mikrofon v nastavení prohlížeče.");
+            // Show non-blocking toast instead of ugly alert
+            setMessages(prev => [...prev, {
+                role: "assistant" as const,
+                content: "⚠️ **Mikrofon není dostupný.** Povolte přístup k mikrofonu v nastavení prohlížeče (ikona 🔒 v adresním řádku) a zkuste to znovu.",
+                bubbles: [],
+                timestamp: Date.now(),
+            }]);
         }
     }, [isRecording]);
 
@@ -1040,13 +1046,13 @@ function Mart1nPageInner() {
                             <button
                                 onClick={toggleRecording}
                                 disabled={isTranscribing || sending || isComplete || initLoading}
-                                className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg shadow-purple-500/20
                                     ${isRecording
-                                        ? "bg-red-500 animate-pulse hover:bg-red-600"
+                                        ? "bg-red-500 animate-pulse hover:bg-red-600 shadow-red-500/30"
                                         : isTranscribing
                                             ? "bg-amber-500/30 cursor-wait"
-                                            : "bg-gradient-to-r from-neon-fuchsia to-neon-purple hover:brightness-110"}
-                                    disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100`}
+                                            : "bg-gradient-to-r from-[#d946ef] to-[#9333ea] hover:brightness-110"}
+                                    disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none`}
                                 title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
                             >
                                 {isTranscribing ? (
@@ -1080,9 +1086,9 @@ function Mart1nPageInner() {
                             disabled={!input.trim() || sending || isComplete || initLoading}
                             title="Odeslat zprávu"
                             className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
-                                       bg-gradient-to-r from-neon-fuchsia to-neon-purple
-                                       hover:brightness-110 transition-all
-                                       disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                                       bg-gradient-to-r from-[#d946ef] to-[#9333ea]
+                                       hover:brightness-110 transition-all shadow-lg shadow-purple-500/20
+                                       disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none"
                         >
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
