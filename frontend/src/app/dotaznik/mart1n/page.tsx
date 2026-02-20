@@ -149,7 +149,7 @@ function TypingIndicator() {
             </div>
             <div className="glass px-4 py-3 max-w-[80%]">
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Uršula přemýšlí</span>
+                    <span className="text-sm text-slate-400">Uršula přemýšlí</span>
                     <div className="flex gap-1.5">
                         <span className="w-2 h-2 bg-neon-fuchsia/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                         <span className="w-2 h-2 bg-neon-purple/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -280,6 +280,7 @@ function Mart1nPageInner() {
                             : `Vítejte zpět! Chcete pokračovat v našem rozhovoru?`,
                         bubbles: [
                             "Pokračovat kde jsem skončil/a",
+                            "Opravit některou z předchozích odpovědí",
                             "Začít od začátku",
                         ],
                         timestamp: Date.now(),
@@ -795,8 +796,31 @@ function Mart1nPageInner() {
 
         // Check if browser supports getUserMedia
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert("Váš prohlížeč nepodporuje hlasový vstup. Zkuste Chrome nebo Safari.");
+            setMessages(prev => [...prev, {
+                role: "assistant" as const,
+                content: "⚠️ **Hlasový vstup není podporován.** Váš prohlížeč nepodporuje nahrávání zvuku. Zkuste Chrome, Edge nebo Safari.",
+                bubbles: [],
+                timestamp: Date.now(),
+            }]);
             return;
+        }
+
+        // Check permission state first (if Permissions API available)
+        if (navigator.permissions) {
+            try {
+                const permStatus = await navigator.permissions.query({ name: "microphone" as PermissionName });
+                if (permStatus.state === "denied") {
+                    setMessages(prev => [...prev, {
+                        role: "assistant" as const,
+                        content: "⚠️ **Přístup k mikrofonu je zablokovaný.** Klikněte na ikonu 🔒 v adresním řádku prohlížeče → Oprávnění webu → Mikrofon → Povolit. Pak to zkuste znovu.",
+                        bubbles: [],
+                        timestamp: Date.now(),
+                    }]);
+                    return;
+                }
+            } catch {
+                // Permissions API not supported for microphone (e.g. Safari) — continue to getUserMedia
+            }
         }
 
         try {
@@ -863,10 +887,19 @@ function Mart1nPageInner() {
             setIsRecording(true);
         } catch (err) {
             console.error("Microphone access error:", err);
-            // Show non-blocking toast instead of ugly alert
+            const isDenied = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
+            const isNotFound = err instanceof DOMException && err.name === "NotFoundError";
+            let micMsg = "⚠️ **Mikrofon není dostupný.**";
+            if (isDenied) {
+                micMsg = "⚠️ **Přístup k mikrofonu byl zamítnut.** Klikněte na ikonu 🔒 v adresním řádku → Oprávnění webu → Mikrofon → Povolit. Na macOS také zkontrolujte: Nastavení systému → Soukromí → Mikrofon → povolte prohlížeč.";
+            } else if (isNotFound) {
+                micMsg = "⚠️ **Mikrofon nebyl nalezen.** Připojte mikrofon nebo sluchátka s mikrofonem a zkuste to znovu.";
+            } else {
+                micMsg = "⚠️ **Mikrofon není dostupný.** Povolte přístup k mikrofonu v nastavení prohlížeče (ikona 🔒 v adresním řádku) a zkuste to znovu.";
+            }
             setMessages(prev => [...prev, {
                 role: "assistant" as const,
-                content: "⚠️ **Mikrofon není dostupný.** Povolte přístup k mikrofonu v nastavení prohlížeče (ikona 🔒 v adresním řádku) a zkuste to znovu.",
+                content: micMsg,
                 bubbles: [],
                 timestamp: Date.now(),
             }]);
@@ -1088,7 +1121,7 @@ function Mart1nPageInner() {
                             className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
                                        bg-gradient-to-r from-[#d946ef] to-[#9333ea]
                                        hover:brightness-110 transition-all shadow-lg shadow-purple-500/20
-                                       disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:shadow-none"
+                                       disabled:cursor-not-allowed disabled:hover:brightness-100"
                         >
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
