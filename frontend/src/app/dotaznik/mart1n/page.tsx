@@ -793,13 +793,28 @@ function Mart1nPageInner() {
             return;
         }
 
+        // Check if browser supports getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Váš prohlížeč nepodporuje hlasový vstup. Zkuste Chrome nebo Safari.");
+            return;
+        }
+
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-                    ? "audio/webm;codecs=opus"
-                    : "audio/webm",
-            });
+
+            // Detect supported mimeType
+            let mimeType = "audio/webm";
+            if (typeof MediaRecorder.isTypeSupported === "function") {
+                if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+                    mimeType = "audio/webm;codecs=opus";
+                } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+                    mimeType = "audio/mp4"; // Safari fallback
+                } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
+                    mimeType = "audio/ogg;codecs=opus";
+                }
+            }
+
+            const mediaRecorder = new MediaRecorder(stream, { mimeType });
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
@@ -812,18 +827,22 @@ function Mart1nPageInner() {
                 stream.getTracks().forEach((t) => t.stop());
                 setIsRecording(false);
 
-                const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+                const blob = new Blob(audioChunksRef.current, { type: mimeType });
                 if (blob.size < 100) return; // too short, ignore
 
                 setIsTranscribing(true);
                 try {
+                    const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
                     const form = new FormData();
-                    form.append("file", blob, "recording.webm");
+                    form.append("file", blob, `recording.${ext}`);
                     const res = await fetch(`${API_URL}/api/transcribe`, {
                         method: "POST",
                         body: form,
                     });
-                    if (!res.ok) throw new Error("Transcription failed");
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Transcription failed");
+                    }
                     const data = await res.json();
                     if (data.text?.trim()) {
                         setInput((prev) => {
@@ -843,7 +862,8 @@ function Mart1nPageInner() {
             mediaRecorder.start();
             setIsRecording(true);
         } catch (err) {
-            console.error("Microphone access denied:", err);
+            console.error("Microphone access error:", err);
+            alert("Přístup k mikrofonu byl zamítnut. Povolte mikrofon v nastavení prohlížeče.");
         }
     }, [isRecording]);
 
@@ -1015,8 +1035,8 @@ function Mart1nPageInner() {
                             />
                         </div>
 
-                        {/* Mic button with GDPR info tooltip */}
-                        <div className="relative group flex-shrink-0">
+                        {/* Mic button */}
+                        <div className="relative flex-shrink-0">
                             <button
                                 onClick={toggleRecording}
                                 disabled={isTranscribing || sending || isComplete || initLoading}
@@ -1040,20 +1060,19 @@ function Mart1nPageInner() {
                                     </svg>
                                 )}
                             </button>
-                            {/* Info "i" badge */}
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 border border-slate-600
+                            {/* Info "i" badge — tooltip only on this badge */}
+                            <span className="group/info absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 border border-slate-600
                                              text-[8px] font-bold text-slate-300 flex items-center justify-center
-                                             cursor-help select-none">
+                                             cursor-help select-none pointer-events-auto z-10">
                                 i
+                                <span className="absolute bottom-full right-0 mb-2 w-56 p-2.5 rounded-lg bg-dark-800 border border-white/[0.1]
+                                                text-[10px] text-slate-400 leading-relaxed shadow-xl font-normal
+                                                opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200
+                                                pointer-events-none z-50">
+                                    🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
+                                    Nahrávka se po přepisu okamžitě smaže.
+                                </span>
                             </span>
-                            {/* GDPR tooltip on hover */}
-                            <div className="absolute bottom-full right-0 mb-2 w-56 p-2.5 rounded-lg bg-dark-800 border border-white/[0.1]
-                                            text-[10px] text-slate-400 leading-relaxed shadow-xl
-                                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200
-                                            pointer-events-none z-50">
-                                🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
-                                Nahrávka se po přepisu okamžitě smaže.
-                            </div>
                         </div>
 
                         <button
