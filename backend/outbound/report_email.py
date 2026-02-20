@@ -167,9 +167,10 @@ def generate_report_email_html(
                 f'<span style="color:{D["text_secondary"]};">{linked_article}</span></div>'
             )
         if action:
+            action_label = "✅ Status:" if action.startswith("✅") else "Co udělat:"
             extras += (
                 f'<div style="margin-top:4px;font-size:13px;">'
-                f'<span style="color:{D["text_muted"]};">Co udělat:</span> '
+                f'<span style="color:{D["text_muted"]};">{action_label}</span> '
                 f'<span style="color:{D["accent_cyan"]};">{action}</span></div>'
             )
 

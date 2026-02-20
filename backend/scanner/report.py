@@ -116,7 +116,7 @@ def generate_html_report(data: ReportData) -> str:
 
             <table style="margin-top:12px;font-size:13px;border-collapse:collapse;width:100%;">
                 {f'<tr><td style="padding:4px 8px;color:#6b7280;white-space:nowrap;vertical-align:top;">📜 Článek AI Act:</td><td style="padding:4px 8px;color:#374151;">{f.get("ai_act_article", "")}</td></tr>' if f.get("ai_act_article") else ""}
-                {f'<tr><td style="padding:4px 8px;color:#6b7280;white-space:nowrap;vertical-align:top;">⚡ Požadovaná akce:</td><td style="padding:4px 8px;color:#374151;">{f.get("action_required", "")}</td></tr>' if f.get("action_required") else ""}
+                {f'<tr><td style="padding:4px 8px;color:#6b7280;white-space:nowrap;vertical-align:top;">{"✅ Status:" if f.get("action_required", "").startswith("✅") else "⚡ Požadovaná akce:"}</td><td style="padding:4px 8px;color:#374151;">{f.get("action_required", "")}</td></tr>' if f.get("action_required") else ""}
                 {f'<tr><td style="padding:4px 8px;color:#6b7280;white-space:nowrap;vertical-align:top;">🔎 Detekováno:</td><td style="padding:4px 8px;color:#374151;font-family:monospace;font-size:11px;">{f.get("signature_matched", "")}</td></tr>' if f.get("signature_matched") else ""}
             </table>
         </div>
