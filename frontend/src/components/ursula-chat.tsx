@@ -28,23 +28,35 @@ function Md({ text }: { text: string }) {
         <>
             {paras.map((p, pi) => {
                 const lines = p.split("\n");
+                // Detect list: standard bullets (-•*) OR emoji-prefixed lines (📋, ✅, 🌐…)
+                const emojiLineRe = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]\s/u;
+                const bulletRe = /^[-•*]\s/;
+                const isListLine = (l: string) => {
+                    const trimmed = l.trim();
+                    return bulletRe.test(trimmed) || emojiLineRe.test(trimmed);
+                };
                 const isList = lines.every(
-                    (l) => /^[-•*]\s/.test(l.trim()) || !l.trim()
+                    (l) => isListLine(l) || !l.trim()
                 );
                 if (isList) {
-                    const items = lines.filter((l) =>
-                        /^[-•*]\s/.test(l.trim())
-                    );
+                    const items = lines.filter((l) => isListLine(l));
                     return (
                         <ul
                             key={pi}
-                            className="list-disc list-inside space-y-0.5 my-1 text-[13px] leading-relaxed"
+                            className="list-none space-y-0.5 my-1 text-[13px] leading-relaxed"
                         >
-                            {items.map((it, ii) => (
-                                <li key={ii}>
-                                    {boldify(it.replace(/^[-•*]\s/, ""))}
-                                </li>
-                            ))}
+                            {items.map((it, ii) => {
+                                const trimmed = it.trim();
+                                // Strip standard bullet prefix, keep emoji prefix as-is
+                                const content = bulletRe.test(trimmed)
+                                    ? trimmed.replace(/^[-•*]\s/, "")
+                                    : trimmed;
+                                return (
+                                    <li key={ii}>
+                                        {boldify(content)}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     );
                 }

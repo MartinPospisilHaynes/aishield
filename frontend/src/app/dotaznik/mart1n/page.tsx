@@ -59,17 +59,25 @@ function renderMarkdown(text: string) {
     const clean = sanitizeText(text);
     // Split into paragraphs
     const paragraphs = clean.split(/\n\n+/);
+    // Detect bullet lines: standard (-—•) or emoji-prefixed (📋, ✅, 🌐…)
+    const bulletRe = /^\s*[-—•]\s+/;
+    const emojiLineRe = /^\s*[\p{Emoji_Presentation}\p{Extended_Pictographic}]\s/u;
+    const isBulletLine = (l: string) => bulletRe.test(l) || emojiLineRe.test(l);
+
     return paragraphs.map((p, pi) => {
-        // Check if paragraph contains bullet lines (- or — at start)
         const lines = p.split(/\n/);
-        const hasBullets = lines.some(l => /^\s*[-—•]\s+/.test(l));
+        const hasBullets = lines.some(l => isBulletLine(l));
         if (hasBullets) {
             return (
-                <ul key={pi} className="text-sm leading-relaxed mb-2 last:mb-0 list-disc list-inside space-y-1">
+                <ul key={pi} className="text-sm leading-relaxed mb-2 last:mb-0 list-none space-y-1">
                     {lines.map((line, li) => {
                         const bulletMatch = line.match(/^\s*[-—•]\s+(.*)/);
                         if (bulletMatch) {
                             return <li key={li}>{renderInlineMarkdown(bulletMatch[1])}</li>;
+                        }
+                        // Emoji-prefixed line — keep emoji as prefix
+                        if (emojiLineRe.test(line)) {
+                            return <li key={li}>{renderInlineMarkdown(line.trim())}</li>;
                         }
                         // Non-bullet line before/after bullets
                         return <p key={li} className="mb-1">{renderInlineMarkdown(line)}</p>;
