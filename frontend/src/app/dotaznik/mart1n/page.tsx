@@ -44,12 +44,7 @@ function sanitizeText(raw: string): string {
     t = t.replace(/\\n/g, '\n');
     // Remove heading markers
     t = t.replace(/^#{1,6}\s+/gm, '');
-    // Remove bullet/list markers at line start
-    t = t.replace(/^\s*[-•*]\s+/gm, '');
-    // Remove numbered list markers
-    t = t.replace(/^\s*\d+\.\s+/gm, '');
-    // Remove em-dash list patterns (e.g. "Texty z ChatGPT —" at start of line)
-    t = t.replace(/\n\n(?=[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][^\n]{5,30}\s—\s)/g, ' ');
+    // Bullet/list markers are allowed for readability
     // Remove italic markers (single * or _) but preserve **bold**
     t = t.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1');
     t = t.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '$1');
@@ -64,11 +59,30 @@ function renderMarkdown(text: string) {
     const clean = sanitizeText(text);
     // Split into paragraphs
     const paragraphs = clean.split(/\n\n+/);
-    return paragraphs.map((p, pi) => (
-        <p key={pi} className="text-sm leading-relaxed mb-2 last:mb-0">
-            {renderInlineMarkdown(p.replace(/\n/g, ' '))}
-        </p>
-    ));
+    return paragraphs.map((p, pi) => {
+        // Check if paragraph contains bullet lines (- or — at start)
+        const lines = p.split(/\n/);
+        const hasBullets = lines.some(l => /^\s*[-—•]\s+/.test(l));
+        if (hasBullets) {
+            return (
+                <ul key={pi} className="text-sm leading-relaxed mb-2 last:mb-0 list-disc list-inside space-y-1">
+                    {lines.map((line, li) => {
+                        const bulletMatch = line.match(/^\s*[-—•]\s+(.*)/);
+                        if (bulletMatch) {
+                            return <li key={li}>{renderInlineMarkdown(bulletMatch[1])}</li>;
+                        }
+                        // Non-bullet line before/after bullets
+                        return <p key={li} className="mb-1">{renderInlineMarkdown(line)}</p>;
+                    })}
+                </ul>
+            );
+        }
+        return (
+            <p key={pi} className="text-sm leading-relaxed mb-2 last:mb-0">
+                {renderInlineMarkdown(lines.join(' '))}
+            </p>
+        );
+    });
 }
 
 function renderInlineMarkdown(text: string) {

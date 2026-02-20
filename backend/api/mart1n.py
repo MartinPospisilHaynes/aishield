@@ -154,13 +154,11 @@ MÁŠ SMYSL PRO HUMOR:
 - Občas vhodně odlehčíš atmosféru fórkem nebo vtipnou poznámkou.
 - Tvůj humor je jemný, inteligentní, nikdy ne urážlivý.
 - Vtipné poznámky jsou přirozenou součástí konverzace — nenarušují profesionalitu.
-- Hlavní vtipné interlude (Q5, Q10, závěr) jsou řízeny automaticky — TY se o ně nestarej.
-- Ale můžeš přidat drobné vtipné poznámky vlastní (max 1-2 za celou konverzaci).
+- Ale dávkuj je opatrně — max 1-2 za celou konverzaci.
 - DETEKCE VÁŽNÉHO KLIENTA: Pokud z tónu konverzace vyplývá, že klient není na fórky
   (formální styl, krátké odpovědi, napomínání, žádost o profesionální přístup),
   OKAMŽITĚ přestaň vtipkovat a přejdi do čistě profesionálního módu.
   V takovém případě nastav v JSON odpovědi: "humor_off": true
-  Tím se deaktivují i automatické vtipy (Q5, Q10, závěr).
 
 ═══════════════════════════════════════════════════════════════
 TVÉ HLAVNÍ ÚKOLY
@@ -496,7 +494,7 @@ KONVERZAČNÍ CHOVÁNÍ
 - Vykej uživateli (Vy, Vám, Váš).
 - Piš česky, pokud uživatel nezačne jiným jazykem — v tom případě plynně přepni do jeho jazyka.
 - Nepoužívej emoji v textu.
-- FORMÁTOVÁNÍ TEXTU: Používej POUZE **tučné písmo** a odstavce. Nic jiného — žádné odrážky, nadpisy, číslované seznamy, podtržení, kurzívu, pomlčkové seznamy ("Texty —", "Grafiku —") ani žádné jiné formátovací triky. Piš PLYNULÉ VĚTY, ne výčty.
+- FORMÁTOVÁNÍ TEXTU: Používej **tučné písmo**, odstavce a odrážky (s pomlčkou „—" nebo „-"). Žádné nadpisy (#), číslované seznamy, podtržení, kurzívu ani jiné formátovací triky.
 - Buď vstřícná a trpělivá — uživatel nemusí rozumět AI terminologii.
 - Pokud uživatel odchýlí téma na zcela nesouvisející oblast (sport, vaření, politika...), zdvořile ho vrať zpět s vtipnou poznámkou.
 - AKTIVNĚ POVZBUZUJ otázky: „Pokud Vám cokoliv není jasné, klidně se zeptejte."
@@ -1165,10 +1163,13 @@ def _build_intro_response(session_id: str) -> Mart1nResponse:
 
 
 def _is_post_fatal_error(db_history: list[dict]) -> bool:
-    """Check if we're waiting for response after FATAL ERROR joke."""
+    """Check if we're past the closing monologue (legacy FATAL ERROR or new closing)."""
     for msg in reversed(db_history):
         if msg["role"] == "assistant":
-            return "FATAL ERROR" in msg["content"]
+            return ("FATAL ERROR" in msg["content"]
+                    or "Máme od Vás vše potřebné" in msg["content"]
+                    or "Lepší než ti ostatní chat-bot suchaři" in msg["content"]
+                    or "Vaše zpětná vazba je pro nás velmi cenná" in msg["content"])
     return False
 
 
@@ -1196,15 +1197,14 @@ def _has_employees(company_id: str) -> bool:
 
 
 def _build_closing_response(company_id: str, session_id: str) -> Mart1nResponse:
-    """Build closing monologue after the FATAL ERROR joke."""
+    """Build closing monologue when questionnaire is complete."""
     pptx = " + powerpointovou prezentaci pro zaměstnance" if _has_employees(company_id) else ""
     msgs = [
         MultiMessage(
             text=(
-                "To byl fór, ale mám pro Vás dobrou zprávu: Ten byl už poslední. "
                 "Máme od Vás vše potřebné a já vše předávám svému živému kolegovi. "
                 "Ten se Vám v případě jakýchkoliv nesrovnalostí ozve, aby se kdyžtak doptal. "
-                "Ale já si myslím, že jsme to zvládli dobře. Zkompletujeme data z 24 hodinového "
+                "Zkompletujeme data z 24 hodinového "
                 "monitoringu + náš rozhovor zde a do 7 dní od obdržení platby Vám na e-mail "
                 f"zašleme veškerou slíbenou dokumentaci{pptx} a do 14 dnů vytištěné dokumenty "
                 "v profesionální vazbě pro případnou kontrolu."
@@ -1280,37 +1280,7 @@ def _build_closing_response_serious(company_id: str, session_id: str) -> Mart1nR
     )
 
 
-def _build_q5_jokes() -> list[MultiMessage]:
-    """Joke sequence after 5th answered question."""
-    return [
-        MultiMessage(text="No tak ještě tak hodinku a máme to...", delay_ms=0),
-        MultiMessage(text="Fórek... 5 min a máme hotovo.", delay_ms=2000),
-        MultiMessage(text="Já taky nemám dneska jenom Vás.", delay_ms=2000),
-    ]
-
-
-def _build_q10_jokes() -> list[MultiMessage]:
-    """Joke sequence after 10th answered question."""
-    return [
-        MultiMessage(text="Tak teď Vás poprosím o přihlašovací jméno a heslo k účtu.", delay_ms=0),
-        MultiMessage(text="Zase fór! Takové údaje nikdy nikomu nesdělujte!", delay_ms=2000),
-        MultiMessage(text="Hlavně ne manželce...", delay_ms=1000),
-        MultiMessage(text="Chtěla jsem to trošku rozvířit...", delay_ms=2000),
-        MultiMessage(text="Zpátky do práce", delay_ms=1000),
-    ]
-
-
-def _build_fatal_error() -> list[MultiMessage]:
-    """FATAL ERROR joke when questionnaire is complete."""
-    return [
-        MultiMessage(text="**FATAL ERROR**", delay_ms=0),
-        MultiMessage(text="**FATAL ERROR**", delay_ms=500),
-        MultiMessage(text="**FATAL ERROR**", delay_ms=500),
-        MultiMessage(
-            text="Všechna data ztracena — začněte prosím s vyplňováním znova.",
-            delay_ms=1000,
-        ),
-    ]
+# Q5/Q10/FATAL ERROR jokes removed — closing goes directly to professional monologue
 
 
 # Feedback question markers (used to detect if user is responding to it)
@@ -1793,10 +1763,9 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     # Check if humor is disabled for this client
     humor_off = parsed.get("humor_off", False) or _detect_humor_off(db_history if server_mode else claude_messages)
 
-    # ── FATAL ERROR joke (intercepts is_complete) ──
+    # ── Handle is_complete → closing monologue ──
     if parsed.get("is_complete", False):
         logger.info(f"[MART1N] Conversation COMPLETE for company {req.company_id[:8]}...")
-        # Log user + Claude's response first
         _log_mart1n_message(
             req.session_id, req.company_id, "assistant",
             parsed.get("message", reply_text),
@@ -1804,37 +1773,13 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             progress=100,
         )
         if humor_off:
-            # Serious client → skip FATAL ERROR, go directly to closing + feedback
-            logger.info(f"[MART1N] humor_off=true → skipping FATAL ERROR joke")
             result = _build_closing_response_serious(req.company_id, req.session_id)
-            combined = parsed.get("message", reply_text) + "\n\n" + "\n\n".join(m.text for m in result.multi_messages)
-            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
-            # Prepend Claude's wrap-up
-            result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
-            return result
         else:
-            # Build FATAL ERROR multi_messages (Claude's wrap-up + joke)
-            fatal = _build_fatal_error()
-            claude_msg = MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)
-            result = Mart1nResponse(
-                message="",
-                multi_messages=[claude_msg] + fatal,
-                extracted_answers=extracted,
-                progress=100,
-                is_complete=False,  # Wait for user response before closing
-                session_id=req.session_id,
-            )
-            combined = "\n\n".join(m.text for m in fatal)
-            _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
-            return result
-
-    # ── Q5 / Q10 joke triggers (only if humor is on) ──
-    joke_msgs: list[MultiMessage] = []
-    if not humor_off:
-        if answered_before < 5 <= answered_after:
-            joke_msgs = _build_q5_jokes()
-        elif answered_before < 10 <= answered_after:
-            joke_msgs = _build_q10_jokes()
+            result = _build_closing_response(req.company_id, req.session_id)
+        result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
+        combined = "\n\n".join(m.text for m in result.multi_messages)
+        _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
+        return result
 
     # Build response
     claude_multi = parsed.get("multi_messages", [])
@@ -1868,18 +1813,6 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             is_complete=False,
             session_id=req.session_id,
         )
-
-    # If jokes triggered, prepend them as multi_messages
-    if joke_msgs:
-        result.multi_messages = joke_msgs + [
-            MultiMessage(
-                text=result.message,
-                delay_ms=2000,
-                bubbles=result.bubbles,
-            ),
-        ]
-        result.message = ""
-        result.bubbles = []
 
     # Log assistant response
     log_text = result.message
@@ -2129,7 +2062,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
             answered_after = len(_get_answered_keys(req.company_id)) if extracted else answered_before
             humor_off = parsed.get("humor_off", False) or _detect_humor_off(db_history if server_mode else claude_messages)
 
-            # ── Handle is_complete (FATAL ERROR / closing) ──
+            # ── Handle is_complete → closing monologue ──
             if parsed.get("is_complete", False):
                 logger.info(f"[MART1N] Conversation COMPLETE for company {req.company_id[:8]}...")
                 _log_mart1n_message(
@@ -2140,29 +2073,14 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 )
                 if humor_off:
                     result = _build_closing_response_serious(req.company_id, req.session_id)
-                    result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
                 else:
-                    fatal = _build_fatal_error()
-                    claude_msg = MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)
-                    result = Mart1nResponse(
-                        message="", multi_messages=[claude_msg] + fatal,
-                        extracted_answers=extracted, progress=100,
-                        is_complete=False, session_id=req.session_id,
-                    )
+                    result = _build_closing_response(req.company_id, req.session_id)
+                result.multi_messages = [MultiMessage(text=parsed.get("message", reply_text), delay_ms=0)] + result.multi_messages
                 combined = "\n\n".join(m.text for m in result.multi_messages)
                 _log_mart1n_message(req.session_id, req.company_id, "assistant", combined, progress=100)
-                # For complete responses, send as 'full' (multi-message with jokes/closing)
                 yield _sse_event("full", result.model_dump_json())
                 yield _sse_event("done", "{}")
                 return
-
-            # ── Joke triggers ──
-            joke_msgs: list[MultiMessage] = []
-            if not humor_off:
-                if answered_before < 5 <= answered_after:
-                    joke_msgs = _build_q5_jokes()
-                elif answered_before < 10 <= answered_after:
-                    joke_msgs = _build_q10_jokes()
 
             # ── Check for Claude multi_messages ──
             claude_multi = parsed.get("multi_messages", [])
@@ -2179,10 +2097,6 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 "bubble_overrides": {},
                 "message": parsed.get("message", ""),
             }
-
-            # If jokes triggered, include them in meta
-            if joke_msgs:
-                meta["joke_messages"] = [mm.dict() for mm in joke_msgs]
 
             yield _sse_event("meta", json.dumps(meta))
             yield _sse_event("done", "{}")
