@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ── Claude config ──
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+CLAUDE_MODEL = "claude-opus-4-6"
 MAX_CONVERSATION_TURNS = 60  # Max turns in one session
 MAX_MESSAGE_LENGTH = 3000
 CLAUDE_TIMEOUT = 90  # seconds — timeout for Claude API call
@@ -1669,20 +1669,26 @@ async def _summarize_and_save_feedback(
                 timeout=30,
             )
             response = client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model=CLAUDE_MODEL,
                 max_tokens=1024,
                 temperature=0.2,
-                system=(
-                    "Jsi analytik zákaznické zkušenosti. Zanalyzuj konverzaci mezi chatbotem Uršulou "
-                    "a klientem. Vrať JSON s těmito poli:\n"
-                    '{"summary": "Stručné shrnutí konverzace (max 3 věty česky)", '
-                    '"sentiment": "positive|negative|neutral|mixed", '
-                    '"humor_reception": "enjoyed|tolerated|disliked|unknown", '
-                    '"key_moments": ["moment1", "moment2"], '
-                    '"client_frustrations": ["frustr1"] nebo [], '
-                    '"questions_answered": číslo, '
-                    '"completion": "completed|abandoned|partial"}'
-                ),
+                system=[
+                    {
+                        "type": "text",
+                        "text": (
+                            "Jsi analytik zákaznické zkušenosti. Zanalyzuj konverzaci mezi chatbotem Uršulou "
+                            "a klientem. Vrať JSON s těmito poli:\n"
+                            '{"summary": "Stručné shrnutí konverzace (max 3 věty česky)", '
+                            '"sentiment": "positive|negative|neutral|mixed", '
+                            '"humor_reception": "enjoyed|tolerated|disliked|unknown", '
+                            '"key_moments": ["moment1", "moment2"], '
+                            '"client_frustrations": ["frustr1"] nebo [], '
+                            '"questions_answered": číslo, '
+                            '"completion": "completed|abandoned|partial"}'
+                        ),
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 messages=[{"role": "user", "content": conversation_text}],
             )
             summary_raw = response.content[0].text.strip()
@@ -1691,8 +1697,8 @@ async def _summarize_and_save_feedback(
                 from backend.monitoring.llm_usage_tracker import usage_tracker
                 _in = response.usage.input_tokens
                 _out = response.usage.output_tokens
-                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
-                await usage_tracker.record("claude", _in, _out, _cost, caller="mart1n_feedback")
+                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
+                await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_feedback")
             except Exception:
                 pass
             try:
@@ -1925,7 +1931,13 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             model=CLAUDE_MODEL,
             max_tokens=2048,
             temperature=0.4,
-            system=full_system_prompt,
+            system=[
+                {
+                    "type": "text",
+                    "text": full_system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             messages=claude_messages,
         )
 
@@ -1936,7 +1948,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             from backend.monitoring.llm_usage_tracker import usage_tracker
             _in = response.usage.input_tokens
             _out = response.usage.output_tokens
-            _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+            _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
             await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_chat")
         except Exception:
             pass
@@ -2210,7 +2222,13 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 model=CLAUDE_MODEL,
                 max_tokens=2048,
                 temperature=0.4,
-                system=full_system_prompt,
+                system=[
+                    {
+                        "type": "text",
+                        "text": full_system_prompt,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 messages=claude_messages,
             ) as stream:
                 for text_chunk in stream.text_stream:
@@ -2284,7 +2302,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 final_msg = stream.get_final_message()
                 _in = final_msg.usage.input_tokens
                 _out = final_msg.usage.output_tokens
-                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_stream")
             except Exception:
                 pass

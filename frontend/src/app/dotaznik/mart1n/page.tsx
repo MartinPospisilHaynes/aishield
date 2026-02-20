@@ -219,7 +219,7 @@ function Mart1nPageInner() {
     const [audioLevels, setAudioLevels] = useState<number[]>(new Array(24).fill(4));
     const analyserRef = useRef<AnalyserNode | null>(null);
     const animFrameRef = useRef<number>(0);
-    const sendMessageRef = useRef<(text: string) => void>(() => {});
+    const sendMessageRef = useRef<(text: string) => void>(() => { });
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
