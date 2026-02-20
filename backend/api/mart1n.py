@@ -436,6 +436,23 @@ AI Act se vztahuje na KAŽDÉHO, kdo provozuje (deployer) nebo poskytuje (provid
 - Pokud uživatel nemá IČO, přeskoč otázky na IČO, adresu sídla apod. — ale PTEJ SE na AI nástroje na webu.
 
 ═══════════════════════════════════════════════════════════════
+ARES — AUTOMATICKÉ DOPLNĚNÍ ÚDAJŮ PO ZADÁNÍ IČO
+═══════════════════════════════════════════════════════════════
+Jakmile uživatel zadá IČO, náš systém AUTOMATICKY vytáhne z registru ARES:
+- Obchodní jméno (název firmy / jméno OSVČ)
+- Adresu sídla
+- Právní formu (OSVČ / s.r.o. / a.s. / ...)
+- Odvětví (CZ-NACE)
+- DIČ
+- Datum vzniku
+
+DŮSLEDEK PRO TEBE:
+- Po zadání IČO SE NEPTEJ na adresu sídla, název firmy ani odvětví — systém je doplní automaticky z ARES.
+- V NÁSLEDUJÍCÍ zprávě (po té, kde uživatel zadal IČO) uvidíš tyto údaje v <client_info> bloku.
+- Potvrzuj je uživateli: "Díky! Z registru ARES vidím, že sídlíte na adrese [adresa] — je to správně?"
+- Pokud ARES data chybí (chybné IČO, zahraniční subjekt...), ptej se normálně.
+
+═══════════════════════════════════════════════════════════════
 JAK VEDEŠ ROZHOVOR
 ═══════════════════════════════════════════════════════════════
 - Začni obecnými otázkami (odvětví, velikost firmy, web) — navázej přirozeně.
@@ -961,11 +978,19 @@ def _get_client_context(company_id: str) -> str:
         sb = get_supabase()
 
         # Load company data from companies table (includes ARES data)
-        comp_res = sb.table("companies") \
-            .select("name, ico, url, email, address, phone, nace_code") \
-            .eq("id", company_id) \
-            .limit(1) \
-            .execute()
+        try:
+            comp_res = sb.table("companies") \
+                .select("name, ico, url, email, address, phone, nace_code, legal_form, dic, founded_date") \
+                .eq("id", company_id) \
+                .limit(1) \
+                .execute()
+        except Exception:
+            # Fallback if dic/founded_date columns don't exist yet
+            comp_res = sb.table("companies") \
+                .select("name, ico, url, email, address, phone, nace_code, legal_form") \
+                .eq("id", company_id) \
+                .limit(1) \
+                .execute()
 
         comp = comp_res.data[0] if comp_res.data else {}
 
@@ -976,6 +1001,9 @@ def _get_client_context(company_id: str) -> str:
         address = comp.get("address") or ""
         phone = comp.get("phone") or ""
         nace_code = comp.get("nace_code") or ""
+        legal_form = comp.get("legal_form") or ""
+        dic = comp.get("dic") or ""
+        founded_date = comp.get("founded_date") or ""
 
         # Load client data (contact person info)
         client_res = sb.table("clients") \
@@ -1024,6 +1052,17 @@ def _get_client_context(company_id: str) -> str:
         if nace_code:
             lines.append(f"- NACE kód: {nace_code}")
             known_fields.append("odvětví (NACE)")
+        if legal_form:
+            from backend.services.ares import PRAVNI_FORMY
+            lf_text = PRAVNI_FORMY.get(legal_form, f"kód {legal_form}")
+            lines.append(f"- Právní forma: {lf_text}")
+            known_fields.append("právní forma")
+        if dic:
+            lines.append(f"- DIČ: {dic}")
+            known_fields.append("DIČ")
+        if founded_date:
+            lines.append(f"- Datum vzniku: {founded_date}")
+            known_fields.append("datum vzniku firmy")
 
         lines.append(f"\n⛔ ABSOLUTNÍ ZÁKAZ: NESMÍŠ se ptát na: {', '.join(known_fields)}.")
         lines.append("Tyto údaje už MÁME. Pokud se na ně zeptáš, plýtváš časem klienta a našimi penězi.")
@@ -1194,6 +1233,114 @@ def _save_extracted_answers(company_id: str, answers: list[ExtractedAnswer]):
                 sb.table("questionnaire_responses").insert(row).execute()
         except Exception as e:
             logger.error(f"[MART1N] Save answer error ({ans.question_key}): {e}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# ARES LOOKUP — automatické doplnění údajů po zadání IČO
+# ═══════════════════════════════════════════════════════════════
+
+def _handle_ares_lookup(company_id: str, extracted: list[ExtractedAnswer]):
+    """
+    Pokud uživatel právě zadal IČO (company_ico), vytáhni z ARES všechny
+    dostupné údaje a ulož je do companies tabulky + questionnaire_responses.
+    Volá se po _save_extracted_answers.
+    """
+    # Najdi company_ico v extrahovaných odpovědích
+    ico_answer = None
+    for ea in extracted:
+        if ea.question_key == "company_ico" and ea.answer:
+            ico_answer = ea.answer.strip().replace(" ", "")
+            break
+
+    if not ico_answer:
+        return  # Nebyl zadán IČO v této zprávě
+
+    # Základní validace (8 číslic)
+    clean = ico_answer.zfill(8) if ico_answer.isdigit() else ""
+    if not clean or len(clean) != 8:
+        logger.info(f"[ARES] Skipping invalid IČO: {ico_answer}")
+        return
+
+    try:
+        from backend.services.ares import lookup_ico
+
+        result = lookup_ico(clean)
+        if not result.found:
+            logger.warning(f"[ARES] IČO {clean} nenalezeno: {result.error}")
+            return
+
+        sb = get_supabase()
+
+        # ── Update companies table ──
+        update = {}
+        if result.address:
+            update["address"] = result.address
+        if result.name:
+            update["name"] = result.name
+        if result.nace_codes:
+            update["nace_code"] = result.nace_codes[0] if result.nace_codes else ""
+        if result.legal_form_code:
+            update["legal_form"] = result.legal_form_code
+        if result.region:
+            update["region"] = result.region
+        if result.ico:
+            update["ico"] = result.ico
+
+        # Columns that may not exist yet — try separately
+        extra_update = {}
+        if result.dic:
+            extra_update["dic"] = result.dic
+        if result.date_created:
+            extra_update["founded_date"] = result.date_created
+
+        if update:
+            try:
+                sb.table("companies").update(update).eq("id", company_id).execute()
+                logger.info(
+                    f"[ARES] Updated company {company_id[:8]}: "
+                    f"{', '.join(f'{k}={v}' for k,v in update.items())}"
+                )
+            except Exception as e:
+                logger.error(f"[ARES] Failed to update company: {e}")
+
+        if extra_update:
+            try:
+                sb.table("companies").update(extra_update).eq("id", company_id).execute()
+                logger.info(f"[ARES] Updated extra fields: {list(extra_update.keys())}")
+            except Exception as e:
+                logger.warning(f"[ARES] Extra columns not available yet: {e}")
+
+        # ── Auto-save odpovědi do questionnaire_responses ──
+        auto_answers = []
+        if result.address:
+            auto_answers.append(ExtractedAnswer(
+                question_key="company_address",
+                section="industry",
+                answer=result.address,
+            ))
+        if result.name:
+            auto_answers.append(ExtractedAnswer(
+                question_key="company_legal_name",
+                section="industry",
+                answer=result.name,
+            ))
+        if result.nace_description:
+            auto_answers.append(ExtractedAnswer(
+                question_key="company_industry",
+                section="industry",
+                answer=result.nace_description,
+                details={"nace_codes": result.nace_codes, "ares_lookup": True},
+            ))
+
+        if auto_answers:
+            _save_extracted_answers(company_id, auto_answers)
+            logger.info(
+                f"[ARES] Auto-saved {len(auto_answers)} answers: "
+                f"{[a.question_key for a in auto_answers]}"
+            )
+
+    except Exception as e:
+        logger.error(f"[ARES] Lookup failed for {clean}: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1997,6 +2144,8 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
                 f"[MART1N] Saved {len(extracted)} answers for company "
                 f"{req.company_id[:8]}...: {[e.question_key for e in extracted]}"
             )
+            # ARES lookup — pokud uživatel zadal IČO, vytáhni data z ARES
+            _handle_ares_lookup(req.company_id, extracted)
         except Exception as e:
             logger.error(f"[MART1N] Failed to save answers: {e}")
 
@@ -2339,6 +2488,8 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                         f"[MART1N] Saved {len(extracted)} answers for company "
                         f"{req.company_id[:8]}...: {[e.question_key for e in extracted]}"
                     )
+                    # ARES lookup — pokud uživatel zadal IČO, vytáhni data z ARES
+                    _handle_ares_lookup(req.company_id, extracted)
                 except Exception as e:
                     logger.error(f"[MART1N] Failed to save answers: {e}")
 
