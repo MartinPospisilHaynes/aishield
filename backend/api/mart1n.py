@@ -959,12 +959,23 @@ def _save_extracted_answers(company_id: str, answers: list[ExtractedAnswer]):
         if result.data:
             client_id = result.data[0]["id"]
         else:
-            # Create a minimal client record
+            # Look up email from companies table (always available — user registered with it)
+            company_res = sb.table("companies").select("email, name").eq("id", company_id).limit(1).execute()
+            company_email = company_res.data[0]["email"] if company_res.data and company_res.data[0].get("email") else None
+            company_name = company_res.data[0]["name"] if company_res.data and company_res.data[0].get("name") else None
+
+            if not company_email:
+                logger.error(f"[MART1N] No email found in companies for {company_id} — cannot create client")
+                return
+
             new_client = sb.table("clients").insert({
                 "company_id": company_id,
+                "email": company_email,
+                "contact_name": company_name,
                 "source": "mart1n_chat",
             }).execute()
             client_id = new_client.data[0]["id"]
+            logger.info(f"[MART1N] Created client for company {company_id[:8]}... (email: {company_email})")
     except Exception as e:
         logger.error(f"[MART1N] Cannot get/create client for {company_id}: {e}")
         return

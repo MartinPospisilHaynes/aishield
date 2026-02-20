@@ -252,18 +252,14 @@ function Mart1nPageInner() {
                     );
 
                     // Add resumption greeting
-                    const pct = sessionData.progress || 0;
-                    const unknownCount = sessionData.answered_keys
-                        ? (sessionData.answered_keys.length)
-                        : 0;
+                    const answeredCount = sessionData.answered_keys?.length || 0;
                     loadedMessages.push({
                         role: "assistant",
-                        content: `Vítejte zpět! Vidím, že Váš dotazník je na **${pct}%** `
-                            + `(${unknownCount} zodpovězených otázek). `
-                            + `Chcete pokračovat tam, kde jste skončili, nebo doplnit odpovědi na některé otázky?`,
+                        content: answeredCount > 0
+                            ? `Vítejte zpět! Máme uloženo **${answeredCount} zodpovězených otázek**. Chcete pokračovat tam, kde jste skončili, nebo doplnit odpovědi na některé otázky?`
+                            : `Vítejte zpět! Chcete pokračovat v našem rozhovoru?`,
                         bubbles: [
                             "Pokračovat kde jsem skončil/a",
-                            "Doplnit přeskočené otázky",
                             "Začít od začátku",
                         ],
                         timestamp: Date.now(),
