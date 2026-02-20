@@ -1053,24 +1053,26 @@ function Mart1nPageInner() {
                     {/* Typing indicator */}
                     {sending && <TypingIndicator />}
 
-                    {/* Completion card */}
+                    {/* Completion card — "Ukončit Uršulu" */}
                     {isComplete && (
-                        <div className="glass border-emerald-500/20 bg-emerald-500/5 p-6 text-center mt-6">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <div className="glass border-purple-500/20 bg-purple-500/5 p-6 text-center mt-6">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500/10 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-2">Analýza dokončena!</h3>
+                            <h3 className="text-lg font-bold text-white mb-2">Děkujeme za Váš čas!</h3>
                             <p className="text-sm text-slate-400 mb-4">
-                                Děkujeme za Váš čas. Všechny odpovědi byly uloženy a zpracovány.
-                                Výsledky najdete v dashboardu.
+                                Všechny odpovědi byly uloženy. Na dashboardu uvidíte průběh zpracování.
                             </p>
                             <button
                                 onClick={() => router.push("/dashboard")}
-                                className="btn-primary px-6 py-2.5 text-sm"
+                                className="px-8 py-3 rounded-xl font-semibold text-white
+                                           bg-gradient-to-r from-[#a855f7] to-[#7c3aed]
+                                           hover:shadow-lg hover:shadow-purple-500/25
+                                           transition-all duration-200 text-sm"
                             >
-                                Přejít na dashboard
+                                Ukončit Uršulu
                             </button>
                         </div>
                     )}
