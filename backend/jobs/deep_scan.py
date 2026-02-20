@@ -444,6 +444,22 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
 
         raise
 
+    except BaseException as e:
+        # ── CancelledError (ARQ timeout), KeyboardInterrupt, SystemExit ──
+        # ARQ timeout volá task.cancel() → asyncio.CancelledError (potomek BaseException, NE Exception)
+        # Bez tohoto handleru zůstane deep_scan_status="running" navždy (stale)
+        logger.warning(f"[DeepScan] Job přerušen ({type(e).__name__}): {e}")
+        try:
+            finished = datetime.now(timezone.utc).isoformat()
+            supabase.table("scans").update({
+                "deep_scan_status": "error",
+                "deep_scan_finished_at": finished,
+            }).eq("id", scan_id).execute()
+            logger.info(f"[DeepScan] DB status aktualizován na 'error' po přerušení")
+        except Exception:
+            logger.error(f"[DeepScan] Nepodařilo se aktualizovat DB po přerušení")
+        raise
+
 
 # ═══════════════════════════════════════════════════════════════
 # Email šablona — 24h scan dokončen

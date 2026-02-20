@@ -10,7 +10,7 @@ import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 
-from arq import cron
+from arq import cron, func
 from arq.connections import RedisSettings
 
 from backend.config import get_settings
@@ -341,7 +341,7 @@ class WorkerSettings:
         generate_compliance_kit_job,
         rescan_client_job,
         send_questionnaire_reminder_job,
-        deep_scan_job,
+        func(deep_scan_job, max_tries=1),  # Deep scan = 24h, drahý → žádný retry
     ]
 
     # Cron jobs
@@ -358,7 +358,7 @@ class WorkerSettings:
     _testing = os.getenv("DEEP_SCAN_MODE", "production").lower() == "testing"
     max_jobs = 5           # Max paralelních jobů (Playwright → RAM limit)
     job_timeout = 1800 if _testing else 90000    # Testing: 30min, Production: 25h
-    max_tries = 2          # 2 pokusy při selhání (deep scan = drahý)
+    max_tries = 2          # 2 pokusy při selhání (deep_scan_job má vlastní max_tries=1)
     retry_delay = 300      # 5min mezi pokusy
 
     # Logging
