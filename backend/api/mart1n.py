@@ -248,7 +248,7 @@ BASIC — 4 999 Kč (jednorázově):
 - Sada dokumentů (AI Act Compliance Kit) — počet závisí na rizikovém profilu firmy:
 
   VŽDY generováno (každý klient dostane):
-  1. AI Act Compliance Report (PDF, 8–15 stran)
+  1. AI Act Compliance Report (PDF)
   2. Akční plán s checklistem a prioritami (PDF)
   3. Registr AI systémů — tabulka připravená pro inspekci (PDF)
   4. Transparenční stránka (HTML kód k vložení na web)
@@ -266,7 +266,8 @@ BASIC — 4 999 Kč (jednorázově):
   12. Monitoring plán AI (high risk, nebo osobní údaje + 3+ AI systémy)
 
   Celkem až 12 dokumentů — přesný počet závisí na odpovědích v dotazníku.
-- Dodání do 48 hodin (obvykle do několika hodin)
+- Dodání elektronicky: do 7 pracovních dnů od obdržení platby
+- Dodání tištěné verze: do 14 dnů — profesionální vazba, připraveno k podpisu a pro případnou kontrolu
 - BEZ implementace — klient si vše nainstaluje sám
 - BEZ následné podpory po dodání
 
@@ -276,7 +277,8 @@ PRO — 14 999 Kč (jednorázově):
 - Podpora: WordPress, Shoptet, WooCommerce, Webnode, custom weby
 - Prioritní zpracování
 - 30denní technická podpora po implementaci
-- Implementace do 5 pracovních dnů
+- Implementace do 7 pracovních dnů od obdržení platby
+- Tištěná verze do 14 dnů — profesionální vazba, připraveno k podpisu a pro kontrolu
 
 ENTERPRISE — individuální cena (od 39 999 Kč):
 - Vše z PRO +
@@ -286,6 +288,8 @@ ENTERPRISE — individuální cena (od 39 999 Kč):
 - Interní dotazník pro AI systémy
 - Školení AI gramotnosti (čl. 4)
 - SLA s garantovanou dobou odezvy
+- Dodání do 7 pracovních dnů od obdržení platby
+- Tištěná verze do 14 dnů — profesionální vazba, připraveno k podpisu a pro kontrolu
 
 MONITORING (volitelný doplněk od 299 Kč/měsíc):
 - Pravidelné re-skeny webu (1–4x měsíčně)
