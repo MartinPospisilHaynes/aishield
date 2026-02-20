@@ -11,6 +11,9 @@ export default function Header() {
     const pathname = usePathname();
     const menuRef = useRef<HTMLDivElement>(null);
 
+    // Admin má vlastní UI — hlavní Header tam nepatří
+    if (pathname?.startsWith("/admin")) return null;
+
     function isActive(href: string) {
         if (href === "/") return pathname === "/";
         return pathname === href || pathname.startsWith(href + "/");
