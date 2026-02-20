@@ -796,31 +796,17 @@ function Mart1nPageInner() {
 
         // Check if browser supports getUserMedia
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setMessages(prev => [...prev, {
-                role: "assistant" as const,
-                content: "⚠️ **Hlasový vstup není podporován.** Váš prohlížeč nepodporuje nahrávání zvuku. Zkuste Chrome, Edge nebo Safari.",
-                bubbles: [],
-                timestamp: Date.now(),
-            }]);
+            setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.content?.includes("Hlasový vstup není podporován")) return prev;
+                return [...prev, {
+                    role: "assistant" as const,
+                    content: "⚠️ **Hlasový vstup není podporován.** Váš prohlížeč nepodporuje nahrávání zvuku. Zkuste Chrome, Edge nebo Safari.",
+                    bubbles: [],
+                    timestamp: Date.now(),
+                }];
+            });
             return;
-        }
-
-        // Check permission state first (if Permissions API available)
-        if (navigator.permissions) {
-            try {
-                const permStatus = await navigator.permissions.query({ name: "microphone" as PermissionName });
-                if (permStatus.state === "denied") {
-                    setMessages(prev => [...prev, {
-                        role: "assistant" as const,
-                        content: "⚠️ **Přístup k mikrofonu je zablokovaný.** Klikněte na ikonu 🔒 v adresním řádku prohlížeče → Oprávnění webu → Mikrofon → Povolit. Pak to zkuste znovu.",
-                        bubbles: [],
-                        timestamp: Date.now(),
-                    }]);
-                    return;
-                }
-            } catch {
-                // Permissions API not supported for microphone (e.g. Safari) — continue to getUserMedia
-            }
         }
 
         try {
@@ -891,18 +877,23 @@ function Mart1nPageInner() {
             const isNotFound = err instanceof DOMException && err.name === "NotFoundError";
             let micMsg = "⚠️ **Mikrofon není dostupný.**";
             if (isDenied) {
-                micMsg = "⚠️ **Přístup k mikrofonu byl zamítnut.** Klikněte na ikonu 🔒 v adresním řádku → Oprávnění webu → Mikrofon → Povolit. Na macOS také zkontrolujte: Nastavení systému → Soukromí → Mikrofon → povolte prohlížeč.";
+                micMsg = "⚠️ **Přístup k mikrofonu byl zamítnut.** \n\n**Chrome:** Klikněte na ikonu 🔒 vlevo v adresním řádku → \"Nastavení webu\" → Mikrofon → \"Povolit\" → obnovte stránku (F5).\n\n**Safari:** Safari → Nastavení → Webové stránky → Mikrofon → zvolte \"Povolit\".\n\n**macOS:** Nastavení systému → Soukromí a zabezpečení → Mikrofon → zaškrtněte prohlížeč.";
             } else if (isNotFound) {
                 micMsg = "⚠️ **Mikrofon nebyl nalezen.** Připojte mikrofon nebo sluchátka s mikrofonem a zkuste to znovu.";
             } else {
-                micMsg = "⚠️ **Mikrofon není dostupný.** Povolte přístup k mikrofonu v nastavení prohlížeče (ikona 🔒 v adresním řádku) a zkuste to znovu.";
+                micMsg = "⚠️ **Mikrofon není dostupný.** Povolte přístup k mikrofonu v nastavení prohlížeče a zkuste to znovu.";
             }
-            setMessages(prev => [...prev, {
-                role: "assistant" as const,
-                content: micMsg,
-                bubbles: [],
-                timestamp: Date.now(),
-            }]);
+            // Don't spam — only add if last message isn't already a mic error
+            setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.content?.includes("Mikrofon") || last?.content?.includes("mikrofonu")) return prev;
+                return [...prev, {
+                    role: "assistant" as const,
+                    content: micMsg,
+                    bubbles: [],
+                    timestamp: Date.now(),
+                }];
+            });
         }
     }, [isRecording]);
 
