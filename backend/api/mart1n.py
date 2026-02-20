@@ -945,6 +945,102 @@ def _get_client_context(company_id: str) -> str:
             except Exception as e:
                 logger.warning(f"[MART1N] user_metadata backfill failed: {e}")
 
+        # ── Backfill from ARES if we have IČO but missing address/legal_form/nace ──
+        if ico and (not address or not legal_form or not nace_code or not dic):
+            try:
+                import httpx
+                ares_url = f"https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico.strip()}"
+                with httpx.Client(timeout=10.0) as http:
+                    resp = http.get(ares_url, headers={"Accept": "application/json"})
+                    resp.raise_for_status()
+                    ares = resp.json()
+
+                sidlo = ares.get("sidlo", {})
+                street_parts = []
+                if sidlo.get("nazevUlice"):
+                    num = sidlo.get("cisloDomovni", "")
+                    orient = sidlo.get("cisloOrientacni", "")
+                    if num and orient:
+                        street_parts.append(f"{sidlo['nazevUlice']} {num}/{orient}")
+                    elif num:
+                        street_parts.append(f"{sidlo['nazevUlice']} {num}")
+                    else:
+                        street_parts.append(sidlo["nazevUlice"])
+                street = " ".join(street_parts)
+                city = sidlo.get("nazevObce", "")
+                psc = str(sidlo.get("psc", ""))
+                if len(psc) == 5:
+                    psc = f"{psc[:3]} {psc[3:]}"
+                ares_address = ", ".join(p for p in [street, city, psc] if p)
+
+                ares_dic = ""
+                raw_dic = ares.get("dic")
+                if isinstance(raw_dic, list) and raw_dic:
+                    ares_dic = raw_dic[0] if isinstance(raw_dic[0], str) else ""
+                elif isinstance(raw_dic, str):
+                    ares_dic = raw_dic
+
+                ares_legal = ""
+                # ARES returns pravniForma as code (e.g. "101") or dict
+                _LEGAL_FORM_CODES = {
+                    "101": "Fyzická osoba podnikající dle živnostenského zákona",
+                    "111": "Veřejná obchodní společnost",
+                    "112": "Společnost s ručením omezeným",
+                    "113": "Společnost komanditní",
+                    "121": "Akciová společnost",
+                    "141": "Obecně prospěšná společnost",
+                    "205": "Družstvo",
+                    "301": "Státní podnik",
+                    "421": "Zahraniční fyzická osoba",
+                    "422": "Zahraniční právnická osoba",
+                    "706": "Spolek",
+                    "736": "Pobočný spolek",
+                    "801": "Obec",
+                }
+                pf = ares.get("pravniForma")
+                if isinstance(pf, dict):
+                    ares_legal = pf.get("nazev", "")
+                elif pf:
+                    ares_legal = _LEGAL_FORM_CODES.get(str(pf), str(pf))
+
+                ares_nace = ""
+                nace_list = ares.get("czNace", [])
+                if nace_list and isinstance(nace_list, list):
+                    ares_nace = str(nace_list[0]) if nace_list[0] else ""
+
+                ares_name = ares.get("obchodniJmeno", "")
+                ares_founded = ""
+                if ares.get("datumVzniku"):
+                    ares_founded = str(ares["datumVzniku"])
+
+                # Build update dict for missing fields
+                backfill_ares = {}
+                if not address and ares_address:
+                    address = ares_address
+                    backfill_ares["address"] = address
+                if not legal_form and ares_legal:
+                    legal_form = ares_legal
+                    backfill_ares["legal_form"] = legal_form
+                if not nace_code and ares_nace:
+                    nace_code = ares_nace
+                    backfill_ares["nace_code"] = nace_code
+                if not dic and ares_dic:
+                    dic = ares_dic
+                    backfill_ares["dic"] = dic
+                if not founded_date and ares_founded:
+                    founded_date = ares_founded
+                    backfill_ares["founded_date"] = founded_date
+                if (not name or name == url) and ares_name:
+                    name = ares_name
+                    backfill_ares["name"] = name
+
+                if backfill_ares:
+                    sb.table("companies").update(backfill_ares).eq("id", company_id).execute()
+                    logger.info(f"[MART1N] Backfilled from ARES: {list(backfill_ares.keys())}")
+
+            except Exception as e:
+                logger.warning(f"[MART1N] ARES backfill failed for IČO {ico}: {e}")
+
         # Load client data (contact person info)
         client_res = sb.table("clients") \
             .select("contact_name, contact_role, email") \
