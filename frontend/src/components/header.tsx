@@ -11,9 +11,6 @@ export default function Header() {
     const pathname = usePathname();
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Admin má vlastní UI — hlavní Header tam nepatří
-    if (pathname?.startsWith("/admin")) return null;
-
     function isActive(href: string) {
         if (href === "/") return pathname === "/";
         return pathname === href || pathname.startsWith(href + "/");
@@ -43,6 +40,9 @@ export default function Header() {
         document.body.style.overflow = mobileOpen ? "hidden" : "";
         return () => { document.body.style.overflow = ""; };
     }, [mobileOpen]);
+
+    // Admin má vlastní UI — hlavní Header tam nepatří
+    if (pathname?.startsWith("/admin")) return null;
 
     const NAV_LINKS = [
         { href: "/pricing", icon: (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>), label: "Ceník", desc: "Balíčky a ceny služeb" },
