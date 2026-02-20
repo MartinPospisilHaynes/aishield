@@ -227,7 +227,7 @@ Odpovídej VÝHRADNĚ platným JSON:
       "question_key": "klíč z ZNALOSTNÍ BÁZE",
       "section": "ID sekce",
       "answer": "yes|no|unknown|textová odpověď",
-      "details": {{}},
+      "details": "",
       "tool_name": ""
     }}}}
   ],
@@ -418,6 +418,7 @@ class Mart1nResponse(BaseModel):
 
 MART1N_OUTPUT_SCHEMA = {
     "type": "object",
+    "additionalProperties": False,
     "properties": {
         "message": {
             "type": "string",
@@ -432,6 +433,7 @@ MART1N_OUTPUT_SCHEMA = {
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "text": {"type": "string"},
                     "delay_ms": {"type": "integer"},
@@ -445,14 +447,15 @@ MART1N_OUTPUT_SCHEMA = {
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "question_key": {"type": "string"},
                     "section": {"type": "string"},
                     "answer": {"type": "string"},
-                    "details": {"type": "object"},
+                    "details": {"type": "string", "description": "JSON-serialized details or empty string."},
                     "tool_name": {"type": "string"},
                 },
-                "required": ["question_key", "section", "answer"],
+                "required": ["question_key", "section", "answer", "details", "tool_name"],
             },
             "description": "Extrahované odpovědi z uživatelovy zprávy. question_key MUSÍ existovat v ZNALOSTNÍ BÁZI.",
         },
@@ -1057,12 +1060,24 @@ def _validate_extracted_answer(ans_data: dict) -> Optional[ExtractedAnswer]:
             continue
         break
 
+    # Handle details: may be a JSON string (structured outputs) or dict (legacy)
+    raw_details = ans_data.get("details")
+    if isinstance(raw_details, str) and raw_details.strip():
+        try:
+            parsed_details = json.loads(raw_details)
+        except (json.JSONDecodeError, ValueError):
+            parsed_details = {"raw": raw_details}
+    elif isinstance(raw_details, dict):
+        parsed_details = raw_details
+    else:
+        parsed_details = None
+
     return ExtractedAnswer(
         question_key=question_key,
         section=section,
         answer=answer,
-        details=ans_data.get("details"),
-        tool_name=ans_data.get("tool_name"),
+        details=parsed_details,
+        tool_name=ans_data.get("tool_name") or None,
     )
 
 
@@ -1975,7 +1990,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             max_tokens=16000,
             temperature=1,  # Required when using extended thinking
             thinking={
-                "type": "enabled",
+                "type": "adaptive",
                 "budget_tokens": 4096,
             },
             output_config={
@@ -2284,7 +2299,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 max_tokens=16000,
                 temperature=1,  # Required when using extended thinking
                 thinking={
-                    "type": "enabled",
+                    "type": "adaptive",
                     "budget_tokens": 4096,
                 },
                 output_config={
