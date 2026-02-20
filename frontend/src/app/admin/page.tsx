@@ -4524,7 +4524,7 @@ export default function AdminPage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                             <StatCard icon="🤖" label="Claude dnes" value={`$${(claudeToday?.cost_usd || 0).toFixed(3)}`} sub={claudeToday ? `${claudeToday.calls} volání · ${fmtTokens(claudeToday.input_tokens + claudeToday.output_tokens)} tokenů` : "—"} accent="cyan" />
                                             <StatCard icon="✨" label="Gemini dnes" value={`$${(geminiToday?.cost_usd || 0).toFixed(3)}`} sub={geminiToday ? `${geminiToday.calls} volání · ${fmtTokens(geminiToday.input_tokens + geminiToday.output_tokens)} tokenů` : "—"} accent="fuchsia" />
-                                            <StatCard icon="📞" label="Celkem volání" value={claude?.calls || 0 + (gemini?.calls || 0)} sub={`Claude: ${claude?.calls || 0} · Gemini: ${gemini?.calls || 0}`} accent="green" />
+                                            <StatCard icon="📞" label="Celkem volání" value={(claude?.calls || 0) + (gemini?.calls || 0)} sub={`Claude: ${claude?.calls || 0} · Gemini: ${gemini?.calls || 0}`} accent="green" />
                                             <StatCard icon="💸" label="Celkem měsíc" value={`$${(claudeSpent + geminiSpent).toFixed(2)}`} sub={`zbývá $${Math.max(0, claudeBudget + geminiBudget - claudeSpent - geminiSpent).toFixed(2)}`} accent={claudePct >= 80 || geminiPct >= 80 ? "red" : "green"} />
                                         </div>
 

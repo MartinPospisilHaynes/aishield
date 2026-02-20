@@ -256,15 +256,15 @@ class LLMUsageTracker:
                 result["claude"] = {"status": "missing", "message": "API klíč není nastaven"}
             else:
                 client = anthropic.Anthropic(api_key=key)
-                # Count tokens endpoint — minimal cost, verifies auth
-                resp = client.messages.count_tokens(
+                # Minimal API call to verify key works
+                resp = client.messages.create(
                     model="claude-sonnet-4-20250514",
-                    system="test",
+                    max_tokens=1,
                     messages=[{"role": "user", "content": "hi"}],
                 )
                 result["claude"] = {
                     "status": "ok",
-                    "message": f"Klíč funguje (token count OK)",
+                    "message": f"Klíč funguje",
                     "key_prefix": key[:12] + "...",
                 }
         except anthropic.AuthenticationError:

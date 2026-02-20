@@ -410,16 +410,14 @@ JAK VEDEŠ ROZHOVOR
 ═══════════════════════════════════════════════════════════════
 - Začni obecnými otázkami (odvětví, velikost firmy, web) — navázej přirozeně.
 - **STRIKTNĚ JEDNA OTÁZKA NA JEDNU ZPRÁVU.** Nikdy nepokládej dvě otázky v jedné zprávě — uživatel neví, na kterou odpovídat.
-- **ODDĚLUJ UPOZORNĚNÍ OD OTÁZEK.** Když chceš reagovat upozorněním/varováním na odpověď uživatele A ZÁROVEŇ položit další otázku, ROZDĚL je do DVOU samostatných zpráv pomocí multi_messages. První zpráva = upozornění/komentář (bez bublinek). Druhá zpráva = nová otázka (s bublinkami). NIKDY nesmíš dát upozornění a otázku do jedné bubliny.
+- **ODDĚLUJ UPOZORNĚNÍ OD OTÁZEK.** Když chceš reagovat upozorněním/varováním na odpověď uživatele A ZÁROVEŇ položit další otázku, ROZDĚL je do DVOU samostatných zpráv pomocí multi_messages. První zpráva = upozornění/komentář (bez bublinek). Druhá zpráva = nová otázka (bez bublinek). NIKDY nesmíš dát upozornění a otázku do jedné bubliny.
 - Když uživatel odpoví, reaguj na jeho odpověď (potvrď, upozorni na riziko, vysvětli kontext).
-- Nabízej BUBLINY (tlačítka pro rychlou odpověď) — viz formát odpovědi.
-- **BUBLINY JSOU SINGLE-SELECT.** Uživatel může kliknout POUZE NA JEDNU bublinu — po kliknutí se okamžitě odešle. NIKDY neříkej "vyberte vše", "vyberte všechny", "vyberte více" apod. Pokud potřebuješ zjistit více informací, ptej se postupně jednu otázku po druhé.
+- **INTERVIEW STYL — BEZ PŘEDPŘIPRAVENÝCH ODPOVĚDÍ.** Ptej se otevřenými otázkami a nech uživatele odpovídat vlastními slovy. NEPOSÍLEJ bubliny s předpřipravenými odpověďmi. Výjimka: bubliny ["Ano", "Ne"] použij POUZE pro striktně binární otázky.
 - Pokud uživatel říká „nevím" nebo „nejsem si jistý":
-  a) Nabídni 3–4 typické možnosti jako bubliny — specifické pro odvětví firmy
-  b) Dej konkrétní příklady: „Například e-shopy často používají recommender systémy pro doporučování produktů — máte něco takového?"
-  c) Nabídni možnost přeskočit: „Nevadí, tuto otázku můžeme přeskočit a případně se k ní vrátit později."
-  d) Ulož odpověď jako „unknown" — na konci konverzace shrň přeskočené otázky a nabídni jejich doplnění
-  e) Nikdy netrestej „nevím" — neříkej uživateli, že by měl odpověď znát
+  a) Dej konkrétní příklady z jeho odvětví: „Například e-shopy často používají recommender systémy pro doporučování produktů — máte něco takového?"
+  b) Nabídni možnost přeskočit: „Nevadí, tuto otázku můžeme přeskočit a případně se k ní vrátit později."
+  c) Ulož odpověď jako „unknown" — na konci konverzace shrň přeskočené otázky a nabídni jejich doplnění
+  d) Nikdy netrestej „nevím" — neříkej uživateli, že by měl odpověď znát
 - Pokud uživatel odpovídá volným textem, extrahuj z něj strukturovanou odpověď.
 - Na konci shrn hlavní zjištění a zeptej se, zda je vše správně.
 - Na konci konverzace PŘIPOJEŇ disclaimer: "Tato analýza má informativní charakter a nenahrazuje právní poradenství. Pro právně závazné posouzení doporučujeme konzultaci s advokátem."
@@ -432,7 +430,7 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
 
 {{
   "message": "Text tvé odpovědi (markdown)",
-  "bubbles": ["Možnost 1", "Možnost 2", "Možnost 3"],
+  "bubbles": [],
   "multi_messages": [],
   "extracted_answers": [
     {{
@@ -451,8 +449,8 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
 
 PRAVIDLA PRO JSON:
 - "message": Tvá odpověď ve formátu markdown. Piš krátce (max 3 odstavce). Používej odrážky. POKUD používáš multi_messages, nastav message na prázdný řetězec "".
-- "bubbles": Pole řetězců — tlačítka pro rychlou odpověď (max 5). Bubliny se zobrazí POUZE u poslední zprávy. Pokud používáš multi_messages, nastav bubbles na [] a bubliny dej do poslední multi_message.
-- "multi_messages": Pole objektů pro postupné zobrazení více bublin. POUŽÍVEJ KDYKOLI potřebuješ oddělit upozornění/komentář od následné otázky. Formát: [{{"text": "upozornění...", "delay_ms": 0, "bubbles": []}}, {{"text": "otázka...", "delay_ms": 1500, "bubbles": ["Ano", "Ne"]}}]. Pokud máš jen jednu zprávu bez potřeby oddělení, nech prázdné [] a použij "message".
+- "bubbles": VŽDY PRÁZDNÉ []. Nepoužívej předpřipravené odpovědi. Toto je rozhovor ve stylu interview — klademe otevřené otázky a uživatel odpovídá vlastními slovy. Výjimka: bubliny použij POUZE pro jednoduché Ano/Ne otázky (max 2-3 možnosti).
+- "multi_messages": Pole objektů pro postupné zobrazení více bublin. POUŽÍVEJ KDYKOLI potřebuješ oddělit upozornění/komentář od následné otázky. Formát: [{{"text": "upozornění...", "delay_ms": 0, "bubbles": []}}, {{"text": "otázka...", "delay_ms": 1500, "bubbles": []}}]. Pokud máš jen jednu zprávu bez potřeby oddělení, nech prázdné [] a použij "message".
 - "extracted_answers": Pole extrahovaných odpovědí z aktuální zprávy uživatele. Prázdné [] pokud uživatel ještě neodpovídá na otázku. Každá odpověď má:
   - question_key: klíč otázky z dotazníku — MUSÍ být jeden z klíčů v ZNALOSTNÍ BÁZI
   - section: ID sekce — MUSÍ odpovídat sekci, do které klíč patří
@@ -472,7 +470,7 @@ Správná odpověď:
   "bubbles": [],
   "multi_messages": [
     {{"text": "**Pozor** — vkládání jmen zákazníků do ChatGPT je zpracování osobních údajů podle GDPR. ChatGPT ukládá data na serverech v USA, což vyžaduje zvláštní opatření. Doporučuji používat pouze obecné popisy bez jmen, nebo získat písemný souhlas.", "delay_ms": 0, "bubbles": []}},
-    {{"text": "Používáte ještě nějaký jiný AI nástroj kromě ChatGPT?", "delay_ms": 2000, "bubbles": ["Ne, jen ChatGPT", "Ano, používáme i další", "Nevím / nejsem si jistý"]}}
+    {{"text": "Používáte ještě nějaký jiný AI nástroj kromě ChatGPT?", "delay_ms": 2000, "bubbles": []}}
   ],
   "extracted_answers": [...],
   "progress": 30,
@@ -1101,15 +1099,13 @@ def _get_intro_phase(db_history: list[dict]) -> int:
 
 # Intro messages logged to DB on first user message (so Claude has context)
 _INTRO_CONTEXT = (
-    "Ahoj, já jsem **Uršula** a budu vašim průvodcem spletitým světem Euro nařízení.\n\n"
-    "**Nařízení Evropského parlamentu a Rady (EU) 2024/1689 (akt o umělé inteligenci)** "
-    "— mi nařizuje, abych Vás hned ze začátku naší konverzace informovala o tom, že jsem "
-    "oproti té pravé Uršule pouze chatbot poháněný umělou inteligencí.\n\n"
-    "I když je otázka, co je lepší, že? 😉\n\n"
-    "Všechny informace, které si tady řekneme, zůstávají **výhradně mezi námi** — nikomu "
-    "je nepředáváme. Kdyby nám to někdo prokázal, hrozí nám pokuta **až 20 milionů EUR** "
-    "(GDPR, čl. 83 odst. 5, Nařízení EU 2016/679).\n\n"
-    "Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**"
+    "Dobrý den, já jsem virtuální asistentka **Uršula** a položím Vám sérii otázek. "
+    "Podle kvality Vašich odpovědí Vám dokážeme vytvořit dokumenty, transparenční stránku "
+    "a powerpointovou prezentaci pro Vaše zaměstnance tak, aby Vaše firma plně splňovala "
+    "novou regulaci Evropské unie.\n\n"
+    "Pamatujte prosím, že čím více informací mi v odpovědích dáte, tím lépe určím, "
+    "které části zákona se Vás týkají, proto se nestyďte pořádně se rozepsat.\n\n"
+    "**V jakém odvětví podnikáte?**"
 )
 
 
@@ -1135,9 +1131,9 @@ def _build_intro_response(session_id: str) -> Mart1nResponse:
     msgs: list[MultiMessage] = []
 
     msgs.append(MultiMessage(
-        text="Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**",
+        text="**V jakém odvětví podnikáte?**",
         delay_ms=0,
-        bubbles=_get_industry_bubbles(),
+        bubbles=[],
     ))
 
     return Mart1nResponse(
@@ -2206,47 +2202,30 @@ async def mart1n_init():
     """
     Returns initial greeting for Uršula.
     Frontend calls this when the page loads to get the opening message.
+    Single intro message + immediate first question, interview style.
     """
-    industry_bubbles = _get_industry_bubbles()
-
     return {
         "message": "",
         "bubbles": [],
         "multi_messages": [
             {
-                "text": "Ahoj, já jsem **Uršula** a budu vašim průvodcem spletitým světem Euro nařízení.",
+                "text": (
+                    "Dobrý den, já jsem virtuální asistentka **Uršula** a položím "
+                    "Vám sérii otázek. Podle kvality Vašich odpovědí Vám dokážeme "
+                    "vytvořit dokumenty, transparenční stránku a powerpointovou "
+                    "prezentaci pro Vaše zaměstnance tak, aby Vaše firma plně "
+                    "splňovala novou regulaci Evropské unie.\n\n"
+                    "Pamatujte prosím, že čím více informací mi v odpovědích dáte, "
+                    "tím lépe určím, které části zákona se Vás týkají, proto se "
+                    "nestyďte pořádně se rozepsat."
+                ),
                 "delay_ms": 0,
                 "bubbles": [],
             },
             {
-                "text": (
-                    "**Nařízení Evropského parlamentu a Rady (EU) 2024/1689 "
-                    "(akt o umělé inteligenci)** — mi nařizuje, abych Vás hned "
-                    "ze začátku naší konverzace informovala o tom, že jsem oproti "
-                    "té pravé Uršule pouze chatbot poháněný umělou inteligencí."
-                ),
-                "delay_ms": 5000,
+                "text": "**V jakém odvětví podnikáte?**",
+                "delay_ms": 3000,
                 "bubbles": [],
-            },
-            {
-                "text": "I když je otázka, co je lepší, že? 😉",
-                "delay_ms": 5000,
-                "bubbles": [],
-            },
-            {
-                "text": (
-                    "Všechny informace, které si tady řekneme, zůstávají "
-                    "**výhradně mezi námi** — nikomu je nepředáváme. "
-                    "Kdyby nám to někdo prokázal, hrozí nám pokuta "
-                    "**až 20 milionů EUR** (GDPR, čl. 83 odst. 5, Nařízení EU 2016/679)."
-                ),
-                "delay_ms": 5000,
-                "bubbles": [],
-            },
-            {
-                "text": "Tak pojďme na to! **V jakém odvětví Vaše firma podniká?**",
-                "delay_ms": 5000,
-                "bubbles": industry_bubbles,
             },
         ],
         "bubble_overrides": {},
