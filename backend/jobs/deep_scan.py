@@ -329,12 +329,45 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
                 "id", company_id
             ).limit(1).execute()
 
-            if company.data and company.data[0].get("email"):
-                email_to = company.data[0]["email"]
-                company_name = company.data[0].get("name", url)
+            company_name = company.data[0].get("name", url) if company.data else url
+            client_email = company.data[0].get("email") if company.data else None
 
+            from backend.outbound.email_engine import send_email
+
+            # ── GUARD: Deep scan selhal (0 úspěšných scanů) → NIKDY neposílat klientovi ──
+            if total_scans_done == 0:
+                logger.warning(
+                    f"[DeepScan] ⚠️ ŽÁDNÝ deep scan neproběhl úspěšně! "
+                    f"Errors: {len(errors)}, scan_id={scan_id}"
+                )
+                # Poslat admin notifikaci — klient nesmí vědět o selhání
+                await send_email(
+                    to="info@aishield.cz",
+                    subject=f"⚠️ Deep scan SELHAL — {company_name} ({url})",
+                    html=(
+                        f"<h2>⚠️ Deep scan nedokončen</h2>"
+                        f"<p><strong>Firma:</strong> {company_name}</p>"
+                        f"<p><strong>URL:</strong> {url}</p>"
+                        f"<p><strong>Scan ID:</strong> {scan_id}</p>"
+                        f"<p><strong>Klient:</strong> {client_email or 'N/A'}</p>"
+                        f"<p><strong>Kol dokončeno:</strong> {rounds_completed}/{DEEP_SCAN_ROUNDS}</p>"
+                        f"<p><strong>Úspěšných scanů:</strong> 0</p>"
+                        f"<p><strong>Findings z quick scanu (DB):</strong> {total_unique}</p>"
+                        f"<hr>"
+                        f"<p><strong>Chyby ({len(errors)}):</strong></p>"
+                        f"<ul>{''.join(f'<li>{e}</li>' for e in errors[:20])}</ul>"
+                        f"<hr>"
+                        f"<p style='color:red;'><strong>Klientovi NEBYL odeslán žádný email.</strong> "
+                        f"Opravte problém a spusťte deep scan znovu.</p>"
+                    ),
+                    from_email="info@aishield.cz",
+                    from_name="AIshield.cz",
+                )
+                logger.info(f"[DeepScan] Admin notifikace o selhání odeslána na info@aishield.cz")
+
+            elif client_email:
+                # ── Úspěšný scan → odeslat výsledky klientovi ──
                 # Použít ALL findings z DB (ne jen deployed z deep scanu)
-                # Vytvoříme lightweight objekty pro email template
                 class _EmailFinding:
                     """Lehký objekt pro email template — z DB findings."""
                     def __init__(self, data: dict):
@@ -347,7 +380,6 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
 
                 email_findings = [_EmailFinding(f) for f in db_findings_map.values()]
 
-                from backend.outbound.email_engine import send_email
                 html = _build_deep_scan_email(
                     company_name=company_name,
                     url=url,
@@ -359,13 +391,13 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
                     trackers=list(all_trackers.values()),
                 )
                 await send_email(
-                    to=email_to,
+                    to=client_email,
                     subject=f"✅ 24h hloubkový scan dokončen — {total_unique} AI systémů nalezeno",
                     html=html,
                     from_email="info@aishield.cz",
                     from_name="AIshield.cz",
                 )
-                logger.info(f"[DeepScan] Email odeslán na {email_to}")
+                logger.info(f"[DeepScan] Email odeslán na {client_email}")
             else:
                 logger.warning(f"[DeepScan] Žádný email pro company {company_id}")
         except Exception as email_err:
@@ -388,6 +420,28 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
             "deep_scan_status": "error",
             "deep_scan_finished_at": finished,
         }).eq("id", scan_id).execute()
+
+        # Admin notifikace o fatální chybě — klient nesmí vědět
+        try:
+            from backend.outbound.email_engine import send_email
+            await send_email(
+                to="info@aishield.cz",
+                subject=f"🔴 Deep scan FATÁLNÍ CHYBA — scan_id={scan_id[:8]}",
+                html=(
+                    f"<h2>🔴 Deep scan fatálně selhal</h2>"
+                    f"<p><strong>URL:</strong> {url}</p>"
+                    f"<p><strong>Scan ID:</strong> {scan_id}</p>"
+                    f"<p><strong>Company ID:</strong> {company_id}</p>"
+                    f"<p><strong>Chyba:</strong></p>"
+                    f"<pre style='background:#1e1e1e;color:#f44;padding:16px;border-radius:8px;'>"
+                    f"{str(e)[:500]}</pre>"
+                ),
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz",
+            )
+        except Exception:
+            pass  # Nesmí zakrýt původní výjimku
+
         raise
 
 
