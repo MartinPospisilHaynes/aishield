@@ -903,7 +903,9 @@ function ScanPageInner() {
                                                         )}
                                                         {f.action_required && (
                                                             <p className="text-xs text-slate-500">
-                                                                <span className="text-fuchsia-400 font-medium">Co musíte udělat:</span>{" "}
+                                                                <span className={`font-medium ${f.risk_level === "limited" && f.action_required.startsWith("✅") ? "text-emerald-400" : "text-fuchsia-400"}`}>
+                                                                    {f.risk_level === "limited" && f.action_required.startsWith("✅") ? "Status:" : "Co musíte udělat:"}
+                                                                </span>{" "}
                                                                 <span className="text-slate-300">{f.action_required}</span>
                                                             </p>
                                                         )}

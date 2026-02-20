@@ -416,17 +416,17 @@ class AIDetector:
                     results.append(DetectedAI(
                         name=notice_name,
                         category="content_gen",
-                        risk_level="minimal",
-                        ai_act_article="čl. 50 odst. 2 (informativní)",
-                        action_required="Web otevřeně deklaruje použití AI pro tvorbu obsahu. "
-                                       "Toto je pozitivní zjištění — web již částečně plní "
-                                       "transparentnost dle čl. 50 AI Act.",
-                        description_cs="Na webu nalezeno transparenční oznámení o používání AI. "
-                                      "Web přiznává, že část obsahu je vytvořena nebo "
-                                      "asistována umělou inteligencí.",
+                        risk_level="limited",
+                        ai_act_article="čl. 50 odst. 2 — transparenční povinnost (SPLNĚNA)",
+                        action_required="✅ Váš web již splňuje čl. 50 AI Act — transparenční "
+                                       "oznámení o používání AI je aktivně nasazeno a informuje "
+                                       "návštěvníky. Žádná další akce není potřeba.",
+                        description_cs="Na webu nalezeno aktivní transparenční oznámení o používání AI. "
+                                      "Web informuje návštěvníky, že využívá umělou inteligenci — "
+                                      "tím splňuje transparenční povinnost dle čl. 50 AI Act.",
                         matched_signatures=[f"transparency:{pattern}"],
                         evidence=[f"Text: ...{snippet}..."],
-                        confidence=0.50,
+                        confidence=0.90,
                     ))
                     already_found.add(notice_name.lower())
                 break  # Stačí jeden transparency match

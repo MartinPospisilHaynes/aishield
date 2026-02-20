@@ -78,7 +78,19 @@ DŮLEŽITÉ:
 - U generátorů obsahu: čl. 50 odst. 2 (povinnost označit syntetický obsah)
 - U doporučovacích systémů: čl. 50 odst. 1 pokud personalizované
 - Analytické nástroje (GA4, GTM, pixely) NEJSOU AI systémy dle AI Act — označ jako deployed=false
-- Vrať POUZE validní JSON pole"""
+- Vrať POUZE validní JSON pole
+
+SPECIÁLNÍ PŘÍPAD — AI TRANSPARENCY NOTICE:
+Pokud skener nalezl "AI Transparency Notice" (transparenční oznámení o AI), znamená to, že web
+UŽ AKTIVNĚ INFORMUJE návštěvníky o používání AI. Toto je POZITIVNÍ zjištění — web JIŽ SPLŇUJE
+transparenční povinnost dle čl. 50 AI Act.
+- deployed=true (oznámení je skutečně nasazené na webu)
+- risk_level="limited" (transparenční povinnost = omezené riziko, ale JE SPLNĚNA)
+- action_required: Napiš že web UŽ SPLŇUJE tuto povinnost. NIKDY nepíš "informujte návštěvníky"
+  nebo "stačí informovat" — protože detekované oznámení JE ta informace pro návštěvníky!
+  Příklad: "✅ Váš web již splňuje čl. 50 AI Act — transparenční oznámení o AI je na místě."
+- description_cs: Popiš co oznámení dělá (informuje návštěvníky o použití AI na webu)
+- confidence: 0.90"""
 
 USER_PROMPT_TEMPLATE = """Analyzovaný web: {url}
 
