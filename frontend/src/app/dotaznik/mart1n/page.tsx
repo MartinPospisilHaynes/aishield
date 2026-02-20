@@ -996,7 +996,7 @@ function Mart1nPageInner() {
             {/* ── Input Area ── */}
             <div className="flex-shrink-0 border-t border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
                 <div className="max-w-3xl mx-auto px-4 py-3">
-                    <div className="flex items-end gap-2">
+                    <div className="flex items-center gap-2">
                         <div className="flex-1 relative">
                             <textarea
                                 ref={inputRef}
