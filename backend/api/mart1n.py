@@ -886,6 +886,7 @@ def _get_client_context(company_id: str) -> str:
     Load ALL known company data from registration/scan/ARES + client record.
     Returns a context block that tells Claude exactly what is already known
     so it NEVER re-asks for information we already have.
+    Also backfills IČO/name from Supabase user_metadata if missing in companies table.
     """
     try:
         sb = get_supabase()
@@ -917,6 +918,32 @@ def _get_client_context(company_id: str) -> str:
         legal_form = comp.get("legal_form") or ""
         dic = comp.get("dic") or ""
         founded_date = comp.get("founded_date") or ""
+
+        # ── Backfill from Supabase user_metadata (registration data) ──
+        # If IČO or company_name is missing in companies table but was
+        # provided during registration, pull it from user_metadata and save.
+        if email and (not ico or not name or name == url):
+            try:
+                user_list = sb.auth.admin.list_users()
+                for u in user_list:
+                    if getattr(u, "email", "") == email:
+                        meta = getattr(u, "user_metadata", {}) or {}
+                        backfill = {}
+                        if not ico and meta.get("ico"):
+                            ico = str(meta["ico"]).strip()
+                            backfill["ico"] = ico
+                        if (not name or name == url) and meta.get("company_name"):
+                            name = meta["company_name"]
+                            backfill["name"] = name
+                        if not url and meta.get("web_url"):
+                            url = meta["web_url"]
+                            backfill["url"] = url
+                        if backfill:
+                            sb.table("companies").update(backfill).eq("id", company_id).execute()
+                            logger.info(f"[MART1N] Backfilled from user_metadata: {list(backfill.keys())}")
+                        break
+            except Exception as e:
+                logger.warning(f"[MART1N] user_metadata backfill failed: {e}")
 
         # Load client data (contact person info)
         client_res = sb.table("clients") \
@@ -1393,11 +1420,20 @@ def _get_intro_phase(db_history: list[dict]) -> int:
 # Intro text — single source of truth (used by /init endpoint AND logged to DB)
 _INTRO_GREETING = (
     "Dobrý den, jsem **Uršula** — virtuální asistentka platformy AIshield.cz. "
-    "Provedeme spolu krátký rozhovor, na základě kterého Vám připravíme kompletní "
-    "dokumentaci k souladu s AI Actem: **tištěné dokumenty** doručené poštou, "
-    "transparenční stránku na Váš web a prezentaci pro zaměstnance.\n\n"
+    "Provedeme spolu krátký rozhovor, na základě kterého Vám připravíme "
+    "**kompletní dokumentaci k souladu s AI Actem** — vše obdržíte v PDF "
+    "ke stažení z Vašeho dashboardu do 48 hodin.\n\n"
+    "**Co pro Vás připravíme** (7 dokumentů v rámci balíčku BASIC):\n"
+    "📋 Compliance Report — analýza AI systémů na Vašem webu\n"
+    "✅ Akční plán — co udělat a do kdy, s checkboxy\n"
+    "📊 Registr AI systémů — evidence pro úřady\n"
+    "🌐 Transparenční stránka — HTML kód pro Váš web (čl. 50)\n"
+    "💬 Chatbot oznámení — texty pro Smartsupp, Tidio aj.\n"
+    "📜 AI politika firmy — interní pravidla pro zaměstnance\n"
+    "🎓 Osnova školení AI gramotnosti — dle čl. 4 AI Act\n\n"
     "Čím podrobnější odpovědi mi dáte, tím přesnější dokumenty pro Vás vytvoříme — "
-    "klidně se rozepište, nebo použijte mikrofon 🎤 vedle textového pole a odpovídejte hlasem."
+    "klidně se rozepište, nebo použijte mikrofon 🎤 vedle textového pole "
+    "a odpovídejte hlasem."
 )
 
 _INTRO_FIRST_QUESTION = "**V jakém odvětví podnikáte?**"
