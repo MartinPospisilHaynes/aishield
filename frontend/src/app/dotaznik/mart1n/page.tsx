@@ -48,6 +48,8 @@ function sanitizeText(raw: string): string {
     t = t.replace(/^\s*[-•*]\s+/gm, '');
     // Remove numbered list markers
     t = t.replace(/^\s*\d+\.\s+/gm, '');
+    // Remove em-dash list patterns (e.g. "Texty z ChatGPT —" at start of line)
+    t = t.replace(/\n\n(?=[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][^\n]{5,30}\s—\s)/g, ' ');
     // Remove italic markers (single * or _) but preserve **bold**
     t = t.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1');
     t = t.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '$1');
