@@ -1437,12 +1437,12 @@ def _get_intro_phase(db_history: list[dict]) -> int:
 
 # Intro messages logged to DB on first user message (so Claude has context)
 _INTRO_CONTEXT = (
-    "Dobrý den, já jsem virtuální asistentka **Uršula** a položím Vám sérii otázek. "
-    "Podle kvality Vašich odpovědí Vám dokážeme vytvořit dokumenty, transparenční stránku "
-    "a powerpointovou prezentaci pro Vaše zaměstnance tak, aby Vaše firma plně splňovala "
-    "novou regulaci Evropské unie.\n\n"
-    "Pamatujte prosím, že čím více informací mi v odpovědích dáte, tím lépe určím, "
-    "které části zákona se Vás týkají, proto se nestyďte pořádně se rozepsat.\n\n"
+    "Dobrý den, jsem **Uršula** — virtuální asistentka platformy AIshield.cz. "
+    "Provedeme spolu krátký rozhovor, na základě kterého Vám připravíme kompletní "
+    "dokumentaci k souladu s AI Actem: **tištěné dokumenty** doručené poštou, "
+    "transparenční stránku na Váš web a prezentaci pro zaměstnance.\n\n"
+    "Čím podrobnější odpovědi mi dáte, tím přesnější dokumenty pro Vás vytvoříme — "
+    "klidně se rozepište, nebo použijte mikrofon 🎤 vedle textového pole a odpovídejte hlasem.\n\n"
     "**V jakém odvětví podnikáte?**"
 )
 
@@ -2623,14 +2623,15 @@ async def mart1n_init():
         "multi_messages": [
             {
                 "text": (
-                    "Dobrý den, já jsem virtuální asistentka **Uršula** a položím "
-                    "Vám sérii otázek. Podle kvality Vašich odpovědí Vám dokážeme "
-                    "vytvořit dokumenty, transparenční stránku a powerpointovou "
-                    "prezentaci pro Vaše zaměstnance tak, aby Vaše firma plně "
-                    "splňovala novou regulaci Evropské unie.\n\n"
-                    "Pamatujte prosím, že čím více informací mi v odpovědích dáte, "
-                    "tím lépe určím, které části zákona se Vás týkají, proto se "
-                    "nestyďte pořádně se rozepsat."
+                    "Dobrý den, jsem **Uršula** — virtuální asistentka platformy "
+                    "AIshield.cz. Provedeme spolu krátký rozhovor, na základě "
+                    "kterého Vám připravíme kompletní dokumentaci k souladu "
+                    "s AI Actem: **tištěné dokumenty** doručené poštou, "
+                    "transparenční stránku na Váš web a prezentaci "
+                    "pro zaměstnance.\n\n"
+                    "Čím podrobnější odpovědi mi dáte, tím přesnější dokumenty "
+                    "pro Vás vytvoříme — klidně se rozepište, nebo použijte "
+                    "mikrofon 🎤 vedle textového pole a odpovídejte hlasem."
                 ),
                 "delay_ms": 0,
                 "bubbles": [],
