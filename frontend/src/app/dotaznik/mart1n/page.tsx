@@ -1020,13 +1020,13 @@ function Mart1nPageInner() {
                             <button
                                 onClick={toggleRecording}
                                 disabled={isTranscribing || sending || isComplete || initLoading}
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                     ${isRecording
                                         ? "bg-red-500 animate-pulse hover:bg-red-600"
                                         : isTranscribing
                                             ? "bg-amber-500/30 cursor-wait"
                                             : "bg-gradient-to-r from-neon-fuchsia to-neon-purple hover:brightness-110"}
-                                    disabled:opacity-30 disabled:cursor-not-allowed`}
+                                    disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100`}
                                 title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
                             >
                                 {isTranscribing ? (
