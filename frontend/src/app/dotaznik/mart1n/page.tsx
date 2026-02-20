@@ -211,7 +211,11 @@ function Mart1nPageInner() {
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
-
+    // Voice input state
+    const [isRecording, setIsRecording] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
@@ -765,6 +769,68 @@ function Mart1nPageInner() {
         sendMessage(bubble, displayText);
     }, [sendMessage, bubbleOverrides]);
 
+    // Voice recording — start/stop toggle
+    const toggleRecording = useCallback(async () => {
+        if (isRecording) {
+            // Stop recording
+            mediaRecorderRef.current?.stop();
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+                    ? "audio/webm;codecs=opus"
+                    : "audio/webm",
+            });
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) audioChunksRef.current.push(e.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                // Stop all tracks so mic indicator disappears
+                stream.getTracks().forEach((t) => t.stop());
+                setIsRecording(false);
+
+                const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+                if (blob.size < 100) return; // too short, ignore
+
+                setIsTranscribing(true);
+                try {
+                    const form = new FormData();
+                    form.append("file", blob, "recording.webm");
+                    const res = await fetch(`${API_URL}/api/transcribe`, {
+                        method: "POST",
+                        body: form,
+                    });
+                    if (!res.ok) throw new Error("Transcription failed");
+                    const data = await res.json();
+                    if (data.text?.trim()) {
+                        setInput((prev) => {
+                            const combined = prev ? prev + " " + data.text.trim() : data.text.trim();
+                            return combined;
+                        });
+                        // Focus textarea
+                        setTimeout(() => inputRef.current?.focus(), 50);
+                    }
+                } catch (err) {
+                    console.error("Transcription error:", err);
+                } finally {
+                    setIsTranscribing(false);
+                }
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+        } catch (err) {
+            console.error("Microphone access denied:", err);
+        }
+    }, [isRecording]);
+
     // Handle textarea submit (Enter key)
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -914,7 +980,7 @@ function Mart1nPageInner() {
             {/* ── Input Area ── */}
             <div className="flex-shrink-0 border-t border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
                 <div className="max-w-3xl mx-auto px-4 py-3">
-                    <div className="flex items-end gap-3">
+                    <div className="flex items-end gap-2">
                         <div className="flex-1 relative">
                             <textarea
                                 ref={inputRef}
@@ -932,9 +998,52 @@ function Mart1nPageInner() {
                                 style={{ maxHeight: "120px" }}
                             />
                         </div>
+
+                        {/* Mic button with GDPR info tooltip */}
+                        <div className="relative group flex-shrink-0">
+                            <button
+                                onClick={toggleRecording}
+                                disabled={isTranscribing || sending || isComplete || initLoading}
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                    ${isRecording
+                                        ? "bg-red-500 animate-pulse hover:bg-red-600"
+                                        : isTranscribing
+                                            ? "bg-amber-500/30 cursor-wait"
+                                            : "bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.12]"}
+                                    disabled:opacity-30 disabled:cursor-not-allowed`}
+                                title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
+                            >
+                                {isTranscribing ? (
+                                    <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                    </svg>
+                                ) : (
+                                    <svg className={`w-5 h-5 ${isRecording ? "text-white" : "text-slate-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                                    </svg>
+                                )}
+                            </button>
+                            {/* Info "i" badge */}
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 border border-slate-600
+                                             text-[8px] font-bold text-slate-300 flex items-center justify-center
+                                             cursor-help select-none">
+                                i
+                            </span>
+                            {/* GDPR tooltip on hover */}
+                            <div className="absolute bottom-full right-0 mb-2 w-56 p-2.5 rounded-lg bg-dark-800 border border-white/[0.1]
+                                            text-[10px] text-slate-400 leading-relaxed shadow-xl
+                                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200
+                                            pointer-events-none z-50">
+                                🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
+                                Nahrávka se po přepisu okamžitě smaže. Nevkládejte citlivé osobní údaje hlasem.
+                            </div>
+                        </div>
+
                         <button
                             onClick={() => sendMessage(input)}
                             disabled={!input.trim() || sending || isComplete || initLoading}
+                            title="Odeslat zprávu"
                             className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
                                        bg-gradient-to-r from-neon-fuchsia to-neon-purple
                                        hover:brightness-110 transition-all

@@ -48,6 +48,7 @@ from backend.api.mart1n import router as mart1n_router
 from backend.api.contact import router as contact_router
 from backend.api.analytics import router as analytics_router
 from backend.api.chat_feedback import router as chat_feedback_router
+from backend.api.transcribe import router as transcribe_router
 
 # ── Vytvoření aplikace ──
 from backend.config import get_settings as _get_settings
@@ -97,6 +98,7 @@ app.include_router(mart1n_router, prefix="/api", tags=["MART1N"])
 app.include_router(contact_router, prefix="/api", tags=["Contact"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(chat_feedback_router, prefix="/api/admin", tags=["Chat Feedback"])
+app.include_router(transcribe_router, prefix="/api", tags=["Transcribe"])
 
 
 # ── Request logging middleware ──

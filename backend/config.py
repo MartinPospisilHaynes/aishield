@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # ── Claude API ──
     anthropic_api_key: str = ""
 
+    # ── OpenAI API (Whisper speech-to-text) ──
+    openai_api_key: str = ""
+
     # ── GoPay (ZAKOMENTOVÁNO — čekáme na vyjádření) ──
     # gopay_go_id: str = ""
     # gopay_client_id: str = ""
