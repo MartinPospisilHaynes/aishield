@@ -17,7 +17,7 @@ MAX_AUDIO_SIZE = 25 * 1024 * 1024  # 25 MB (Whisper limit)
 
 
 @router.post("/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...)):
+async def transcribe_audio(file: UploadFile = File(...)):
     """
     Přijme audio soubor (webm/mp4/wav), pošle do OpenAI Whisper API,
     vrátí přepsaný text.
@@ -27,14 +27,14 @@ async def transcribe_audio(audio: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="Hlasový vstup není nakonfigurován.")
 
     # Read audio data
-    audio_data = await audio.read()
+    audio_data = await file.read()
     if len(audio_data) > MAX_AUDIO_SIZE:
         raise HTTPException(status_code=413, detail="Audio soubor je příliš velký (max 25 MB).")
     if len(audio_data) < 100:
         raise HTTPException(status_code=400, detail="Audio soubor je prázdný.")
 
     # Determine filename extension from content type
-    content_type = audio.content_type or "audio/webm"
+    content_type = file.content_type or "audio/webm"
     ext_map = {
         "audio/webm": "webm",
         "audio/mp4": "mp4",
