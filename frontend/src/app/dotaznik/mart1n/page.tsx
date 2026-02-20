@@ -216,6 +216,9 @@ function Mart1nPageInner() {
     const [isTranscribing, setIsTranscribing] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    const [audioLevels, setAudioLevels] = useState<number[]>(new Array(24).fill(4));
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const animFrameRef = useRef<number>(0);
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
@@ -812,6 +815,31 @@ function Mart1nPageInner() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+            // ── Audio Visualizer (Web Audio API) ──
+            const audioCtx = new AudioContext();
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            analyser.smoothingTimeConstant = 0.6;
+            source.connect(analyser);
+            analyserRef.current = analyser;
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const updateLevels = () => {
+                analyser.getByteFrequencyData(dataArray);
+                // Pick 24 bars spread across the frequency range
+                const bars: number[] = [];
+                const step = Math.floor(dataArray.length / 24);
+                for (let i = 0; i < 24; i++) {
+                    const val = dataArray[i * step] || 0;
+                    // Map 0-255 to 4-32 (min 4px height)
+                    bars.push(Math.max(4, (val / 255) * 32));
+                }
+                setAudioLevels(bars);
+                animFrameRef.current = requestAnimationFrame(updateLevels);
+            };
+            animFrameRef.current = requestAnimationFrame(updateLevels);
+
             // Detect supported mimeType
             let mimeType = "audio/webm";
             if (typeof MediaRecorder.isTypeSupported === "function") {
@@ -833,6 +861,12 @@ function Mart1nPageInner() {
             };
 
             mediaRecorder.onstop = async () => {
+                // Stop visualizer
+                cancelAnimationFrame(animFrameRef.current);
+                analyserRef.current = null;
+                audioCtx.close();
+                setAudioLevels(new Array(24).fill(4));
+
                 // Stop all tracks so mic indicator disappears
                 stream.getTracks().forEach((t) => t.stop());
                 setIsRecording(false);
@@ -1048,21 +1082,35 @@ function Mart1nPageInner() {
                 <div className="max-w-3xl mx-auto px-4 py-3">
                     <div className="flex items-center gap-2">
                         <div className="flex-1 relative">
-                            <textarea
-                                ref={inputRef}
-                                value={input}
-                                onChange={handleInputChange}
-                                onKeyDown={handleKeyDown}
-                                placeholder={isComplete ? "Analýza je dokončena" : "Nevidíte správnou odpověď? Napište nám ji."}
-                                disabled={sending || isComplete || initLoading}
-                                rows={1}
-                                className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
-                                           px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600
-                                           focus:outline-none focus:border-neon-fuchsia/30 focus:ring-1 focus:ring-neon-fuchsia/20
-                                           disabled:opacity-50 disabled:cursor-not-allowed
-                                           transition-colors"
-                                style={{ maxHeight: "120px" }}
-                            />
+                            {isRecording ? (
+                                /* ── Audio Waveform Visualizer ── */
+                                <div className="w-full h-[46px] rounded-xl border border-red-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
+                                    {audioLevels.map((h, i) => (
+                                        <div
+                                            key={i}
+                                            className="w-[3px] rounded-full bg-gradient-to-t from-red-500 to-red-400 transition-all duration-75"
+                                            style={{ height: `${h}px` }}
+                                        />
+                                    ))}
+                                    <span className="ml-3 text-xs text-red-400 whitespace-nowrap animate-pulse">● Nahrávám...</span>
+                                </div>
+                            ) : (
+                                <textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder={isComplete ? "Analýza je dokončena" : "Nevidíte správnou odpověď? Napište nám ji."}
+                                    disabled={sending || isComplete || initLoading}
+                                    rows={1}
+                                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
+                                               px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600
+                                               focus:outline-none focus:border-neon-fuchsia/30 focus:ring-1 focus:ring-neon-fuchsia/20
+                                               disabled:opacity-50 disabled:cursor-not-allowed
+                                               transition-colors"
+                                    style={{ maxHeight: "120px" }}
+                                />
+                            )}
                         </div>
 
                         {/* Mic button */}
