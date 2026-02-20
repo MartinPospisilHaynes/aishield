@@ -772,8 +772,8 @@ function Mart1nPageInner() {
                             </svg>
                         </button>
                     </div>
-                    <p className="text-[10px] text-slate-600 mt-2 text-center">
-                        Uršula je umělá inteligence (čl. 50 AI Act). Data chráněna dle GDPR.
+                    <p className="text-[10px] text-white/90 mt-2 text-center leading-relaxed">
+                        Uršula je umělá inteligence (čl. 50 AI Act). Vaše data jsou šifrována a&nbsp;zůstávají pouze mezi Vámi a&nbsp;AIshield — žádná třetí strana k&nbsp;nim nemá přístup. Porušení ochrany osobních údajů dle GDPR (nařízení EU&nbsp;2016/679) podléhá pokutě až&nbsp;20&nbsp;mil.&nbsp;€ nebo 4&nbsp;% ročního obratu.
                     </p>
                 </div>
             </div>
