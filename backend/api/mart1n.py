@@ -509,6 +509,12 @@ KONVERZAČNÍ CHOVÁNÍ
 - Buď vstřícná a trpělivá — uživatel nemusí rozumět AI terminologii.
 - Pokud uživatel odchýlí téma na zcela nesouvisející oblast (sport, vaření, politika...), zdvořile ho vrať zpět s vtipnou poznámkou.
 - AKTIVNĚ POVZBUZUJ otázky: „Pokud Vám cokoliv není jasné, klidně se zeptejte."
+- **ZÁKAZ OPAKOVÁNÍ:** NIKDY neopakuj:
+  a) Otázku, na kterou uživatel UŽ ODPOVĚDĚL (i pokud odpověděl stručně — jeho odpověď přijmi a jdi dál).
+  b) Varování nebo informaci, kterou jsi JIŽ ŘEKLA v předchozích zprávách (zkontroluj historii konverzace!).
+  c) Pokud uživatel řekne "opakuješ se" — omluvíš se jednou větou a OKAMŽITĚ přejdeš na další NEzodpovězenou otázku.
+  d) Před každou zprávou si ZKONTROLUJ historii: řekla jsem to už? Ptala jsem se na to? Pokud ano → NEOPAKUJ.
+  Viz sekce <already_answered> pro seznam již zodpovězených otázek.
 
 REFERRAL — KDYŽ SI NEJSI JISTÁ ODPOVĚDÍ:
 Pokud si nejsi jistá odpovědí na technickou nebo specifickou otázku, řekni uživateli:
@@ -773,6 +779,49 @@ def _get_answered_keys(company_id: str) -> list[str]:
     except Exception as e:
         logger.warning(f"[MART1N] Answered keys error: {e}")
         return []
+
+
+def _get_answered_context(company_id: str) -> str:
+    """
+    Build anti-repetition context: list already-answered question keys
+    so Claude never re-asks them.
+    """
+    try:
+        sb = get_supabase()
+        client_res = sb.table("clients").select("id").eq(
+            "company_id", company_id
+        ).limit(1).execute()
+        if not client_res.data:
+            return ""
+        client_id = client_res.data[0]["id"]
+
+        answers = sb.table("questionnaire_responses") \
+            .select("question_key, answer") \
+            .eq("client_id", client_id) \
+            .execute()
+
+        answered = [
+            r for r in (answers.data or [])
+            if r.get("answer") and r["answer"] != "unknown"
+        ]
+        if not answered:
+            return ""
+
+        lines = [
+            "\n<already_answered>",
+            "JIŽ ZODPOVĚZENÉ OTÁZKY — NESMÍŠ se na ně ptát znovu!",
+            "Uživatel na tyto otázky už odpověděl. Neptej se na ně, neopakuj je, ani je neparafrázuj:",
+        ]
+        for r in answered:
+            lines.append(f"  - {r['question_key']}: {r['answer']}")
+        lines.append(
+            "\nPokud uživatel řekne 'opakuješ se', OKAMŽITĚ se omluvíš a přejdeš na DALŠÍ NEzodpovězenou otázku."
+        )
+        lines.append("</already_answered>")
+        return "\n".join(lines)
+    except Exception as e:
+        logger.warning(f"[MART1N] Answered context error: {e}")
+        return ""
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1691,10 +1740,11 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     # Log user message
     _log_mart1n_message(req.session_id, req.company_id, "user", user_msg)
 
-    # Build enriched system prompt (base + client info + scan results)
+    # Build enriched system prompt (base + client info + scan results + answered questions)
     client_context = _get_client_context(req.company_id)
     scan_context = _get_scan_context(req.company_id)
-    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context
+    answered_context = _get_answered_context(req.company_id)
+    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context + answered_context
 
     # Call Claude API with timeout protection
     try:
@@ -1932,7 +1982,8 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
 
     client_context = _get_client_context(req.company_id)
     scan_context = _get_scan_context(req.company_id)
-    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context
+    answered_context = _get_answered_context(req.company_id)
+    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context + answered_context
 
     # ── Stream Claude response via SSE ──
     async def _generate_stream():
