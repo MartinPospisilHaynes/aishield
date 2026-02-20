@@ -219,6 +219,7 @@ function Mart1nPageInner() {
     const [audioLevels, setAudioLevels] = useState<number[]>(new Array(24).fill(4));
     const analyserRef = useRef<AnalyserNode | null>(null);
     const animFrameRef = useRef<number>(0);
+    const sendMessageRef = useRef<(text: string) => void>(() => {});
 
     // Get company_id from URL or Supabase user
     useEffect(() => {
@@ -783,6 +784,9 @@ function Mart1nPageInner() {
         }
     }, [sending, isComplete, initLoading]);
 
+    // Keep sendMessageRef in sync for use in MediaRecorder.onstop closure
+    sendMessageRef.current = sendMessage;
+
     // Handle bubble click (with optional text override for NE→ANO swap)
     const handleBubbleClick = useCallback((bubble: string) => {
         const displayText = bubbleOverrides[bubble] || bubble;
@@ -889,12 +893,8 @@ function Mart1nPageInner() {
                     }
                     const data = await res.json();
                     if (data.text?.trim()) {
-                        setInput((prev) => {
-                            const combined = prev ? prev + " " + data.text.trim() : data.text.trim();
-                            return combined;
-                        });
-                        // Focus textarea
-                        setTimeout(() => inputRef.current?.focus(), 50);
+                        // Auto-send transcribed text
+                        sendMessageRef.current(data.text.trim());
                     }
                 } catch (err) {
                     console.error("Transcription error:", err);
@@ -1084,15 +1084,15 @@ function Mart1nPageInner() {
                         <div className="flex-1 relative">
                             {isRecording ? (
                                 /* ── Audio Waveform Visualizer ── */
-                                <div className="w-full h-[46px] rounded-xl border border-red-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
+                                <div className="w-full h-[46px] rounded-xl border border-purple-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
                                     {audioLevels.map((h, i) => (
                                         <div
                                             key={i}
-                                            className="w-[3px] rounded-full bg-gradient-to-t from-red-500 to-red-400 transition-all duration-75"
+                                            className="w-[3px] rounded-full bg-gradient-to-t from-[#a855f7] to-[#c084fc] transition-all duration-75"
                                             style={{ height: `${h}px` }}
                                         />
                                     ))}
-                                    <span className="ml-3 text-xs text-red-400 whitespace-nowrap animate-pulse">● Nahrávám...</span>
+                                    <span className="ml-3 text-xs text-purple-400 whitespace-nowrap animate-pulse">● Nahrávám...</span>
                                 </div>
                             ) : (
                                 <textarea
@@ -1120,7 +1120,7 @@ function Mart1nPageInner() {
                                 disabled={isTranscribing || sending || isComplete || initLoading}
                                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                     ${isRecording
-                                        ? "bg-red-500 animate-pulse hover:bg-red-600 shadow-lg shadow-red-500/30"
+                                        ? "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
                                         : isTranscribing
                                             ? "bg-amber-500/30 cursor-wait"
                                             : "bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25 hover:brightness-110"}
