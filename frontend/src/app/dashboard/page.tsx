@@ -205,8 +205,10 @@ export default function DashboardPage() {
     const [scanFindings, setScanFindings] = useState<Finding[]>([]);
     const [scanStage, setScanStage] = useState(0);
     const [scanDone, setScanDone] = useState(false);
+    const [scanCountdown, setScanCountdown] = useState(120);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const stageRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
     // ── Scan cooldown lock (1 hodina) ──
     const [scanCooldownUntil, setScanCooldownUntil] = useState<number | null>(null);
@@ -233,11 +235,25 @@ export default function DashboardPage() {
         } catch { }
     }, []);
 
+    // Countdown timer — ticks every second while scan is loading
+    useEffect(() => {
+        if (scanLoading) {
+            setScanCountdown(120);
+            countdownRef.current = setInterval(() => {
+                setScanCountdown(prev => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+        } else {
+            if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
+        }
+        return () => { if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; } };
+    }, [scanLoading]);
+
     // Clean up timers on unmount
     useEffect(() => {
         return () => {
             if (pollingRef.current) clearInterval(pollingRef.current);
             if (stageRef.current) clearTimeout(stageRef.current);
+            if (countdownRef.current) clearInterval(countdownRef.current);
         };
     }, []);
 
@@ -555,6 +571,21 @@ export default function DashboardPage() {
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-sm">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.label}</h3>
                                             <p className="text-xs text-slate-400">{SCAN_STAGES[Math.min(scanStage, SCAN_STAGES.length - 1)]?.desc}</p>
+                                        </div>
+                                        <div className="text-right flex-shrink-0 ml-4">
+                                            <div className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-1.5">
+                                                <svg className="w-3.5 h-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+                                                </svg>
+                                                <span className="font-mono text-sm font-bold text-white tabular-nums">
+                                                    {scanCountdown > 0
+                                                        ? `${Math.floor(scanCountdown / 60)}:${(scanCountdown % 60).toString().padStart(2, '0')}`
+                                                        : '0:00'}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 mt-0.5">
+                                                {scanCountdown > 0 ? 'odhadovaný čas' : 'ještě chvíli…'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -939,6 +970,29 @@ export default function DashboardPage() {
                                                     <span className="text-[10px] text-green-400">24h test ✓</span>
                                                 </div>
                                             )}
+                                        </>
+                                    );
+                                }
+
+                                // Active scan running → show "Skenujeme" state
+                                if (scanLoading) {
+                                    return (
+                                        <>
+                                            <p className="text-2xl font-extrabold mt-1 text-cyan-400">Skenujeme</p>
+                                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                Probíhá analýza Vašeho webu. Výsledky se zobrazí automaticky.
+                                            </p>
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                                <span className="relative flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+                                                </span>
+                                                <span className="text-[10px] text-cyan-300">
+                                                    {scanCountdown > 0
+                                                        ? `~${Math.floor(scanCountdown / 60)}:${(scanCountdown % 60).toString().padStart(2, '0')} zbývá`
+                                                        : 'Dokončujeme…'}
+                                                </span>
+                                            </div>
                                         </>
                                     );
                                 }

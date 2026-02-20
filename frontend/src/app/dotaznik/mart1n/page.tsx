@@ -37,35 +37,40 @@ interface Mart1nMessage {
    MARKDOWN RENDERER (simple)
    ═══════════════════════════════════════════ */
 
+function sanitizeText(raw: string): string {
+    // Strip markdown formatting except **bold** and paragraphs
+    let t = raw;
+    // Remove literal \n (escaped backslash-n that leaked through)
+    t = t.replace(/\\n/g, '\n');
+    // Remove heading markers
+    t = t.replace(/^#{1,6}\s+/gm, '');
+    // Remove bullet/list markers at line start
+    t = t.replace(/^\s*[-•*]\s+/gm, '');
+    // Remove numbered list markers
+    t = t.replace(/^\s*\d+\.\s+/gm, '');
+    // Remove italic markers (single * or _) but preserve **bold**
+    t = t.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1');
+    t = t.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '$1');
+    // Remove code backticks
+    t = t.replace(/`([^`]*)`/g, '$1');
+    // Remove underline/strikethrough
+    t = t.replace(/~~(.+?)~~/g, '$1');
+    return t.trim();
+}
+
 function renderMarkdown(text: string) {
+    const clean = sanitizeText(text);
     // Split into paragraphs
-    const paragraphs = text.split(/\n\n+/);
-    return paragraphs.map((p, pi) => {
-        // Check if paragraph is a bullet list
-        const lines = p.split(/\n/);
-        const isList = lines.every(l => /^[-•*]\s/.test(l.trim()) || l.trim() === "");
-        if (isList) {
-            const items = lines.filter(l => /^[-•*]\s/.test(l.trim()));
-            return (
-                <ul key={pi} className="list-disc list-inside space-y-1 my-2">
-                    {items.map((item, ii) => (
-                        <li key={ii} className="text-sm leading-relaxed">
-                            {renderInlineMarkdown(item.replace(/^[-•*]\s/, ""))}
-                        </li>
-                    ))}
-                </ul>
-            );
-        }
-        return (
-            <p key={pi} className="text-sm leading-relaxed mb-2 last:mb-0">
-                {renderInlineMarkdown(p.replace(/\n/g, " "))}
-            </p>
-        );
-    });
+    const paragraphs = clean.split(/\n\n+/);
+    return paragraphs.map((p, pi) => (
+        <p key={pi} className="text-sm leading-relaxed mb-2 last:mb-0">
+            {renderInlineMarkdown(p.replace(/\n/g, ' '))}
+        </p>
+    ));
 }
 
 function renderInlineMarkdown(text: string) {
-    // Bold **text**
+    // Bold **text** only
     const parts = text.split(/\*\*(.*?)\*\*/g);
     return parts.map((part, i) =>
         i % 2 === 1

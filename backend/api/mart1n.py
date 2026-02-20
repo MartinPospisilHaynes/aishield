@@ -448,7 +448,7 @@ Odpovídej VÝHRADNĚ platným JSON objektem v tomto formátu:
 }}
 
 PRAVIDLA PRO JSON:
-- "message": Tvá odpověď ve formátu markdown. Piš krátce (max 3 odstavce). Používej odrážky. POKUD používáš multi_messages, nastav message na prázdný řetězec "".
+- "message": Tvá odpověď v čistém textu. Piš krátce (max 3 odstavce). FORMÁTOVÁNÍ: Používej POUZE tučné písmo (**text**) pro zvýraznění důležitých pojmů a odstavce (prázdný řádek mezi odstavci). NIČÍM JINÝM text neformátuj — žádné odrážky (-, *), žádné nadpisy (#), žádné číslované seznamy, žádné speciální znaky. POKUD používáš multi_messages, nastav message na prázdný řetězec "".
 - "bubbles": VŽDY PRÁZDNÉ []. Nepoužívej předpřipravené odpovědi. Toto je rozhovor ve stylu interview — klademe otevřené otázky a uživatel odpovídá vlastními slovy. Výjimka: bubliny použij POUZE pro jednoduché Ano/Ne otázky (max 2-3 možnosti).
 - "multi_messages": Pole objektů pro postupné zobrazení více bublin. POUŽÍVEJ KDYKOLI potřebuješ oddělit upozornění/komentář od následné otázky. Formát: [{{"text": "upozornění...", "delay_ms": 0, "bubbles": []}}, {{"text": "otázka...", "delay_ms": 1500, "bubbles": []}}]. Pokud máš jen jednu zprávu bez potřeby oddělení, nech prázdné [] a použij "message".
 - "extracted_answers": Pole extrahovaných odpovědí z aktuální zprávy uživatele. Prázdné [] pokud uživatel ještě neodpovídá na otázku. Každá odpověď má:
@@ -489,6 +489,7 @@ KONVERZAČNÍ CHOVÁNÍ
 - Vykej uživateli (Vy, Vám, Váš).
 - Piš česky, pokud uživatel nezačne jiným jazykem — v tom případě plynně přepni do jeho jazyka.
 - Nepoužívej emoji v textu.
+- FORMÁTOVÁNÍ TEXTU: Používej POUZE **tučné písmo** a odstavce. Nic jiného — žádné odrážky, nadpisy, číslované seznamy, podtržení, kurzívu ani žádné jiné markdown značky.
 - Buď vstřícná a trpělivá — uživatel nemusí rozumět AI terminologii.
 - Pokud uživatel odchýlí téma na zcela nesouvisející oblast (sport, vaření, politika...), zdvořile ho vrať zpět s vtipnou poznámkou.
 - AKTIVNĚ POVZBUZUJ otázky: „Pokud Vám cokoliv není jasné, klidně se zeptejte."
@@ -2004,13 +2005,13 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                         if escape_next:
                             escape_next = False
                             if in_message_field and in_string:
-                                message_buffer += ch
+                                # Decode JSON escape sequences properly
+                                _esc_map = {'n': '\n', 't': '\t', 'r': '\r', '\\': '\\', '"': '"', '/': '/'}
+                                message_buffer += _esc_map.get(ch, ch)
                             continue
 
                         if ch == '\\' and in_string:
                             escape_next = True
-                            if in_message_field:
-                                message_buffer += ch
                             continue
 
                         if ch == '"':
