@@ -23,10 +23,20 @@ logger = logging.getLogger(__name__)
 GEO_COUNTRIES = WebScanner.GEO_COUNTRIES
 
 # ── Konfigurace ──
-DEEP_SCAN_ROUNDS = 6          # Počet kol skenování
-ROUND_INTERVAL_SECONDS = 4 * 3600  # 4 hodiny mezi koly (celkem ~24h pro 6 kol)
-COUNTRIES_PER_ROUND = 4       # Zemí na kolo (rotace)
+# DEEP_SCAN_MODE: "testing" = rychlý scan (~10 min), "production" = plný 24h scan
+import os
+_SCAN_MODE = os.getenv("DEEP_SCAN_MODE", "production").lower()
+_TESTING = _SCAN_MODE == "testing"
+
+DEEP_SCAN_ROUNDS = 6                                        # Počet kol skenování (stejný v obou režimech)
+ROUND_INTERVAL_SECONDS = 60 if _TESTING else 4 * 3600       # Testing: 60s, Production: 4 hodiny
+COUNTRIES_PER_ROUND = 4                                     # Zemí na kolo (rotace)
 DEVICE_TYPES = ["desktop", "mobile", "random"]
+SCAN_DELAY_MIN = 5 if _TESTING else 30                      # Min pauza mezi scany (s)
+SCAN_DELAY_MAX = 10 if _TESTING else 90                     # Max pauza mezi scany (s)
+ROUND_JITTER_MAX = 0 if _TESTING else 300                   # Max jitter mezi koly (s)
+
+logger.info(f"[DeepScan] Mode: {_SCAN_MODE.upper()} | Rounds: {DEEP_SCAN_ROUNDS} | Interval: {ROUND_INTERVAL_SECONDS}s | Delay: {SCAN_DELAY_MIN}-{SCAN_DELAY_MAX}s")
 
 
 async def _is_cancelled(supabase, scan_id: str) -> bool:
@@ -180,9 +190,9 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
                     logger.error(f"[DeepScan] Exception ({country}/{device}): {scan_err}")
                     errors.append(f"{country}/{device}: {str(scan_err)[:100]}")
 
-                # Pauza mezi scany (30-90s) — šetrnější k proxy
+                # Pauza mezi scany — šetrnější k proxy
                 if total_scans_done < DEEP_SCAN_ROUNDS * COUNTRIES_PER_ROUND:
-                    delay = random.randint(30, 90)
+                    delay = random.randint(SCAN_DELAY_MIN, SCAN_DELAY_MAX)
                     await asyncio.sleep(delay)
 
             rounds_completed += 1
@@ -195,7 +205,7 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
 
             # Pauza mezi koly (4 hodiny, nebo kratší pro poslední kolo)
             if round_num < DEEP_SCAN_ROUNDS - 1:
-                jitter = random.randint(-300, 300)  # ±5min jitter
+                jitter = random.randint(-ROUND_JITTER_MAX, ROUND_JITTER_MAX)  # ±5min jitter (0 v testing)
                 wait = ROUND_INTERVAL_SECONDS + jitter
                 logger.info(f"[DeepScan] Čekám {wait // 3600}h {(wait % 3600) // 60}min do dalšího kola")
                 # Spát po 60s kvůli možnosti zrušení

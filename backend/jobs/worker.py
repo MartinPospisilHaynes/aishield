@@ -354,8 +354,10 @@ class WorkerSettings:
     redis_settings = REDIS_SETTINGS
 
     # Limity
+    import os
+    _testing = os.getenv("DEEP_SCAN_MODE", "production").lower() == "testing"
     max_jobs = 5           # Max paralelních jobů (Playwright → RAM limit)
-    job_timeout = 90000    # 25 hodin max (deep scan trvá ~24h)
+    job_timeout = 1800 if _testing else 90000    # Testing: 30min, Production: 25h
     max_tries = 2          # 2 pokusy při selhání (deep scan = drahý)
     retry_delay = 300      # 5min mezi pokusy
 

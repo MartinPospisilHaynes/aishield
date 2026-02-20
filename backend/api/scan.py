@@ -628,13 +628,15 @@ async def trigger_deep_scan(scan_id: str):
         raise HTTPException(status_code=400, detail="Rychlý scan ještě nebyl dokončen.")
 
     if current_deep_status in ("running", "pending"):
-        # Check if stuck (>26h = probably dead) — auto-reset
+        # Check if stuck — auto-reset
         from datetime import datetime, timezone, timedelta
+        import os
+        _stuck_hours = 1 if os.getenv("DEEP_SCAN_MODE", "production").lower() == "testing" else 26
         started = scan.get("deep_scan_started_at")
         if started:
             started_dt = datetime.fromisoformat(started.replace("Z", "+00:00"))
             elapsed_h = (datetime.now(timezone.utc) - started_dt).total_seconds() / 3600
-            if elapsed_h > 26:
+            if elapsed_h > _stuck_hours:
                 logger.warning(
                     f"[DeepTrigger] Zaseknutý deep scan detekován ({elapsed_h:.1f}h), resetuji: scan_id={scan_id}"
                 )
