@@ -295,6 +295,15 @@
     animation: neonPulse 2s ease-in-out infinite;
 }
 
+/* ── Hide scrollbar on chat textarea ── */
+textarea::-webkit-scrollbar {
+    display: none;
+}
+textarea {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
 /* ── Glow shimmer for feature panels ── */
 .glow-border {
     animation: glowShimmer 4s ease-in-out infinite;

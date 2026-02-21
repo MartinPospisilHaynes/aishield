@@ -1174,7 +1174,7 @@ function Mart1nPageInner() {
             <div className="flex-shrink-0 border-t border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
                 <div className="max-w-3xl mx-auto px-4 py-3">
                     <div className="flex items-center gap-2">
-                        <div className="flex-1 relative">
+                        <div className="flex-1 relative overflow-hidden">
                             {isRecording ? (
                                 /* ── Audio Waveform Visualizer ── */
                                 <div className="w-full h-[46px] rounded-xl border border-purple-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
@@ -1193,7 +1193,7 @@ function Mart1nPageInner() {
                                     value={input}
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
-                                    placeholder={isComplete ? "Analýza je dokončena" : "Nevidíte správnou odpověď? Napište nám ji."}
+                                    placeholder={isComplete ? "Analýza je dokončena" : "Napište odpověď nebo stiskněte mezerník 🎤"}
                                     disabled={sending || isStreaming || isComplete || initLoading}
                                     rows={1}
                                     className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
