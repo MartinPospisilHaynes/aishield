@@ -1018,50 +1018,31 @@ QUESTIONNAIRE_SECTIONS = [
         "questions": [
             {
                 "key": "transparency_page_implementation",
-                "text": "Kdo bude implementovat transparenční stránku na váš web?",
+                "text": "Chcete, abychom transparenční stránku implementovali za vás, nebo si ji nasadíte sami?",
                 "type": "single_select",
                 "options": [
-                    "Implementujeme sami (vlastní IT / technik)",
-                    "Náš webdesignér / externí dodavatel",
-                    "Chci, aby to udělal AIshield za mě (od balíčku Pro)",
+                    "Chci implementaci od AIshield",
+                    "Implementuji si to sám / vlastními silami",
                 ],
-                "help_text": "Transparenční stránka je HTML stránka, kterou vygenerujeme jako součást Compliance Kitu. Potřebujete ji vložit na svůj web (typicky /ai-transparency nebo /ai-info).\n\nPříklady:\n1) 'Implementujeme sami' — váš IT tým nebo vy sami vložíte HTML kód na web.\n2) 'Webdesignér' — předáme podklady vašemu externistovi.\n3) 'AIshield za mě' — implementujeme za vás (pouze u balíčku Pro a Enterprise).",
+                "help_text": "Transparenční stránka je HTML stránka, kterou vygenerujeme jako součást Compliance Kitu. Potřebujete ji vložit na svůj web (typicky /ai-transparency nebo /ai-info).",
                 "followup": {
-                    "condition": "Implementujeme sami (vlastní IT / technik)",
+                    "condition": "Implementuji si to sám / vlastními silami",
                     "fields": [
-                        {"key": "implementation_self_info", "label": "✅ Výborně! Veškeré vypracované podklady včetně HTML kódu vám zašleme e-mailem. Implementace je jednoduchá — stačí vložit HTML soubor na váš web.", "type": "info"},
+                        {"key": "implementation_self_info", "label": "✅ Rozumíme! Veškeré vypracované podklady včetně HTML kódu transparenční stránky vám zašleme e-mailem a poštou. Implementace je jednoduchá — stačí vložit HTML soubor na váš web.", "type": "info"},
                     ]
                 },
                 "risk_hint": "none",
                 "ai_act_article": "čl. 50 — transparentnost a informování",
             },
             {
-                "key": "implementation_contact",
-                "text": "Kontakt na osobu, které máme zaslat podklady k implementaci:",
-                "type": "conditional_fields",
-                "show_when": "transparency_page_implementation == 'Náš webdesignér / externí dodavatel'",
-                "fields": [
-                    {"key": "implementor_name", "label": "Jméno a příjmení technika / webdesignéra", "type": "text", "required": True},
-                    {"key": "implementor_email", "label": "E-mail technika", "type": "email", "required": True},
-                    {"key": "implementor_phone", "label": "Telefon technika", "type": "phone", "required": False},
-                    {"key": "implementor_info", "label": "✅ Výborně! Veškeré vypracované podklady včetně HTML kódu zašleme přímo vašemu technikovi. Pokud bude mít jakékoliv dotazy k implementaci, jsme mu k dispozici.", "type": "info"},
-                ],
-                "help_text": "Potřebujeme kontakt na osobu, která bude implementovat transparenční stránku na váš web. Podklady zašleme přímo jí.",
-                "risk_hint": "none",
-                "ai_act_article": None,
-            },
-            {
                 "key": "aishield_implementation_request",
                 "text": "Implementace transparenční stránky službou AIshield",
                 "type": "conditional_fields",
-                "show_when": "transparency_page_implementation == 'Chci, aby to udělal AIshield za mě (od balíčku Pro)'",
+                "show_when": "transparency_page_implementation == 'Chci implementaci od AIshield'",
                 "fields": [
-                    {"key": "aishield_impl_note", "label": "ℹ️ Implementace transparenční stránky naším týmem je dostupná v balíčcích **Pro** (14 999 Kč) a **Enterprise** (39 999 Kč). V balíčku Basic tato služba není zahrnuta.\n\n**Co uděláme:**\n• Nasadíme transparenční stránku přímo na váš web\n• Zajistíme správné zobrazení a responzivitu\n• Ověříme soulad s AI Act čl. 50\n\nPro implementaci budeme potřebovat přístupové údaje k vašemu webu (zašleme vám bezpečný formulář po objednávce).", "type": "info"},
-                    {"key": "implementation_web_url", "label": "URL vašeho webu, kde má být stránka umístěna", "type": "text", "required": True},
-                    {"key": "implementation_cms_access", "label": "Máte přístup k administraci webu (CMS)?", "type": "single_select", "options": ["Ano, mám přístup", "Ne, přístup má někdo jiný", "Nevím"]},
-                    {"key": "implementation_preferred_url", "label": "Preferovaná URL pro transparenční stránku (např. /ai-info)", "type": "text", "required": False},
+                    {"key": "aishield_impl_note", "label": "✅ Výborně! Náš technik se vám ozve a domluví si s vámi detaily implementace.\n\n**Mezitím prosím připravte:**\n• Administrátorský účet (nebo návštěvnický s právem editovat) k vašemu webu / CMS\n• Zálohu webu (pro jistotu)\n\nPřístupové údaje vám bezpečně vyžádáme po objednávce. Implementace je zahrnuta v balíčcích **Pro** a **Enterprise**.", "type": "info"},
                 ],
-                "help_text": "Implementace je dostupná od balíčku Pro. Nainstalujeme transparenční stránku přímo na váš web.",
+                "help_text": "Nainstalujeme transparenční stránku přímo na váš web.",
                 "risk_hint": "none",
                 "ai_act_article": "čl. 50 — transparentnost a informování",
             },
@@ -1302,8 +1283,11 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
 
     total = len(result.data)
     unknowns = sum(1 for r in result.data if r.get("answer") in ("nevim", "unknown"))
-    # Dynamic question count from structure
-    all_question_keys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+    # Dynamic question count from structure — exclude conditional questions with show_when
+    all_question_keys = {
+        q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]
+        if not q.get("show_when")
+    }
     required_count = len(all_question_keys)
     # is_complete = all answered (regardless of unknowns — user still completed the flow)
     is_complete = total >= required_count

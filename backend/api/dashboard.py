@@ -197,16 +197,20 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
                 "client_id", client_id
             ).execute()
             if quest_res.data:
-                # Count total required questions dynamically — only yes/no/unknown type
-                # (text fields like company name may be empty and are not required for completion)
+                # Count total required questions dynamically
+                # Exclude conditional_fields with show_when — those are only shown when
+                # a specific answer is given, so they shouldn't block completion.
                 from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
-                all_question_keys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
+                all_question_keys = {
+                    q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]
+                    if not q.get("show_when")  # skip conditional questions
+                }
                 required_yesno = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"] if q.get("type") in ("yes_no_unknown", "yes_unknown", "multi_select")}
                 required_count = len(all_question_keys)
                 answered_count = len(quest_res.data)
                 answered_yesno = len([r for r in quest_res.data if r["question_key"] in required_yesno])
-                # Mark as completed when user answered at least 80% of yes/no questions
-                # or when total answers match required
+                # Mark as completed when user answered all non-conditional questions
+                # or at least 80% of yes/no questions
                 if answered_count >= required_count or (len(required_yesno) > 0 and answered_yesno >= len(required_yesno) * 0.8):
                     questionnaire_status = "dokončen"
                 else:
