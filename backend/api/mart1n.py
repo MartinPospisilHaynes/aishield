@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ── Claude config ──
-CLAUDE_MODEL = "claude-sonnet-4-20250514"  # Sonnet for chat: $3/$15 vs Opus $5/$25
+CLAUDE_MODEL = "claude-opus-4-6"  # Opus for max quality ($5/$25, ~$1.35/dotazník with cache)
 MAX_CONVERSATION_TURNS = 60  # Max turns in one session
 MAX_MESSAGE_LENGTH = 3000
 CLAUDE_TIMEOUT = 90  # seconds — timeout for Claude API call
@@ -1885,8 +1885,8 @@ async def _summarize_and_save_feedback(
                 from backend.monitoring.llm_usage_tracker import usage_tracker
                 _in = response.usage.input_tokens
                 _out = response.usage.output_tokens
-                # Sonnet: $3/$15 per MTok
-                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                # Opus: $5/$25 per MTok
+                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_feedback")
             except Exception:
                 pass
@@ -2170,8 +2170,8 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             _out = response.usage.output_tokens
             _cache_read = getattr(response.usage, 'cache_read_input_tokens', 0) or 0
             _cache_write = getattr(response.usage, 'cache_creation_input_tokens', 0) or 0
-            # Sonnet: $3/$15 per MTok; cache read = 10% of input price
-            _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+            # Opus: $5/$25 per MTok; cache read = 10% of input price
+            _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
             logger.info(
                 f"[MART1N] Usage: in={_in} out={_out} cache_read={_cache_read} "
                 f"cache_write={_cache_write} cost=${_cost:.4f}"
@@ -2558,8 +2558,8 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 _out = final_msg.usage.output_tokens
                 _cache_read = getattr(final_msg.usage, 'cache_read_input_tokens', 0) or 0
                 _cache_write = getattr(final_msg.usage, 'cache_creation_input_tokens', 0) or 0
-                # Sonnet: $3/$15 per MTok
-                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                # Opus: $5/$25 per MTok
+                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
                 logger.info(
                     f"[MART1N] Stream usage: in={_in} out={_out} cache_read={_cache_read} "
                     f"cache_write={_cache_write} cost=${_cost:.4f}"
