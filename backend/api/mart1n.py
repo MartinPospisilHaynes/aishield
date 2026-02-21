@@ -1506,7 +1506,7 @@ _INTRO_GREETING = (
     "a odpovídejte hlasem."
 )
 
-_INTRO_FIRST_QUESTION = "**V jakém odvětví podnikáte?**"
+_INTRO_FIRST_QUESTION = "**Jak se jmenuje Vaše firma?** Napište prosím přesný název tak, jak je zapsán v obchodním rejstříku, nebo jméno OSVČ."
 
 # Combined context logged to DB (so Claude has full intro in conversation history)
 _INTRO_CONTEXT = f"{_INTRO_GREETING}\n\n{_INTRO_FIRST_QUESTION}"
@@ -2744,7 +2744,7 @@ async def mart1n_init():
         ],
         "bubble_overrides": {},
         "progress": 0,
-        "current_section": "industry",
+        "current_section": "industry",  # first section in state machine
         "session_id": str(uuid.uuid4()),
     }
 
