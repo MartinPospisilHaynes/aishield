@@ -1085,52 +1085,53 @@ function Mart1nPageInner() {
                             /* Guard: skip empty assistant bubbles */
                             if (msg.role === "assistant" && !msg.content?.trim()) return null;
                             return (
-                            <div key={i}>
-                                {msg.role === "assistant" ? (
-                                    /* ── Assistant message ── */
-                                    <div className="flex items-start gap-3 mb-4">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <Mart1nAvatar size={36} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="glass px-4 py-3 max-w-[90%]">
-                                                <div className="text-slate-300">
-                                                    {renderMarkdown(msg.content)}
-                                                </div>
+                                <div key={i}>
+                                    {msg.role === "assistant" ? (
+                                        /* ── Assistant message ── */
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <div className="flex-shrink-0 mt-1">
+                                                <Mart1nAvatar size={36} />
                                             </div>
-                                            {/* Bubbles */}
-                                            {msg.bubbles && msg.bubbles.length > 0 && i === messages.length - 1 && !sending && (
-                                                <div className="flex flex-wrap gap-2 mt-3 ml-1">
-                                                    {msg.bubbles.map((bubble, bi) => (
-                                                        <button
-                                                            key={bi}
-                                                            onClick={() => handleBubbleClick(bubble)}
-                                                            disabled={isComplete}
-                                                            className="px-3 py-1.5 text-sm rounded-full border border-neon-fuchsia/30
+                                            <div className="flex-1 min-w-0">
+                                                <div className="glass px-4 py-3 max-w-[90%]">
+                                                    <div className="text-slate-300">
+                                                        {renderMarkdown(msg.content)}
+                                                    </div>
+                                                </div>
+                                                {/* Bubbles */}
+                                                {msg.bubbles && msg.bubbles.length > 0 && i === messages.length - 1 && !sending && (
+                                                    <div className="flex flex-wrap gap-2 mt-3 ml-1">
+                                                        {msg.bubbles.map((bubble, bi) => (
+                                                            <button
+                                                                key={bi}
+                                                                onClick={() => handleBubbleClick(bubble)}
+                                                                disabled={isComplete}
+                                                                className="px-3 py-1.5 text-sm rounded-full border border-neon-fuchsia/30
                                                                        bg-neon-fuchsia/5 text-neon-fuchsia hover:bg-neon-fuchsia/15
                                                                        hover:border-neon-fuchsia/50 transition-all duration-200
                                                                        disabled:opacity-40 disabled:cursor-not-allowed"
-                                                        >
-                                                            {bubble}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                            >
+                                                                {bubble}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    /* ── User message ── */
-                                    <div className="flex justify-end mb-4">
-                                        <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-br-md
+                                    ) : (
+                                        /* ── User message ── */
+                                        <div className="flex justify-end mb-4">
+                                            <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-br-md
                                                         bg-gradient-to-r from-neon-fuchsia/20 to-neon-purple/20
                                                         border border-neon-fuchsia/20
                                                         text-sm text-slate-200 leading-relaxed">
-                                            {msg.content}
+                                                {msg.content}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        );})
+                                    )}
+                                </div>
+                            );
+                        })
                     )}
 
                     {/* Typing indicator */}

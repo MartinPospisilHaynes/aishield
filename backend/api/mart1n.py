@@ -237,7 +237,8 @@ Odpovídej VÝHRADNĚ platným JSON:
 }}}}
 
 PRAVIDLA:
-- "bubbles": VŽDY prázdné []. Výjimka: ["Ano", "Ne"] pro striktně binární otázky.
+- "bubbles": VŽDY prázdné []. Výjimka: ["Ano", "Ne"] pro striktně binární otázky, nebo seznam KONKRÉTNÍCH odpovědí (názvy nástrojů, kategorií apod.).
+- NIKDY nepoužívej v bubbles obecnou únikovou variantu "Jiné", "Jiný", "Žádné" apod. Uživatel může svou odpověď vždy napsat do textového pole.
 - "multi_messages": Použij k oddělení upozornění od otázky.
 - "extracted_answers": Extrahuj z KAŽDÉ uživatelovy odpovědi. question_key MUSÍ existovat v ZNALOSTNÍ BÁZI.
 - "progress": 0-100, odhad postupu.
@@ -2264,7 +2265,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             MultiMessage(
                 text=mm.get("text", ""),
                 delay_ms=mm.get("delay_ms", 1500),
-                bubbles=mm.get("bubbles", [])[:5],
+                bubbles=[b for b in mm.get("bubbles", [])[:5] if b.strip().lower() not in ("jiné", "jiný", "žádné", "žádný", "nevím", "other", "none")],
             )
             for mm in claude_multi if isinstance(mm, dict) and mm.get("text")
         ]
@@ -2281,7 +2282,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     else:
         result = Mart1nResponse(
             message=parsed.get("message", reply_text),
-            bubbles=parsed.get("bubbles", [])[:5],
+            bubbles=[b for b in parsed.get("bubbles", [])[:5] if b.strip().lower() not in ("jiné", "jiný", "žádné", "žádný", "nevím", "other", "none")],
             extracted_answers=extracted,
             progress=min(100, max(0, parsed.get("progress", 0))),
             current_section=parsed.get("current_section", ""),
@@ -2647,7 +2648,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
 
             # Build metadata for the frontend
             meta = {
-                "bubbles": parsed.get("bubbles", [])[:5],
+                "bubbles": [b for b in parsed.get("bubbles", [])[:5] if b.strip().lower() not in ("jiné", "jiný", "žádné", "žádný", "nevím", "other", "none")],
                 "multi_messages": claude_multi,
                 "extracted_answers": [ea.dict() for ea in extracted],
                 "progress": min(100, max(0, parsed.get("progress", 0))),
