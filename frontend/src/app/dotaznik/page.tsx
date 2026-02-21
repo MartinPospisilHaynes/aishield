@@ -180,6 +180,7 @@ function QuestionnaireInner() {
         customer_service: "💬",
         hr: "👤",
         finance: "💰",
+        education: "🎓",
         prohibited_systems: "⚠️",
         infrastructure_safety: "🛡️",
         data_protection: "🔒",
@@ -713,6 +714,8 @@ function QuestionnaireInner() {
        ═══════════════════════════════════════════ */
     const PROHIBITED_KEYS = new Set([
         "uses_social_scoring", "uses_subliminal_manipulation", "uses_realtime_biometric",
+        "exploits_vulnerable_groups", "uses_criminal_risk_assessment",
+        "uses_untargeted_facial_scraping", "uses_biometric_categorization",
     ]);
     const LAWYER_KEYS = new Set([
         "develops_own_ai", "modifies_ai_purpose", "uses_ai_for_children",
@@ -720,7 +723,7 @@ function QuestionnaireInner() {
     const HIGH_RISK_KEYS = new Set([
         "uses_ai_recruitment", "uses_ai_employee_monitoring", "uses_emotion_recognition",
         "uses_ai_creditscoring", "uses_ai_insurance", "uses_ai_decision",
-        "uses_ai_critical_infra",
+        "uses_ai_critical_infra", "uses_ai_education",
     ]);
 
     const RiskWarningBanner = ({ questionKey, answer }: { questionKey: string; answer: string }) => {
@@ -819,6 +822,14 @@ function QuestionnaireInner() {
         logs_ai_decisions: {
             problem: "Logování rozhodnutí AI je potřebné pro zpětný audit.",
             solution: "Navrhneme vám systém logování a dokumentaci k němu."
+        },
+        has_cybersecurity_measures: {
+            problem: "Článek 15 AI Act vyžaduje kybernetickou bezpečnost AI systémů.",
+            solution: "Připravíme vám bezpečnostní checklist a dokumentaci opatření."
+        },
+        informs_employees_about_ai: {
+            problem: "Článek 26 odst. 7 AI Act vyžaduje informování zaměstnanců o AI na pracovišti.",
+            solution: "Dodáme vám vzorové oznámení pro zaměstnance a prezentaci."
         },
     };
 
