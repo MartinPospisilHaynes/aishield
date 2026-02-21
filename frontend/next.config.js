@@ -31,12 +31,17 @@ const nextConfig = {
             },
         ];
     },
-    // Redirect /dotaznik/ursula → /dotaznik/mart1n (keeps query params)
+    // Redirects — server-side (edge), instant, cache-proof
     async redirects() {
         return [
             {
                 source: "/dotaznik/ursula",
-                destination: "/dotaznik/mart1n",
+                destination: "/dotaznik",
+                permanent: true,
+            },
+            {
+                source: "/dotaznik/mart1n",
+                destination: "/dotaznik",
                 permanent: true,
             },
         ];
