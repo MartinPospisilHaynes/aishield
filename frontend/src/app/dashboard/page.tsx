@@ -1929,7 +1929,7 @@ function TabPlan({ questionnaireUnknowns, companyId }: {
                                     )}
                                     <p className="text-xs text-slate-300 mb-4 leading-relaxed">{u.recommendation}</p>
                                     <a
-                                        href={`/dotaznik?company_id=${companyId}`}
+                                        href={`/dotaznik?company_id=${companyId}&q=${u.question_key}`}
                                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

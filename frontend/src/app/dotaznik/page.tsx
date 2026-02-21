@@ -32,7 +32,7 @@ interface FollowupField {
 interface Question {
     key: string;
     text: string;
-    type: string;               // "yes_no_unknown" | "single_select"
+    type: string;               // "yes_no_unknown" | "single_select" | "conditional_fields"
     options?: string[];          // for single_select (industry)
     help_text?: string;
     followup?: { condition: string; fields: FollowupField[] };
@@ -40,6 +40,8 @@ interface Question {
     followup_yes?: { fields: FollowupField[] };
     risk_hint: string;
     ai_act_article: string | null;
+    show_when?: string;          // e.g. "transparency_page_implementation == 'Náš webdesignér'"
+    fields?: FollowupField[];    // for conditional_fields type
 }
 
 interface Section {
@@ -167,9 +169,24 @@ function QuestionnaireInner() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
 
-    /* ── Flat question list ── */
+    /* ── Flat question list (with show_when filtering) ── */
     const allQuestions: (Question & { _section: string; _sectionTitle: string })[] = sections.flatMap((s) =>
-        s.questions.map((q) => ({ ...q, _section: s.id, _sectionTitle: s.title }))
+        s.questions
+            .filter((q) => {
+                // Filter out conditional_fields questions whose show_when condition is not met
+                if (q.show_when) {
+                    const match = q.show_when.match(/^(\w+)\s*==\s*'(.+)'$/);
+                    if (match) {
+                        const [, depKey, depValue] = match;
+                        const depAnswer = answers[depKey]?.answer;
+                        // For single_select, the answer is stored directly
+                        // Match if the answer starts with the condition value (partial match)
+                        if (!depAnswer || !depAnswer.startsWith(depValue.split("'")[0])) return false;
+                    }
+                }
+                return true;
+            })
+            .map((q) => ({ ...q, _section: s.id, _sectionTitle: s.title }))
     );
     const totalQuestions = allQuestions.length;
 
@@ -1022,6 +1039,121 @@ function QuestionnaireInner() {
         );
     }
 
+    /* ── Conditional fields question (contact form etc.) ── */
+    if (q.type === "conditional_fields" && (q as any).fields) {
+        const cFields = (q as any).fields as FollowupField[];
+        const allRequiredFilled = cFields
+            .filter((f: any) => f.required && f.type !== "info")
+            .every((f: any) => {
+                const val = ans?.details?.[f.key];
+                return val && String(val).trim() !== "";
+            });
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col">
+                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+
+                <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="fixed bottom-[-150px] left-[-80px] w-[350px] h-[350px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="flex-1 flex items-center justify-center p-4 pt-16">
+                    <div className={`w-full max-w-xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
+
+                        <SectionTransitionCard />
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+                            {q.text}
+                        </h2>
+
+                        {q.help_text && (
+                            <div className="text-slate-400 text-sm mb-6 flex items-start gap-2">
+                                <span className="text-slate-500 mt-0.5 flex-shrink-0">ℹ️</span>
+                                <span className="whitespace-pre-line">{q.help_text}</span>
+                            </div>
+                        )}
+
+                        {/* Form fields */}
+                        <div className="space-y-4 mb-6">
+                            {cFields.map((field) => {
+                                if (field.type === "info") {
+                                    return (
+                                        <div key={field.key} className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] px-4 py-3">
+                                            <p className="text-sm text-cyan-200 leading-relaxed">{renderWarningText(field.label)}</p>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div key={field.key}>
+                                        <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                            {field.label}
+                                            {(field as any).required && <span className="text-fuchsia-400 ml-1">*</span>}
+                                        </label>
+                                        <input
+                                            type={
+                                                field.key.includes("email") ? "email" :
+                                                field.key.includes("phone") || field.key.includes("telefon") ? "tel" : "text"
+                                            }
+                                            placeholder={
+                                                field.key.includes("email") ? "Např. technik@firma.cz" :
+                                                field.key.includes("phone") || field.key.includes("telefon") ? "Např. +420 123 456 789" :
+                                                field.key.includes("name") || field.key.includes("jméno") ? "Např. Jan Novák" :
+                                                "Napište…"
+                                            }
+                                            className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-4 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                            value={String(ans?.details?.[field.key] || "")}
+                                            onChange={(e) => {
+                                                setDetail(q.key, field.key, e.target.value);
+                                                // Mark the question as answered when has content
+                                                if (e.target.value.trim()) {
+                                                    setAnswer(q.key, "filled");
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Navigation */}
+                        <div className="flex justify-between items-center">
+                            <button
+                                onClick={goBack}
+                                className="px-4 sm:px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1] text-sm sm:text-base"
+                            >
+                                ← Zpět
+                            </button>
+
+                            {fromDashboard && allRequiredFilled ? (
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
+                                    className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-base transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50"
+                                >
+                                    {submitting ? "Ukládám…" : "✓ Uložit a zpět"}
+                                </button>
+                            ) : isLast ? (
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={submitting || !allRequiredFilled}
+                                    className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
+                                >
+                                    {submitting ? "Odesílám…" : "✅ Ukončit a odeslat dotazník"}
+                                </button>
+                            ) : allRequiredFilled ? (
+                                <button
+                                    onClick={goNext}
+                                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
+                                >
+                                    Další →
+                                </button>
+                            ) : null}
+                        </div>
+
+                        <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     /* ── Text input question (company name, IČO, address, email etc.) ── */
     if (q.type === "text") {
         return (
@@ -1690,8 +1822,22 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
                         timestamp: new Date().toISOString(),
                     };
                     localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
-                    alert("Odpovědi byly uloženy. Můžete se vrátit kdykoliv a pokračovat.");
-                    window.location.href = "/dashboard";
+                    // Show styled confirmation overlay instead of ugly system alert
+                    const overlay = document.createElement('div');
+                    overlay.innerHTML = `
+                        <div style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.85);backdrop-filter:blur(8px);animation:fadeIn .3s ease">
+                            <div style="background:linear-gradient(135deg,rgba(30,41,59,0.95),rgba(15,23,42,0.98));border:1px solid rgba(139,92,246,0.25);border-radius:1.25rem;padding:2.5rem;max-width:28rem;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.5);animation:scaleIn .3s ease">
+                                <div style="width:4rem;height:4rem;border-radius:1rem;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <h3 style="color:white;font-size:1.25rem;font-weight:700;margin-bottom:0.5rem">Odpovědi uloženy</h3>
+                                <p style="color:rgb(148,163,184);font-size:0.875rem;line-height:1.6;margin-bottom:1.5rem">Váš pokrok je bezpečně uložen. Můžete se kdykoliv vrátit a pokračovat přesně tam, kde jste skončili.</p>
+                                <a href="/dashboard" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 2rem;border-radius:0.75rem;background:linear-gradient(135deg,#a855f7,#6366f1);color:white;font-weight:600;font-size:0.875rem;text-decoration:none;transition:all .2s;box-shadow:0 4px 15px rgba(168,85,247,0.3)">Zpět na dashboard</a>
+                            </div>
+                        </div>
+                        <style>@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}</style>
+                    `;
+                    document.body.appendChild(overlay);
                 }}
                 className="px-5 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.15] transition-all flex items-center gap-2 text-sm font-medium"
             >
