@@ -643,12 +643,12 @@ export default function DashboardPage() {
                             const deepStarted = latestScan?.deep_scan_started_at;
                             // Countdown: estimate 24h from deep_scan_started_at
                             const deepEta = deepStarted ? (() => {
-                                const endTime = new Date(deepStarted).getTime() + 24 * 60 * 60 * 1000;
+                                const endTime = new Date(deepStarted).getTime() + 25 * 60 * 1000; // Testing: ~25 min max
                                 const remaining = endTime - Date.now();
                                 if (remaining <= 0) return 'dokončení každou chvíli…';
                                 const hours = Math.floor(remaining / (60 * 60 * 1000));
                                 const mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-                                return `~${hours}h ${mins}min`;
+                                return hours > 0 ? `~${hours}h ${mins}min` : `~${mins}min`;
                             })() : null;
                             const countryFlags: Record<string, string> = { CZ: '🇨🇿', GB: '🇬🇧', US: '🇺🇸', BR: '🇧🇷', JP: '🇯🇵', ZA: '🇿🇦', AU: '🇦🇺' };
                             const scannedFlags = (latestScan?.geo_countries_scanned || []).map(c => countryFlags[c] || c).join(' ');
@@ -711,7 +711,7 @@ export default function DashboardPage() {
                                             <div>
                                                 <p className="text-[11px] font-semibold text-purple-300">Hloubkový scan probíhá</p>
                                                 <p className="text-[10px] text-slate-400 mt-0.5">
-                                                    24 skenů ze 7 zemí · zbývá {deepEta || '~24 h'}
+                                                    Skenování z více zemí · zbývá {deepEta || 'odhad není k dispozici'}
                                                     {scannedFlags && <span className="text-slate-500"> · {scannedFlags}</span>}
                                                 </p>
                                             </div>

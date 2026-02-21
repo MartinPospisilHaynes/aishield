@@ -551,6 +551,9 @@ export default function UrsulaChat() {
                         {/* Messages */}
                         {!loading &&
                             msgs.map((m, i) => {
+                                /* Guard: skip empty assistant bubbles */
+                                if (m.role === "assistant" && !m.text?.trim()) return null;
+
                                 const isBot =
                                     m.role === "assistant";
                                 const showAvatar =

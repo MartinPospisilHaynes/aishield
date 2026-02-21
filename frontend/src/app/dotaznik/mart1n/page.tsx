@@ -1052,7 +1052,10 @@ function Mart1nPageInner() {
                     {initLoading ? (
                         <TypingIndicator />
                     ) : (
-                        messages.map((msg, i) => (
+                        messages.map((msg, i) => {
+                            /* Guard: skip empty assistant bubbles */
+                            if (msg.role === "assistant" && !msg.content?.trim()) return null;
+                            return (
                             <div key={i}>
                                 {msg.role === "assistant" ? (
                                     /* ── Assistant message ── */
@@ -1098,7 +1101,7 @@ function Mart1nPageInner() {
                                     </div>
                                 )}
                             </div>
-                        ))
+                        );})
                     )}
 
                     {/* Typing indicator */}

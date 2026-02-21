@@ -2289,6 +2289,14 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             session_id=req.session_id,
         )
 
+    # ── GUARD: prázdná odpověď → fallback ──
+    _has_content = bool(result.message and result.message.strip())
+    _has_multi = bool(result.multi_messages and any(m.text.strip() for m in result.multi_messages))
+    if not _has_content and not _has_multi:
+        logger.warning(f"[MART1N] Prázdná odpověď od Claude — injecting fallback, company={req.company_id[:8]}")
+        result.message = "Omlouvám se, něco se mi zaseklo. Můžete prosím zopakovat svou odpověď?"
+        result.bubbles = []
+
     # Log assistant response
     log_text = result.message
     if result.multi_messages:
@@ -2625,6 +2633,18 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 if msg_text != first_mm_text:
                     claude_multi = [{"text": msg_text, "delay_ms": 0, "bubbles": []}] + claude_multi
 
+            # ── GUARD: prázdná odpověď → fallback (streaming) ──
+            _s_msg = parsed.get("message", "").strip()
+            _s_has_multi = bool(claude_multi and any(
+                (mm.get("text", "").strip() if isinstance(mm, dict) else str(mm).strip())
+                for mm in claude_multi
+            ))
+            if not _s_msg and not _s_has_multi and not reply_text.strip():
+                logger.warning(f"[MART1N] Prázdná odpověď ve streamu — injecting fallback, company={req.company_id[:8]}")
+                _fallback = "Omlouvám se, něco se mi zaseklo. Můžete prosím zopakovat svou odpověď?"
+                yield _sse_event("token", json.dumps(_fallback))
+                reply_text = _fallback
+
             # Build metadata for the frontend
             meta = {
                 "bubbles": parsed.get("bubbles", [])[:5],
@@ -2635,7 +2655,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 "is_complete": False,
                 "session_id": req.session_id,
                 "bubble_overrides": {},
-                "message": parsed.get("message", ""),
+                "message": parsed.get("message", "") or reply_text,
             }
 
             yield _sse_event("meta", json.dumps(meta))

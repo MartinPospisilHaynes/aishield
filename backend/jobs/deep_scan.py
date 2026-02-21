@@ -28,13 +28,13 @@ import os
 _SCAN_MODE = os.getenv("DEEP_SCAN_MODE", "production").lower()
 _TESTING = _SCAN_MODE == "testing"
 
-DEEP_SCAN_ROUNDS = 6                                        # Počet kol skenování (stejný v obou režimech)
+DEEP_SCAN_ROUNDS = 6 if _TESTING else 6                     # Testing: 6 kol (stejně jako produkce), Production: 6 kol (24h)
 ROUND_INTERVAL_SECONDS = 60 if _TESTING else 4 * 3600       # Testing: 60s, Production: 4 hodiny
-COUNTRIES_PER_ROUND = 4                                     # Zemí na kolo (rotace)
+COUNTRIES_PER_ROUND = 4 if _TESTING else 4                   # Testing: 4 země (stejně jako produkce), Production: 4 země
 DEVICE_TYPES = ["desktop", "mobile", "random"]
-SCAN_DELAY_MIN = 5 if _TESTING else 30                      # Min pauza mezi scany (s)
-SCAN_DELAY_MAX = 10 if _TESTING else 90                     # Max pauza mezi scany (s)
-ROUND_JITTER_MAX = 0 if _TESTING else 300                   # Max jitter mezi koly (s)
+SCAN_DELAY_MIN = 2 if _TESTING else 30                       # Min pauza mezi scany (s)
+SCAN_DELAY_MAX = 5 if _TESTING else 90                       # Max pauza mezi scany (s)
+ROUND_JITTER_MAX = 0 if _TESTING else 300                    # Max jitter mezi koly (s)
 
 logger.info(f"[DeepScan] Mode: {_SCAN_MODE.upper()} | Rounds: {DEEP_SCAN_ROUNDS} | Interval: {ROUND_INTERVAL_SECONDS}s | Delay: {SCAN_DELAY_MIN}-{SCAN_DELAY_MAX}s")
 

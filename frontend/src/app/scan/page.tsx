@@ -838,11 +838,11 @@ function ScanPageInner() {
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-fuchsia-500/8 border-2 border-fuchsia-500/25 p-6 text-center relative overflow-hidden">
                                     <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-fuchsia-500/10 blur-3xl" />
                                     <h3 className="font-bold text-white text-lg">
-                                        Kompletní obraz získáte <span className="neon-text">24h hloubkovým skenem</span>
+                                        Kompletní obraz získáte <span className="neon-text">hloubkovým skenem</span>
                                     </h3>
                                     <p className="text-sm text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
                                         Jeden scan nemusí odhalit vše — AI systémy se chovají různě podle času, lokace i zařízení.
-                                        Zaregistrujte se a spustíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze 7 zemí</strong> (desktop + mobil, rezidenční proxy) +
+                                        Zaregistrujte se a spustíme <strong className="text-white">sérii nezávislých skenů z různých zemí</strong> (desktop + mobil, rezidenční proxy) +
                                         {" "}<strong className="text-white">dotazník</strong>, který pokryje i interní AI (ChatGPT, účetnictví, HR automatizace).
                                     </p>
                                     <div className="flex flex-wrap justify-center gap-1.5 mt-4">
@@ -854,9 +854,9 @@ function ScanPageInner() {
                                     </div>
                                     <a href="/registrace" className="inline-flex items-center justify-center gap-2 mt-5 btn-primary text-base px-10 py-3.5 font-bold">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
-                                        Spustit 24h hloubkový scan — ZDARMA
+                                        Spustit hloubkový scan — ZDARMA
                                     </a>
-                                    <p className="text-xs text-slate-500 mt-2">Registrace zdarma • Výsledek na email do 24 h</p>
+                                    <p className="text-xs text-slate-500 mt-2">Registrace zdarma • Výsledek na email</p>
                                 </div>
                             </ResultReveal>
                         )}
