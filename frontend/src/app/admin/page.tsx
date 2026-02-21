@@ -3265,6 +3265,8 @@ export default function AdminPage() {
                                             setToolResult("⏳ Factory reset probíhá...");
                                             try {
                                                 const r = await factoryReset("VYMAZ");
+                                                // Vymazat scan cooldown z localStorage
+                                                try { localStorage.removeItem('aishield_scan_cooldown'); } catch { }
                                                 const lines = [
                                                     `${r.status === "ok" ? "✅" : "⚠️"} ${r.message}`,
                                                     `Auth: ${r.results.auth}`,

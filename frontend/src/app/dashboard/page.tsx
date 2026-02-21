@@ -511,26 +511,20 @@ export default function DashboardPage() {
                                     <span className="font-medium">⏳ </span>{scanCooldownMsg}
                                 </div>
                             )}
-                            {hasScans ? (
-                                hasQuest ? (
-                                    qUnknowns.length > 0 ? (
-                                        <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-4 py-2 animate-pulse">
-                                            Doplnit odpovědi ({qUnknowns.length})
-                                        </button>
-                                    ) : (
-                                        <a href="#pricing" className="btn-primary text-sm px-4 py-2">
-                                            Objednat dokumenty
-                                        </a>
-                                    )
+                            {hasQuest ? (
+                                qUnknowns.length > 0 ? (
+                                    <button onClick={() => setActiveTab("plan")} className="btn-primary text-sm px-4 py-2 animate-pulse">
+                                        Doplnit odpovědi ({qUnknowns.length})
+                                    </button>
                                 ) : (
-                                    <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
-                                        Vyplnit dotazník
+                                    <a href="#pricing" className="btn-primary text-sm px-4 py-2">
+                                        Objednat dokumenty
                                     </a>
                                 )
                             ) : (
-                                <button disabled className="btn-primary text-sm px-4 py-2 opacity-40 cursor-not-allowed" title="Nejprve proveďte sken webu">
-                                    🔒 Dotazník
-                                </button>
+                                <a href={`/dotaznik?company_id=${data?.company?.id || ''}`} className="btn-primary text-sm px-4 py-2">
+                                    Vyplnit dotazník
+                                </a>
                             )}
                         </div>
                     </div>

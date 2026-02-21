@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.api.auth import AuthUser, require_admin
-from backend.api.rate_limit import admin_limiter
+from backend.api.rate_limit import admin_limiter, scan_limiter
 from backend.config import get_settings
 
 
@@ -2306,6 +2306,18 @@ async def crm_factory_reset(
     except Exception as e:
         results["db"] = f"CHYBA: {e}"
         results["errors"].append(f"db: {e}")
+
+    # ── 2b. Reset in-memory scan rate limiter ──
+    try:
+        with scan_limiter._lock:
+            scan_limiter._url_cache.clear()
+            scan_limiter._ip_timestamps.clear()
+            scan_limiter._global_timestamps.clear()
+        results["rate_limiter"] = "Vymazáno (URL cache + IP limity + globální limity)"
+        logger.info("[FACTORY RESET] In-memory scan rate limiter cleared")
+    except Exception as e:
+        results["rate_limiter"] = f"CHYBA: {e}"
+        results["errors"].append(f"rate_limiter: {e}")
 
     # ── 3. Storage cleanup ──
     try:
