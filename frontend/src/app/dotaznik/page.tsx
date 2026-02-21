@@ -733,14 +733,12 @@ function QuestionnaireInner() {
                         <div className="flex items-start gap-3">
                             <span className="text-2xl flex-shrink-0">🚫</span>
                             <div>
-                                <p className="text-sm font-bold text-red-300 mb-1">ZAKÁZANÝ SYSTÉM dle AI Act</p>
+                                <p className="text-sm font-bold text-red-300 mb-1">Toto je zakázaná praktika dle AI Act</p>
                                 <p className="text-xs text-red-300/80 leading-relaxed">
-                                    Toto spadá mezi <strong className="text-white">zakázané praktiky</strong> podle čl. 5 AI Act.
-                                    Pokuta až <strong className="text-white">35 milionů EUR</strong> nebo 7 % ročního obratu.
+                                    Článek 5 AI Act tuto praktiku výslovně zakazuje. V tomto případě <strong className="text-white">doporučujeme konzultaci s právníkem</strong> specializovaným na AI regulaci — toto je oblast, kde potřebujete odborné právní posouzení.
                                 </p>
                                 <p className="text-xs text-red-300/80 mt-2 leading-relaxed">
-                                    ⚖️ <strong className="text-white">Doporučujeme okamžitou konzultaci s právníkem</strong> specializovaným na AI regulaci.
-                                    Připravíme vám podklady pro právní konzultaci.
+                                    ⚖️ Připravíme vám <strong className="text-white">kompletní podklady pro právní konzultaci</strong>, aby právník mohl ihned řešit vaši situaci.
                                 </p>
                             </div>
                         </div>
@@ -758,8 +756,8 @@ function QuestionnaireInner() {
                             <div>
                                 <p className="text-sm font-bold text-amber-300 mb-1">Doporučujeme právní konzultaci</p>
                                 <p className="text-xs text-amber-300/80 leading-relaxed">
-                                    Tato oblast vyžaduje <strong className="text-white">rozšířené právní povinnosti</strong> podle AI Act.
-                                    Doporučujeme konzultaci s právníkem — připravíme vám kompletní podklady.
+                                    Tato oblast může vyžadovat <strong className="text-white">rozšířené právní posouzení</strong> podle AI Act.
+                                    Nemusíte se obávat — připravíme vám veškeré podklady a dokumentaci, aby právník měl vše připraveno.
                                 </p>
                             </div>
                         </div>
@@ -771,14 +769,14 @@ function QuestionnaireInner() {
         if (HIGH_RISK_KEYS.has(questionKey)) {
             return (
                 <div className="animate-slide-down mb-4">
-                    <div className="rounded-2xl bg-orange-500/[0.08] border border-orange-500/25 p-4">
+                    <div className="rounded-2xl bg-cyan-500/[0.06] border border-cyan-500/20 p-4">
                         <div className="flex items-start gap-3">
-                            <span className="text-xl flex-shrink-0">⚠️</span>
+                            <span className="text-xl flex-shrink-0">🛡️</span>
                             <div>
-                                <p className="text-sm font-bold text-orange-300 mb-1">Vysoce rizikový AI systém</p>
-                                <p className="text-xs text-orange-300/80 leading-relaxed">
-                                    Toto spadá do kategorie <strong className="text-white">vysoce rizikových AI systémů</strong> dle AI Act.
-                                    Budete muset splnit přísnější požadavky na dokumentaci, transparentnost a lidský dohled.
+                                <p className="text-sm font-bold text-cyan-300 mb-1">Vyšší požadavky na dokumentaci</p>
+                                <p className="text-xs text-cyan-300/80 leading-relaxed">
+                                    Toto spadá do kategorie <strong className="text-white">vysoce rizikových AI systémů</strong>.
+                                    <strong className="text-white"> Žádný stres — připravíme vám veškerou potřebnou dokumentaci</strong>, včetně záznamů o transparentnosti a lidském dohledu.
                                 </p>
                             </div>
                         </div>
@@ -793,27 +791,51 @@ function QuestionnaireInner() {
     /* ═══════════════════════════════════════════
        COMPLIANCE GAP WARNING ("Ne" = gap)
        ═══════════════════════════════════════════ */
-    const COMPLIANCE_GAP_KEYS: Record<string, string> = {
-        has_ai_register: "Registr AI systémů je povinný od 2. srpna 2025 (čl. 49). Bez něj nelze prokázat soulad.",
-        has_ai_training: "Článek 4 AI Act vyžaduje AI gramotnost zaměstnanců. Tato povinnost platí již od 2. února 2025!",
-        has_ai_guidelines: "Bez interní směrnice zaměstnanci nevědí, jak smí AI používat. Hrozí nekontrolované nasazení.",
-        has_incident_plan: "Bez plánu reakce na incidenty riskujete pozdní hlášení závažných problémů DPÚ.",
-        has_human_oversight: "Lidský dohled nad AI systémy je klíčový požadavek AI Act pro vysoce rizikové systémy.",
-        can_override_ai: "Možnost přepsat rozhodnutí AI je povinná u vysoce rizikových systémů (čl. 14).",
-        logs_ai_decisions: "Bez logování rozhodnutí AI nelze provést zpětný audit ani prokázat, jak AI rozhodovala.",
+    const COMPLIANCE_GAP_KEYS: Record<string, { problem: string; solution: string }> = {
+        has_ai_register: {
+            problem: "Registr AI systémů je povinný od 2. srpna 2025 (čl. 49).",
+            solution: "Připravíme vám hotový registr AI systémů na míru vaší firmě."
+        },
+        has_ai_training: {
+            problem: "Článek 4 AI Act vyžaduje AI gramotnost zaměstnanců (platnost od 2. 2. 2025).",
+            solution: "Dodáme vám školicí materiály a prezentaci pro vaše zaměstnance."
+        },
+        has_ai_guidelines: {
+            problem: "Interní směrnice pro používání AI je základem compliance.",
+            solution: "Vytvoříme vám interní směrnici připravenou k podpisu."
+        },
+        has_incident_plan: {
+            problem: "Plán reakce na incidenty je vyžadován pro hlášení problémů.",
+            solution: "Připravíme vám šablonu incident plánu včetně kontaktních postupů."
+        },
+        has_human_oversight: {
+            problem: "Lidský dohled nad AI je klíčový požadavek AI Act.",
+            solution: "Navrhneme vám proces lidského dohledu přizpůsobený vaší firmě."
+        },
+        can_override_ai: {
+            problem: "Možnost přepsat rozhodnutí AI je povinná u vysoce rizikových systémů (čl. 14).",
+            solution: "Připravíme vám dokumentaci override procesu."
+        },
+        logs_ai_decisions: {
+            problem: "Logování rozhodnutí AI je potřebné pro zpětný audit.",
+            solution: "Navrhneme vám systém logování a dokumentaci k němu."
+        },
     };
 
     const ComplianceGapBanner = ({ questionKey, answer }: { questionKey: string; answer: string }) => {
         if (answer !== "no" || !COMPLIANCE_GAP_KEYS[questionKey]) return null;
+        const gap = COMPLIANCE_GAP_KEYS[questionKey];
         return (
             <div className="animate-slide-down mb-4">
-                <div className="rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 p-4">
+                <div className="rounded-2xl bg-cyan-500/[0.06] border border-cyan-500/20 p-4">
                     <div className="flex items-start gap-3">
-                        <span className="text-xl flex-shrink-0">📋</span>
+                        <span className="text-xl flex-shrink-0">✅</span>
                         <div>
-                            <p className="text-sm font-bold text-amber-300 mb-1">Mezera v compliance</p>
-                            <p className="text-xs text-amber-300/80 leading-relaxed">{COMPLIANCE_GAP_KEYS[questionKey]}</p>
-                            <p className="text-xs text-slate-400 mt-1">Toto vyřešíme ve vaší compliance dokumentaci.</p>
+                            <p className="text-sm font-bold text-cyan-300 mb-1">Tohle vyřešíme za vás</p>
+                            <p className="text-xs text-slate-300 leading-relaxed">{gap.problem}</p>
+                            <p className="text-xs text-cyan-300/90 mt-1.5 leading-relaxed font-medium">
+                                📦 {gap.solution}
+                            </p>
                         </div>
                     </div>
                 </div>
