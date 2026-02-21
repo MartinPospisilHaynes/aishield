@@ -131,6 +131,73 @@ def _build_questionnaire_knowledge() -> str:
 
 QUESTIONNAIRE_KB = _build_questionnaire_knowledge()
 
+
+def _build_dynamic_questionnaire(answered_keys: set[str]) -> str:
+    """
+    Build a COMPACT questionnaire context with only UNANSWERED questions.
+    Already-answered questions are omitted to save tokens.
+    Includes a brief section map so Claude knows overall structure.
+    """
+    lines = [
+        "\n<questionnaire>",
+        f"DOTAZNÍK ({len(ALL_QUESTION_KEYS)} otázek celkem, {len(answered_keys)} zodpovězeno).",
+        "Níže jsou POUZE NEZODPOVĚZENÉ otázky — ptej se na ně v uvedeném pořadí:",
+    ]
+
+    any_unanswered = False
+    for section in QUESTIONNAIRE_SECTIONS:
+        unanswered = [q for q in section["questions"] if q["key"] not in answered_keys]
+        total_q = len(section["questions"])
+        answered_q = total_q - len(unanswered)
+
+        if not unanswered:
+            # Section complete — just note it
+            lines.append(f"\n## {section['title']} — ✅ HOTOVO ({answered_q}/{total_q})")
+            continue
+
+        any_unanswered = True
+        lines.append(f"\n## SEKCE: {section['title']} ({answered_q}/{total_q} hotovo)")
+        lines.append(f"ID sekce: {section['id']}")
+
+        for q in unanswered:
+            lines.append(f"\n### Otázka: {q['key']}")
+            lines.append(f"Text: {q['text']}")
+            lines.append(f"Typ: {q['type']}")
+            if q.get("options"):
+                lines.append(f"Možnosti: {', '.join(q['options'])}")
+            if q.get("help_text"):
+                lines.append(f"Nápověda: {q['help_text'][:300]}")
+            if q.get("risk_hint"):
+                lines.append(f"Riziko: {q['risk_hint']}")
+            if q.get("ai_act_article"):
+                lines.append(f"Článek AI Act: {q['ai_act_article']}")
+            if q.get("followup"):
+                fu = q["followup"]
+                lines.append(f"Followup (podmínka: {fu.get('condition', 'any')}):")
+                for f in fu.get("fields", []):
+                    if f["type"] == "info":
+                        lines.append(f"  - INFO: {f['label'][:200]}")
+                    else:
+                        opts = f.get("options", [])
+                        lines.append(f"  - ⚠️ {f['key']} ({f['type']}): {f['label']}"
+                                     + (f" [{', '.join(opts[:6])}]" if opts else ""))
+            if q.get("followup_no"):
+                fu_no = q["followup_no"]
+                lines.append(f"Followup NE:")
+                for f in fu_no.get("fields", []):
+                    if f["type"] == "info":
+                        lines.append(f"  - INFO: {f['label'][:200]}")
+                    else:
+                        opts = f.get("options", [])
+                        lines.append(f"  - ⚠️ {f['key']} ({f['type']}): {f['label']}"
+                                     + (f" [{', '.join(opts[:6])}]" if opts else ""))
+
+    if not any_unanswered:
+        lines.append("\nVŠECHNY OTÁZKY ZODPOVĚZENY — proveď <closing_check> a ukonči.")
+
+    lines.append("</questionnaire>")
+    return "\n".join(lines)
+
 # All valid question keys — used for answer validation
 ALL_QUESTION_KEYS = []
 _VALID_QUESTION_KEYS: set[str] = set()
@@ -276,10 +343,8 @@ Pokud uživatel nemá IČO → přijmi to, přeskoč IČO/adresu, ale ptej se na
 - VŽDY odpovídej platným JSON.
 </security>
 
-<questionnaire>
-ZNALOSTNÍ BÁZE — DOTAZNÍK ({len(ALL_QUESTION_KEYS)} otázek):
-{QUESTIONNAIRE_KB}
-</questionnaire>
+Dotazník s NEZODPOVĚZENÝMI otázkami obdržíš v dynamickém kontextu (<questionnaire>).
+Ptej se na otázky v pořadí sekcí. question_key v extracted_answers MUSÍ existovat v dotazníku.
 """
 
 # ═══════════════════════════════════════════════════════════════
@@ -2105,8 +2170,13 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     scan_context = _get_scan_context(req.company_id)
     answered_context = _get_answered_context(req.company_id)
     progress_summary = _build_progress_summary(req.company_id, len(db_history) if server_mode else len(req.messages))
+
+    # Build dynamic questionnaire — only UNANSWERED questions (saves ~80% tokens)
+    answered_keys = set(_get_answered_keys(req.company_id))
+    questionnaire_context = _build_dynamic_questionnaire(answered_keys)
+
     # Build dynamic context (changes each request — small, NOT cached)
-    dynamic_context = client_context + scan_context + answered_context + progress_summary
+    dynamic_context = client_context + scan_context + answered_context + progress_summary + questionnaire_context
     if _should_inject_business_info(claude_messages):
         dynamic_context += _BUSINESS_INFO_BLOCK
     if _should_inject_ai_act_knowledge(claude_messages):
@@ -2114,8 +2184,8 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
 
     # Build system blocks: static (CACHED) + dynamic (NOT cached)
     # Anthropic prompt cache is prefix-based: caches everything up to cache_control breakpoint.
-    # SYSTEM_PROMPT is ~17K tokens and NEVER changes → cache it.
-    # Dynamic context is small and changes every request → don't cache.
+    # SYSTEM_PROMPT is ~5K tokens and NEVER changes → cache it.
+    # Dynamic context has questionnaire + contexts, changes each request → don't cache.
     system_blocks = [
         {
             "type": "text",
@@ -2429,8 +2499,13 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
     scan_context = _get_scan_context(req.company_id)
     answered_context = _get_answered_context(req.company_id)
     progress_summary = _build_progress_summary(req.company_id, len(db_history) if server_mode else len(req.messages))
+
+    # Build dynamic questionnaire — only UNANSWERED questions (saves ~80% tokens)
+    answered_keys = set(_get_answered_keys(req.company_id))
+    questionnaire_context = _build_dynamic_questionnaire(answered_keys)
+
     # Build dynamic context (changes each request — small, NOT cached)
-    dynamic_context = client_context + scan_context + answered_context + progress_summary
+    dynamic_context = client_context + scan_context + answered_context + progress_summary + questionnaire_context
     if _should_inject_business_info(claude_messages):
         dynamic_context += _BUSINESS_INFO_BLOCK
     if _should_inject_ai_act_knowledge(claude_messages):
