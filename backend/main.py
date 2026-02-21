@@ -146,6 +146,32 @@ logger.info("AIshield.cz API starting up")
 logger.info(f"Python {sys.version}")
 logger.info(f"Debug mode: {_cfg.debug}")
 logger.info(f"Registered {len(app.routes)} routes")
+
+# ── Startup diagnostika — ověříme kritické komponenty ──
+_srk = _cfg.supabase_service_role_key
+_srk_status = f"LOADED ({len(_srk)} chars)" if _srk else "MISSING — backend bude číst prázdná data!"
+logger.info(f"Supabase URL: {_cfg.supabase_url[:40]}...")
+logger.info(f"Service-role key: {_srk_status}")
+logger.info(f"Supabase anon key: {'LOADED' if _cfg.supabase_anon_key else 'MISSING'}")
+logger.info(f"Anthropic API key: {'LOADED' if _cfg.anthropic_api_key else 'not set'}")
+logger.info(f"Resend API key: {'LOADED' if _cfg.resend_api_key else 'not set'}")
+logger.info(f"env_file: {_cfg.model_config.get('env_file', 'N/A')}")
+
+if not _srk:
+    logger.critical(
+        "SUPABASE_SERVICE_ROLE_KEY is EMPTY — backend cannot read data from DB! "
+        "Check /opt/aishield/.env contains SUPABASE_SERVICE_ROLE_KEY."
+    )
+
+# ── Ověření DB konektivity při startu ──
+try:
+    from backend.database import get_supabase
+    _sb = get_supabase()
+    _test = _sb.table("companies").select("count", count="exact").limit(0).execute()
+    logger.info(f"DB connectivity: OK (companies table accessible)")
+except Exception as _db_err:
+    logger.critical(f"DB connectivity: FAILED — {_db_err}")
+
 logger.info("="*60)
 
 

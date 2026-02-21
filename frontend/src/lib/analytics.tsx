@@ -54,6 +54,26 @@ const SESSION_KEY = "aishield_session_id";
 const BATCH_INTERVAL_MS = 3000; // Posílat eventy každé 3 sekundy
 const MAX_BATCH_SIZE = 25;
 
+/**
+ * Technicky nezbytné eventy — trackují se BEZ cookie consent.
+ * Podle GDPR: bezpečnostní logy, error tracking a základní funkční analytika
+ * nepotřebují souhlas, protože slouží k zajištění fungování služby.
+ */
+const ESSENTIAL_EVENTS = new Set([
+  "js_error",              // Chyby v JS — potřebujeme pro debugging
+  "unhandled_rejection",   // Neošetřené promise chyby
+  "api_error",             // Selhání API volání
+  "page_view",             // Základní navigace — potřeba pro diagnostiku
+  "scan_started",          // Klíčový funnel krok
+  "scan_completed",        // Klíčový funnel krok
+  "scan_error",            // Chyba skenu
+  "questionnaire_started", // Klíčový funnel krok
+  "questionnaire_completed", // Klíčový funnel krok
+  "registration_completed",  // Registrace
+  "email_verified",        // Verifikace emailu
+  "chat_message_sent",     // Použití chatbota
+]);
+
 // ── Context ──
 
 const AnalyticsContext = createContext<AnalyticsContextType>({
@@ -113,18 +133,40 @@ export function AnalyticsProvider({
   // ── Flush queue → backend ──
   const flush = useCallback(async () => {
     if (queueRef.current.length === 0) return;
-    if (!hasAnalyticsConsent()) {
-      queueRef.current = [];
-      return;
-    }
 
-    const batch = queueRef.current.splice(0, MAX_BATCH_SIZE);
+    const hasConsent = hasAnalyticsConsent();
+
+    // Rozdělit frontu: essential eventy jdou VŽDY, ostatní jen s consent
+    let toSend: AnalyticsEvent[];
+    if (hasConsent) {
+      // Consent dán → posíláme vše
+      toSend = queueRef.current.splice(0, MAX_BATCH_SIZE);
+    } else {
+      // Bez consent → posíláme JEN technicky nezbytné eventy
+      const essential: AnalyticsEvent[] = [];
+      const remaining: AnalyticsEvent[] = [];
+      for (const ev of queueRef.current) {
+        if (ESSENTIAL_EVENTS.has(ev.event_name)) {
+          essential.push(ev);
+        } else {
+          remaining.push(ev);
+        }
+      }
+      toSend = essential.slice(0, MAX_BATCH_SIZE);
+      // Zahodit ne-essential eventy bez consent
+      queueRef.current = remaining.length > 100 ? [] : remaining;
+      // Pokud bylo jen ne-essential, není co posílat
+      if (toSend.length === 0) {
+        queueRef.current = []; // Prevent memory leak
+        return;
+      }
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/analytics/event`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: batch }),
+        body: JSON.stringify({ events: toSend }),
         keepalive: true, // Ensure it sends even on page unload
       });
       if (!res.ok) {
