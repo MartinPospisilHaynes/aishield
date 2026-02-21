@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ── Claude config ──
-CLAUDE_MODEL = "claude-opus-4-6"
+CLAUDE_MODEL = "claude-sonnet-4-20250514"  # Sonnet for chat: $3/$15 vs Opus $5/$25
 MAX_CONVERSATION_TURNS = 60  # Max turns in one session
 MAX_MESSAGE_LENGTH = 3000
 CLAUDE_TIMEOUT = 90  # seconds — timeout for Claude API call
@@ -1885,7 +1885,8 @@ async def _summarize_and_save_feedback(
                 from backend.monitoring.llm_usage_tracker import usage_tracker
                 _in = response.usage.input_tokens
                 _out = response.usage.output_tokens
-                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
+                # Sonnet: $3/$15 per MTok
+                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_feedback")
             except Exception:
                 pass
@@ -2104,13 +2105,29 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
     scan_context = _get_scan_context(req.company_id)
     answered_context = _get_answered_context(req.company_id)
     progress_summary = _build_progress_summary(req.company_id, len(db_history) if server_mode else len(req.messages))
-    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context + answered_context + progress_summary
-
-    # Conditionally inject business info and AI Act knowledge
+    # Build dynamic context (changes each request — small, NOT cached)
+    dynamic_context = client_context + scan_context + answered_context + progress_summary
     if _should_inject_business_info(claude_messages):
-        full_system_prompt += _BUSINESS_INFO_BLOCK
+        dynamic_context += _BUSINESS_INFO_BLOCK
     if _should_inject_ai_act_knowledge(claude_messages):
-        full_system_prompt += _AI_ACT_KNOWLEDGE_BLOCK
+        dynamic_context += _AI_ACT_KNOWLEDGE_BLOCK
+
+    # Build system blocks: static (CACHED) + dynamic (NOT cached)
+    # Anthropic prompt cache is prefix-based: caches everything up to cache_control breakpoint.
+    # SYSTEM_PROMPT is ~17K tokens and NEVER changes → cache it.
+    # Dynamic context is small and changes every request → don't cache.
+    system_blocks = [
+        {
+            "type": "text",
+            "text": SYSTEM_PROMPT,
+            "cache_control": {"type": "ephemeral"},  # cached for 5 min
+        },
+    ]
+    if dynamic_context.strip():
+        system_blocks.append({
+            "type": "text",
+            "text": dynamic_context,
+        })
 
     # Call Claude API with timeout protection + Extended Thinking + Structured Outputs
     try:
@@ -2131,13 +2148,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
                     "schema": MART1N_OUTPUT_SCHEMA,
                 }
             },
-            system=[
-                {
-                    "type": "text",
-                    "text": full_system_prompt,
-                    "cache_control": {"type": "ephemeral"},
-                }
-            ],
+            system=system_blocks,
             messages=claude_messages,
         )
 
@@ -2152,12 +2163,19 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
         if not reply_text:
             logger.warning(f"[MART1N] No text found in response blocks. Types: {[b.type for b in response.content]}")
 
-        # Track usage (thinking tokens billed at output rate)
+        # Track usage — log cache stats for diagnostics
         try:
             from backend.monitoring.llm_usage_tracker import usage_tracker
             _in = response.usage.input_tokens
             _out = response.usage.output_tokens
-            _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
+            _cache_read = getattr(response.usage, 'cache_read_input_tokens', 0) or 0
+            _cache_write = getattr(response.usage, 'cache_creation_input_tokens', 0) or 0
+            # Sonnet: $3/$15 per MTok; cache read = 10% of input price
+            _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+            logger.info(
+                f"[MART1N] Usage: in={_in} out={_out} cache_read={_cache_read} "
+                f"cache_write={_cache_write} cost=${_cost:.4f}"
+            )
             await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_chat")
         except Exception:
             pass
@@ -2411,13 +2429,26 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
     scan_context = _get_scan_context(req.company_id)
     answered_context = _get_answered_context(req.company_id)
     progress_summary = _build_progress_summary(req.company_id, len(db_history) if server_mode else len(req.messages))
-    full_system_prompt = SYSTEM_PROMPT + client_context + scan_context + answered_context + progress_summary
-
-    # Conditionally inject business info and AI Act knowledge
+    # Build dynamic context (changes each request — small, NOT cached)
+    dynamic_context = client_context + scan_context + answered_context + progress_summary
     if _should_inject_business_info(claude_messages):
-        full_system_prompt += _BUSINESS_INFO_BLOCK
+        dynamic_context += _BUSINESS_INFO_BLOCK
     if _should_inject_ai_act_knowledge(claude_messages):
-        full_system_prompt += _AI_ACT_KNOWLEDGE_BLOCK
+        dynamic_context += _AI_ACT_KNOWLEDGE_BLOCK
+
+    # Build system blocks: static (CACHED) + dynamic (NOT cached)
+    system_blocks = [
+        {
+            "type": "text",
+            "text": SYSTEM_PROMPT,
+            "cache_control": {"type": "ephemeral"},
+        },
+    ]
+    if dynamic_context.strip():
+        system_blocks.append({
+            "type": "text",
+            "text": dynamic_context,
+        })
 
     # ── Stream Claude response via SSE ──
     async def _generate_stream():
@@ -2451,13 +2482,7 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                         "schema": MART1N_OUTPUT_SCHEMA,
                     }
                 },
-                system=[
-                    {
-                        "type": "text",
-                        "text": full_system_prompt,
-                        "cache_control": {"type": "ephemeral"},
-                    }
-                ],
+                system=system_blocks,
                 messages=claude_messages,
             ) as stream:
                 for text_chunk in stream.text_stream:
@@ -2525,13 +2550,20 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 yield _sse_event("token", json.dumps(message_buffer))
                 tokens_emitted = True
 
-            # Track streaming usage
+            # Track streaming usage — log cache stats for diagnostics
             try:
                 from backend.monitoring.llm_usage_tracker import usage_tracker
                 final_msg = stream.get_final_message()
                 _in = final_msg.usage.input_tokens
                 _out = final_msg.usage.output_tokens
-                _cost = (_in * 5.0 / 1_000_000) + (_out * 25.0 / 1_000_000)
+                _cache_read = getattr(final_msg.usage, 'cache_read_input_tokens', 0) or 0
+                _cache_write = getattr(final_msg.usage, 'cache_creation_input_tokens', 0) or 0
+                # Sonnet: $3/$15 per MTok
+                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                logger.info(
+                    f"[MART1N] Stream usage: in={_in} out={_out} cache_read={_cache_read} "
+                    f"cache_write={_cache_write} cost=${_cost:.4f}"
+                )
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_stream")
             except Exception:
                 pass

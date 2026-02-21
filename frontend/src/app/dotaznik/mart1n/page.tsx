@@ -1007,7 +1007,7 @@ function Mart1nPageInner() {
         const onGlobalKey = (e: KeyboardEvent) => {
             if (e.key !== " ") return;
             const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
-            
+
             // During recording: spacebar always stops it
             if (isRecordingRef.current) {
                 e.preventDefault();
