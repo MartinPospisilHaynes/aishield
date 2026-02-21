@@ -200,14 +200,33 @@ def _build_dynamic_questionnaire(answered_keys: set[str]) -> str:
     return "\n".join(lines)
 
 # All valid question keys — used for answer validation
+# IMPORTANT: Uses state machine keys (110 keys including followups),
+# not just QUESTIONNAIRE_SECTIONS (47 main keys only).
 ALL_QUESTION_KEYS = []
 _VALID_QUESTION_KEYS: set[str] = set()
 _QUESTION_SECTIONS: dict[str, str] = {}  # question_key → section_id
+_QUESTION_TYPES: dict[str, str] = {}    # question_key → qtype
+
+# First, load main keys from QUESTIONNAIRE_SECTIONS (for backward compat)
 for section in QUESTIONNAIRE_SECTIONS:
     for q in section["questions"]:
         ALL_QUESTION_KEYS.append(q["key"])
         _VALID_QUESTION_KEYS.add(q["key"])
         _QUESTION_SECTIONS[q["key"]] = section["id"]
+        _QUESTION_TYPES[q["key"]] = q["type"]
+
+# Then, add ALL state machine keys (includes 63 followup keys!)
+# This fixes the critical bug where Claude correctly extracts followup
+# answers but they get rejected as "hallucinated" because they only
+# exist in mart1n_state.py, not in QUESTIONNAIRE_SECTIONS.
+from backend.api.mart1n_state import _QUESTION_GRAPH
+for node in _QUESTION_GRAPH:
+    if node.key and not node.is_info:
+        _VALID_QUESTION_KEYS.add(node.key)
+        if node.key not in _QUESTION_SECTIONS:
+            _QUESTION_SECTIONS[node.key] = node.section_id
+        if node.key not in _QUESTION_TYPES:
+            _QUESTION_TYPES[node.key] = node.qtype
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -233,9 +252,11 @@ SYSTEM_PROMPT = """Jsi Uršula — AI asistentka AIshield.cz pro EU AI Act compl
 
 <task>
 Systém ti v <current_question> pošle JEDNU otázku, kterou máš položit.
-1. Zformuluj ji PŘIROZENĚ a lidsky (ne roboticky). Dej příklady.
-2. Z uživatelovy odpovědi EXTRAHUJ data do extracted_answers.
-3. Pokud <current_question> obsahuje upozornění → odděluj pomocí multi_messages.
+1. Zformuluj ji PŘIROZENĚ a lidsky (ne roboticky). Dej příklady z odvětví uživatele.
+2. Z uživatelovy odpovědi EXTRAHUJ data do extracted_answers. Extrahuj VŠECHNA data, nejen pro <current_question>.
+3. Pokud uživatel odpovídá na PŘEDCHOZÍ otázku (z historie konverzace), extrahuj s odpovídajícím question_key.
+4. Pokud <current_question> obsahuje upozornění → odděluj pomocí multi_messages.
+5. Po extrakci se ZEPTEJ na otázku z <current_question>.
 </task>
 
 <format>
@@ -250,9 +271,26 @@ Odpovídej platným JSON:
   "is_complete": false
 }
 - bubbles: [] nebo ["Ano","Ne"] pro binární otázky, případně konkrétní možnosti. NIKDY "Jiné"/"Jiný".
-- extracted_answers: VŽDY extrahuj z každé odpovědi. question_key MUSÍ být z <current_question>.
+- extracted_answers: VŽDY extrahuj z každé odpovědi. question_key MUSÍ být z <valid_keys> níže. Prioritně key z <current_question>.
+- Pokud uživatel v jedné odpovědi zmíní více témat, extrahuj VŠECHNY relevantní klíče.
 - is_complete: VŽDY false (systém řídí ukončení).
 </format>
+
+<valid_keys>
+industry: company_legal_name | company_ico | company_address | company_contact_email | company_industry | eshop_platform | company_size | company_annual_revenue | develops_own_ai | own_ai_description | uses_ai_for_children
+internal_ai: uses_chatgpt | chatgpt_tool_name | chatgpt_purpose | chatgpt_data_type | uses_copilot | copilot_scope | uses_ai_content | content_tool | content_type | content_personal_data | uses_deepfake | deepfake_purpose
+customer_service: uses_ai_chatbot | chatbot_tool_name | uses_ai_email_auto | email_tool | uses_ai_decision | decision_scope | decision_override | uses_dynamic_pricing | pricing_tool | pricing_scope | pricing_transparency | uses_ai_recommendation
+hr: uses_ai_recruitment | recruitment_tool | recruitment_autonomous | uses_ai_employee_monitoring | monitoring_type | monitoring_consent | uses_emotion_recognition | emotion_context
+finance: uses_ai_accounting | accounting_tool | accounting_decisions | uses_ai_creditscoring | credit_tool | credit_autonomous | credit_explanation | uses_ai_insurance | insurance_scope
+prohibited_systems: uses_social_scoring | scoring_tool_name | scoring_scope | uses_subliminal_manipulation | uses_realtime_biometric | biometric_context | biometric_justification
+infrastructure_safety: uses_ai_critical_infra | infra_tool_name | infra_sector | uses_ai_safety_component | safety_product | safety_certification
+data_protection: ai_processes_personal_data | personal_data_types | dpia_done | ai_data_stored_eu | data_location_hint | has_ai_vendor_contracts | vendor_names | vendor_contract_scope
+ai_literacy: has_ai_training | training_attendance | training_audience_size | training_audience_level | has_ai_guidelines | guidelines_scope | guidelines_update_frequency
+human_oversight: has_oversight_person | oversight_role | oversight_person_name | oversight_person_email | oversight_person_phone | can_override_ai | override_mechanism | ai_decision_logging | logging_scope | logging_retention | has_ai_register | register_scope | register_update_frequency
+ai_role: modifies_ai_purpose | uses_gpai_api | gpai_provider | gpai_customer_facing
+incident_management: has_incident_plan | incident_plan_scope | incident_escalation_chain | incident_communication | monitors_ai_outputs | monitoring_frequency | monitoring_method | tracks_ai_changes | has_ai_bias_check | bias_check_method
+implementation: transparency_page_implementation | implementation_contact | aishield_implementation_request
+</valid_keys>
 """
 
 # ═══════════════════════════════════════════════════════════════
@@ -1113,7 +1151,7 @@ def _get_client_context(company_id: str) -> str:
 def _validate_extracted_answer(ans_data: dict) -> Optional[ExtractedAnswer]:
     """
     Validate that an extracted answer has valid question_key and section.
-    Rejects hallucinated keys that don't exist in QUESTIONNAIRE_SECTIONS.
+    Rejects hallucinated keys that don't exist in state machine.
     """
     question_key = ans_data.get("question_key", "").strip()
     section = ans_data.get("section", "").strip()
@@ -1122,7 +1160,7 @@ def _validate_extracted_answer(ans_data: dict) -> Optional[ExtractedAnswer]:
     if not question_key or not answer:
         return None
 
-    # Validate question_key exists
+    # Validate question_key exists (now checks all 110 state machine keys)
     if question_key not in _VALID_QUESTION_KEYS:
         logger.warning(f"[MART1N] Rejected hallucinated question_key: {question_key}")
         return None
@@ -1135,27 +1173,21 @@ def _validate_extracted_answer(ans_data: dict) -> Optional[ExtractedAnswer]:
 
     # Validate answer values for yes_no_unknown type
     # (Allow any value for text/single_select/multi_select)
-    valid_answers = {"yes", "no", "unknown"}
-    # Find the question to check its type
-    for s in QUESTIONNAIRE_SECTIONS:
-        for q in s["questions"]:
-            if q["key"] == question_key:
-                if q["type"] == "yes_no_unknown" and answer not in valid_answers:
-                    logger.warning(f"[MART1N] Invalid answer '{answer}' for yes_no_unknown key {question_key}")
-                    # Try to map common Czech answers
-                    answer_lower = answer.lower()
-                    if answer_lower in ("ano", "áno", "sure", "yes"):
-                        answer = "yes"
-                    elif answer_lower in ("ne", "no", "not"):
-                        answer = "no"
-                    elif answer_lower in ("nevím", "nevim", "nejsem si jistý", "unknown"):
-                        answer = "unknown"
-                    else:
-                        return None  # Cannot salvage
-                break
-        else:
-            continue
-        break
+    qtype = _QUESTION_TYPES.get(question_key, "text")
+    if qtype == "yes_no_unknown":
+        valid_answers = {"yes", "no", "unknown"}
+        if answer not in valid_answers:
+            logger.warning(f"[MART1N] Invalid answer '{answer}' for yes_no_unknown key {question_key}")
+            # Try to map common Czech answers
+            answer_lower = answer.lower()
+            if answer_lower in ("ano", "áno", "sure", "yes"):
+                answer = "yes"
+            elif answer_lower in ("ne", "no", "not"):
+                answer = "no"
+            elif answer_lower in ("nevím", "nevim", "nejsem si jistý", "unknown"):
+                answer = "unknown"
+            else:
+                return None  # Cannot salvage
 
     # Handle details: may be a JSON string (structured outputs) or dict (legacy)
     raw_details = ans_data.get("details")
@@ -1520,6 +1552,10 @@ _INTRO_GREETING = (
     "- 💬 Chatbot oznámení — texty pro Smartsupp, Tidio aj.\n"
     "- 📜 AI politika firmy — interní pravidla pro zaměstnance\n"
     "- 🎓 Osnova školení AI gramotnosti — dle čl. 4 AI Act\n\n"
+    "⚠️ **Ochrana Vašich dat**: Pokračováním v rozhovoru souhlasíte se zpracováním "
+    "údajů dle GDPR. Vaše odpovědi zůstávají výhradně mezi Vámi a AIshield.cz — "
+    "**nikdy je nesdílíme s třetími stranami**. Podrobnosti v našich "
+    "[podmínkách ochrany osobních údajů](https://aishield.cz/gdpr).\n\n"
     "Čím podrobnější odpovědi mi dáte, tím přesnější dokumenty pro Vás vytvoříme — "
     "klidně se rozepište, nebo použijte mikrofon 🎤 vedle textového pole "
     "a odpovídejte hlasem."
@@ -2688,6 +2724,12 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 yield _sse_event("token", json.dumps(_fallback))
                 reply_text = _fallback
 
+            # Determine what question will be asked next turn (for tests/diagnostics)
+            if extracted:
+                _nqk = refreshed_action.question_key if refreshed_action.action == "ask_question" else ""
+            else:
+                _nqk = next_action.question_key if next_action else ""
+
             # Build metadata for the frontend
             meta = {
                 "bubbles": [b for b in parsed.get("bubbles", [])[:5] if b.strip().lower() not in ("jiné", "jiný", "žádné", "žádný", "nevím", "other", "none")],
@@ -2695,6 +2737,8 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 "extracted_answers": [ea.dict() for ea in extracted],
                 "progress": sm_progress,
                 "current_section": next_action.section_id if next_action else "",
+                "asked_question_key": next_action.question_key if next_action else "",
+                "next_question_key": _nqk,
                 "is_complete": False,
                 "session_id": req.session_id,
                 "bubble_overrides": {},

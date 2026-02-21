@@ -1173,6 +1173,29 @@ function Mart1nPageInner() {
             {/* ── Input Area ── */}
             <div className="flex-shrink-0 border-t border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
                 <div className="max-w-3xl mx-auto px-4 py-3">
+                    {isComplete ? (
+                        /* ── Questionnaire Complete — "Finish" button ── */
+                        <div className="flex flex-col items-center gap-3 py-2">
+                            <p className="text-sm text-slate-400 text-center">
+                                Dotazník je dokončen — děkujeme za Vaše odpovědi!
+                            </p>
+                            <button
+                                onClick={() => router.push("/dashboard")}
+                                className="w-full max-w-sm py-3.5 px-6 rounded-xl text-sm font-bold text-white
+                                           bg-gradient-to-r from-[#a855f7] via-[#c084fc] to-[#e879f9]
+                                           shadow-lg shadow-purple-500/30
+                                           hover:brightness-110 hover:shadow-purple-500/50
+                                           transition-all duration-200
+                                           flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                </svg>
+                                Dokončit a přejít na Dashboard
+                            </button>
+                        </div>
+                    ) : (
+                    <>
                     <div className="flex items-center gap-2">
                         <div className="flex-1 relative overflow-hidden">
                             {isRecording ? (
@@ -1278,6 +1301,8 @@ function Mart1nPageInner() {
                     <p className="text-[10px] text-white/90 mt-2 text-center leading-relaxed">
                         Uršula je umělá inteligence (čl. 50 AI Act). Vaše data jsou šifrována a&nbsp;zůstávají pouze mezi Vámi a&nbsp;AIshield — žádná třetí strana k&nbsp;nim nemá přístup. Porušení ochrany osobních údajů dle GDPR (nařízení EU&nbsp;2016/679) podléhá pokutě až&nbsp;20&nbsp;mil.&nbsp;€ nebo 4&nbsp;% ročního obratu.
                     </p>
+                    </>
+                    )}
                 </div>
             </div>
         </div>
