@@ -1082,7 +1082,7 @@ export default function DashboardPage() {
                     <div className="min-h-[400px]">
                         {activeTab === "prehled" && <TabPrehled data={data} onStartScan={handleStartScan} scanLoading={scanLoading} hasScans={hasScans} onShowPlan={() => setActiveTab("plan")} onTriggerDeepScan={handleTriggerDeepScan} deepScanLoading={deepScanLoading} deepScanTriggered={deepScanTriggered} deepScanError={deepScanError} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questionnaireFindings={qFindings} questionnaireUnknowns={qUnknowns} hasQuest={hasQuest} companyId={data?.company?.id || ''} onStartScan={handleStartScan} />}
-                        {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} />}
+                        {activeTab === "dokumenty" && <TabDokumenty documents={data?.documents || []} paymentStatus={data?.company?.payment_status || "unpaid"} />}
                         {activeTab === "plan" && <TabPlan questionnaireUnknowns={qUnknowns} companyId={data?.company?.id || ''} />}
                         {activeTab === "dotaznik" && <TabDotaznik companyId={data?.company?.id || ''} questResults={questResults} questResultsLoading={questResultsLoading} setQuestResults={setQuestResults} setQuestResultsLoading={setQuestResultsLoading} hasQuest={hasQuest} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} onStartScan={handleStartScan} />}
@@ -1752,12 +1752,14 @@ function TabFindings({ findings, questionnaireFindings, questionnaireUnknowns, h
 
 
 /* ── Tab: Dokumenty ── */
-function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) {
+function TabDokumenty({ documents, paymentStatus }: { documents: DashboardData["documents"]; paymentStatus: string }) {
+    const isPaid = paymentStatus === "paid";
+
     if (documents.length === 0) {
         return (
             <EmptyState
                 title="Zatím žádné dokumenty"
-                description="Dokumenty se generují po zaplacení balíčku."
+                description="Dokumenty se vygenerují automaticky po dokončení analýzy a vyplnění dotazníku."
                 href="#pricing"
                 cta="Vybrat balíček"
                 illustration={
@@ -1771,39 +1773,71 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 
     return (
         <div className="space-y-4">
-            {/* 7-day processing notice */}
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
-                <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <h4 className="text-sm font-semibold text-cyan-300 mb-1">Doba zpracování</h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                            Kompletní dokumenty připravujeme do <strong className="text-cyan-300">7 pracovních dnů</strong> od zaplacení balíčku.
-                            Do 14 dnů vám vše doručíme i v tištěné podobě v profesionální vazbě — připravené na kontrolu.
-                            Pro přípravu dokumentů je nutné mít vyplněný dotazník — čím přesněji odpovíte, tím kvalitnější dokumenty obdržíte.
-                        </p>
+            {/* Lock notice when not paid */}
+            {!isPaid && (
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4">
+                    <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <div>
+                            <h4 className="text-sm font-semibold text-amber-300 mb-1">Dokumenty čekají na uvolnění</h4>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Vaše dokumenty jsou připraveny, ale ke stažení budou dostupné až po <strong className="text-amber-300">potvrzení platby</strong>.
+                                Pokud jste již zaplatili, zpracování platby může trvat 1–2 pracovní dny.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {/* Unlocked notice when paid */}
+            {isPaid && (
+                <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-4">
+                    <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        </svg>
+                        <div>
+                            <h4 className="text-sm font-semibold text-green-300 mb-1">Dokumenty jsou odemčeny</h4>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Platba byla potvrzena. Můžete si stáhnout všechny své dokumenty.
+                                Do 14 dnů vám vše doručíme i v tištěné podobě v profesionální vazbě.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {documents.map((doc) => (
-                    <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-white/[0.12] transition-all">
-                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
-                            <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
+                    <div key={doc.id} className={`rounded-xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 transition-all ${isPaid ? 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]' : 'border-white/[0.04] bg-white/[0.01] opacity-75'}`}>
+                        <div className={`flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center ${isPaid ? 'bg-fuchsia-500/10' : 'bg-slate-500/10'}`}>
+                            {isPaid ? (
+                                <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6 text-amber-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
+                            <h4 className={`font-medium text-sm ${isPaid ? 'text-slate-200' : 'text-slate-400'}`}>{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
                             <p className="text-xs text-slate-400 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
                         </div>
-                        {doc.file_url && (
+                        {isPaid && doc.file_url ? (
                             <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">
                                 Stáhnout PDF
                             </a>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs text-amber-400/70 px-3 py-1.5 rounded-lg border border-amber-500/20 bg-amber-500/[0.05] flex-shrink-0">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Zamčeno
+                            </span>
                         )}
                     </div>
                 ))}

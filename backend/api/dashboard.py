@@ -339,6 +339,7 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
             "url": company.get("url", ""),
             "created_at": company.get("created_at", ""),
             "workflow_status": company.get("workflow_status", "new"),
+            "payment_status": company.get("payment_status", "unpaid"),
         },
         "scans": [
             {
