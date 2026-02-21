@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from backend.database import get_supabase
 from backend.outbound.email_engine import send_email
-from backend.outbound.report_email import generate_report_email_html
+from backend.outbound.report_email import generate_report_email_html, generate_zero_findings_email_html
 import logging
 
 logger = logging.getLogger(__name__)
@@ -61,13 +61,20 @@ async def send_scan_report(scan_id: str, request: SendReportRequest):
             if f.get("source") != "ai_classified_fp"
         ]
 
-        # 4. Vygenerujeme HTML
-        html = generate_report_email_html(
-            url=scan["url_scanned"],
-            company_name=company_name,
-            findings=deployed,
-            scan_id=scan_id,
-        )
+        # 4. Vygenerujeme HTML — jiný template pro 0 nálezů
+        if len(deployed) == 0:
+            html = generate_zero_findings_email_html(
+                url=scan["url_scanned"],
+                company_name=company_name,
+                scan_id=scan_id,
+            )
+        else:
+            html = generate_report_email_html(
+                url=scan["url_scanned"],
+                company_name=company_name,
+                findings=deployed,
+                scan_id=scan_id,
+            )
 
         # 5. Odešleme email
         subject = f"AIshield.cz — Výsledky AI Act skenu pro {scan['url_scanned']}"

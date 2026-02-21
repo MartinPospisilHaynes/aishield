@@ -2622,7 +2622,7 @@ async def admin_resend_report(
     """
     from backend.database import get_supabase
     from backend.outbound.email_engine import send_email
-    from backend.outbound.report_email import generate_report_email_html
+    from backend.outbound.report_email import generate_report_email_html, generate_zero_findings_email_html
 
     supabase = get_supabase()
 
@@ -2666,13 +2666,20 @@ async def admin_resend_report(
 
         deployed = [f for f in (findings_res.data or []) if f.get("source") != "ai_classified_fp"]
 
-        # Generujeme HTML
-        html = generate_report_email_html(
-            url=scan["url_scanned"],
-            company_name=company.get("name", "Neznámá firma"),
-            findings=deployed,
-            scan_id=scan_id,
-        )
+        # Generujeme HTML — jiný template pro 0 nálezů
+        if len(deployed) == 0:
+            html = generate_zero_findings_email_html(
+                url=scan["url_scanned"],
+                company_name=company.get("name", "Neznámá firma"),
+                scan_id=scan_id,
+            )
+        else:
+            html = generate_report_email_html(
+                url=scan["url_scanned"],
+                company_name=company.get("name", "Neznámá firma"),
+                findings=deployed,
+                scan_id=scan_id,
+            )
 
         total = scan.get("deep_scan_total_findings") or scan.get("total_findings") or len(deployed)
         subject = f"AIshield.cz — Výsledky AI Act skenu pro {scan['url_scanned']} ({total} nálezů)"
@@ -2712,7 +2719,7 @@ async def admin_preview_report(
     Neposílá žádný email — jen renderuje HTML.
     """
     from backend.database import get_supabase
-    from backend.outbound.report_email import generate_report_email_html
+    from backend.outbound.report_email import generate_report_email_html, generate_zero_findings_email_html
     from fastapi.responses import HTMLResponse
 
     supabase = get_supabase()
@@ -2744,13 +2751,20 @@ async def admin_preview_report(
 
         deployed = [f for f in (findings_res.data or []) if f.get("source") != "ai_classified_fp"]
 
-        # Generujeme HTML
-        html = generate_report_email_html(
-            url=scan["url_scanned"],
-            company_name=company.get("name", "Neznámá firma"),
-            findings=deployed,
-            scan_id=scan_id,
-        )
+        # Generujeme HTML — jiný template pro 0 nálezů
+        if len(deployed) == 0:
+            html = generate_zero_findings_email_html(
+                url=scan["url_scanned"],
+                company_name=company.get("name", "Neznámá firma"),
+                scan_id=scan_id,
+            )
+        else:
+            html = generate_report_email_html(
+                url=scan["url_scanned"],
+                company_name=company.get("name", "Neznámá firma"),
+                findings=deployed,
+                scan_id=scan_id,
+            )
 
         logger.info(f"[Admin] Preview report scan={scan_id} by={user.email}")
 

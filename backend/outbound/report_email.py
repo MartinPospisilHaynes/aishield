@@ -543,3 +543,312 @@ def generate_report_email_html(
 </html>"""
 
     return html
+
+
+def generate_zero_findings_email_html(
+    url: str,
+    company_name: str,
+    scan_id: str,
+) -> str:
+    """
+    Generate branded HTML email for scans that found ZERO AI systems.
+    Warns the user that quick scan ≠ safety, explains where AI can hide,
+    and emphasizes the still-present compliance risk.
+    """
+
+    html = f"""<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIshield.cz — Výsledky AI Act skenu</title>
+</head>
+<body style="margin:0;padding:0;background:{D["bg_body"]};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <div style="max-width:640px;margin:0 auto;background:{D["bg_card"]};">
+
+        <!-- HEADER -->
+        <div style="background:linear-gradient(135deg, {D["gradient_start"]}, {D["gradient_mid"]}, {D["gradient_end"]});padding:36px 24px;text-align:center;border-bottom:1px solid {D["border"]};">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">
+                {SHIELD_LOGO_SVG}<span style="color:#ffffff;">AI</span><span style="background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_cyan"]});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">shield</span><span style="color:{D["text_muted"]};font-size:16px;font-weight:400;">.cz</span>
+            </div>
+            <div style="font-size:14px;color:{D["text_secondary"]};margin-top:6px;">Výsledky AI Act compliance skenu</div>
+        </div>
+
+        <!-- SCAN RESULT: NO AI DETECTED -->
+        <div style="margin:24px;padding:20px;background:linear-gradient(135deg, #1a2a15, #1a2b1a);border:1px solid {D["warning"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["warning"]};">
+                &#128269; Rychlý sken neodhalil žádné AI systémy na vašem webu
+            </div>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
+                Na webu <strong style="color:{D["text"]};">{url}</strong> jsme provedli automatický
+                sken a <strong style="color:{D["text"]};">nenašli žádné viditelné AI systémy</strong>.
+                To je dobrý začátek, ale <strong style="color:{D["warning"]};">rozhodně to neznamená,
+                že jste mimo dosah AI Act</strong>.
+            </p>
+        </div>
+
+        <!-- WARNING: FALSE SENSE OF SECURITY -->
+        <div style="margin:0 24px 24px;padding:20px;background:#2a1015;border:2px solid {D["danger"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:#fca5a5;">
+                &#9888; Pozor — nenechte se ukolébat falešným pocitem bezpečí
+            </div>
+            <p style="font-size:14px;color:#f8a0a0;margin-top:10px;line-height:1.7;">
+                Rychlý sken analyzuje pouze <strong style="color:#ffffff;">veřejně viditelný kód vašeho webu</strong>.
+                Existuje celá řada AI systémů, které tento sken <strong style="color:#ffffff;">nemůže odhalit</strong>,
+                protože pracují na pozadí, v&nbsp;interních systémech nebo přes API.
+                <strong style="color:{D["warning"]};">EU AI Act se vztahuje na VŠECHNY AI systémy</strong>,
+                které vaše firma používá — nejen na ty viditelné na webu.
+            </p>
+        </div>
+
+        <!-- WHERE AI CAN HIDE -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:14px;text-align:center;">
+                &#129520; Kde všude se může AI schovávat?
+            </div>
+            <table style="width:100%;border-collapse:separate;border-spacing:0 6px;">
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["accent_fuchsia"]};">&#128187; CRM a obchodní nástroje</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">Salesforce Einstein, HubSpot AI, Pipedrive AI — automatické skórování leadů, predikce prodejů, AI doporučení.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["accent_cyan"]};">&#128231; E-mailový marketing</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">Mailchimp, Ecomail, SmartEmailing — AI optimalizace předmětů, segmentace, prediktivní analýza odesílání.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["accent_purple"]};">&#129302; Chatboti a zákaznická podpora</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">Intercom, Zendesk AI, Tidio — chatboti mohou běžet přes iframe nebo JavaScript z externích domén, které rychlý sken nevidí.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["success"]};">&#128202; HR a nábor</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">LinkedIn Recruiter AI, Teamio, hledací algoritmy — automatické třídění životopisů a hodnocení kandidátů spadá pod vysoké riziko.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["warning"]};">&#128200; Účetnictví a finance</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">ABRA AI, Money S5, Fakturoid — automatická kategorizace faktur, predikce cash flow, AI párování plateb.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["danger"]};">&#128274; Bezpečnostní systémy</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">Kamerové systémy s rozpoznáváním obličejů, přístupové systémy, biometrické čtečky — spadají pod zakázané nebo vysokorizikové AI.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["accent_fuchsia"]};">&#9999;&#65039; Generování obsahu</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">ChatGPT, Claude, Gemini, Copilot — pokud zaměstnanci používají AI k tvorbě textů, obrázků nebo kódu, i to podléhá regulaci.</div>
+                </td></tr>
+                <tr><td style="padding:10px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D["accent_cyan"]};">&#128722; E-shop a doporučování</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:3px;">Doporučovací algoritmy produktů, personalizované nabídky, dynamické ceny — běží na backendu a nejsou viditelné v&nbsp;HTML kódu.</div>
+                </td></tr>
+            </table>
+        </div>
+
+        <!-- AI ACT OBLIGATIONS STILL APPLY -->
+        <div style="margin:0 24px 24px;padding:20px;background:linear-gradient(135deg, #0f1b3d, #1a1040);border:1px solid {D["accent_purple"]};border-radius:12px;">
+            <div style="font-size:15px;font-weight:700;color:{D["accent_fuchsia"]};">
+                &#9878;&#65039; Povinnosti dle AI Act platí pro KAŽDOU firmu
+            </div>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:10px;line-height:1.7;">
+                <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">Článek 4 AI Act</a>
+                ukládá <strong style="color:{D["text"]};">povinnost AI gramotnosti</strong> — každá firma musí zajistit,
+                aby její zaměstnanci rozuměli AI systémům, se kterými pracují. Tato povinnost platí
+                <strong style="color:{D["warning"]};">bez ohledu na to, zda máte AI na webu</strong>.
+            </p>
+            <p style="font-size:14px;color:{D["text_secondary"]};margin-top:8px;line-height:1.7;">
+                Navíc <a href="{AI_ACT_LINKS['čl. 50']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl.&nbsp;50</a>
+                vyžaduje <strong style="color:{D["text"]};">transparenční povinnosti</strong> pro všechny AI systémy
+                interagující s osobami. Nesplnění hrozí pokutou
+                <strong style="color:{D["danger"]};">až 15&nbsp;milionů&nbsp;EUR nebo 3&nbsp;%&nbsp;obratu</strong>.
+            </p>
+        </div>
+
+        <!-- RECOMMENDATION: DEEP SCAN + QUESTIONNAIRE -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:2px solid {D["accent_cyan"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["accent_cyan"]};margin-bottom:10px;">
+                &#128161; Co doporučujeme udělat
+            </div>
+            <div style="font-size:14px;color:{D["text_secondary"]};line-height:2;">
+                <strong style="color:{D["text"]};">1.</strong> Spusťte <strong style="color:{D["text"]};">hloubkový 24h scan</strong> — skenuje web ze 7 zemí, z různých zařízení, odhalí i dočasně skryté AI systémy<br>
+                <strong style="color:{D["text"]};">2.</strong> Vyplňte <strong style="color:{D["text"]};">compliance dotazník</strong> — odhalí AI systémy ve vašich interních procesech, které žádný sken webu nemůže najít<br>
+                <strong style="color:{D["text"]};">3.</strong> Zajistěte <strong style="color:{D["text"]};">školení zaměstnanců</strong> — povinnost AI gramotnosti dle čl. 4 platí od 2.&nbsp;února&nbsp;2025
+            </div>
+        </div>
+
+        <!-- SUMMARY BOX -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+            <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Skenovaný web</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["accent_cyan"]};text-align:right;">{url}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Firma</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["text"]};text-align:right;">{company_name}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Typ skenu</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["warning"]};text-align:right;">Rychlý sken (pouze veřejný kód webu)</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Nalezené AI systémy na webu</td>
+                    <td style="padding:8px 0;font-size:26px;font-weight:700;color:{D["success"]};text-align:right;">0</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;font-size:14px;color:{D["text_muted"]};">Interní AI systémy</td>
+                    <td style="padding:8px 0;font-size:14px;font-weight:600;color:{D["warning"]};text-align:right;">&#10067; Nezjištěno — vyplňte dotazník</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- WHAT WE DELIVER -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+            <div style="font-size:16px;font-weight:700;color:{D["text"]};margin-bottom:4px;text-align:center;">
+                I bez nálezů na webu pro vás připravíme
+            </div>
+            <div style="font-size:13px;color:{D["text_muted"]};margin-bottom:16px;text-align:center;">
+                Povinná dokumentace dle AI Act — bez ohledu na výsledek skenu webu
+            </div>
+            <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128203; AI politika firmy</div>
+                    <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Interní pravidla pro zaměstnance — povinné pro každou firmu využívající jakékoliv AI nástroje</div>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:linear-gradient(135deg, {D["bg_section"]}, #1a1040);border-radius:8px;border:1px solid {D['accent_fuchsia']}30;">
+                    <div style="font-size:14px;font-weight:600;color:{D['accent_fuchsia']};">&#127891; Školení zaměstnanců v PowerPointu</div>
+                    <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Povinnost AI gramotnosti dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a> — platí od 2. února 2025!</div>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128203; Záznamový list o proškolení</div>
+                    <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Doklad prokazující splnění povinnosti — připraveno k podpisu zaměstnanci</div>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128209; Registr AI systémů</div>
+                    <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Evidence AI nástrojů ve firmě — po vyplnění dotazníku na míru pro {company_name}</div>
+                </td></tr>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128196; AI Act Compliance Report</div>
+                    <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Kompletní přehled včetně interních systémů odhalených dotazníkem</div>
+                </td></tr>
+            </table>
+        </div>
+
+        <!-- PRICING PLANS -->
+        <div style="margin:0 24px 24px;">
+            <div style="font-size:18px;font-weight:700;color:{D["text"]};margin-bottom:16px;text-align:center;">
+                Vyberte si balíček, který vám vyhovuje
+            </div>
+
+            <!-- BASIC -->
+            <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+                <div style="font-size:16px;font-weight:700;color:{D["text"]};">BASIC</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Compliance Kit — dokumenty ke stažení</div>
+                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">4&nbsp;999&nbsp;Kč</div>
+                <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
+                <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                    ✓ Sken webu + AI Act report &nbsp;&nbsp;
+                    ✓ 7 PDF dokumentů &nbsp;&nbsp;
+                    ✓ Transparenční stránka &nbsp;&nbsp;
+                    ✓ Registr AI systémů &nbsp;&nbsp;
+                    ✓ AI politika firmy &nbsp;&nbsp;
+                    ✓ Školení v PowerPointu &nbsp;&nbsp;
+                    ✓ Záznamový list o proškolení
+                </div>
+            </div>
+
+            <!-- PRO (highlighted) -->
+            <div style="margin-bottom:12px;padding:3px;background:linear-gradient(135deg, {D["accent_fuchsia"]}, {D["accent_cyan"]});border-radius:14px;">
+                <div style="padding:20px;background:{D["bg_card"]};border-radius:12px;">
+                    <div style="text-align:center;margin-bottom:8px;">
+                        <span style="display:inline-block;padding:3px 14px;border-radius:20px;font-size:11px;font-weight:600;color:#ffffff;background:linear-gradient(135deg, {D["accent_fuchsia"]}, {D["accent_purple"]});">
+                            &#11088; Nejoblíbenější
+                        </span>
+                    </div>
+                    <div style="font-size:16px;font-weight:700;color:{D["text"]};">PRO</div>
+                    <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Vše z BASIC + implementace na klíč</div>
+                    <div style="font-size:28px;font-weight:800;color:{D["accent_fuchsia"]};margin-top:8px;">14&nbsp;999&nbsp;Kč</div>
+                    <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
+                    <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                        ✓ Vše z BASIC &nbsp;&nbsp;
+                        ✓ Instalace widgetu na web &nbsp;&nbsp;
+                        ✓ Nastavení transparenční stránky &nbsp;&nbsp;
+                        ✓ Úprava chatbot oznámení &nbsp;&nbsp;
+                        ✓ 30 dní podpora &nbsp;&nbsp;
+                        ✓ Prioritní zpracování
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTERPRISE -->
+            <div style="margin-bottom:12px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;">
+                <div style="font-size:16px;font-weight:700;color:{D["text"]};">ENTERPRISE</div>
+                <div style="font-size:12px;color:{D["text_muted"]};margin-top:2px;">Kompletní řešení + konzultace + 2 roky monitoringu</div>
+                <div style="font-size:28px;font-weight:800;color:{D["text"]};margin-top:8px;">39&nbsp;999&nbsp;Kč</div>
+                <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
+                <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
+                    ✓ Vše z PRO &nbsp;&nbsp;
+                    ✓ 10h konzultací se specialistou &nbsp;&nbsp;
+                    ✓ Metodická kontrola dokumentace &nbsp;&nbsp;
+                    ✓ Rozšířený audit interních AI &nbsp;&nbsp;
+                    ✓ 2 roky měsíčního monitoringu &nbsp;&nbsp;
+                    ✓ Dedikovaný specialista &nbsp;&nbsp;
+                    ✓ SLA 4h odezva
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA BUTTONS -->
+        <div style="margin:0 24px 24px;text-align:center;">
+            <a href="https://aishield.cz/pricing" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{D["accent_fuchsia"]},{D["accent_purple"]});color:#ffffff;font-weight:700;font-size:15px;border-radius:12px;text-decoration:none;margin-bottom:12px;">
+                Zobrazit ceník a objednat
+            </a>
+            <br>
+            <a href="https://aishield.cz/registrace" style="display:inline-block;padding:12px 32px;background:transparent;color:{D["accent_cyan"]};font-weight:600;font-size:14px;border-radius:12px;text-decoration:none;border:1px solid {D["accent_cyan"]};margin-top:8px;">
+                Vytvořit účet zdarma
+            </a>
+        </div>
+
+        <!-- DEADLINE COUNTDOWN -->
+        <div style="margin:0 24px 24px;padding:20px;background:#2a1015;border:2px solid {D["danger"]};border-radius:12px;text-align:center;">
+            <div style="font-size:13px;color:#fca5a5;text-transform:uppercase;letter-spacing:1px;font-weight:600;">
+                Do platnosti AI Act zbývá
+            </div>
+            <div style="font-size:32px;font-weight:800;color:{D["danger"]};margin-top:8px;">
+                {_days_remaining()}
+            </div>
+            <p style="font-size:13px;color:#e2e8f0;margin-top:10px;line-height:1.6;">
+                <a href="{AI_ACT_LINKS['čl. 50']}" style="color:#fca5a5;text-decoration:underline;font-weight:600;" target="_blank">AI Act</a>
+                přichází v platnost <strong style="color:#ffffff;">2.&nbsp;srpna&nbsp;2026</strong>.
+                Po tomto datu mohou úřady udělovat <strong style="color:#fca5a5;">pokuty za nesoulad</strong>.
+                Doporučujeme provést interní audit co nejdříve.
+            </p>
+        </div>
+
+        <!-- CONTACT -->
+        <div style="margin:0 24px 24px;padding:20px;background:{D["bg_elevated"]};border:1px solid {D["border"]};border-radius:12px;text-align:center;">
+            <div style="font-size:15px;font-weight:600;color:{D["text"]};">Máte otázky? Ozvěte se nám</div>
+            <div style="margin-top:12px;font-size:14px;">
+                <a href="mailto:info@aishield.cz" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">info@aishield.cz</a>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <a href="tel:+420732716141" style="color:{D["accent_cyan"]};text-decoration:none;font-weight:500;">+420 732 716 141</a>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:{D["text_muted"]};">
+                Odpovídáme do 24 hodin v pracovní dny.
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="background:linear-gradient(135deg, {D["gradient_start"]}, {D["gradient_mid"]});padding:28px 24px;text-align:center;border-top:1px solid {D["border"]};">
+            <div style="font-size:14px;font-weight:600;color:{D["text_secondary"]};">
+                <span style="color:#ffffff;">AI</span><span style="color:{D["accent_fuchsia"]};">shield</span><span style="color:{D["text_muted"]};">.cz</span>
+                &nbsp;— AI Act compliance pro české firmy
+            </div>
+            <div style="font-size:11px;color:{D["text_muted"]};margin-top:10px;line-height:1.6;">
+                Tento email byl vygenerován na základě automatického skenu webu {url}.<br>
+                &copy; 2025 AIshield.cz | Provozovatel: Martin Haynes, IČO: 17889251
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>"""
+
+    return html

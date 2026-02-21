@@ -1014,7 +1014,7 @@ function ScanPageInner() {
                                             </button>
                                         </div>
                                     )}
-                                    <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a>.</p>
+                                    <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a> a <a href="/gdpr" className="underline hover:text-slate-400">GDPR</a>.</p>
                                 </div>
                             )}
                         </ResultReveal>
