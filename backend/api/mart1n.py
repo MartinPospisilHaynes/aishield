@@ -1372,13 +1372,32 @@ def _handle_ares_lookup(company_id: str, extracted: list[ExtractedAnswer]):
 def _parse_claude_response(text: str) -> dict:
     """
     Parse Claude's JSON response.
-    With structured outputs (output_config), JSON is guaranteed valid.
-    Thin fallback for edge cases.
+    Handles markdown code block wrapping (```json ... ```) that Sonnet may add.
     """
+    # Strip markdown code block wrapping if present
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        # Remove opening ```json or ``` line
+        first_nl = cleaned.find("\n")
+        if first_nl != -1:
+            cleaned = cleaned[first_nl + 1:]
+        # Remove closing ```
+        if cleaned.rstrip().endswith("```"):
+            cleaned = cleaned.rstrip()[:-3].rstrip()
+    
     try:
-        return json.loads(text)
+        return json.loads(cleaned)
     except json.JSONDecodeError:
-        logger.warning(f"[MART1N] JSON parse failed (should not happen with structured outputs): {text[:300]}")
+        # Try to find JSON object in the text
+        brace_start = cleaned.find("{")
+        brace_end = cleaned.rfind("}")
+        if brace_start != -1 and brace_end > brace_start:
+            try:
+                return json.loads(cleaned[brace_start:brace_end + 1])
+            except json.JSONDecodeError:
+                pass
+        
+        logger.warning(f"[MART1N] JSON parse failed: {text[:300]}")
         return {
             "message": text,
             "bubbles": [],
