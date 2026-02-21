@@ -175,8 +175,8 @@ export default function UrsulaChat() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    /* Hide the floating bubble on the full-page dotaznik (fallback page) */
-    const onDotaznikPage = pathname === "/dotaznik/mart1n";
+    /* Hide the floating bubble on the dotaznik page */
+    const onDotaznikPage = pathname === "/dotaznik" || pathname === "/dotaznik/mart1n";
 
     /* ── External trigger: window.dispatchEvent(new CustomEvent("openUrsulaChat")) ── */
     useEffect(() => {
