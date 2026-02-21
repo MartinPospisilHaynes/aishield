@@ -219,6 +219,7 @@ function RegistraceInner() {
                         </div>
 
                         {/* Otevřít schránku — detekce webmail providera */}
+                        <div className="flex flex-col items-center gap-3 mt-5">
                         {(() => {
                             const domain = email.split("@")[1]?.toLowerCase() || "";
                             const providers: Record<string, { url: string; label: string; icon: string }> = {
@@ -244,7 +245,7 @@ function RegistraceInner() {
                                     href={provider ? provider.url : `https://mail.google.com/mail/u/0/#search/from%3Aaishield`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn-primary mt-5 inline-flex items-center gap-2 px-6 py-3 text-sm"
+                                    className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -254,9 +255,10 @@ function RegistraceInner() {
                             );
                         })()}
 
-                        <a href="/login" className="btn-secondary mt-3 inline-flex">
+                        <a href="/login" className="btn-secondary inline-flex">
                             Zpět na přihlášení
                         </a>
+                        </div>
                     </div>
                 </div>
             </section>
