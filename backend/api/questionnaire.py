@@ -1127,17 +1127,9 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
     except Exception as e:
         logger.warning(f"[Questionnaire] Nepodařilo se načíst staré odpovědi: {e}")
 
-    # Smazat staré odpovědi pokud existují (umožňuje editaci)
-    try:
-        supabase.table("questionnaire_responses") \
-            .delete() \
-            .eq("client_id", client_id) \
-            .execute()
-        logger.info(f"[Questionnaire] Smazány staré odpovědi pro client {client_id}")
-    except Exception as e:
-        logger.warning(f"[Questionnaire] Nepodařilo se smazat staré odpovědi: {e}")
-
-    # Uložit každou odpověď
+    # Uložit odpovědi — UPSERT (update existující nebo vložit nové)
+    # Díky UNIQUE(client_id, question_key) se odpovědi nikdy nezduplikují
+    # a při editu jedné otázky zůstanou ostatní odpovědi zachované
     saved_count = 0
     for ans in submission.answers:
         try:
@@ -1149,7 +1141,9 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
                 "details": ans.details,
                 "tool_name": ans.tool_name,
             }
-            supabase.table("questionnaire_responses").insert(row).execute()
+            supabase.table("questionnaire_responses").upsert(
+                row, on_conflict="client_id,question_key"
+            ).execute()
             saved_count += 1
         except Exception as e:
             logger.error(f"[Questionnaire] Chyba při ukládání odpovědi {ans.question_key}: {e}")
@@ -1168,42 +1162,96 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
     if is_resubmission and old_answers_map:
         try:
             new_answers_map = {a.question_key: a.answer for a in submission.answers}
+
+            # Sestavit mapu question_key → přesný text otázky
+            q_text_map: dict[str, str] = {}
+            for s in QUESTIONNAIRE_SECTIONS:
+                for q in s["questions"]:
+                    q_text_map[q["key"]] = q["text"]
+
             changed = []
             for key, new_val in new_answers_map.items():
                 old_val = old_answers_map.get(key)
                 if old_val and old_val != new_val:
-                    changed.append(f"• {key.replace('_', ' ')}: {old_val} → {new_val}")
+                    q_label = q_text_map.get(key, key.replace("_", " "))
+                    changed.append({
+                        "key": key,
+                        "label": q_label,
+                        "old": old_val,
+                        "new": new_val,
+                    })
             added = [k for k in new_answers_map if k not in old_answers_map]
             removed = [k for k in old_answers_map if k not in new_answers_map]
 
             if changed or added or removed:
-                # Zjistit název firmy
+                # Načíst kompletní info o firmě
                 company_name = submission.company_id[:8]
+                company_url = "neuvedeno"
+                company_email = "neuvedeno"
+                company_phone = "neuvedeno"
+                company_ico = "neuvedeno"
                 try:
-                    comp = supabase.table("companies").select("name, url").eq("id", submission.company_id).limit(1).execute()
+                    comp = supabase.table("companies").select("name, url, email, phone, ico").eq("id", submission.company_id).limit(1).execute()
                     if comp.data:
-                        company_name = comp.data[0].get("name", company_name)
+                        cd = comp.data[0]
+                        company_name = cd.get("name") or company_name
+                        company_url = cd.get("url") or "neuvedeno"
+                        company_email = cd.get("email") or "neuvedeno"
+                        company_phone = cd.get("phone") or "neuvedeno"
+                        company_ico = cd.get("ico") or "neuvedeno"
                 except Exception:
                     pass
 
-                changes_html = "<h3>Změněné odpovědi:</h3><ul>"
-                for c in changed:
-                    changes_html += f"<li>{c}</li>"
-                changes_html += "</ul>"
+                # Doplnit kontakt z dotazníku pokud chybí v companies
+                for a in submission.answers:
+                    if a.question_key == "company_contact_email" and a.answer and company_email == "neuvedeno":
+                        company_email = a.answer
+                    if a.question_key == "company_contact_phone" and a.answer and company_phone == "neuvedeno":
+                        company_phone = a.answer
+                    if a.question_key == "company_ico" and a.answer and company_ico == "neuvedeno":
+                        company_ico = a.answer
+
+                # Změněné odpovědi - s přesným zněním otázky
+                changes_html = ""
+                if changed:
+                    changes_html += "<h3>📝 Změněné odpovědi:</h3><table style='border-collapse:collapse; width:100%;'>"
+                    changes_html += "<tr style='background:#f0f0f0;'><th style='padding:8px; text-align:left; border:1px solid #ddd;'>Otázka</th><th style='padding:8px; text-align:left; border:1px solid #ddd;'>Předchozí</th><th style='padding:8px; text-align:left; border:1px solid #ddd;'>Nová odpověď</th></tr>"
+                    for c in changed:
+                        changes_html += f"<tr><td style='padding:8px; border:1px solid #ddd;'>{c['label']}</td><td style='padding:8px; border:1px solid #ddd; color:#c00;'>{c['old']}</td><td style='padding:8px; border:1px solid #ddd; color:#090;'><b>{c['new']}</b></td></tr>"
+                    changes_html += "</table>"
                 if added:
-                    changes_html += f"<p><b>Nové otázky:</b> {len(added)}</p>"
-                if removed:
-                    changes_html += f"<p><b>Odebrané otázky:</b> {len(removed)}</p>"
+                    changes_html += f"<p>➕ <b>Nově zodpovězené otázky:</b> {len(added)}</p>"
+
+                # Vyhodnotit jestli změna vyžaduje přegenerování dokumentů
+                # Klíčové otázky: vše kromě kontaktních údajů
+                contact_keys = {"company_legal_name", "company_ico", "company_contact_email", "company_contact_phone"}
+                substantive_changes = [c for c in changed if c["key"] not in contact_keys]
+                needs_regen = len(substantive_changes) > 0 or len(added) > 0
+
+                if needs_regen:
+                    regen_html = '<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; margin:12px 0;"><b>⚠️ Vyžaduje nové vyhotovení dokumentů</b><br>Klient změnil odpovědi, které ovlivňují compliance hodnocení. Je třeba přegenerovat dokumenty.</div>'
+                else:
+                    regen_html = '<div style="background:#d4edda; border:1px solid #28a745; border-radius:8px; padding:12px; margin:12px 0;"><b>✅ Dokumenty zůstávají v platnosti</b><br>Změna se týká pouze kontaktních údajů a nemá vliv na compliance hodnocení.</div>'
 
                 notification_html = f"""
-                <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                    <h2>🔔 Změna dotazníku — {company_name}</h2>
-                    <p>Klient <b>{company_name}</b> (company_id: {submission.company_id}) změnil odpovědi v dotazníku.</p>
-                    <p><b>Počet změn:</b> {len(changed)} změněných, {len(added)} nových, {len(removed)} odebraných</p>
+                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;">
+                    <h2 style="color:#1a1a2e;">🔔 Změna dotazníku — {company_name}</h2>
+
+                    <table style="width:100%; border-collapse:collapse; margin:16px 0; background:#f8f9fa; border-radius:8px;">
+                        <tr><td style="padding:8px 12px; font-weight:bold; width:140px;">Firma / Klient:</td><td style="padding:8px 12px;">{company_name}</td></tr>
+                        <tr><td style="padding:8px 12px; font-weight:bold;">IČO:</td><td style="padding:8px 12px;">{company_ico}</td></tr>
+                        <tr><td style="padding:8px 12px; font-weight:bold;">Web:</td><td style="padding:8px 12px;"><a href="{company_url}">{company_url}</a></td></tr>
+                        <tr><td style="padding:8px 12px; font-weight:bold;">E-mail:</td><td style="padding:8px 12px;"><a href="mailto:{company_email}">{company_email}</a></td></tr>
+                        <tr><td style="padding:8px 12px; font-weight:bold;">Telefon:</td><td style="padding:8px 12px;">{company_phone}</td></tr>
+                    </table>
+
+                    <p><b>Počet změn:</b> {len(changed)} změněných, {len(added)} nových</p>
+
                     {changes_html}
-                    <hr>
-                    <p style="color: #666;">Je nutné přegenerovat compliance dokumenty pro tohoto klienta.</p>
-                    <p><a href="https://aishield.cz/admin">Otevřít admin panel →</a></p>
+                    {regen_html}
+
+                    <hr style="margin:20px 0;">
+                    <p><a href="https://aishield.cz/admin" style="display:inline-block; background:#6366f1; color:white; padding:10px 20px; border-radius:6px; text-decoration:none;">📋 Otevřít admin panel</a></p>
                 </div>
                 """
 

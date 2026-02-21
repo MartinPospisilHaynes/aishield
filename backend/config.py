@@ -67,8 +67,9 @@ class Settings(BaseSettings):
     data_export_key: str = ""  # Fernet klíč pro šifrovaný export (vygeneruj: python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
 
     class Config:
-        env_file = "../../.env"
+        env_file = "/opt/aishield/.env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # .env může obsahovat proměnné, které nejsou definovány výše
 
 
 @lru_cache()
