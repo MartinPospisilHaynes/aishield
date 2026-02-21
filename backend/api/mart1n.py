@@ -2128,7 +2128,7 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             "text": dynamic_context,
         })
 
-    # Call Claude API — Sonnet with Structured Outputs (no Extended Thinking)
+    # Call Claude API — Sonnet (JSON via prompt instruction, no Extended Thinking)
     try:
         client = anthropic.Anthropic(
             api_key=settings.anthropic_api_key,
@@ -2138,12 +2138,6 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             model=CLAUDE_MODEL,
             max_tokens=4096,
             temperature=0.7,
-            output_config={
-                "format": {
-                    "type": "json_schema",
-                    "schema": MART1N_OUTPUT_SCHEMA,
-                }
-            },
             system=system_blocks,
             messages=claude_messages,
         )
@@ -2492,12 +2486,6 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 model=CLAUDE_MODEL,
                 max_tokens=4096,
                 temperature=0.7,
-                output_config={
-                    "format": {
-                        "type": "json_schema",
-                        "schema": MART1N_OUTPUT_SCHEMA,
-                    }
-                },
                 system=system_blocks,
                 messages=claude_messages,
             ) as stream:
