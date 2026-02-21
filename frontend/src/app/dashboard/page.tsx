@@ -502,7 +502,7 @@ export default function DashboardPage() {
                             <h1 className="text-2xl font-extrabold">Dashboard</h1>
                             <p className="text-sm text-slate-300 mt-1 truncate">{(data?.company?.url || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "")}</p>
                         </div>
-                        <div className="flex gap-2 sm:gap-3 flex-wrap">
+                        <div className="flex flex-col gap-2">
                             <button onClick={handleStartScan} disabled={scanLoading || scanLocked} className={`btn-secondary text-sm px-3 sm:px-4 py-2 disabled:opacity-50 ${scanLocked ? 'cursor-not-allowed' : ''}`}>
                                 {scanLoading ? "Skenuji..." : scanLocked ? `Zamčeno (${Math.ceil(((scanCooldownUntil || 0) - Date.now()) / 60000)} min)` : "Nový sken"}
                             </button>
