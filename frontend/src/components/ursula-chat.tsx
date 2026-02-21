@@ -140,10 +140,13 @@ function Dots() {
         <div className="flex items-end gap-2">
             <UAvatar s={24} />
             <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-bl-sm px-4 py-3">
-                <div className="flex gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400/60 animate-bounce [animation-delay:0ms]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400/60 animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce [animation-delay:300ms]" />
+                <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-500">Uršula si zapisuje vaše odpovědi a přemýšlí nad další otázkou</span>
+                    <div className="flex gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400/60 animate-bounce [animation-delay:0ms]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400/60 animate-bounce [animation-delay:150ms]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce [animation-delay:300ms]" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -157,7 +157,7 @@ function TypingIndicator() {
             </div>
             <div className="glass px-4 py-3 max-w-[80%]">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-400">Uršula přemýšlí</span>
+                    <span className="text-sm text-slate-400">Uršula si zapisuje vaše odpovědi a přemýšlí nad další otázkou</span>
                     <div className="flex gap-1.5">
                         <span className="w-2 h-2 bg-neon-fuchsia/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                         <span className="w-2 h-2 bg-neon-purple/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -982,13 +982,42 @@ function Mart1nPageInner() {
         }
     }, [isRecording]);
 
-    // Handle textarea submit (Enter key)
+    // Handle textarea submit (Enter key) + Spacebar voice toggle
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage(input);
         }
-    }, [input, sendMessage]);
+        // Spacebar toggles voice recording when input is empty
+        if (e.key === " " && !input.trim()) {
+            e.preventDefault();
+            toggleRecording();
+        }
+    }, [input, sendMessage, toggleRecording]);
+
+    // Global spacebar handler — works even when recording (textarea hidden)
+    useEffect(() => {
+        const onGlobalKey = (e: KeyboardEvent) => {
+            // Only handle spacebar when recording is active (waveform replaces textarea)
+            // or when no element is focused / textarea is focused with empty input
+            const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+            if (e.key !== " ") return;
+            if (isRecording) {
+                e.preventDefault();
+                toggleRecording();
+                return;
+            }
+            // If user is typing in textarea with content, don't intercept
+            if (tag === "textarea" || tag === "input") return;
+            // Spacebar from outside textarea — start recording
+            if (!sending && !isStreaming && !isComplete && !initLoading && !isTranscribing) {
+                e.preventDefault();
+                toggleRecording();
+            }
+        };
+        window.addEventListener("keydown", onGlobalKey);
+        return () => window.removeEventListener("keydown", onGlobalKey);
+    }, [isRecording, toggleRecording, sending, isStreaming, isComplete, initLoading, isTranscribing]);
 
     // Auto-resize textarea
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -1148,7 +1177,7 @@ function Mart1nPageInner() {
                                             style={{ height: `${h}px` }}
                                         />
                                     ))}
-                                    <span className="ml-3 text-xs text-purple-400 whitespace-nowrap animate-pulse">● Nahrávám...</span>
+                                    <span className="ml-3 text-xs text-purple-400 whitespace-nowrap animate-pulse">● Nahrávám… (mezerník = stop)</span>
                                 </div>
                             ) : (
                                 <textarea
@@ -1181,7 +1210,7 @@ function Mart1nPageInner() {
                                             ? "bg-amber-500/30 cursor-wait"
                                             : "bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25 hover:brightness-110"}
                                     disabled:cursor-not-allowed disabled:hover:brightness-100`}
-                                title={isRecording ? "Zastavit nahrávání" : "Hlasový vstup"}
+                                title={isRecording ? "Zastavit nahrávání (mezerník)" : "Hlasový vstup (mezerník)"}
                             >
                                 {isTranscribing ? (
                                     <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
