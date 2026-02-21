@@ -168,10 +168,46 @@ function QuestionnaireInner() {
     const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
 
     /* ── Flat question list ── */
-    const allQuestions: (Question & { _section: string })[] = sections.flatMap((s) =>
-        s.questions.map((q) => ({ ...q, _section: s.id }))
+    const allQuestions: (Question & { _section: string; _sectionTitle: string })[] = sections.flatMap((s) =>
+        s.questions.map((q) => ({ ...q, _section: s.id, _sectionTitle: s.title }))
     );
     const totalQuestions = allQuestions.length;
+
+    /* ── Section emoji icons ── */
+    const SECTION_EMOJI: Record<string, string> = {
+        industry: "🏢",
+        internal_ai: "🤖",
+        customer_service: "💬",
+        hr: "👤",
+        finance: "💰",
+        prohibited_systems: "⚠️",
+        infrastructure_safety: "🛡️",
+        data_protection: "🔒",
+        ai_literacy: "📚",
+        human_oversight: "👁️",
+        ai_role: "🔧",
+        incident_management: "🚨",
+        implementation: "🔨",
+    };
+
+    /* ── Smart question skipping — hide irrelevant questions based on answers ── */
+    const isQuestionVisible = useCallback((idx: number): boolean => {
+        const q = allQuestions[idx];
+        if (!q) return false;
+
+        const size = answers.company_size?.answer || "";
+        const isOSVC = size === "Jen já (OSVČ)";
+
+        // OSVČ without employees → skip HR section (recruitment, monitoring, emotion)
+        if (isOSVC && q._section === "hr") return false;
+
+        return true;
+    }, [allQuestions, answers]);
+
+    /* ── Visible questions count & index mapping ── */
+    const visibleIndices: number[] = allQuestions.map((_, i) => i).filter(i => isQuestionVisible(i));
+    const visibleCount = visibleIndices.length;
+    const currentVisibleIdx = visibleIndices.indexOf(currentQuestion);
 
     /* ── Fetch structure ── */
     useEffect(() => {
@@ -311,26 +347,31 @@ function QuestionnaireInner() {
         }
     }, [searchParams, allQuestions.length]);
 
-    /* ── Navigation helpers ── */
+    /* ── Navigation helpers (skip invisible questions) ── */
     const goNext = useCallback(() => {
         setDirection("forward");
         questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => {
-            // Never go beyond last question via goNext — submit button handles that
-            if (p >= totalQuestions - 1) {
-                console.log(`[Dotazník] goNext blocked: already at last question (${p}/${totalQuestions})`);
+            let next = p + 1;
+            while (next < totalQuestions && !isQuestionVisible(next)) next++;
+            if (next >= totalQuestions) {
+                console.log(`[Dotazník] goNext blocked: no more visible questions after ${p}`);
                 return p;
             }
-            console.log(`[Dotazník] goNext: ${p} → ${p + 1} / ${totalQuestions}`);
-            return p + 1;
+            console.log(`[Dotazník] goNext: ${p} → ${next} / ${totalQuestions} (visible)`);
+            return next;
         });
-    }, [totalQuestions]);
+    }, [totalQuestions, isQuestionVisible]);
 
     const goBack = useCallback(() => {
         setDirection("back");
         questionStartTimeRef.current = Date.now();
-        setCurrentQuestion((p) => Math.max(-1, p - 1));
-    }, []);
+        setCurrentQuestion((p) => {
+            let prev = p - 1;
+            while (prev >= 0 && !isQuestionVisible(prev)) prev--;
+            return prev < 0 ? -1 : prev;
+        });
+    }, [isQuestionVisible]);
 
     // Keep answersRef in sync with answers state
     useEffect(() => { answersRef.current = answers; }, [answers]);
@@ -487,11 +528,18 @@ function QuestionnaireInner() {
         return () => window.removeEventListener("keydown", handler);
     }, [currentQuestion, totalQuestions, allQuestions, goNext, setAnswer, handleSubmit]);
 
-    /* ── Progress ── */
+    /* ── Progress (based on visible questions only) ── */
     const progressPct =
-        currentQuestion <= 0
+        currentVisibleIdx <= 0
             ? 0
-            : Math.min(100, Math.round((currentQuestion / totalQuestions) * 100));
+            : Math.min(100, Math.round(((currentVisibleIdx + 1) / visibleCount) * 100));
+
+    /* ── Section transition detection ── */
+    const currentQ = allQuestions[currentQuestion];
+    const prevVisibleIdx = currentVisibleIdx > 0 ? visibleIndices[currentVisibleIdx - 1] : -1;
+    const prevQ = prevVisibleIdx >= 0 ? allQuestions[prevVisibleIdx] : null;
+    const isNewSection = currentQ && prevQ && currentQ._section !== prevQ._section;
+    const isFirstQuestion = currentQuestion >= 0 && prevVisibleIdx < 0;
 
     /* ═══════════════════════════════════════════
        RENDERS
@@ -604,7 +652,7 @@ function QuestionnaireInner() {
                     <p className="text-slate-400 text-lg mb-6">
                         {isEditMode
                             ? "Vaše předchozí odpovědi jsou předvyplněné. Projděte otázky a upravte, co potřebujete."
-                            : `${totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
+                            : `${visibleCount || totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
                         }
                     </p>
 
@@ -657,6 +705,148 @@ function QuestionnaireInner() {
     }
 
     /* ═══════════════════════════════════════════
+       SECTION TRANSITION CARD (renders above question when entering new section)
+       ═══════════════════════════════════════════ */
+    const SectionTransitionCard = () => {
+        if (!isNewSection && !isFirstQuestion) return null;
+        const sec = currentQ;
+        if (!sec) return null;
+        const emoji = SECTION_EMOJI[sec._section] || "📋";
+        const sectionTitle = sec._sectionTitle || sec._section;
+        // Count questions in this section that are visible
+        const sectionQCount = allQuestions.filter(
+            (aq, i) => aq._section === sec._section && isQuestionVisible(i)
+        ).length;
+
+        return (
+            <div className="mb-6 animate-fade-in">
+                <div className="rounded-2xl bg-gradient-to-r from-fuchsia-500/[0.08] to-cyan-500/[0.08] border border-fuchsia-500/20 p-4">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">{emoji}</span>
+                        <div>
+                            <p className="text-sm font-bold text-white">{sectionTitle}</p>
+                            <p className="text-xs text-slate-400">{sectionQCount} {sectionQCount === 1 ? "otázka" : sectionQCount < 5 ? "otázky" : "otázek"} v této sekci</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    /* ═══════════════════════════════════════════
+       RISK WARNING BANNER (renders after answer for prohibited/high-risk)
+       ═══════════════════════════════════════════ */
+    const PROHIBITED_KEYS = new Set([
+        "uses_social_scoring", "uses_subliminal_manipulation", "uses_realtime_biometric",
+    ]);
+    const LAWYER_KEYS = new Set([
+        "develops_own_ai", "modifies_ai_purpose", "uses_ai_for_children",
+    ]);
+    const HIGH_RISK_KEYS = new Set([
+        "uses_ai_recruitment", "uses_ai_employee_monitoring", "uses_emotion_recognition",
+        "uses_ai_creditscoring", "uses_ai_insurance", "uses_ai_decision",
+        "uses_ai_critical_infra",
+    ]);
+
+    const RiskWarningBanner = ({ questionKey, answer }: { questionKey: string; answer: string }) => {
+        if (answer !== "yes") return null;
+
+        if (PROHIBITED_KEYS.has(questionKey)) {
+            return (
+                <div className="animate-slide-down mb-4">
+                    <div className="rounded-2xl bg-red-500/[0.12] border-2 border-red-500/40 p-4">
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl flex-shrink-0">🚫</span>
+                            <div>
+                                <p className="text-sm font-bold text-red-300 mb-1">ZAKÁZANÝ SYSTÉM dle AI Act</p>
+                                <p className="text-xs text-red-300/80 leading-relaxed">
+                                    Toto spadá mezi <strong className="text-white">zakázané praktiky</strong> podle čl. 5 AI Act.
+                                    Pokuta až <strong className="text-white">35 milionů EUR</strong> nebo 7 % ročního obratu.
+                                </p>
+                                <p className="text-xs text-red-300/80 mt-2 leading-relaxed">
+                                    ⚖️ <strong className="text-white">Doporučujeme okamžitou konzultaci s právníkem</strong> specializovaným na AI regulaci.
+                                    Připravíme vám podklady pro právní konzultaci.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (LAWYER_KEYS.has(questionKey)) {
+            return (
+                <div className="animate-slide-down mb-4">
+                    <div className="rounded-2xl bg-amber-500/[0.10] border border-amber-500/30 p-4">
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl flex-shrink-0">⚖️</span>
+                            <div>
+                                <p className="text-sm font-bold text-amber-300 mb-1">Doporučujeme právní konzultaci</p>
+                                <p className="text-xs text-amber-300/80 leading-relaxed">
+                                    Tato oblast vyžaduje <strong className="text-white">rozšířené právní povinnosti</strong> podle AI Act.
+                                    Doporučujeme konzultaci s právníkem — připravíme vám kompletní podklady.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (HIGH_RISK_KEYS.has(questionKey)) {
+            return (
+                <div className="animate-slide-down mb-4">
+                    <div className="rounded-2xl bg-orange-500/[0.08] border border-orange-500/25 p-4">
+                        <div className="flex items-start gap-3">
+                            <span className="text-xl flex-shrink-0">⚠️</span>
+                            <div>
+                                <p className="text-sm font-bold text-orange-300 mb-1">Vysoce rizikový AI systém</p>
+                                <p className="text-xs text-orange-300/80 leading-relaxed">
+                                    Toto spadá do kategorie <strong className="text-white">vysoce rizikových AI systémů</strong> dle AI Act.
+                                    Budete muset splnit přísnější požadavky na dokumentaci, transparentnost a lidský dohled.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
+    /* ═══════════════════════════════════════════
+       COMPLIANCE GAP WARNING ("Ne" = gap)
+       ═══════════════════════════════════════════ */
+    const COMPLIANCE_GAP_KEYS: Record<string, string> = {
+        has_ai_register: "Registr AI systémů je povinný od 2. srpna 2025 (čl. 49). Bez něj nelze prokázat soulad.",
+        has_ai_training: "Článek 4 AI Act vyžaduje AI gramotnost zaměstnanců. Tato povinnost platí již od 2. února 2025!",
+        has_ai_guidelines: "Bez interní směrnice zaměstnanci nevědí, jak smí AI používat. Hrozí nekontrolované nasazení.",
+        has_incident_plan: "Bez plánu reakce na incidenty riskujete pozdní hlášení závažných problémů DPÚ.",
+        has_human_oversight: "Lidský dohled nad AI systémy je klíčový požadavek AI Act pro vysoce rizikové systémy.",
+        can_override_ai: "Možnost přepsat rozhodnutí AI je povinná u vysoce rizikových systémů (čl. 14).",
+        logs_ai_decisions: "Bez logování rozhodnutí AI nelze provést zpětný audit ani prokázat, jak AI rozhodovala.",
+    };
+
+    const ComplianceGapBanner = ({ questionKey, answer }: { questionKey: string; answer: string }) => {
+        if (answer !== "no" || !COMPLIANCE_GAP_KEYS[questionKey]) return null;
+        return (
+            <div className="animate-slide-down mb-4">
+                <div className="rounded-2xl bg-amber-500/[0.06] border border-amber-500/20 p-4">
+                    <div className="flex items-start gap-3">
+                        <span className="text-xl flex-shrink-0">📋</span>
+                        <div>
+                            <p className="text-sm font-bold text-amber-300 mb-1">Mezera v compliance</p>
+                            <p className="text-xs text-amber-300/80 leading-relaxed">{COMPLIANCE_GAP_KEYS[questionKey]}</p>
+                            <p className="text-xs text-slate-400 mt-1">Toto vyřešíme ve vaší compliance dokumentaci.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    /* ═══════════════════════════════════════════
        QUESTION SCREENS (0..N)
        ═══════════════════════════════════════════ */
 
@@ -689,7 +879,7 @@ function QuestionnaireInner() {
     }
 
     const ans = answers[q.key];
-    const isLast = currentQuestion === totalQuestions - 1;
+    const isLast = currentVisibleIdx === visibleCount - 1;
     const showFollowup = q.followup && (
         (q.followup.condition === "any" && !!ans?.answer) ||
         (q.followup.condition === "yes" && ans?.answer === "yes") ||
@@ -706,10 +896,11 @@ function QuestionnaireInner() {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
                 {/* Progress bar */}
-                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+                <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
 
                 <div className="flex-1 flex items-center justify-center p-4 pt-16">
                     <div className={`w-full max-w-2xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
+                        <SectionTransitionCard />
                         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center">
                             {q.text}
                         </h2>
@@ -826,7 +1017,7 @@ function QuestionnaireInner() {
     if (q.type === "text") {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
-                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+                <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
 
                 <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="fixed bottom-[-150px] left-[-80px] w-[350px] h-[350px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" />
@@ -834,6 +1025,7 @@ function QuestionnaireInner() {
                 <div className="flex-1 flex items-center justify-center p-4 pt-16">
                     <div className={`w-full max-w-xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
 
+                        <SectionTransitionCard />
                         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
                             {q.text}
                         </h2>
@@ -910,7 +1102,7 @@ function QuestionnaireInner() {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col">
             {/* Progress bar */}
-            <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+            <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
 
             {/* Decorative blobs */}
             <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -918,6 +1110,9 @@ function QuestionnaireInner() {
 
             <div className="flex-1 flex items-center justify-center p-4 pt-16">
                 <div className={`w-full max-w-xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
+
+                    {/* Section transition card */}
+                    <SectionTransitionCard />
 
                     {/* Question text */}
                     <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
@@ -996,6 +1191,10 @@ function QuestionnaireInner() {
                             </span>
                         </div>
                     )}
+
+                    {/* Risk / Prohibited / Lawyer warning banners */}
+                    {ans?.answer && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
+                    {ans?.answer && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
 
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (

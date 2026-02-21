@@ -1195,113 +1195,113 @@ function Mart1nPageInner() {
                             </button>
                         </div>
                     ) : (
-                    <>
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1 relative overflow-hidden">
-                            {isRecording ? (
-                                /* ── Audio Waveform Visualizer ── */
-                                <div className="w-full h-[46px] rounded-xl border border-purple-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
-                                    {audioLevels.map((h, i) => (
-                                        <div
-                                            key={i}
-                                            className="w-[3px] rounded-full bg-gradient-to-t from-[#a855f7] to-[#c084fc] transition-all duration-75"
-                                            style={{ height: `${h}px` }}
-                                        />
-                                    ))}
-                                    <span className="ml-3 text-xs text-purple-400 whitespace-nowrap animate-pulse">● Nahrávám… (mezerník = stop)</span>
-                                </div>
-                            ) : (
-                                <textarea
-                                    ref={inputRef}
-                                    value={input}
-                                    onChange={handleInputChange}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder={isComplete ? "Analýza je dokončena" : "Napište odpověď nebo stiskněte mezerník 🎤"}
-                                    disabled={sending || isStreaming || isComplete || initLoading}
-                                    rows={1}
-                                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
+                        <>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1 relative overflow-hidden">
+                                    {isRecording ? (
+                                        /* ── Audio Waveform Visualizer ── */
+                                        <div className="w-full h-[46px] rounded-xl border border-purple-500/30 bg-dark-800 flex items-center justify-center gap-[3px] px-4 overflow-hidden">
+                                            {audioLevels.map((h, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="w-[3px] rounded-full bg-gradient-to-t from-[#a855f7] to-[#c084fc] transition-all duration-75"
+                                                    style={{ height: `${h}px` }}
+                                                />
+                                            ))}
+                                            <span className="ml-3 text-xs text-purple-400 whitespace-nowrap animate-pulse">● Nahrávám… (mezerník = stop)</span>
+                                        </div>
+                                    ) : (
+                                        <textarea
+                                            ref={inputRef}
+                                            value={input}
+                                            onChange={handleInputChange}
+                                            onKeyDown={handleKeyDown}
+                                            placeholder={isComplete ? "Analýza je dokončena" : "Napište odpověď nebo stiskněte mezerník 🎤"}
+                                            disabled={sending || isStreaming || isComplete || initLoading}
+                                            rows={1}
+                                            className="w-full resize-none rounded-xl border border-white/[0.08] bg-dark-800
                                                px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600
                                                focus:outline-none focus:border-neon-fuchsia/30 focus:ring-1 focus:ring-neon-fuchsia/20
                                                disabled:opacity-50 disabled:cursor-not-allowed
                                                overflow-hidden transition-colors"
-                                    style={{ maxHeight: "120px" }}
-                                />
-                            )}
-                        </div>
+                                            style={{ maxHeight: "120px" }}
+                                        />
+                                    )}
+                                </div>
 
-                        {/* Mic button */}
-                        <div className="relative flex-shrink-0">
-                            <button
-                                onClick={toggleRecording}
-                                disabled={isTranscribing || sending || isStreaming || isComplete || initLoading}
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                {/* Mic button */}
+                                <div className="relative flex-shrink-0">
+                                    <button
+                                        onClick={toggleRecording}
+                                        disabled={isTranscribing || sending || isStreaming || isComplete || initLoading}
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                     ${isRecording
-                                        ? "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-                                        : isTranscribing
-                                            ? "bg-amber-500/30 cursor-wait"
-                                            : "bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25 hover:brightness-110"}
+                                                ? "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
+                                                : isTranscribing
+                                                    ? "bg-amber-500/30 cursor-wait"
+                                                    : "bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25 hover:brightness-110"}
                                     disabled:cursor-not-allowed disabled:hover:brightness-100`}
-                                title={isRecording ? "Zastavit nahrávání (mezerník)" : "Hlasový vstup (mezerník)"}
-                            >
-                                {isTranscribing ? (
-                                    <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                                    </svg>
-                                ) : (
-                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                                    </svg>
-                                )}
-                            </button>
-                            {/* Info "i" badge — tooltip only on this badge */}
-                            <span className="group/info absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 border border-slate-600
+                                        title={isRecording ? "Zastavit nahrávání (mezerník)" : "Hlasový vstup (mezerník)"}
+                                    >
+                                        {isTranscribing ? (
+                                            <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                    {/* Info "i" badge — tooltip only on this badge */}
+                                    <span className="group/info absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 border border-slate-600
                                              text-[8px] font-bold text-slate-300 flex items-center justify-center
                                              cursor-help select-none pointer-events-auto z-10">
-                                i
-                                <span className="absolute bottom-full right-0 mb-2 w-56 p-2.5 rounded-lg bg-dark-800 border border-white/[0.1]
+                                        i
+                                        <span className="absolute bottom-full right-0 mb-2 w-56 p-2.5 rounded-lg bg-dark-800 border border-white/[0.1]
                                                 text-[10px] text-slate-400 leading-relaxed shadow-xl font-normal
                                                 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200
                                                 pointer-events-none z-50">
-                                    🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
-                                    Nahrávka se po přepisu okamžitě smaže.
-                                </span>
-                            </span>
-                        </div>
+                                            🎙 Hlasový vstup — audio se odesílá do&nbsp;OpenAI (USA) k&nbsp;přepisu na text.
+                                            Nahrávka se po přepisu okamžitě smaže.
+                                        </span>
+                                    </span>
+                                </div>
 
-                        {/* Send / Stop button */}
-                        {(sending || isStreaming) ? (
-                            <button
-                                onClick={stopGeneration}
-                                title="Zastavit odpověď"
-                                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                {/* Send / Stop button */}
+                                {(sending || isStreaming) ? (
+                                    <button
+                                        onClick={stopGeneration}
+                                        title="Zastavit odpověď"
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                            bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/25
                                            hover:brightness-110 animate-pulse"
-                            >
-                                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                    <rect x="6" y="6" width="12" height="12" rx="2" />
-                                </svg>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => sendMessage(input)}
-                                disabled={!input.trim() || isComplete || initLoading}
-                                title="Odeslat zprávu"
-                                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                    >
+                                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                            <rect x="6" y="6" width="12" height="12" rx="2" />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => sendMessage(input)}
+                                        disabled={!input.trim() || isComplete || initLoading}
+                                        title="Odeslat zprávu"
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-all
                                            bg-gradient-to-r from-[#a855f7] to-[#7c3aed] shadow-lg shadow-purple-500/25
                                            hover:brightness-110
                                            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
-                            >
-                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-                    <p className="text-[10px] text-white/90 mt-2 text-center leading-relaxed">
-                        Uršula je umělá inteligence (čl. 50 AI Act). Vaše data jsou šifrována a&nbsp;zůstávají pouze mezi Vámi a&nbsp;AIshield — žádná třetí strana k&nbsp;nim nemá přístup. Porušení ochrany osobních údajů dle GDPR (nařízení EU&nbsp;2016/679) podléhá pokutě až&nbsp;20&nbsp;mil.&nbsp;€ nebo 4&nbsp;% ročního obratu.
-                    </p>
-                    </>
+                                    >
+                                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                            <p className="text-[10px] text-white/90 mt-2 text-center leading-relaxed">
+                                Uršula je umělá inteligence (čl. 50 AI Act). Vaše data jsou šifrována a&nbsp;zůstávají pouze mezi Vámi a&nbsp;AIshield — žádná třetí strana k&nbsp;nim nemá přístup. Porušení ochrany osobních údajů dle GDPR (nařízení EU&nbsp;2016/679) podléhá pokutě až&nbsp;20&nbsp;mil.&nbsp;€ nebo 4&nbsp;% ročního obratu.
+                            </p>
+                        </>
                     )}
                 </div>
             </div>

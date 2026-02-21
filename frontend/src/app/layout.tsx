@@ -124,7 +124,7 @@ export default function RootLayout({
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Produkt</h3>
                                     <ul className="space-y-3 text-sm text-slate-500">
                                         <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors">Skenovat web</a></li>
-                                        <li><a href="/dotaznik/mart1n" className="hover:text-neon-fuchsia transition-colors">AI dotazník</a></li>
+                                        <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors">AI dotazník</a></li>
                                         <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors">Ceník</a></li>
                                         <li><a href="/about" className="hover:text-neon-fuchsia transition-colors">Jak to funguje</a></li>
                                     </ul>
