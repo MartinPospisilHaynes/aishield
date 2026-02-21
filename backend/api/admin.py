@@ -5,6 +5,7 @@ email health monitoring.
 """
 
 import logging
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.outbound.orchestrator import get_stats, run_task, SCHEDULE
 from backend.outbound.deliverability import (
@@ -276,6 +277,52 @@ async def admin_clear_rate_limit_cache(domain: str, user: AuthUser = Depends(req
         "domain": normalized_domain,
         "cleared_urls": cleared,
         "message": f"Vyčištěno {len(cleared)} záznamů z rate limit cache.",
+    }
+
+
+@router.delete("/rate-limit-cache")
+async def admin_clear_all_rate_limit_cache(user: AuthUser = Depends(require_admin)):
+    """
+    Vyčistí CELOU rate limit cache — in-memory limiter + resetuje recent
+    skeny v DB (nastaví created_at starší než cooldown aby je DB-check ignoroval).
+    Umožní okamžitý resken jakéhokoli webu bez čekání 1 hodiny.
+    """
+    from backend.database import get_supabase
+
+    # 1. Clear in-memory rate limiter
+    with scan_limiter._lock:
+        url_count = len(scan_limiter._url_cache)
+        ip_count = len(scan_limiter._ip_timestamps)
+        scan_limiter._url_cache.clear()
+        scan_limiter._ip_timestamps.clear()
+        scan_limiter._global_timestamps.clear()
+
+    # 2. Reset DB-backed cooldown: shift created_at of recent running/done scans
+    #    so the DB check won't block future scans on the same domain
+    db_reset = 0
+    try:
+        supabase = get_supabase()
+        from backend.api.rate_limit import URL_COOLDOWN_SECONDS
+        from datetime import timedelta
+        one_hour_ago = (datetime.now(timezone.utc) - timedelta(seconds=URL_COOLDOWN_SECONDS)).isoformat()
+        # Find recent scans that would trigger the cooldown
+        recent = supabase.table("scans").select("id, created_at, status").gte(
+            "created_at", one_hour_ago
+        ).in_("status", ["done", "running", "queued"]).execute()
+        if recent.data:
+            # Push created_at back by 2 hours so they're outside the cooldown window
+            old_time = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+            for row in recent.data:
+                supabase.table("scans").update({"created_at": old_time}).eq("id", row["id"]).execute()
+                db_reset += 1
+    except Exception as e:
+        logger.warning(f"[Admin] Rate limit DB reset partial failure: {e}")
+
+    return {
+        "status": "cleared",
+        "memory": f"Vyčištěno {url_count} URL + {ip_count} IP záznamů",
+        "db": f"Resetováno {db_reset} recentních skenů v DB",
+        "message": f"✅ Veškeré rate limity vymazány. Můžete okamžitě skenovat.",
     }
 
 

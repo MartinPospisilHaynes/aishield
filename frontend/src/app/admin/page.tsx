@@ -39,6 +39,7 @@ import {
     getLLMUsage,
     checkLLMKeys,
     factoryReset,
+    clearAllRateLimits,
     stopAllScans,
     getScanMonitor,
     getScanFindings,
@@ -3243,6 +3244,34 @@ export default function AdminPage() {
                                         className="w-full px-4 py-2.5 bg-orange-600 text-white border border-orange-500 rounded-xl hover:bg-orange-700 transition-all text-sm font-bold"
                                     >
                                         🛑 STOP ALL — Zastavit vše
+                                    </button>
+                                </Panel>
+
+                                {/* RESET SCAN TIMER */}
+                                <Panel className="p-6 border-2 border-yellow-500/30 bg-yellow-950/20">
+                                    <div className="text-3xl mb-3">🔓</div>
+                                    <h3 className="font-semibold text-yellow-400 mb-2">Reset Scan Timer</h3>
+                                    <p className="text-xs text-yellow-300/70 mb-4">
+                                        Vymaže 1h cooldown pro skenování domén — in-memory cache, DB záznamy i localStorage.
+                                        Umožní okamžitý resken jakéhokoli webu.
+                                    </p>
+                                    <button
+                                        onClick={async () => {
+                                            setToolResult("⏳ Mažu scan timer...");
+                                            try {
+                                                const r = await clearAllRateLimits();
+                                                // Vymazat i localStorage cooldown v prohlížeči
+                                                try { localStorage.removeItem('aishield_scan_cooldown'); } catch { }
+                                                setToolResult(
+                                                    `${r.message}\nMemory: ${r.memory}\nDB: ${r.db}`
+                                                );
+                                            } catch (e) {
+                                                setToolResult(`❌ Chyba: ${e}`);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 bg-yellow-600 text-white border border-yellow-500 rounded-xl hover:bg-yellow-700 transition-all text-sm font-bold"
+                                    >
+                                        🔓 Reset Scan Timer
                                     </button>
                                 </Panel>
 

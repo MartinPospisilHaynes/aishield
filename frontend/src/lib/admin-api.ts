@@ -957,6 +957,24 @@ export async function factoryReset(confirm: string): Promise<{
     return res.json();
 }
 
+// ── Clear All Rate Limits (scan cooldown) ──
+
+export async function clearAllRateLimits(): Promise<{
+    status: string;
+    memory: string;
+    db: string;
+    message: string;
+}> {
+    const res = await adminFetch(`${API_URL}/api/admin/rate-limit-cache`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(err.detail || "Chyba při mazání rate limitů");
+    }
+    return res.json();
+}
+
 
 // ── Scan Monitor (24h testy) ──
 
