@@ -403,6 +403,94 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
         except Exception as email_err:
             logger.error(f"[DeepScan] Chyba odesílání emailu: {email_err}")
 
+        # ══════════════════════════════════════════════════════════════
+        # AUTO-GENEROVÁNÍ DOKUMENTŮ po deep scanu
+        # Jakmile je deep scan hotový a dotazník vyplněný, automaticky
+        # generujeme Compliance Kit. Platba nehraje roli — dokumenty
+        # vytvoříme vždy, admin rozhodne o odeslání klientovi.
+        # workflow_status → awaiting_approval (admin schvaluje a odesílá).
+        # ══════════════════════════════════════════════════════════════
+        try:
+            # Zkontrolovat, zda je dotazník vyplněn
+            q_count = supabase.table("questionnaire_responses").select(
+                "id", count="exact"
+            ).eq("client_id", company_id).execute()
+            has_questionnaire = (q_count.count or 0) >= 5  # Min 5 odpovědí
+
+            if has_questionnaire:
+                logger.info(
+                    f"[DeepScan] Firma {company_id}: dotazník vyplněn ({q_count.count} odpovědí) → "
+                    f"spouštím automatické generování Compliance Kitu"
+                )
+
+                # Aktualizovat workflow_status na "generating"
+                supabase.table("companies").update({
+                    "workflow_status": "generating",
+                }).eq("id", company_id).execute()
+
+                # Spustit generování přímo (jsme už v ARQ workeru)
+                from backend.documents.pipeline import generate_compliance_kit
+                kit_result = await generate_compliance_kit(company_id)
+
+                logger.info(
+                    f"[DeepScan] Compliance Kit vygenerován: "
+                    f"{kit_result.success_count} dokumentů OK, {kit_result.error_count} chyb"
+                )
+
+                # Nastavit workflow_status na "awaiting_approval"
+                supabase.table("companies").update({
+                    "workflow_status": "awaiting_approval",
+                }).eq("id", company_id).execute()
+
+                # Notifikovat admina — dokumenty čekají na schválení
+                try:
+                    comp_name = ""
+                    comp_email_addr = ""
+                    if company.data:
+                        comp_name = company.data[0].get("name", "")
+                        comp_email_addr = company.data[0].get("email", "")
+
+                    from backend.outbound.email_engine import send_email as _send
+                    await _send(
+                        to="info@aishield.cz",
+                        subject=f"📋 Compliance Kit hotov — {comp_name} čeká na schválení",
+                        html=(
+                            f"<h2>📋 Compliance Kit automaticky vygenerován</h2>"
+                            f"<p><strong>Firma:</strong> {comp_name}</p>"
+                            f"<p><strong>Email:</strong> {comp_email_addr}</p>"
+                            f"<p><strong>Company ID:</strong> {company_id}</p>"
+                            f"<hr>"
+                            f"<p><strong>Deep scan:</strong> {total_unique} AI systémů nalezeno "
+                            f"({len(countries_scanned)} zemí, {rounds_completed} kol)</p>"
+                            f"<p><strong>Dokumenty:</strong> {kit_result.success_count} vygenerováno "
+                            f"({kit_result.error_count} chyb)</p>"
+                            f"<ul>"
+                            + "".join(
+                                f"<li>{d.get('template_name', d.get('template_key', '?'))} "
+                                f"— {d.get('format', '?').upper()} "
+                                f"({d.get('size_bytes', 0):,} B)</li>"
+                                for d in kit_result.documents
+                            )
+                            + f"</ul>"
+                            f"<hr>"
+                            f"<p>👉 <a href='https://aishield.cz/admin/crm'>Otevřít CRM a schválit →</a></p>"
+                        ),
+                        from_email="info@aishield.cz",
+                        from_name="AIshield.cz",
+                    )
+                    logger.info(f"[DeepScan] Admin notifikace odeslána — dokumenty čekají na schválení")
+                except Exception as notify_err:
+                    logger.error(f"[DeepScan] Chyba admin notifikace: {notify_err}")
+
+            else:
+                logger.info(
+                    f"[DeepScan] Firma {company_id}: dotazník NENÍ vyplněn "
+                    f"({q_count.count or 0} odpovědí) → dokumenty se nevygenerují automaticky"
+                )
+        except Exception as gen_err:
+            logger.error(f"[DeepScan] Chyba auto-generování dokumentů: {gen_err}", exc_info=True)
+            # Nesmí zabít návratovou hodnotu deep scanu
+
         return {
             "status": "done",
             "total_unique_findings": total_unique,

@@ -195,6 +195,7 @@ class ComplianceKitResult:
 
 def _load_scan_data(client_id: str) -> dict:
     """Načte data ze skenu webu pro daného klienta."""
+    logger.info(f"[Pipeline] Načítám scan data pro klienta {client_id}")
     supabase = get_supabase()
 
     # Najít poslední sken klienta
@@ -208,6 +209,7 @@ def _load_scan_data(client_id: str) -> dict:
     )
 
     if not scans.data:
+        logger.warning(f"[Pipeline] Žádný sken nalezen pro klienta {client_id}")
         return {"findings": [], "url": "", "scan_id": None}
 
     scan = scans.data[0]
@@ -227,13 +229,20 @@ def _load_scan_data(client_id: str) -> dict:
         rl = f.get("risk_level", "minimal")
         risk_breakdown[rl] = risk_breakdown.get(rl, 0) + 1
         findings.append({
-            "name": f.get("tool_name", "AI systém"),
+            "name": f.get("name", "AI systém"),
             "category": f.get("category", ""),
             "risk_level": rl,
             "ai_act_article": f.get("ai_act_article", ""),
             "action_required": f.get("action_required", ""),
+            "ai_classification_text": f.get("ai_classification_text", ""),
             "confirmed_by_client": f.get("confirmed_by_client", "unknown"),
+            "source": f.get("source", ""),
         })
+
+    logger.info(
+        f"[Pipeline] Scan data načtena: {len(findings)} findings, "
+        f"risk_breakdown={risk_breakdown}, deep_scan={scan.get('deep_scan_status', 'N/A')}"
+    )
 
     return {
         "findings": findings,
@@ -241,6 +250,13 @@ def _load_scan_data(client_id: str) -> dict:
         "scan_id": scan_id,
         "scan_date": scan.get("created_at", ""),
         "risk_breakdown": risk_breakdown,
+        # Deep scan metadata — pro dokumenty
+        "deep_scan_status": scan.get("deep_scan_status"),
+        "deep_scan_started_at": scan.get("deep_scan_started_at"),
+        "deep_scan_finished_at": scan.get("deep_scan_finished_at"),
+        "deep_scan_total_findings": scan.get("deep_scan_total_findings"),
+        "geo_countries_scanned": scan.get("geo_countries_scanned", []),
+        "total_findings": scan.get("total_findings", len(findings)),
     }
 
 
@@ -250,6 +266,7 @@ def _load_questionnaire_data(client_id: str) -> dict:
     Nový formát: questionnaire_responses tabulka — jeden řádek per odpověď
     (client_id, section, question_key, answer, details, tool_name).
     """
+    logger.info(f"[Pipeline] Načítám dotazník pro klienta {client_id}")
     supabase = get_supabase()
     responses = None
 
@@ -290,12 +307,15 @@ def _load_questionnaire_data(client_id: str) -> dict:
             pass
 
     if not responses:
+        logger.warning(f"[Pipeline] Žádné odpovědi z dotazníku pro klienta {client_id}")
         return {
             "questionnaire_completed": False,
             "questionnaire_ai_systems": 0,
             "recommendations": [],
             "risk_breakdown": {"high": 0, "limited": 0, "minimal": 0},
         }
+
+    logger.info(f"[Pipeline] Dotazník: {len(responses)} odpovědí nalezeno")
 
     # ── Parsovat odpovědi do {question_key → data} ──
     answers_by_key: dict[str, dict] = {}
@@ -461,6 +481,7 @@ def _load_questionnaire_data(client_id: str) -> dict:
 
 def _load_company_data(client_id: str) -> dict:
     """Načte základní data o firmě."""
+    logger.info(f"[Pipeline] Načítám data firmy pro klienta {client_id}")
     supabase = get_supabase()
 
     company = (
@@ -508,8 +529,9 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
             "format": doc_info.get("format", "pdf"),
             "size_bytes": doc_info.get("size_bytes", 0),
         }).execute()
+        logger.info(f"[Pipeline] DB záznam uložen: {doc_info['template_key']} ({doc_info.get('format', 'pdf')})")
     except Exception as e:
-        logger.warning(f"Nepodařilo se uložit záznam dokumentu do DB: {e}")
+        logger.error(f"[Pipeline] Nepodařilo se uložit záznam dokumentu do DB: {e}", exc_info=True)
 
 
 async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
@@ -532,6 +554,7 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
     )
 
     # ── 1. Načíst data ──
+    logger.info(f"[Pipeline] ═══ KROK 1: Načítání dat z DB ═══")
     company_data = _load_company_data(client_id)
     scan_data = _load_scan_data(client_id)
     questionnaire_data = _load_questionnaire_data(client_id)
@@ -562,6 +585,7 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
     template_data["action_items"] = action_items
 
     # ── 2. Vyhodnotit eligibilitu dokumentů dle rizikového profilu ──
+    logger.info(f"[Pipeline] ═══ KROK 2: Vyhodnocení eligibility dokumentů ═══")
     eligible, skipped = _get_eligible_documents(template_data)
     result.skipped_documents = skipped
 
@@ -580,6 +604,7 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
     eligible_keys = list(eligible.keys())
 
     # ── 3. UNIFIED PDF — jeden velký PDF se vším ──
+    logger.info(f"[Pipeline] ═══ KROK 3: Generování Unified PDF ({len(eligible_keys)} sekcí) ═══")
     try:
         unified_html = render_unified_pdf_html(template_data, eligible_keys)
         pdf_bytes = html_to_pdf(unified_html)
@@ -609,6 +634,7 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
         logger.error(f"  ✗ Unified PDF: {error_msg}", exc_info=True)
 
     # ── 4. HTML — transparenční stránka (standalone, adaptive CSS) ──
+    logger.info(f"[Pipeline] === KROK 4: Transparencni stranka HTML ===")
     if "transparency_page" in eligible:
         try:
             renderer = TEMPLATE_RENDERERS["transparency_page"]
@@ -640,6 +666,7 @@ async def generate_compliance_kit(client_id: str) -> ComplianceKitResult:
             logger.error(f"  ✗ HTML: {error_msg}", exc_info=True)
 
     # ── 5. PPTX — školící prezentace (vždy — čl. 4 AI Act) ──
+    logger.info("[Pipeline] === KROK 5: PPTX prezentace ===")
     try:
         from backend.documents.pptx_generator import generate_training_pptx
         pptx_bytes = generate_training_pptx(template_data)

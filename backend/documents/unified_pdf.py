@@ -35,17 +35,17 @@ UNIFIED_CSS = """
 
     @page {
         size: A4;
-        margin: 22mm 20mm 25mm 20mm;
+        margin: 25mm 22mm 28mm 22mm;
         @bottom-center {
-            content: counter(page);
+            content: "Strana " counter(page);
             font-size: 9px;
-            color: #94a3b8;
+            color: #666666;
             font-family: 'Inter', sans-serif;
         }
         @bottom-right {
-            content: "AIshield.cz";
+            content: "AIshield.cz — AI Act Compliance Kit";
             font-size: 8px;
-            color: #c084fc;
+            color: #999999;
             font-family: 'Inter', sans-serif;
         }
     }
@@ -55,8 +55,8 @@ UNIFIED_CSS = """
     body {
         font-family: 'Inter', -apple-system, sans-serif;
         background: #ffffff;
-        color: #1e293b;
-        line-height: 1.65;
+        color: #111111;
+        line-height: 1.7;
         font-size: 11px;
     }
 
@@ -72,46 +72,42 @@ UNIFIED_CSS = """
         padding: 60px 40px;
     }
     .title-page .brand {
-        font-size: 42px;
+        font-size: 36px;
         font-weight: 800;
         letter-spacing: -0.04em;
         margin-bottom: 8px;
+        color: #111111;
     }
-    .brand-ai { color: #1e293b; }
-    .brand-shield {
-        background: linear-gradient(135deg, #c026d3, #22d3ee);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+    .brand-ai { color: #111111; }
+    .brand-shield { color: #333333; }
     .title-page h1 {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 700;
-        color: #0f172a;
+        color: #111111;
         margin: 24px 0 8px;
         letter-spacing: -0.02em;
     }
     .title-page .company-name {
         font-size: 22px;
         font-weight: 600;
-        color: #7c3aed;
+        color: #111111;
         margin-bottom: 6px;
     }
     .title-page .subtitle {
         font-size: 13px;
-        color: #64748b;
+        color: #444444;
         max-width: 440px;
     }
     .title-page .meta {
         margin-top: 40px;
         font-size: 11px;
-        color: #94a3b8;
+        color: #666666;
         line-height: 1.8;
     }
     .title-accent {
         width: 80px;
-        height: 3px;
-        background: linear-gradient(90deg, #c026d3, #22d3ee);
-        border-radius: 2px;
+        height: 2px;
+        background: #111111;
         margin: 20px auto;
     }
 
@@ -123,37 +119,45 @@ UNIFIED_CSS = """
     .toc-page h2 {
         font-size: 20px;
         font-weight: 700;
-        color: #0f172a;
+        color: #111111;
         margin-bottom: 24px;
         padding-bottom: 10px;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 2px solid #111111;
     }
     .toc-item {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
         padding: 8px 0;
-        border-bottom: 1px dotted #cbd5e1;
+        border-bottom: 1px dotted #cccccc;
         font-size: 12px;
+    }
+    .toc-item .toc-number {
+        font-weight: 600;
+        color: #111111;
+        min-width: 30px;
     }
     .toc-item .toc-title {
         font-weight: 500;
-        color: #1e293b;
+        color: #111111;
+        flex: 1;
     }
     .toc-item .toc-page-num {
-        color: #94a3b8;
+        color: #666666;
         font-size: 11px;
         flex-shrink: 0;
         margin-left: 12px;
     }
     .toc-tier {
         font-size: 10px;
-        font-weight: 600;
-        color: #7c3aed;
+        font-weight: 700;
+        color: #333333;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-top: 16px;
+        letter-spacing: 0.1em;
+        margin-top: 18px;
         margin-bottom: 4px;
+        border-bottom: 1px solid #eeeeee;
+        padding-bottom: 4px;
     }
 
     /* ── Sekce dokumentu ── */
@@ -165,65 +169,71 @@ UNIFIED_CSS = """
         page-break-before: auto;
     }
     .section-header {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #7c3aed;
-        border-radius: 0 12px 12px 0;
-        padding: 16px 20px;
+        border-bottom: 2px solid #111111;
+        padding: 0 0 12px 0;
         margin-bottom: 20px;
     }
     .section-header h2 {
         font-size: 18px;
         font-weight: 700;
-        color: #0f172a;
+        color: #111111;
         margin-bottom: 2px;
+    }
+    .section-header .section-number {
+        font-size: 12px;
+        font-weight: 700;
+        color: #555555;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
     .section-header .section-sub {
         font-size: 11px;
-        color: #64748b;
+        color: #666666;
     }
 
-    /* ── Card (lighter glass) ── */
+    /* ── Card — minimální ramecek ── */
     .card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 18px 20px;
-        margin-bottom: 16px;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
     }
 
     h2 {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 12px;
+        color: #111111;
+        margin-bottom: 10px;
     }
     h3 {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
-        color: #1e293b;
-        margin-bottom: 8px;
+        color: #222222;
+        margin-bottom: 6px;
     }
-    p { margin-bottom: 6px; }
+    p { margin-bottom: 6px; color: #111111; }
 
-    /* ── Badges ── */
+    /* ── Badges — konzervativní černobílé ── */
     .badge {
         display: inline-flex;
         align-items: center;
         gap: 4px;
         padding: 2px 8px;
-        border-radius: 20px;
+        border-radius: 3px;
         font-size: 10px;
         font-weight: 600;
+        border: 1px solid #cccccc;
+        background: #ffffff;
+        color: #111111;
     }
-    .badge-high { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
-    .badge-limited { background: #fffbeb; border: 1px solid #fde68a; color: #d97706; }
-    .badge-minimal { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; }
+    .badge-high { border-color: #111111; font-weight: 800; }
+    .badge-limited { border-color: #888888; }
+    .badge-minimal { border-color: #cccccc; }
 
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-    .badge-dot-high { background: #dc2626; }
-    .badge-dot-limited { background: #d97706; }
-    .badge-dot-minimal { background: #16a34a; }
+    .badge-dot-high { background: #111111; }
+    .badge-dot-limited { background: #888888; }
+    .badge-dot-minimal { background: #cccccc; }
 
     /* ── Tabulky ── */
     table {
@@ -235,17 +245,18 @@ UNIFIED_CSS = """
     th {
         text-align: left;
         padding: 8px 10px;
-        background: #f1f5f9;
-        border-bottom: 2px solid #e2e8f0;
+        background: #f5f5f5;
+        border: 1px solid #dddddd;
         font-weight: 600;
         font-size: 10px;
-        color: #64748b;
+        color: #333333;
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
     td {
         padding: 8px 10px;
-        border-bottom: 1px solid #e2e8f0;
+        border: 1px solid #dddddd;
+        color: #111111;
     }
 
     /* ── Metriky ── */
@@ -258,18 +269,18 @@ UNIFIED_CSS = """
         flex: 1;
         text-align: center;
         padding: 14px;
-        background: #f1f5f9;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
     }
     .metric-value {
         font-size: 24px;
         font-weight: 800;
         line-height: 1;
+        color: #111111;
     }
     .metric-label {
         font-size: 10px;
-        color: #64748b;
+        color: #666666;
         margin-top: 4px;
     }
 
@@ -278,52 +289,51 @@ UNIFIED_CSS = """
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        padding: 8px 0;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 6px 0;
+        border-bottom: 1px solid #eeeeee;
     }
     .checkbox {
-        width: 14px;
-        height: 14px;
-        border: 2px solid #94a3b8;
-        border-radius: 3px;
+        width: 12px;
+        height: 12px;
+        border: 1.5px solid #666666;
+        border-radius: 2px;
         flex-shrink: 0;
         margin-top: 2px;
     }
     .checkbox-done {
-        border-color: #16a34a;
-        background: #dcfce7;
+        border-color: #111111;
+        background: #dddddd;
     }
 
     /* ── Highlight box ── */
     .highlight-box {
-        padding: 14px 16px;
-        border-left: 3px solid #7c3aed;
-        background: #faf5ff;
-        border-radius: 0 10px 10px 0;
+        padding: 12px 16px;
+        border-left: 3px solid #111111;
+        background: #f8f8f8;
+        border-radius: 0 4px 4px 0;
         margin: 12px 0;
         font-size: 11px;
+        color: #111111;
     }
 
     .disclaimer {
         margin-top: 24px;
         padding: 14px;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        border-radius: 10px;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
         font-size: 10px;
-        color: #92400e;
+        color: #444444;
     }
 
     .section-divider {
         width: 60px;
-        height: 3px;
-        background: linear-gradient(90deg, #c026d3, #22d3ee);
-        border-radius: 2px;
-        margin: 20px 0;
+        height: 1px;
+        background: #cccccc;
+        margin: 16px 0;
     }
 
     ul, ol { margin: 6px 0; padding-left: 18px; }
-    li { margin-bottom: 5px; font-size: 11px; }
+    li { margin-bottom: 5px; font-size: 11px; color: #111111; }
 
     /* ── VOP ── */
     .vop-section {
@@ -331,19 +341,19 @@ UNIFIED_CSS = """
     }
     .vop-section h2 {
         font-size: 16px;
-        color: #0f172a;
-        border-bottom: 2px solid #e2e8f0;
+        color: #111111;
+        border-bottom: 2px solid #111111;
         padding-bottom: 8px;
         margin-bottom: 16px;
     }
     .vop-section h3 {
         font-size: 12px;
-        color: #1e293b;
+        color: #222222;
         margin-top: 14px;
     }
     .vop-section p {
         font-size: 10px;
-        color: #475569;
+        color: #333333;
         line-height: 1.6;
     }
 
@@ -352,8 +362,8 @@ UNIFIED_CSS = """
         text-align: center;
         padding: 16px 0;
         font-size: 9px;
-        color: #94a3b8;
-        border-top: 1px solid #e2e8f0;
+        color: #888888;
+        border-top: 1px solid #dddddd;
         margin-top: 24px;
     }
 </style>
@@ -365,7 +375,7 @@ UNIFIED_CSS = """
 # ══════════════════════════════════════════════════════════════════════
 
 def _print_risk_badge(level: str) -> str:
-    labels = {"high": "Vysoké riziko", "limited": "Omezené riziko", "minimal": "Minimální riziko"}
+    labels = {"high": "VYSOKÉ RIZIKO", "limited": "Omezené riziko", "minimal": "Minimální riziko"}
     return f'<span class="badge badge-{level}"><span class="badge-dot badge-dot-{level}"></span>{labels.get(level, level)}</span>'
 
 
@@ -400,7 +410,7 @@ def _render_title_page(data: dict) -> str:
     return f"""
     <div class="title-page">
         <div class="brand">
-            <span class="brand-ai">AI</span><span class="brand-shield">shield</span><span style="color:#94a3b8;font-size:16px;margin-left:2px">.cz</span>
+            <span class="brand-ai">AI</span><span class="brand-shield">shield</span><span style="color:#888888;font-size:16px;margin-left:2px">.cz</span>
         </div>
         <div class="title-accent"></div>
         <h1>AI Act Compliance Kit</h1>
@@ -422,39 +432,44 @@ def _render_title_page(data: dict) -> str:
 # ══════════════════════════════════════════════════════════════════════
 
 def _render_toc(eligible_keys: list[str], has_vop: bool = True) -> str:
-    """Generuje obsah. Čísla stránek WeasyPrint doplní přes target-counter."""
+    """Generuje obsah s číslovanými kapitolami."""
     toc_items = ""
 
     tier_labels = {
-        "compliance_report": ("always", "Základ"),
-        "action_plan": ("always", "Základ"),
-        "ai_register": ("always", "Základ"),
-        "training_outline": ("always", "Základ"),
-        "chatbot_notices": ("conditional", "Podmíněný"),
-        "ai_policy": ("conditional", "Podmíněný"),
-        "incident_response_plan": ("risk-based", "Dle rizika"),
-        "dpia_template": ("risk-based", "Dle rizika"),
-        "vendor_checklist": ("risk-based", "Dle rizika"),
-        "monitoring_plan": ("risk-based", "Dle rizika"),
+        "compliance_report": ("always", "Základní dokumenty"),
+        "action_plan": ("always", "Základní dokumenty"),
+        "ai_register": ("always", "Základní dokumenty"),
+        "training_outline": ("always", "Základní dokumenty"),
+        "chatbot_notices": ("conditional", "Podmíněné dokumenty"),
+        "ai_policy": ("conditional", "Podmíněné dokumenty"),
+        "incident_response_plan": ("risk-based", "Dokumenty dle rizikového profilu"),
+        "dpia_template": ("risk-based", "Dokumenty dle rizikového profilu"),
+        "vendor_checklist": ("risk-based", "Dokumenty dle rizikového profilu"),
+        "monitoring_plan": ("risk-based", "Dokumenty dle rizikového profilu"),
     }
 
     current_tier = None
+    chapter_num = 0
     for key in eligible_keys:
         tier_key, tier_label = tier_labels.get(key, ("", ""))
         if tier_key and tier_key != current_tier:
             current_tier = tier_key
             toc_items += f'<div class="toc-tier">{tier_label}</div>'
 
+        chapter_num += 1
         name = TEMPLATE_NAMES.get(key, key)
         toc_items += f"""
         <div class="toc-item">
+            <span class="toc-number">{chapter_num}.</span>
             <span class="toc-title"><a href="#section-{key}" style="text-decoration:none;color:inherit">{name}</a></span>
         </div>"""
 
     if has_vop:
-        toc_items += f'<div class="toc-tier">Právní</div>'
-        toc_items += """
+        chapter_num += 1
+        toc_items += f'<div class="toc-tier">Právní ustanovení</div>'
+        toc_items += f"""
         <div class="toc-item">
+            <span class="toc-number">{chapter_num}.</span>
             <span class="toc-title"><a href="#section-vop" style="text-decoration:none;color:inherit">Všeobecné obchodní podmínky (VOP)</a></span>
         </div>"""
 
@@ -462,10 +477,10 @@ def _render_toc(eligible_keys: list[str], has_vop: bool = True) -> str:
     <div class="toc-page">
         <h2>Obsah</h2>
         {toc_items}
-        <p style="margin-top:20px;font-size:10px;color:#94a3b8">
-            Tento dokument byl automaticky vygenerován na základě skenu webových stránek
-            a odpovědí v dotazníku. Obsah je přizpůsoben rizikovému profilu firmy —
-            dokumenty, které nejsou relevantní, nebyly generovány.
+        <p style="margin-top:20px;font-size:10px;color:#666666">
+            Tento dokument byl vygenerován na základě automatického skenu webových stránek,
+            hloubkové analýzy a odpovědí v dotazníku. Obsah je přizpůsoben rizikovému profilu
+            firmy — dokumenty, které nejsou pro daný profil relevantní, nebyly generovány.
         </p>
     </div>
     """
@@ -558,7 +573,7 @@ def _section_compliance_report(data: dict) -> str:
         findings_html = f"""
     <div class="card">
         <h2>Nalezené AI systémy — automatický sken webu</h2>
-        <p style="color:#64748b;font-size:11px;margin-bottom:12px">Sken URL: <strong>{url}</strong></p>
+        <p style="color:#555555;font-size:11px;margin-bottom:12px">Sken URL: <strong>{url}</strong></p>
         <table>
             <thead><tr><th>Systém</th><th>Kategorie</th><th>Riziko</th><th>Článek AI Act</th><th>Požadovaná akce</th></tr></thead>
             <tbody>{findings_rows}</tbody>
@@ -589,12 +604,12 @@ def _section_compliance_report(data: dict) -> str:
         for r in recommendations:
             rl = r.get("risk_level", "minimal")
             items += f"""
-            <div style="border-left:3px solid;padding-left:12px;margin-bottom:10px;border-color:{'#dc2626' if rl == 'high' else '#d97706' if rl == 'limited' else '#16a34a'}">
+            <div style="border-left:2px solid #111111;padding-left:12px;margin-bottom:10px">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
                     {_print_risk_badge(rl)}
                     <strong style="font-size:11px">{r.get('tool_name', 'AI systém')}</strong>
                 </div>
-                <p style="font-size:11px;color:#64748b">{r.get('recommendation', '')}</p>
+                <p style="font-size:11px;color:#444444">{r.get('recommendation', '')}</p>
             </div>"""
         recs_html = f'<div class="card"><h2>Doporučení ke compliance</h2>{items}</div>'
 
@@ -604,18 +619,18 @@ def _section_compliance_report(data: dict) -> str:
         gen_rows = ""
         for tkey, reason in eligible_docs.items():
             tname = TEMPLATE_NAMES.get(tkey, tkey)
-            gen_rows += f'<tr><td><span style="color:#16a34a;font-weight:700">✓</span> {tname}</td><td style="color:#64748b;font-size:10px">{reason}</td></tr>'
-        gen_rows += '<tr><td><span style="color:#16a34a;font-weight:700">✓</span> Školení AI Literacy — Prezentace (PPTX)</td><td style="color:#64748b;font-size:10px">Povinné školení dle čl. 4 AI Act</td></tr>'
+            gen_rows += f'<tr><td><strong>✓</strong> {tname}</td><td style="font-size:10px">{reason}</td></tr>'
+        gen_rows += '<tr><td><strong>✓</strong> Školení AI Literacy — Prezentace (PPTX)</td><td style="font-size:10px">Povinné školení dle čl. 4 AI Act</td></tr>'
 
         skip_rows = ""
         for sk in skipped_docs:
-            skip_rows += f'<tr><td><span style="color:#94a3b8">—</span> {sk["name"]}</td><td style="color:#94a3b8;font-size:10px">{sk["reason"]}</td></tr>'
+            skip_rows += f'<tr><td><span style="color:#888888">—</span> {sk["name"]}</td><td style="color:#888888;font-size:10px">{sk["reason"]}</td></tr>'
 
         skipped_section = ""
         if skipped_docs:
             skipped_section = f"""
             <h3 style="margin-top:16px">Přeskočené dokumenty</h3>
-            <p style="color:#64748b;font-size:11px;margin-bottom:8px">Pro váš rizikový profil nejsou relevantní:</p>
+            <p style="color:#555555;font-size:11px;margin-bottom:8px">Pro váš rizikový profil nejsou relevantní:</p>
             <table><thead><tr><th>Dokument</th><th>Důvod</th></tr></thead><tbody>{skip_rows}</tbody></table>"""
 
         doc_overview = f"""
@@ -642,15 +657,15 @@ def _section_compliance_report(data: dict) -> str:
 
         <div class="metric-grid">
             <div class="metric">
-                <div class="metric-value" style="color:#7c3aed">{total}</div>
+                <div class="metric-value">{total}</div>
                 <div class="metric-label">AI systémů celkem</div>
             </div>
             <div class="metric">
-                <div class="metric-value" style="color:#dc2626">{risk.get('high', 0)}</div>
+                <div class="metric-value">{risk.get('high', 0)}</div>
                 <div class="metric-label">Vysoké riziko</div>
             </div>
             <div class="metric">
-                <div class="metric-value" style="color:#d97706">{risk.get('limited', 0)}</div>
+                <div class="metric-value">{risk.get('limited', 0)}</div>
                 <div class="metric-label">Omezené riziko</div>
             </div>
         </div>
@@ -706,14 +721,14 @@ def _section_action_plan(data: dict) -> str:
 
     items_html = ""
     group_labels = [
-        ("high", "Vysoká priorita — vysoce rizikové systémy", "#dc2626"),
-        ("limited", "Střední priorita — omezené riziko / transparentnost", "#d97706"),
-        ("info", "Obecné kroky — organizační opatření", "#7c3aed"),
+        ("high", "Vysoká priorita — vysoce rizikové systémy", "#111111"),
+        ("limited", "Střední priorita — omezené riziko / transparentnost", "#111111"),
+        ("info", "Obecné kroky — organizační opatření", "#333333"),
     ]
     for key, label, color in group_labels:
         if not groups[key]:
             continue
-        items_html += f'<h3 style="color:{color};margin-top:16px">{label}</h3>'
+        items_html += f'<h3 style="margin-top:16px;font-weight:700">{label}</h3>'
         for text in groups[key]:
             items_html += f"""
             <div class="checkbox-item">
@@ -765,7 +780,7 @@ def _section_ai_register(data: dict) -> str:
         <tr><td>{j}</td><td style="font-weight:600">{tool}</td>
         <td>{key_label}</td><td>—</td><td>—</td><td>Interní</td></tr>"""
 
-    no_data = '<tr><td colspan="6" style="color:#94a3b8">Žádné systémy</td></tr>'
+    no_data = '<tr><td colspan="6" style="color:#888888">Žádné systémy</td></tr>'
 
     return f"""
     <div class="doc-section" id="section-ai_register">
@@ -775,7 +790,7 @@ def _section_ai_register(data: dict) -> str:
         </div>
         <div class="card">
             <p><strong>Firma:</strong> {company}</p>
-            <p style="color:#64748b;font-size:11px">Aktualizujte při každé změně v AI systémech.</p>
+            <p style="color:#555555;font-size:11px">Aktualizujte při každé změně v AI systémech.</p>
         </div>
         <div class="card">
             <h3>A. AI systémy na webových stránkách</h3>
@@ -794,10 +809,10 @@ def _section_ai_register(data: dict) -> str:
         <div class="card">
             <h3>C. Odpovědná osoba</h3>
             <table>
-                <tr><td style="width:200px;color:#64748b">Jméno a příjmení</td><td>{oversight.get("name") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Funkce</td><td>{oversight.get("role") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Email</td><td>{oversight.get("email") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Datum jmenování</td><td>Vyplňte</td></tr>
+                <tr><td style="width:200px;color:#555555">Jméno a příjmení</td><td>{oversight.get("name") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Funkce</td><td>{oversight.get("role") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Email</td><td>{oversight.get("email") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Datum jmenování</td><td>Vyplňte</td></tr>
             </table>
         </div>
         <div class="highlight-box">
@@ -908,8 +923,8 @@ def _section_chatbot_notices(data: dict) -> str:
         notices_html += f"""
         <div class="card">
             <h3>{name}</h3>
-            <div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:8px 0;font-family:monospace;font-size:11px;line-height:1.6">{text}</div>
-            <p style="font-size:10px;color:#64748b"><strong>Kde použít:</strong> {where}</p>
+            <div style="background:#f5f5f5;border:1px solid #dddddd;border-radius:8px;padding:12px;margin:8px 0;font-family:monospace;font-size:11px;line-height:1.6">{text}</div>
+            <p style="font-size:10px;color:#555555"><strong>Kde použít:</strong> {where}</p>
         </div>"""
 
     return f"""
@@ -971,7 +986,7 @@ def _section_ai_policy(data: dict) -> str:
 
         <div class="card">
             <h2>4. Zakázané praktiky</h2>
-            <p style="color:#dc2626">Následující je v souladu s čl. 5 AI Act přísně zakázáno:</p>
+            <p><strong>Následující je v souladu s čl. 5 AI Act přísně zakázáno:</strong></p>
             <ul>
                 <li>Sociální scoring zaměstnanců nebo zákazníků</li>
                 <li>Podprahová manipulace rozhodování (dark patterns s AI)</li>
@@ -994,10 +1009,10 @@ def _section_ai_policy(data: dict) -> str:
         <div class="card">
             <h2>6. Odpovědnost a dohled</h2>
             <table>
-                <tr><td style="width:200px;color:#64748b">Odpovědná osoba za AI</td><td>{oversight.get("name") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Funkce</td><td>{oversight.get("role") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Kontakt</td><td>{oversight.get("email") or "Vyplňte"}</td></tr>
-                <tr><td style="color:#64748b">Frekvence revize</td><td>Minimálně 1× ročně</td></tr>
+                <tr><td style="width:200px;color:#555555">Odpovědná osoba za AI</td><td>{oversight.get("name") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Funkce</td><td>{oversight.get("role") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Kontakt</td><td>{oversight.get("email") or "Vyplňte"}</td></tr>
+                <tr><td style="color:#555555">Frekvence revize</td><td>Minimálně 1× ročně</td></tr>
             </table>
         </div>
 
@@ -1022,12 +1037,12 @@ def _section_ai_policy(data: dict) -> str:
             <h3>Podpisy</h3>
             <table>
                 <tr>
-                    <td style="width:50%;border-right:1px solid #e2e8f0">
-                        <p style="color:#64748b;font-size:10px">Schválil/a (vedení)</p><br><br>
+                    <td style="width:50%;border-right:1px solid #dddddd">
+                        <p style="color:#555555;font-size:10px">Schválil/a (vedení)</p><br><br>
                         <p>Jméno, funkce, datum</p>
                     </td>
                     <td style="padding-left:16px">
-                        <p style="color:#64748b;font-size:10px">Odpovědná osoba za AI</p><br><br>
+                        <p style="color:#555555;font-size:10px">Odpovědná osoba za AI</p><br><br>
                         <p>Jméno, funkce, datum</p>
                     </td>
                 </tr>
@@ -1095,13 +1110,13 @@ def _section_incident_response_plan(data: dict) -> str:
 
         <div class="card">
             <h2>4. Postup při incidentu</h2>
-            <h3 style="color:#dc2626">Fáze 1 — Okamžitá reakce (0–1 h)</h3>
+            <h3 style="margin-top:12px;font-weight:700">Fáze 1 — Okamžitá reakce (0–1 h)</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Zastavit AI systém, který incident způsobil</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Zajistit důkazy (screenshot, logy, čas)</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Informovat odpovědnou osobu za AI</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>U kritických incidentů: okamžitě odstavit systém</p></div></div>
             <div class="section-divider"></div>
-            <h3 style="color:#d97706">Fáze 2 — Vyhodnocení (1–24 h)</h3>
+            <h3 style="margin-top:12px;font-weight:700">Fáze 2 — Vyhodnocení (1–24 h)</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Klasifikovat závažnost incidentu</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Identifikovat dotčené osoby</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Posoudit porušení GDPR</p></div></div>
@@ -1129,14 +1144,14 @@ def _section_incident_response_plan(data: dict) -> str:
         <div class="card">
             <h2>6. Záznamový formulář</h2>
             <table>
-                <tr><td style="width:220px;color:#64748b">Datum a čas incidentu</td><td>Vyplňte</td></tr>
-                <tr><td style="color:#64748b">Zjištěno kým</td><td>Vyplňte</td></tr>
-                <tr><td style="color:#64748b">Dotčený AI systém</td><td>Vyplňte</td></tr>
-                <tr><td style="color:#64748b">Popis incidentu</td><td>Vyplňte</td></tr>
-                <tr><td style="color:#64748b">Stupeň závažnosti</td><td>Kritický / Střední / Nízký</td></tr>
-                <tr><td style="color:#64748b">Přijatá opatření</td><td>Vyplňte</td></tr>
-                <tr><td style="color:#64748b">Nahlášeno dozorovému orgánu?</td><td>ANO / NE</td></tr>
-                <tr><td style="color:#64748b">Podpis odpovědné osoby</td><td>Vyplňte</td></tr>
+                <tr><td style="width:220px;color:#555555">Datum a čas incidentu</td><td>Vyplňte</td></tr>
+                <tr><td style="color:#555555">Zjištěno kým</td><td>Vyplňte</td></tr>
+                <tr><td style="color:#555555">Dotčený AI systém</td><td>Vyplňte</td></tr>
+                <tr><td style="color:#555555">Popis incidentu</td><td>Vyplňte</td></tr>
+                <tr><td style="color:#555555">Stupeň závažnosti</td><td>Kritický / Střední / Nízký</td></tr>
+                <tr><td style="color:#555555">Přijatá opatření</td><td>Vyplňte</td></tr>
+                <tr><td style="color:#555555">Nahlášeno dozorovému orgánu?</td><td>ANO / NE</td></tr>
+                <tr><td style="color:#555555">Podpis odpovědné osoby</td><td>Vyplňte</td></tr>
             </table>
         </div>
     </div>
@@ -1163,7 +1178,7 @@ def _section_dpia_template(data: dict) -> str:
         rl = f.get("risk_level", "minimal")
         ai_rows += f'<tr><td>{name}</td><td>{_print_risk_badge(rl)}</td><td>Vyplňte</td><td>Vyplňte</td></tr>'
     if not ai_rows:
-        ai_rows = '<tr><td colspan="4" style="color:#94a3b8;text-align:center">Doplňte ručně</td></tr>'
+        ai_rows = '<tr><td colspan="4" style="color:#888888;text-align:center">Doplňte ručně</td></tr>'
 
     return f"""
     <div class="doc-section" id="section-dpia_template">
@@ -1179,11 +1194,11 @@ def _section_dpia_template(data: dict) -> str:
         </div>
         <div class="metric-grid">
             <div class="metric">
-                <div class="metric-value" style="color:#7c3aed">{total_systems}</div>
+                <div class="metric-value">{total_systems}</div>
                 <div class="metric-label">AI systémů celkem</div>
             </div>
             <div class="metric">
-                <div class="metric-value" style="color:#dc2626">{risk.get("high", 0)}</div>
+                <div class="metric-value">{risk.get("high", 0)}</div>
                 <div class="metric-label">Vysoce rizikových</div>
             </div>
         </div>
@@ -1191,10 +1206,10 @@ def _section_dpia_template(data: dict) -> str:
         <div class="card">
             <h2>1. Odpovědné osoby</h2>
             <table>
-                <tr><td style="width:220px;color:#64748b">Správce osobních údajů</td><td>{company}</td></tr>
-                <tr><td style="color:#64748b">Odpovědná osoba za AI</td><td>{oversight.get("name", "Vyplňte")}</td></tr>
-                <tr><td style="color:#64748b">E-mail</td><td>{oversight.get("email", "Vyplňte")}</td></tr>
-                <tr><td style="color:#64748b">Pověřenec (DPO)</td><td>Vyplňte</td></tr>
+                <tr><td style="width:220px;color:#555555">Správce osobních údajů</td><td>{company}</td></tr>
+                <tr><td style="color:#555555">Odpovědná osoba za AI</td><td>{oversight.get("name", "Vyplňte")}</td></tr>
+                <tr><td style="color:#555555">E-mail</td><td>{oversight.get("email", "Vyplňte")}</td></tr>
+                <tr><td style="color:#555555">Pověřenec (DPO)</td><td>Vyplňte</td></tr>
             </table>
         </div>
 
@@ -1228,9 +1243,9 @@ def _section_dpia_template(data: dict) -> str:
         <div class="card">
             <h2>5. Závěr</h2>
             <table>
-                <tr><td style="width:220px;color:#64748b">Celkové riziko</td><td>{_print_risk_badge(overall_risk)}</td></tr>
-                <tr><td style="color:#64748b">DPIA závěr</td><td>☐ Přípustné  ☐ Nutná opatření  ☐ Konzultace s ÚOOÚ</td></tr>
-                <tr><td style="color:#64748b">Datum příští revize</td><td>Vyplňte</td></tr>
+                <tr><td style="width:220px;color:#555555">Celkové riziko</td><td>{_print_risk_badge(overall_risk)}</td></tr>
+                <tr><td style="color:#555555">DPIA závěr</td><td>☐ Přípustné  ☐ Nutná opatření  ☐ Konzultace s ÚOOÚ</td></tr>
+                <tr><td style="color:#555555">Datum příští revize</td><td>Vyplňte</td></tr>
             </table>
         </div>
     </div>
@@ -1272,9 +1287,9 @@ def _section_vendor_checklist(data: dict) -> str:
         vendor_rows += f'<tr><td>{name}</td><td>{vendor}</td><td>{_print_risk_badge(rl)}</td></tr>'
 
     if not vendor_rows:
-        vendor_rows = '<tr><td colspan="3" style="color:#94a3b8;text-align:center">Doplňte ručně</td></tr>'
+        vendor_rows = '<tr><td colspan="3" style="color:#888888;text-align:center">Doplňte ručně</td></tr>'
 
-    status = '<span style="color:#16a34a">✅ Má smlouvy</span>' if has_contracts else '<span style="color:#dc2626">⚠️ Nemá smluvně ošetřeno</span>'
+    status = '<strong>Ano — má smlouvy s dodavateli AI</strong>' if has_contracts else '<strong>Ne — nemá smluvně ošetřeno</strong>'
 
     return f"""
     <div class="doc-section" id="section-vendor_checklist">
@@ -1296,12 +1311,12 @@ def _section_vendor_checklist(data: dict) -> str:
 
         <div class="card">
             <h2>Povinné smluvní náležitosti</h2>
-            <h3 style="color:#dc2626;margin-top:12px">A. Transparentnost (čl. 13)</h3>
+            <h3 style="margin-top:12px;font-weight:700">A. Transparentnost (čl. 13)</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel poskytl návod k použití AI</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel deklaroval účel a zamýšlené použití</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel sděluje info o výkonnosti a omezeních</p></div></div>
             <div class="section-divider"></div>
-            <h3 style="color:#d97706;margin-top:12px">B. Ochrana osobních údajů (GDPR)</h3>
+            <h3 style="margin-top:12px;font-weight:700">B. Ochrana osobních údajů (GDPR)</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Smlouva o zpracování (DPA) uzavřena</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Definovány kategorie os. údajů</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Dodavatel garantuje zpracování v EU/EHP</p></div></div>
@@ -1339,7 +1354,7 @@ def _section_monitoring_plan(data: dict) -> str:
         system_rows += f'<tr><td>{name}</td><td>{_print_risk_badge(rl)}</td><td>{freq_map.get(rl, "Měsíčně")}</td></tr>'
 
     if not system_rows:
-        system_rows = '<tr><td colspan="3" style="color:#94a3b8;text-align:center">Doplňte ručně</td></tr>'
+        system_rows = '<tr><td colspan="3" style="color:#888888;text-align:center">Doplňte ručně</td></tr>'
 
     return f"""
     <div class="doc-section" id="section-monitoring_plan">
@@ -1361,12 +1376,12 @@ def _section_monitoring_plan(data: dict) -> str:
 
         <div class="card">
             <h2>CO monitorovat</h2>
-            <h3 style="color:#dc2626;margin-top:8px">A. Přesnost a kvalita</h3>
+            <h3 style="margin-top:8px;font-weight:700">A. Přesnost a kvalita</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Míra chybných odpovědí</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>AI halucinace — vymýšlení neexistujících faktů</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Relevance a konzistence odpovědí</p></div></div>
             <div class="section-divider"></div>
-            <h3 style="color:#d97706;margin-top:8px">B. Férovost a bias</h3>
+            <h3 style="margin-top:8px;font-weight:700">B. Férovost a bias</h3>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Genderový bias — liší se odpovědi dle pohlaví?</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Etnický / věkový bias</p></div></div>
             <div class="checkbox-item"><div class="checkbox"></div><div><p>Jazykový bias — kvalita pro češtinu vs. angličtinu</p></div></div>
@@ -1517,22 +1532,31 @@ def render_unified_pdf_html(data: dict, eligible_keys: list[str]) -> str:
     # Filtrovat transparency_page (ta jde jako standalone HTML, ne do PDF)
     pdf_keys = [k for k in eligible_keys if k != "transparency_page"]
 
-    # Render sections
+    # Render sections — s čísly kapitol
     sections_html = ""
-    for key in pdf_keys:
+    for chapter_num, key in enumerate(pdf_keys, 1):
         renderer = SECTION_RENDERERS.get(key)
         if renderer:
             try:
-                sections_html += renderer(data)
+                section_html = renderer(data)
+                # Vložit číslo kapitoly do section-header
+                section_html = section_html.replace(
+                    f'id="section-{key}">',
+                    f'id="section-{key}"><div class="section-header">'
+                    f'<div class="section-number">Kapitola {chapter_num}</div>',
+                    0  # jen poprvé (nechceme duplikovat pokud tam header není)
+                )
+                sections_html += section_html
             except Exception as e:
                 logger.error(f"Chyba při renderování sekce {key}: {e}", exc_info=True)
                 sections_html += f"""
                 <div class="doc-section" id="section-{key}">
                     <div class="section-header">
+                        <div class="section-number">Kapitola {chapter_num}</div>
                         <h2>{TEMPLATE_NAMES.get(key, key)}</h2>
                         <div class="section-sub">Chyba při generování této sekce</div>
                     </div>
-                    <div class="card"><p style="color:#dc2626">Sekci se nepodařilo vygenerovat: {str(e)}</p></div>
+                    <div class="card"><p style="color:#111111">Sekci se nepodařilo vygenerovat: {str(e)}</p></div>
                 </div>
                 """
 
