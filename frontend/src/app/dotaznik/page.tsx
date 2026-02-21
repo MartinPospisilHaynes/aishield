@@ -190,24 +190,7 @@ function QuestionnaireInner() {
         implementation: "🔨",
     };
 
-    /* ── Smart question skipping — hide irrelevant questions based on answers ── */
-    const isQuestionVisible = useCallback((idx: number): boolean => {
-        const q = allQuestions[idx];
-        if (!q) return false;
 
-        const size = answers.company_size?.answer || "";
-        const isOSVC = size === "Jen já (OSVČ)";
-
-        // OSVČ without employees → skip HR section (recruitment, monitoring, emotion)
-        if (isOSVC && q._section === "hr") return false;
-
-        return true;
-    }, [allQuestions, answers]);
-
-    /* ── Visible questions count & index mapping ── */
-    const visibleIndices: number[] = allQuestions.map((_, i) => i).filter(i => isQuestionVisible(i));
-    const visibleCount = visibleIndices.length;
-    const currentVisibleIdx = visibleIndices.indexOf(currentQuestion);
 
     /* ── Fetch structure ── */
     useEffect(() => {
@@ -347,31 +330,22 @@ function QuestionnaireInner() {
         }
     }, [searchParams, allQuestions.length]);
 
-    /* ── Navigation helpers (skip invisible questions) ── */
+    /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
         setDirection("forward");
         questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => {
-            let next = p + 1;
-            while (next < totalQuestions && !isQuestionVisible(next)) next++;
-            if (next >= totalQuestions) {
-                console.log(`[Dotazník] goNext blocked: no more visible questions after ${p}`);
-                return p;
-            }
-            console.log(`[Dotazník] goNext: ${p} → ${next} / ${totalQuestions} (visible)`);
-            return next;
+            if (p >= totalQuestions - 1) return p;
+            console.log(`[Dotazník] goNext: ${p} → ${p + 1} / ${totalQuestions}`);
+            return p + 1;
         });
-    }, [totalQuestions, isQuestionVisible]);
+    }, [totalQuestions]);
 
     const goBack = useCallback(() => {
         setDirection("back");
         questionStartTimeRef.current = Date.now();
-        setCurrentQuestion((p) => {
-            let prev = p - 1;
-            while (prev >= 0 && !isQuestionVisible(prev)) prev--;
-            return prev < 0 ? -1 : prev;
-        });
-    }, [isQuestionVisible]);
+        setCurrentQuestion((p) => p <= 0 ? -1 : p - 1);
+    }, []);
 
     // Keep answersRef in sync with answers state
     useEffect(() => { answersRef.current = answers; }, [answers]);
@@ -518,6 +492,9 @@ function QuestionnaireInner() {
                     if ((e.key === "3" && q.type === "yes_no_unknown") || (e.key === "2" && q.type === "yes_unknown")) {
                         setAnswer(q.key, "unknown");
                     }
+                    if ((e.key === "4" && q.type === "yes_no_unknown") || (e.key === "3" && q.type === "yes_unknown")) {
+                        setAnswer(q.key, "not_applicable");
+                    }
                 }
             }
             if (e.key === "Enter") {
@@ -528,18 +505,17 @@ function QuestionnaireInner() {
         return () => window.removeEventListener("keydown", handler);
     }, [currentQuestion, totalQuestions, allQuestions, goNext, setAnswer, handleSubmit]);
 
-    /* ── Progress (based on visible questions only) ── */
+    /* ── Progress ── */
     const progressPct =
-        currentVisibleIdx <= 0
+        currentQuestion <= 0
             ? 0
-            : Math.min(100, Math.round(((currentVisibleIdx + 1) / visibleCount) * 100));
+            : Math.min(100, Math.round(((currentQuestion + 1) / totalQuestions) * 100));
 
     /* ── Section transition detection ── */
     const currentQ = allQuestions[currentQuestion];
-    const prevVisibleIdx = currentVisibleIdx > 0 ? visibleIndices[currentVisibleIdx - 1] : -1;
-    const prevQ = prevVisibleIdx >= 0 ? allQuestions[prevVisibleIdx] : null;
+    const prevQ = currentQuestion > 0 ? allQuestions[currentQuestion - 1] : null;
     const isNewSection = currentQ && prevQ && currentQ._section !== prevQ._section;
-    const isFirstQuestion = currentQuestion >= 0 && prevVisibleIdx < 0;
+    const isFirstQuestion = currentQuestion === 0;
 
     /* ═══════════════════════════════════════════
        RENDERS
@@ -652,7 +628,7 @@ function QuestionnaireInner() {
                     <p className="text-slate-400 text-lg mb-6">
                         {isEditMode
                             ? "Vaše předchozí odpovědi jsou předvyplněné. Projděte otázky a upravte, co potřebujete."
-                            : `${visibleCount || totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
+                            : `${totalQuestions} krátkých otázek. Stačí klikat. Hotovo za 5 minut.`
                         }
                     </p>
 
@@ -713,9 +689,8 @@ function QuestionnaireInner() {
         if (!sec) return null;
         const emoji = SECTION_EMOJI[sec._section] || "📋";
         const sectionTitle = sec._sectionTitle || sec._section;
-        // Count questions in this section that are visible
         const sectionQCount = allQuestions.filter(
-            (aq, i) => aq._section === sec._section && isQuestionVisible(i)
+            (aq) => aq._section === sec._section
         ).length;
 
         return (
@@ -879,8 +854,9 @@ function QuestionnaireInner() {
     }
 
     const ans = answers[q.key];
-    const isLast = currentVisibleIdx === visibleCount - 1;
-    const showFollowup = q.followup && (
+    const isLast = currentQuestion === totalQuestions - 1;
+    const isNA = ans?.answer === "not_applicable";
+    const showFollowup = !isNA && q.followup && (
         (q.followup.condition === "any" && !!ans?.answer) ||
         (q.followup.condition === "yes" && ans?.answer === "yes") ||
         (q.followup.condition === "unknown" && ans?.answer === "unknown") ||
@@ -896,7 +872,7 @@ function QuestionnaireInner() {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
                 {/* Progress bar */}
-                <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
+                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
 
                 <div className="flex-1 flex items-center justify-center p-4 pt-16">
                     <div className={`w-full max-w-2xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
@@ -1017,7 +993,7 @@ function QuestionnaireInner() {
     if (q.type === "text") {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
-                <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
+                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
 
                 <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="fixed bottom-[-150px] left-[-80px] w-[350px] h-[350px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" />
@@ -1102,7 +1078,7 @@ function QuestionnaireInner() {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col">
             {/* Progress bar */}
-            <ProgressBarUI current={currentVisibleIdx} total={visibleCount} />
+            <ProgressBarUI current={currentQuestion} total={totalQuestions} />
 
             {/* Decorative blobs */}
             <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -1137,13 +1113,15 @@ function QuestionnaireInner() {
                     {!q.help_text && !(q as any).scope_hint && <div className="mb-4" />}
 
                     {/* Answer tiles */}
-                    <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-2" : "grid-cols-3"} gap-3 mb-4`}>
+                    <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"} gap-3 mb-4`}>
                         {([
                             { value: "yes", label: "Ano", icon: "✓" },
                             ...(q.type !== "yes_unknown" ? [{ value: "no" as const, label: "Ne", icon: "✕" }] : []),
                             { value: "unknown", label: "Nevím", icon: "?" },
+                            { value: "not_applicable", label: "Netýká se mě", icon: "—" },
                         ] as const).map((opt) => {
                             const selected = ans?.answer === opt.value;
+                            const isNA = opt.value === "not_applicable";
                             return (
                                 <button
                                     key={opt.value}
@@ -1169,14 +1147,18 @@ function QuestionnaireInner() {
                                     }}
                                     className={`
                     relative py-5 px-4 rounded-2xl border text-center transition-all duration-200 cursor-pointer
-                    ${selected
-                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
-                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
+                    ${selected && isNA
+                                            ? "bg-slate-500/20 border-slate-400/50 text-slate-300 shadow-lg shadow-slate-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-slate-400/60"
+                                            : selected
+                                                ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
+                                                : isNA
+                                                    ? "bg-white/[0.02] border-white/[0.06] text-slate-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-slate-400"
+                                                    : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
                                         }
                   `}
                                 >
-                                    <span className="text-2xl block mb-1">{opt.icon}</span>
-                                    <span className="text-base font-semibold block">{opt.label}</span>
+                                    <span className={`text-2xl block mb-1 ${isNA ? "text-lg" : ""}`}>{opt.icon}</span>
+                                    <span className={`font-semibold block ${isNA ? "text-xs" : "text-base"}`}>{opt.label}</span>
                                 </button>
                             );
                         })}
@@ -1193,8 +1175,8 @@ function QuestionnaireInner() {
                     )}
 
                     {/* Risk / Prohibited / Lawyer warning banners */}
-                    {ans?.answer && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
-                    {ans?.answer && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
+                    {ans?.answer && !isNA && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
+                    {ans?.answer && !isNA && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
 
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (
@@ -1608,9 +1590,9 @@ function QuestionnaireInner() {
                         ) : null}
                     </div>
 
-                    {/* Nevím hint */}
+                    {/* Hint */}
                     <p className="text-xs text-slate-500 leading-relaxed mt-4 text-center">
-                        {`Odpověď „Nevím" je dočasná — doplňte ji, jakmile informaci zjistíte. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
+                        {`„Nevím" = doplňte později. „Netýká se mě" = otázka pro vás není relevantní. 100\u00A0% pokrytí zákonných požadavků je možné až se všemi odpověďmi.`}
                     </p>
 
                     {/* Save & Continue Later */}
