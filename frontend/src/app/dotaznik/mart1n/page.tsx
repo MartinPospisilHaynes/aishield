@@ -221,6 +221,7 @@ function Mart1nPageInner() {
 
     // Voice input state
     const [isRecording, setIsRecording] = useState(false);
+    const isRecordingRef = useRef(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
@@ -925,6 +926,7 @@ function Mart1nPageInner() {
                 // Stop all tracks so mic indicator disappears
                 stream.getTracks().forEach((t) => t.stop());
                 setIsRecording(false);
+                isRecordingRef.current = false;
 
                 const blob = new Blob(audioChunksRef.current, { type: mimeType });
                 if (blob.size < 100) return; // too short, ignore
@@ -956,6 +958,7 @@ function Mart1nPageInner() {
 
             mediaRecorder.start();
             setIsRecording(true);
+            isRecordingRef.current = true;
         } catch (err) {
             console.error("Microphone access error:", err);
             const isDenied = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
@@ -996,28 +999,32 @@ function Mart1nPageInner() {
     }, [input, sendMessage, toggleRecording]);
 
     // Global spacebar handler — works even when recording (textarea hidden)
+    // Uses refs to avoid stale closures from useEffect dependency changes
+    const toggleRecordingRef = useRef(toggleRecording);
+    toggleRecordingRef.current = toggleRecording;
+
     useEffect(() => {
         const onGlobalKey = (e: KeyboardEvent) => {
-            // Only handle spacebar when recording is active (waveform replaces textarea)
-            // or when no element is focused / textarea is focused with empty input
-            const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
             if (e.key !== " ") return;
-            if (isRecording) {
+            const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+            
+            // During recording: spacebar always stops it
+            if (isRecordingRef.current) {
                 e.preventDefault();
-                toggleRecording();
+                toggleRecordingRef.current();
                 return;
             }
-            // If user is typing in textarea with content, don't intercept
+            // In textarea/input with content: normal space behavior
             if (tag === "textarea" || tag === "input") return;
-            // Spacebar from outside textarea — start recording
+            // Outside textarea: start recording
             if (!sending && !isStreaming && !isComplete && !initLoading && !isTranscribing) {
                 e.preventDefault();
-                toggleRecording();
+                toggleRecordingRef.current();
             }
         };
         window.addEventListener("keydown", onGlobalKey);
         return () => window.removeEventListener("keydown", onGlobalKey);
-    }, [isRecording, toggleRecording, sending, isStreaming, isComplete, initLoading, isTranscribing]);
+    }, [sending, isStreaming, isComplete, initLoading, isTranscribing]);
 
     // Auto-resize textarea
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -1193,7 +1200,7 @@ function Mart1nPageInner() {
                                                px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600
                                                focus:outline-none focus:border-neon-fuchsia/30 focus:ring-1 focus:ring-neon-fuchsia/20
                                                disabled:opacity-50 disabled:cursor-not-allowed
-                                               transition-colors"
+                                               overflow-hidden transition-colors"
                                     style={{ maxHeight: "120px" }}
                                 />
                             )}
