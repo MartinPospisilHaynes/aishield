@@ -1858,7 +1858,7 @@ async def _summarize_and_save_feedback(
                 from backend.monitoring.llm_usage_tracker import usage_tracker
                 _in = response.usage.input_tokens
                 _out = response.usage.output_tokens
-                # Sonnet: $3/$15 per MTok
+                # Sonnet: input $3, output $15 per MTok (feedback — no caching)
                 _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_feedback")
             except Exception:
@@ -2164,10 +2164,16 @@ async def mart1n_chat(req: Mart1nRequest, http_request: Request = None):
             _out = response.usage.output_tokens
             _cache_read = getattr(response.usage, 'cache_read_input_tokens', 0) or 0
             _cache_write = getattr(response.usage, 'cache_creation_input_tokens', 0) or 0
-            _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+            # Sonnet: input $3, output $15, cache_read $0.30, cache_write $3.75 per MTok
+            _cost = (
+                (_in * 3.0 / 1_000_000)
+                + (_cache_read * 0.30 / 1_000_000)
+                + (_cache_write * 3.75 / 1_000_000)
+                + (_out * 15.0 / 1_000_000)
+            )
             logger.info(
                 f"[MART1N] Usage: in={_in} out={_out} cache_read={_cache_read} "
-                f"cache_write={_cache_write} cost=${_cost:.4f}"
+                f"cache_write={_cache_write} cost=${_cost:.6f}"
             )
             await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_chat")
         except Exception:
@@ -2568,11 +2574,16 @@ async def mart1n_chat_stream(req: Mart1nRequest, http_request: Request = None):
                 _out = final_msg.usage.output_tokens
                 _cache_read = getattr(final_msg.usage, 'cache_read_input_tokens', 0) or 0
                 _cache_write = getattr(final_msg.usage, 'cache_creation_input_tokens', 0) or 0
-                # Sonnet: $3/$15 per MTok
-                _cost = (_in * 3.0 / 1_000_000) + (_out * 15.0 / 1_000_000)
+                # Sonnet: input $3, output $15, cache_read $0.30, cache_write $3.75 per MTok
+                _cost = (
+                    (_in * 3.0 / 1_000_000)
+                    + (_cache_read * 0.30 / 1_000_000)
+                    + (_cache_write * 3.75 / 1_000_000)
+                    + (_out * 15.0 / 1_000_000)
+                )
                 logger.info(
                     f"[MART1N] Stream usage: in={_in} out={_out} cache_read={_cache_read} "
-                    f"cache_write={_cache_write} cost=${_cost:.4f}"
+                    f"cache_write={_cache_write} cost=${_cost:.6f}"
                 )
                 await usage_tracker.record("claude", _in, _out, _cost, model=CLAUDE_MODEL, caller="mart1n_stream")
             except Exception:
