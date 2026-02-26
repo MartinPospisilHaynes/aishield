@@ -1,599 +1,391 @@
 <h1>Akční plán implementace — Soulad s EU AI Act</h1>
 
-<p>Zpracoval: AIshield.cz | Klient: Martin Haynes, IČO: 17889251 | Datum: 26. 2. 2026</p>
+<p>Zpracováno pro: <strong>Martin Haynes</strong> | IČO: 17889251 | Datum: 26. 2. 2026</p>
+<p>Odpovědná osoba za AI: <strong>Martin Haynes</strong> (Jednatel / majitel)</p>
 
 <h2>1. Úvod a účel plánu</h2>
 
-<p>Tento akční plán stanovuje konkrétní kroky, které musí firma Martin Haynes podniknout k dosažení souladu s Nařízením Evropského parlamentu a Rady (EU) 2024/1689 o umělé inteligenci (dále „AI Act"). Plán vychází z analýzy AI systémů provedené v rámci Compliance Kitu a reflektuje zjištěný rizikový profil firmy: <strong>17 systémů s vysokým rizikem, 18 systémů s omezeným rizikem a 1 systém s minimálním rizikem</strong>.</p>
-
-<div class='warning'>
-<strong>Pozor — zákonný deadline již uplynul:</strong> Povinnost zajistit AI gramotnost zaměstnanců dle čl. 4 AI Act a zákaz zakázaných praktik dle čl. 5 AI Act platí od <strong>2. 2. 2025</strong>. Ke dni vyhotovení tohoto dokumentu (26. 2. 2026) je firma v prodlení o více než 12 měsíců. Kroky ve Fázi 1 mají proto charakter okamžité priority.
-</div>
-
-<p>Klíčové zákonné milníky, od nichž se odvíjí celý plán:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Milník</th>
-      <th>Datum</th>
-      <th>Stav</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Zákaz zakázaných praktik (čl. 5) + AI gramotnost (čl. 4)</td>
-      <td>2. 2. 2025</td>
-      <td><span class='badge-high'>UPLYNUL — firma v prodlení</span></td>
-    </tr>
-    <tr>
-      <td>Povinnosti pro GPAI modely (čl. 51–54)</td>
-      <td>2. 8. 2025</td>
-      <td><span class='badge-high'>UPLYNUL — firma v prodlení</span></td>
-    </tr>
-    <tr>
-      <td>Plná účinnost pro high-risk systémy dle Přílohy III (čl. 6 odst. 2)</td>
-      <td>2. 8. 2026</td>
-      <td><span class='badge-limited'>Zbývá cca 5 měsíců</span></td>
-    </tr>
-    <tr>
-      <td>High-risk systémy dle Přílohy I — bezpečnostní komponenty výrobků (čl. 6 odst. 1)</td>
-      <td>2. 8. 2027</td>
-      <td><span class='badge-minimal'>Zbývá cca 17 měsíců</span></td>
-    </tr>
-  </tbody>
-</table>
-
-<div class='highlight'>
-Firma Martin Haynes působí napříč více odvětvími (e-shop, zdravotnictví, vzdělávání, HR, pojišťovnictví, kritická infrastruktura) a provozuje AI systémy v kategoriích regulovaných nejpřísnějšími ustanoveními AI Act. Navíc firma vyvíjí vlastní AI systémy a mění účel existujících systémů — tím na sebe přebírá povinnosti poskytovatele dle čl. 16 a čl. 25 AI Act. Plán je proto strukturován tak, aby prioritizoval systémy s nejvyšším rizikem a zároveň zajistil plošné splnění základních povinností.
-</div>
-
-<h2>2. Přehled výchozího stavu</h2>
+<p>Tento akční plán stanovuje kroky k dosažení souladu s Nařízením (EU) 2024/1689 o umělé inteligenci (AI Act). Firma provozuje rozsáhlé portfolio AI systémů napříč odvětvími. Riziková struktura vyžaduje systematický a prioritizovaný přístup.</p>
 
 <div class='metric-grid'>
   <div class='metric-card'>
     <div class='metric-value'>36</div>
-    <div class='metric-label'>Identifikovaných AI systémů</div>
+    <div class='metric-label'>AI systémů celkem</div>
   </div>
   <div class='metric-card'>
     <div class='metric-value'>17</div>
-    <div class='metric-label'>Systémů s vysokým rizikem</div>
+    <div class='metric-label'><span class='badge-high'>Vysoké riziko</span></div>
   </div>
   <div class='metric-card'>
     <div class='metric-value'>18</div>
-    <div class='metric-label'>Systémů s omezeným rizikem</div>
+    <div class='metric-label'><span class='badge-limited'>Omezené riziko</span></div>
   </div>
   <div class='metric-card'>
-    <div class='metric-value'>2</div>
-    <div class='metric-label'>Systémů vyžadujících okamžitý audit (možné zakázané praktiky)</div>
+    <div class='metric-value'>1</div>
+    <div class='metric-label'><span class='badge-minimal'>Minimální riziko</span></div>
   </div>
 </div>
 
+<div class='warning'>
+<strong>Zákonný milník — již uplynul:</strong> Povinnost AI gramotnosti zaměstnanců (čl. 4 AI Act) a zákaz zakázaných praktik (čl. 5 AI Act) jsou účinné od 2. 2. 2025. Analýza identifikovala systémy vyžadující okamžitou pozornost — viz Fáze 1.
+</div>
+
+<div class='info'>
+<strong>Firma vystupuje ve dvou rolích dle AI Act:</strong> Jako <strong>nasazovatel</strong> (deployer) u systémů třetích stran (ChatGPT, CRIF, LinkedIn Recruiter aj.) a jako <strong>poskytovatel</strong> (provider) u vlastního vývoje AI. Každá role přináší odlišné povinnosti — plán je rozlišuje.
+</div>
+
+<p>Plán je rozdělen do čtyř fází. Každá rozlišuje, co firma <strong>již obdržela v rámci Compliance Kitu</strong> od AIshield.cz, a co <strong>vyžaduje vlastní akci</strong> vedení nebo zaměstnanců.</p>
+
+<h2>2. Přehled výchozího stavu</h2>
+
 <h3>Co firma již má díky Compliance Kitu</h3>
 
-<table>
-  <thead>
-    <tr>
-      <th>Dokument</th>
-      <th>Stav</th>
-      <th>Poznámka</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Compliance Report</td>
-      <td>Zajištěno Kitem</td>
-      <td>Kompletní analýza rizik a povinností</td>
-    </tr>
-    <tr>
-      <td>Registr AI systémů</td>
-      <td>Zajištěno Kitem</td>
-      <td>Předvyplněný ze zjištěných systémů — vyžaduje interní validaci</td>
-    </tr>
-    <tr>
-      <td>Interní AI politika</td>
-      <td>Zajištěno Kitem</td>
-      <td>Připravena k podpisu vedením</td>
-    </tr>
-    <tr>
-      <td>Plán školení + PowerPoint prezentace</td>
-      <td>Zajištěno Kitem</td>
-      <td>Prezentace připravena, školení musí realizovat firma</td>
-    </tr>
-    <tr>
-      <td>Texty oznámení pro AI systémy</td>
-      <td>Zajištěno Kitem</td>
-      <td>Připraveny k nasazení na web a do aplikací</td>
-    </tr>
-    <tr>
-      <td>Plán řízení incidentů</td>
-      <td>Zajištěno Kitem</td>
-      <td>Šablona připravena — vyžaduje jmenování odpovědných osob</td>
-    </tr>
-    <tr>
-      <td>Posouzení dopadů (DPIA/FRIA)</td>
-      <td>Zajištěno Kitem</td>
-      <td>Podklady připraveny — vyžaduje interní doplnění specifik systémů</td>
-    </tr>
-    <tr>
-      <td>Dodavatelský checklist</td>
-      <td>Zajištěno Kitem</td>
-      <td>Připraven k použití při jednání s dodavateli</td>
-    </tr>
-    <tr>
-      <td>Monitoring plán</td>
-      <td>Zajištěno Kitem</td>
-      <td>Připraven k aktivaci</td>
-    </tr>
-    <tr>
-      <td>Transparenční stránka (HTML)</td>
-      <td>Zajištěno Kitem</td>
-      <td>Připravena k nasazení na web — předat IT oddělení</td>
-    </tr>
-  </tbody>
-</table>
+<ul>
+  <li>Compliance Report s analýzou všech AI systémů a rizikových kategorií</li>
+  <li>Předvyplněný Registr AI systémů připravený k aktivnímu vedení</li>
+  <li>Interní AI politiku připravenou k podpisu vedením</li>
+  <li>Plán školení AI gramotnosti včetně prezentace pro zaměstnance</li>
+  <li>Texty oznámení pro všechna místa interakce uživatelů s AI</li>
+  <li>Plán řízení incidentů (šablona eskalačního řetězce a hlášení)</li>
+  <li>Posouzení dopadů (DPIA/FRIA) pro identifikované high-risk systémy</li>
+  <li>Dodavatelský checklist pro due diligence AI dodavatelů</li>
+  <li>Monitoring plán pro průběžný dohled nad AI systémy</li>
+  <li>Transparenční stránku (HTML kód připravený k nasazení na web)</li>
+</ul>
 
 <h3>Identifikované mezery vyžadující akci firmy</h3>
 
 <ul>
-  <li>Školení AI gramotnosti nebylo dosud realizováno pro všechny zaměstnance (prezentace je k dispozici, ale realizaci musí zajistit firma)</li>
-  <li>Transparenční stránka a oznámení pro AI systémy nebyly nasazeny na web</li>
-  <li>Dva systémy označené jako potenciálně zakázané („vlastní html" a „vlastní kód") vyžadují okamžitý interní audit a právní konzultaci</li>
-  <li>Smluvní dokumentace s dodavateli AI (DPA, SLA) vyžaduje doplnění a podpis</li>
-  <li>Registrace high-risk systémů v EU databázi dle čl. 49 AI Act nebyla provedena</li>
-  <li>Posouzení shody (conformity assessment) dle čl. 43 AI Act pro high-risk systémy nebylo formálně zahájeno</li>
-  <li>Posouzení dopadů na základní práva (FRIA) dle čl. 27 AI Act nebylo dokončeno pro relevantní high-risk systémy</li>
-  <li>Technická dokumentace dle Přílohy IV AI Act nebyla připravena pro systémy, kde firma vystupuje jako poskytovatel (vlastní vývoj AI, změna účelu dle čl. 25)</li>
+  <li>Provedení školení zaměstnanců (prezentace dodána, realizaci zajišťuje firma)</li>
+  <li>Nasazení transparenční stránky na web (HTML kód dodán, implementaci provede IT)</li>
+  <li>Podpis interní AI politiky jednatelem a její distribuce zaměstnancům</li>
+  <li>Audit systémů označených jako potenciálně zakázané („vlastní html", „vlastní kód")</li>
+  <li>Smluvní ošetření vztahů s dodavateli GPAI modelů (OpenAI, Anthropic, Google, Mistral)</li>
+  <li>Technická implementace logování a přístupových práv pro high-risk systémy</li>
+  <li>Ověření registrace high-risk systémů v EU databázi (u dodavatelů) a vlastní registrace (u vlastního vývoje)</li>
+  <li>Plnění povinností poskytovatele pro vlastní AI systémy (technická dokumentace, posouzení shody, CE označení)</li>
+  <li>Implementace opatření z FRIA pro high-risk systémy</li>
+  <li>Zavedení postupu pro vyřizování žádostí o vysvětlení rozhodnutí AI</li>
 </ul>
 
 <h2>3. Fáze 1 — Okamžité priority</h2>
 
 <div class='warning'>
-Všechny kroky v této fázi se vztahují k povinnostem, jejichž zákonný deadline (2. 2. 2025) již uplynul. Realizujte je bez zbytečného odkladu.
+<strong>Systémy vyžadující okamžitý audit:</strong> Analýza identifikovala systémy „vlastní html" a „vlastní kód", které mohou zahrnovat praktiky zakázané dle čl. 5 AI Act (sociální scoring, biometrická identifikace, rozpoznávání emocí). Před jakýmkoliv dalším krokem proveďte jejich přesnou identifikaci a právní posouzení.
 </div>
 
-<h3>Krok 1.1 — Provést školení AI gramotnosti (čl. 4 AI Act)</h3>
+<h3>Krok 1.1 — Audit potenciálně zakázaných systémů</h3>
+<p>Identifikujte přesný účel a funkci systémů evidovaných jako „vlastní html" a „vlastní kód". Zjistěte, zda provádějí sociální scoring, biometrickou identifikaci v reálném čase nebo rozpoznávání emocí na pracovišti či ve vzdělávání.</p>
 
-<p><strong>Zodpovídá:</strong> Martin Haynes (jednatel) nebo jím pověřený HR manažer. <strong>Výstup:</strong> Prezenční listina podepsaná všemi účastníky, uložená v interní dokumentaci.</p>
-
-<div class='info'>
-<strong>Jak na to konkrétně:</strong> V Compliance Kitu máte připravenou PowerPointovou prezentaci AI gramotnosti. Svolejte zaměstnance po odděleních (IT, obchod, HR, účetnictví). Prezentaci promítněte a nechte každého účastníka podepsat prezenční listinu. Pro zaměstnance pracující na dálku zorganizujte online verzi přes Teams nebo Zoom a uložte záznam. Nové zaměstnance zařaďte do školení při nástupu.
+<div class='callout'>
+<strong>Co se stane, pokud systém spadá pod zakázané praktiky?</strong> Provoz takového systému musíte okamžitě ukončit. Pokuta za porušení čl. 5 AI Act činí až 35 mil. EUR nebo 7 % celosvětového ročního obratu. Pokud si nejste jisti klasifikací, pozastavte provoz systému do doby, než právní poradce vydá stanovisko. Pozastavení provozu je vždy bezpečnější než riziko pokuty.
 </div>
 
-<h3>Krok 1.2 — Formálně jmenovat odpovědnou osobu za AI</h3>
-
-<p><strong>Zodpovídá:</strong> Martin Haynes (jednatel). <strong>Výstup:</strong> Písemné jmenování uložené v personální dokumentaci, zveřejnění interně (intranet, nástěnka).</p>
-
-<p>Z dotazníku vyplývá, že Martin Haynes jako jednatel dohlíží na AI systémy osobně. Pro firmu s více než 250 zaměstnanci a 36 identifikovanými AI systémy je vhodné tuto roli formalizovat a případně delegovat na konkrétního zaměstnance — například IT manažera nebo compliance officera. Odpovědná osoba musí mít pravomoc pozastavit provoz AI systému, přijímat hlášení o incidentech a komunikovat s dozorovým orgánem.</p>
-
-<h3>Krok 1.3 — Nasadit transparenční stránku na web</h3>
-
-<p><strong>Zodpovídá:</strong> IT oddělení nebo správce webu. <strong>Výstup:</strong> Funkční stránka dostupná na webu firmy, odkaz v patičce webu.</p>
-
-<div class='info'>
-<strong>Jak na to konkrétně:</strong> HTML kód transparenční stránky je součástí Compliance Kitu. Předejte soubor správci webu s instrukcí: „Nahrajte tento soubor na náš web jako samostatnou stránku, například na adresu www.vasefirma.cz/ai-transparentnost, a přidejte odkaz do patičky webu s textem ‚Informace o používání AI'."
-</div>
-
-<h3>Krok 1.4 — Aktivovat oznámení u AI chatbotů a interakcí</h3>
-
-<p><strong>Zodpovídá:</strong> IT oddělení nebo správce webu. <strong>Výstup:</strong> Viditelné oznámení zobrazené uživateli před zahájením interakce s AI.</p>
-
-<p>Web skener identifikoval Google Gemini Chatbot a AI Chatbot jako systémy vyžadující transparentní označení dle čl. 50 odst. 1 AI Act. Texty oznámení jsou připraveny v Compliance Kitu. Konkrétní implementace: na začátek každého chatovacího okna přidejte text „Tento asistent je provozován umělou inteligencí (Google Gemini). Komunikujete s automatizovaným systémem, nikoli s člověkem." Stejný princip aplikujte na všechny automatizované odpovědi v zákaznické podpoře (Freshdesk AI, Zendesk AI, Intercom).</p>
-
-<h3>Krok 1.5 — Okamžitý audit systémů s potenciálně zakázanými funkcemi</h3>
-
-<div class='warning'>
-<strong>Kritická priorita:</strong> Systémy označené v analýze jako „vlastní html" a „vlastní kód" byly automatickým skenerem klasifikovány jako potenciálně zakázané praktiky dle čl. 5 AI Act (sociální scoring, rozpoznávání emocí, biometrická identifikace). Tato klasifikace vychází z automatické analýzy a musí být ověřena. Pokuta za provoz zakázaného systému dosahuje až 35 mil. EUR nebo 7 % ročního obratu.
-</div>
-
-<p><strong>Zodpovídá:</strong> Martin Haynes ve spolupráci s IT oddělením a externím právníkem. <strong>Výstup:</strong> Písemný audit report s jednoznačným závěrem: systém je v souladu / systém vyžaduje úpravu / systém musí být okamžitě vypnut.</p>
-
-<div class='info'>
-<strong>Jak na to konkrétně:</strong> Svolejte schůzku s vývojáři, kteří tyto systémy vytvořili nebo spravují. Zodpovězte písemně tyto otázky: (1) Co přesně systém dělá? (2) Analyzuje emoce, výrazy obličeje nebo biometrické údaje? (3) Přiřazuje lidem skóre na základě jejich chování? (4) Ovlivňuje rozhodnutí o přístupu ke službám? Výsledky předejte právníkovi specializovanému na AI regulaci.
-</div>
-
-<h2>4. Fáze 2 — Interní procesy a posouzení dopadů</h2>
-
-<h3>Krok 2.1 — Podpis a distribuce interní AI politiky</h3>
-
-<p><strong>Zodpovídá:</strong> Martin Haynes (jednatel). <strong>Výstup:</strong> Podepsaný dokument, distribuce všem zaměstnancům, uložení v interním systému.</p>
-
-<p>Interní AI politika je součástí Compliance Kitu. Jednatel ji podepíše a rozešle všem zaměstnancům — například e-mailem s předmětem „Nová interní pravidla pro používání AI nástrojů — povinné přečtení". Politika stanovuje, které AI nástroje jsou schváleny k použití, jaká data nesmí být do AI nástrojů vkládána (zejména osobní údaje zákazníků, zdravotní záznamy, finanční data klientů) a kdo je zodpovědný za dodržování pravidel.</p>
-
-<h3>Krok 2.2 — Validace a aktivace registru AI systémů</h3>
-
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI (viz Krok 1.2). <strong>Výstup:</strong> Živý registr uložený v interním systému, přístupný odpovědné osobě a vedení.</p>
-
-<p>Registr AI systémů dodaný v Compliance Kitu je předvyplněn ze zjištěných systémů. Odpovědná osoba jej projde s vedoucími jednotlivých oddělení a ověří úplnost: jsou v registru všechny AI nástroje, které zaměstnanci skutečně používají? Zvláštní pozornost věnujte tzv. Shadow AI — nástrojům, které zaměstnanci používají bez vědomí IT oddělení (například osobní účty ChatGPT, Midjourney nebo Perplexity). Registr aktualizujte při každém novém nasazení nebo vyřazení AI systému.</p>
-
-<h3>Krok 2.3 — Aktivace plánu řízení incidentů</h3>
-
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI. <strong>Výstup:</strong> Eskalační řetězec zdokumentován, zaměstnanci informováni o postupu hlášení.</p>
-
-<p>Plán řízení incidentů je součástí Compliance Kitu. Doplňte do něj konkrétní jména a kontakty: kdo je první kontakt při zjištění problému s AI systémem, kdo rozhoduje o pozastavení systému, kdo komunikuje s dozorovým orgánem.</p>
-
-<div class='warning'>
-<strong>Lhůta pro hlášení incidentů:</strong> Dle čl. 73 odst. 5 AI Act musí nasazovatel nahlásit závažný incident příslušnému dozorovému orgánu <strong>bez zbytečného odkladu, nejpozději do 15 dní</strong> od zjištění incidentu.
-</div>
-
-<div class='info'>
-<strong>Příslušný dozorový orgán v ČR:</strong> Česká republika dosud neurčila finální národní příslušný orgán (market surveillance authority) pro dohled nad AI Act. Sledujte vývoj legislativního procesu. Orientačně: pro GPAI modely je příslušný EU AI Office; pro finanční sektor ČNB; pro zdravotnictví SÚKL; pro kritickou infrastrukturu NÚKIB. Pro GDPR incidenty zůstává příslušný ÚOOÚ. Doporučujeme konzultaci s právníkem pro aktuální stav.
-</div>
-
-<h3>Krok 2.4 — Nastavení monitoringu AI výstupů</h3>
-
-<p><strong>Zodpovídá:</strong> IT oddělení ve spolupráci s odpovědnou osobou za AI. <strong>Výstup:</strong> Definované KPI pro každý kritický AI systém, měsíční kontrolní checklist.</p>
-
-<p>Dle čl. 9 AI Act je průběžné řízení rizik povinností pro high-risk systémy. Konkrétní příklady:</p>
 <ul>
-  <li><strong>Kreditní scoring (CRIF, Bisnode):</strong> měsíční kontrola vzorku 20 náhodných rozhodnutí — ověřte, zda výstupy AI odpovídají očekávaným výsledkům a nejeví známky diskriminace.</li>
-  <li><strong>HR AI (LinkedIn Recruiter, Teamio):</strong> sledujte demografické rozložení kandidátů doporučených systémem.</li>
-  <li><strong>Monitorování zaměstnanců:</strong> čtvrtletní přezkum, zda rozsah sledování odpovídá deklarovanému účelu.</li>
+  <li><strong>Zodpovídá:</strong> Martin Haynes + IT oddělení + právní poradce</li>
+  <li><strong>Výstup:</strong> Písemný závěr o klasifikaci systémů a případné rozhodnutí o ukončení provozu</li>
+  <li><strong>Zajištěno Kitem:</strong> Compliance Report s identifikací rizik, DPIA/FRIA podklady</li>
+  <li><strong>Akce klienta:</strong> Svolat schůzku IT a právního poradce, vyžádat technickou dokumentaci systémů</li>
 </ul>
 
-<h3>Krok 2.5 — Dokončení posouzení dopadů na základní práva (FRIA) dle čl. 27 AI Act</h3>
+<h3>Krok 1.2 — Provést školení AI gramotnosti</h3>
+<p>Svolejte zaměstnance (po odděleních) a promítněte prezentaci z Compliance Kitu. Školení pokrývá základy AI Act, zakázané praktiky, bezpečné používání AI nástrojů (ChatGPT, Copilot, Gemini) a povinnosti zaměstnanců. Docházku zaznamenejte do prezenční listiny.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Martin Haynes nebo jím pověřený vedoucí</li>
+  <li><strong>Výstup:</strong> Podepsané prezenční listiny uložené v personální složce</li>
+  <li><strong>Zajištěno Kitem:</strong> Plán školení + prezentace AI gramotnosti</li>
+  <li><strong>Akce klienta:</strong> Svolat termín školení, zajistit účast, archivovat prezenční listiny</li>
+</ul>
 
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI ve spolupráci s právním poradcem. <strong>Výstup:</strong> Dokončená FRIA pro každý identifikovaný high-risk systém, uložená v interní dokumentaci.</p>
+<h3>Krok 1.3 — Formálně jmenovat odpovědnou osobu za AI</h3>
+<p>Martin Haynes jako jednatel osobně dohlíží na AI systémy — toto jmenování je třeba formalizovat písemným rozhodnutím. Pokud firma zaměstnává IT manažera, compliance officera nebo GDPR pověřence, zvažte delegování operativního dohledu s jasně definovanými pravomocemi.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Martin Haynes</li>
+  <li><strong>Výstup:</strong> Písemné jmenování odpovědné osoby za AI uložené v interních dokumentech</li>
+  <li><strong>Zajištěno Kitem:</strong> Interní AI politika obsahuje roli odpovědné osoby</li>
+  <li><strong>Akce klienta:</strong> Podepsat jmenovací dokument, informovat zaměstnance</li>
+</ul>
 
-<p>Čl. 27 AI Act vyžaduje, aby nasazovatelé high-risk AI systémů provedli posouzení dopadů na základní práva (Fundamental Rights Impact Assessment — FRIA) před nasazením systému. Podklady pro FRIA jsou součástí Compliance Kitu, ale vyžadují doplnění specifik konkrétních systémů. FRIA musí být dokončena zejména pro tyto systémy:</p>
+<h3>Krok 1.4 — Nasadit transparenční stránku na web</h3>
+<p>HTML kód transparenční stránky je součástí Compliance Kitu. Předejte soubor IT oddělení s instrukcí: „Přidejte tuto stránku na web jako podstránku /ai-transparentnost a přidejte odkaz do patičky webu."</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> IT oddělení / správce webu</li>
+  <li><strong>Výstup:</strong> Funkční transparenční stránka dostupná na webu firmy</li>
+  <li><strong>Zajištěno Kitem:</strong> Kompletní HTML kód transparenční stránky</li>
+  <li><strong>Akce klienta:</strong> Předat HTML soubor IT, ověřit nasazení, přidat odkaz do patičky</li>
+</ul>
+
+<h3>Krok 1.5 — Aktivovat oznámení u AI chatbotů</h3>
+<p>Na webu jsou identifikovány chatboty poháněné Google Gemini. Ke každému chatbotu přidejte viditelný text: „Tento asistent je provozován umělou inteligencí. Komunikujete s AI, nikoliv s člověkem." Totéž platí pro automatizované odpovědi Freshdesk, Zendesk a Intercom.</p>
+
+<div class='info'>
+<strong>Proč nyní, když zákonný milník čl. 50 nastává až 2. 8. 2026?</strong> Implementace oznámení je doporučena okamžitě jako best practice a příprava na zákonnou povinnost. Včasné nasazení minimalizuje riziko opomenutí a buduje důvěru zákazníků.
+</div>
+
+<ul>
+  <li><strong>Zodpovídá:</strong> IT oddělení / správce webu</li>
+  <li><strong>Výstup:</strong> Viditelné AI oznámení u každého chatbotu a automatizované komunikace</li>
+  <li><strong>Zajištěno Kitem:</strong> Texty oznámení pro AI systémy</li>
+  <li><strong>Akce klienta:</strong> Implementovat texty na web a do emailových šablon</li>
+</ul>
+
+<h2>4. Fáze 2 — Interní procesy</h2>
+
+<h3>Krok 2.1 — Podpis a distribuce interní AI politiky</h3>
+<p>Interní AI politika z Compliance Kitu stanovuje pravidla pro používání AI nástrojů zaměstnanci — co se smí sdílet s ChatGPT nebo Copilot, jaká data nesmí opustit firmu, a kdo za co odpovídá. Jednatel ji podepíše a rozešle všem zaměstnancům emailem s potvrzením přečtení.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Martin Haynes</li>
+  <li><strong>Výstup:</strong> Podepsaná politika distribuovaná zaměstnancům, potvrzení uložena v HR</li>
+  <li><strong>Zajištěno Kitem:</strong> Kompletní text interní AI politiky</li>
+  <li><strong>Akce klienta:</strong> Podepsat, rozeslat, archivovat potvrzení o přečtení</li>
+</ul>
+
+<h3>Krok 2.2 — Aktivace registru AI systémů</h3>
+<p>Předvyplněný Registr AI systémů z Compliance Kitu obsahuje všechny identifikované systémy. Uložte jej na sdílené firemní úložiště a určete osobu odpovědnou za aktualizaci při každém novém nasazení AI nástroje. Příklad záznamu: „Datum: 1. 3. 2026 | Systém: nový HR chatbot | Dodavatel: Intercom | Riziko: omezené | Schválil: Martin Haynes."</p>
+
+<div class='info'>
+<strong>Upřesnění systému „pospa ing.":</strong> Systém evidovaný pod tímto názvem vyžaduje upřesnění — ověřte přesný název, účel a klasifikaci tohoto systému. Správný název a popis zapište do registru před kontaktem s NÚKIB.
+</div>
+
+<ul>
+  <li><strong>Zodpovídá:</strong> Odpovědná osoba za AI</li>
+  <li><strong>Výstup:</strong> Živý registr dostupný odpovědné osobě, aktualizovaný při každé změně</li>
+  <li><strong>Zajištěno Kitem:</strong> Předvyplněný Registr AI systémů</li>
+  <li><strong>Akce klienta:</strong> Uložit na sdílené úložiště, nastavit proces aktualizace</li>
+</ul>
+
+<h3>Krok 2.3 — Aktivace plánu řízení incidentů</h3>
+<p>Plán řízení incidentů z Compliance Kitu definuje, co dělat, když AI systém selže nebo způsobí škodu. Seznamte s ním klíčové zaměstnance — zejména ty, kteří denně pracují s high-risk systémy (HR, finance, zákaznická podpora).</p>
+
+<div class='warning'>
+<strong>Zákonná lhůta dle čl. 73 AI Act:</strong> Závažné incidenty high-risk AI systémů musí být hlášeny příslušnému národnímu dozorovému orgánu <strong>do 15 dnů od zjištění</strong>. Plán řízení incidentů musí obsahovat tento časový limit a kontaktní údaje dozorového orgánu. Příklad: pokud AI systém pro kreditní scoring vydá systematicky chybná rozhodnutí, zaměstnanec okamžitě eskaluje na odpovědnou osobu, rozhodnutí pozastaví a odpovědná osoba zahájí hlášení dozorovému orgánu.
+</div>
+
+<ul>
+  <li><strong>Zodpovídá:</strong> Martin Haynes + vedoucí dotčených oddělení</li>
+  <li><strong>Výstup:</strong> Zaměstnanci znají eskalační postup včetně 15denní lhůty, plán je dostupný na intranetu</li>
+  <li><strong>Zajištěno Kitem:</strong> Plán řízení incidentů se šablonou hlášení</li>
+  <li><strong>Akce klienta:</strong> Distribuovat plán, provést krátké seznámení s klíčovými zaměstnanci, doplnit kontaktní údaje dozorového orgánu</li>
+</ul>
+
+<h3>Krok 2.4 — Spuštění monitoringu AI výstupů</h3>
+<p>Monitoring plán z Compliance Kitu definuje KPI a metriky pro průběžnou kontrolu kvality AI systémů. Nastavte pravidelnou měsíční kontrolu — odpovědná osoba projde výstupy klíčových AI systémů a zaznamená případné anomálie. Příklad: jednou měsíčně zkontrolujte vzorky rozhodnutí AI systému pro schvalování žádostí a ověřte, zda nedochází k systematickému zamítání určitých skupin žadatelů.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Odpovědná osoba za AI</li>
+  <li><strong>Výstup:</strong> Měsíční záznamy z monitoringu uložené v interním systému</li>
+  <li><strong>Zajištěno Kitem:</strong> Monitoring plán s KPI a checklistem</li>
+  <li><strong>Akce klienta:</strong> Nastavit opakující se úkol v kalendáři, zahájit vedení záznamů</li>
+</ul>
+
+<h3>Krok 2.5 — Implementace opatření z FRIA</h3>
+<p>Čl. 27 AI Act vyžaduje, aby nasazovatelé high-risk systémů provedli posouzení dopadů na základní práva (FRIA) před nasazením. FRIA dokumentace je součástí Compliance Kitu — nestačí ji archivovat, musíte promítnout její závěry do konkrétních opatření.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Martin Haynes + právní poradce</li>
+  <li><strong>Výstup:</strong> Pro každý high-risk systém seznam zmírňujících opatření s přiřazenou zodpovědnou osobou</li>
+  <li><strong>Zajištěno Kitem:</strong> FRIA dokumentace pro identifikované high-risk systémy</li>
+  <li><strong>Akce klienta:</strong> Prostudovat FRIA pro každý high-risk systém, definovat zmírňující opatření, předat právnímu poradci k ověření</li>
+</ul>
+
+<h3>Krok 2.6 — Zavedení postupu pro vysvětlení rozhodnutí AI</h3>
+<p>Zákazníci a zaměstnanci dotčení rozhodnutími high-risk AI systémů (kreditní scoring, schvalování žádostí, pojišťovnictví, HR recruitment) mají právo požádat o vysvětlení rozhodnutí a jeho přezkum člověkem (čl. 86 AI Act, GDPR čl. 22). Definujte interní postup pro vyřizování těchto žádostí.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Odpovědná osoba za AI + právní oddělení</li>
+  <li><strong>Výstup:</strong> Písemný postup pro vyřizování žádostí o vysvětlení, kontaktní formulář nebo email pro žadatele</li>
+  <li><strong>Zajištěno Kitem:</strong> Interní AI politika obsahuje základní rámec</li>
+  <li><strong>Akce klienta:</strong> Definovat konkrétní postup, určit zodpovědné osoby pro jednotlivé systémy, zveřejnit kontaktní údaje</li>
+</ul>
+
+<h2>5. Fáze 3 — Dodavatelé a smlouvy</h2>
+
+<div class='highlight'>
+<strong>GPAI modely — povinnosti dle čl. 51–54 AI Act (účinné od 2. 8. 2025):</strong> Firma integruje GPAI modely od OpenAI (GPT-4/4o), Anthropic (Claude), Google (Gemini) a Mistral. Jako nasazovatel máte povinnost ověřit, že tito dodavatelé plní své povinnosti dle čl. 53 AI Act, a smluvně toto ošetřit.
+</div>
+
+<h3>Krok 3.1 — Due diligence dodavatelů AI</h3>
+<p>Použijte Dodavatelský checklist z Compliance Kitu pro systematické prověření každého dodavatele. Pro každého ověřte: existenci EU prohlášení o shodě, dostupnost technické dokumentace, podmínky zpracování dat a politiku opt-out z trénování. Začněte s dodavateli high-risk systémů — CRIF, Bisnode, Guidewire, LinkedIn Recruiter.</p>
+
+<div class='info'>
+<strong>Jak často kontrolovat dodavatele?</strong> Proveďte úvodní due diligence u všech klíčových dodavatelů. Následně opakujte kontrolu minimálně jednou ročně a vždy při změně smluvních podmínek dodavatele, aktualizaci AI systému nebo změně legislativy.
+</div>
+
+<ul>
+  <li><strong>Zodpovídá:</strong> Odpovědná osoba za AI + právní oddělení</li>
+  <li><strong>Výstup:</strong> Vyplněný checklist pro každého klíčového dodavatele</li>
+  <li><strong>Zajištěno Kitem:</strong> Dodavatelský checklist s konkrétními otázkami</li>
+  <li><strong>Akce klienta:</strong> Kontaktovat dodavatele, vyžádat dokumentaci, vyplnit checklist</li>
+</ul>
+
+<h3>Krok 3.2 — Uzavření DPA smluv s dodavateli</h3>
+<p>GDPR čl. 28 vyžaduje uzavření smlouvy o zpracování osobních údajů (DPA) s každým dodavatelem zpracovávajícím osobní data jménem firmy. Zkontrolujte, zda máte platné DPA s: OpenAI, Anthropic, Google, Mistral, Freshdesk, Zendesk, Intercom, LinkedIn, Sloneek a dalšími. Pokud DPA chybí, vyžádejte standardní smlouvu od dodavatele — většina velkých poskytovatelů ji nabízí online.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> Právní oddělení / GDPR pověřenec</li>
+  <li><strong>Výstup:</strong> Archiv podepsaných DPA smluv pro všechny relevantní dodavatele</li>
+  <li><strong>Zajištěno Kitem:</strong> Dodavatelský checklist obsahuje kontrolu DPA</li>
+  <li><strong>Akce klienta:</strong> Projít seznam dodavatelů, dohledat nebo uzavřít chybějící DPA</li>
+</ul>
+
+<h3>Krok 3.3 — Ověření opt-out z trénování na datech firmy</h3>
+<p>Ověřte u každého GPAI dodavatele, zda vaše data nejsou používána k trénování jejich modelů. Výsledky zaznamenejte do registru AI systémů.</p>
 
 <table>
   <thead>
     <tr>
-      <th>Systém / oblast</th>
-      <th>Důvod povinnosti FRIA</th>
+      <th>Dodavatel</th>
+      <th>Kde nastavit opt-out</th>
+      <th>Postup</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Kreditní scoring (CRIF, Bisnode, Scoring Solutions)</td>
-      <td>Příloha III bod 5a — přístup k finančním službám</td>
+      <td><strong>OpenAI</strong></td>
+      <td>platform.openai.com → Nastavení organizace</td>
+      <td>Vypněte „Improve our models for everyone". U API je opt-out výchozí.</td>
     </tr>
     <tr>
-      <td>HR AI (LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI)</td>
-      <td>Příloha III bod 4 — zaměstnanost a řízení pracovníků</td>
+      <td><strong>Google Gemini</strong></td>
+      <td>Workspace Admin Console</td>
+      <td>Zkontrolujte nastavení sdílení dat v sekci AI a strojové učení.</td>
     </tr>
     <tr>
-      <td>Monitorování zaměstnanců (sledování obrazovky, GPS, kamerový dohled s AI)</td>
-      <td>Příloha III bod 4 — řízení pracovníků; dopad na soukromí</td>
+      <td><strong>Anthropic Claude</strong></td>
+      <td>Smluvní podmínky API</td>
+      <td>Ověřte podmínky API smlouvy — u komerčního API je opt-out standardní.</td>
     </tr>
     <tr>
-      <td>AI ve vzdělávání (e-learning, doporučování obsahu)</td>
-      <td>Příloha III bod 3 — přístup ke vzdělávání</td>
-    </tr>
-    <tr>
-      <td>AI v pojišťovnictví (Guidewire, NESS/Allianz AI)</td>
-      <td>Příloha III bod 5a — přístup k pojistným službám</td>
-    </tr>
-    <tr>
-      <td>AI rozhodující o právech zákazníků (reklamace, schvalování žádostí)</td>
-      <td>Příloha III bod 5b — přístup ke službám</td>
+      <td><strong>Mistral</strong></td>
+      <td>console.mistral.ai → Nastavení organizace</td>
+      <td>Ověřte podmínky služby na mistral.ai/terms. U API (La Plateforme) Mistral deklaruje, že data zákazníků nepoužívá k trénování. U bezplatné webové verze (Le Chat) zkontrolujte nastavení soukromí v profilu.</td>
     </tr>
   </tbody>
 </table>
 
-<h2>5. Fáze 3 — Dodavatelé a smlouvy</h2>
+<ul>
+  <li><strong>Zodpovídá:</strong> IT oddělení</li>
+  <li><strong>Výstup:</strong> Písemné potvrzení opt-out nastavení pro každého GPAI dodavatele</li>
+  <li><strong>Zajištěno Kitem:</strong> Dodavatelský checklist obsahuje kontrolu opt-out</li>
+  <li><strong>Akce klienta:</strong> Přihlásit se do administrace každého nástroje a ověřit nastavení</li>
+</ul>
 
-<h3>Krok 3.1 — Due diligence klíčových dodavatelů AI</h3>
+<h2>6. Fáze 4 — Technická opatření</h2>
 
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI ve spolupráci s právním oddělením nebo externím právníkem. <strong>Výstup:</strong> Vyplněný dodavatelský checklist pro každého klíčového dodavatele.</p>
-
-<p>Dodavatelský checklist z Compliance Kitu použijte při komunikaci s dodavateli OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini), Microsoft (Copilot) a dalšími. Prioritizujte dodavatele, jejichž systémy zpracovávají osobní údaje zákazníků nebo zaměstnanců. Ověřte zejména: zda dodavatel splňuje povinnosti GPAI poskytovatele dle čl. 53 AI Act, zda jsou data zákazníků firmy Martin Haynes používána k trénování modelů (a jak lze opt-out zajistit), a kde jsou data fyzicky uložena.</p>
+<h3>Krok 4.1 — Implementace logování pro high-risk AI systémy</h3>
+<p>Pro high-risk AI systémy zajistěte automatické zaznamenávání rozhodnutí. Logy musí obsahovat: datum a čas, vstupní data, výstup AI a identifikaci uživatele.</p>
 
 <div class='info'>
-<strong>Příklad emailu dodavateli (OpenAI):</strong> „Vážení, v souladu s Nařízením EU 2024/1689 (AI Act) Vás žádáme o potvrzení následujících skutečností: (1) Jsou data zadávaná našimi zaměstnanci do ChatGPT používána k trénování modelů? Pokud ano, jak lze toto použití zakázat? (2) Kde jsou naše data fyzicky uložena — v EU nebo mimo EU? (3) Jaké záruky poskytujete pro přenos dat mimo EU (SCC, adequacy decision)? (4) Máte uzavřenou smlouvu o zpracování dat (DPA) dle GDPR čl. 28? Žádáme o odpověď do 14 dnů."
+<strong>Povinnost uchovávání logů:</strong> Jako <strong>nasazovatel</strong> uchovávejte automaticky generované logy minimálně 6 měsíců dle čl. 26 odst. 5 AI Act. Jako <strong>poskytovatel</strong> vlastních AI systémů uchovávejte logy dle čl. 19 odst. 1 AI Act. Obě povinnosti platí současně pro systémy, které sami vyvíjíte i nasazujete.
 </div>
 
-<h3>Krok 3.2 — Uzavření nebo aktualizace DPA smluv</h3>
+<p><strong>Konkrétní příklady implementace logování:</strong></p>
 
-<p><strong>Zodpovídá:</strong> Právní oddělení nebo jednatel. <strong>Výstup:</strong> Podepsané DPA smlouvy s každým dodavatelem AI, který zpracovává osobní údaje.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Systém</th>
+      <th>Postup</th>
+      <th>Kontaktovat dodavatele?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CRIF (kreditní scoring)</strong></td>
+      <td>Nastavte export rozhodnutí do firemního datového skladu. CRIF nabízí API pro stahování historie dotazů a výsledků. Nastavte automatický export s uchováním min. 6 měsíců a automatickým mazáním po 12 měsících.</td>
+      <td>Ano — vyžádejte si dokumentaci k API exportu logů a formát dat.</td>
+    </tr>
+    <tr>
+      <td><strong>Guidewire (pojišťovnictví)</strong></td>
+      <td>Guidewire má vestavěný audit trail. Ověřte, že je aktivován modul „ClaimCenter Audit" a že logy zahrnují AI-asistovaná rozhodnutí. Nastavte export do centrálního úložiště.</td>
+      <td>Ano — požádejte o potvrzení, že audit trail pokrývá AI komponenty.</td>
+    </tr>
+    <tr>
+      <td><strong>LinkedIn Recruiter</strong></td>
+      <td>LinkedIn Recruiter umožňuje export historie vyhledávání a doporučení kandidátů. Nastavte pravidelný export (měsíčně) a archivujte záznamy o tom, kteří kandidáti byli AI doporučeni a jak bylo s doporučením naloženo.</td>
+      <td>Ne — export je dostupný v administraci nástroje.</td>
+    </tr>
+    <tr>
+      <td><strong>Vlastní AI systémy</strong></td>
+      <td>Implementujte logování přímo do kódu — každý vstup, výstup a rozhodnutí AI musí být zaznamenáno s časovým razítkem a ID uživatele.</td>
+      <td>Není relevantní — jste poskytovatel.</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>GDPR čl. 28 vyžaduje písemnou smlouvu se zpracovatelem dat. Většina velkých dodavatelů (OpenAI, Google, Microsoft, Anthropic) nabízí standardní DPA dostupné online — zkontrolujte, zda je vaše firma k těmto smlouvám přistoupila. Pro menší nebo lokální dodavatele (Fakturoid, ABRA, Pohoda) ověřte existenci DPA v rámci smluvní dokumentace.</p>
-
-<h3>Krok 3.3 — Ověření GPAI povinností dodavatelů (čl. 51–54 AI Act)</h3>
-
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI. <strong>Výstup:</strong> Písemné potvrzení od každého GPAI dodavatele o splnění povinností dle čl. 53 AI Act.</p>
-
-<p>Firma Martin Haynes integruje GPAI modely od OpenAI, Anthropic, Google a Mistral do zákaznických produktů a interních procesů. Od 2. 8. 2025 platí pro tyto modely povinnosti dle čl. 51–54 AI Act. Jako nasazovatel máte povinnost ověřit, že váš dodavatel GPAI modelu tyto povinnosti plní — zejména povinnost technické dokumentace (čl. 53 odst. 1 písm. a), transparentnosti (čl. 53 odst. 1 písm. b) a dodržování autorských práv (čl. 53 odst. 1 písm. c). Toto ověření zdokumentujte.</p>
-
-<h2>6. Fáze 4 — Technická opatření a posouzení shody</h2>
-
-<h3>Krok 4.1 — Implementace a ověření logování AI systémů</h3>
-
-<p><strong>Zodpovídá:</strong> IT oddělení. <strong>Výstup:</strong> Dokumentovaný systém logování pro každý high-risk AI systém, definovaná doba uchovávání.</p>
-
-<p>Z dotazníku vyplývá, že firma již má AI logging zaveden. Pro high-risk systémy platí dvě vzájemně provázané povinnosti:</p>
 <ul>
-  <li><strong>Poskytovatel (čl. 19 odst. 1 AI Act):</strong> musí uchovávat automaticky generované protokoly minimálně 6 měsíců (pokud nestanoví jiný právní předpis jinak).</li>
-  <li><strong>Nasazovatel (čl. 26 odst. 5 AI Act):</strong> musí uchovávat logy po dobu stanovenou poskytovatelem systému, přiměřenou zamýšlenému účelu.</li>
+  <li><strong>Zodpovídá:</strong> IT oddělení</li>
+  <li><strong>Výstup:</strong> Funkční logování pro všechny high-risk systémy, záznamy archivovány</li>
+  <li><strong>Zajištěno Kitem:</strong> Monitoring plán definuje požadavky na logování</li>
+  <li><strong>Akce klienta:</strong> Technická implementace logování v každém high-risk systému</li>
 </ul>
-<p>Ověřte, zda jsou obě podmínky splněny pro systémy kreditního scoringu (CRIF, Bisnode), HR AI (LinkedIn Recruiter, Teamio) a monitorovací systémy zaměstnanců. Logy musí být chráněny před neoprávněným přístupem a dostupné pro případnou kontrolu dozorového orgánu.</p>
 
-<h3>Krok 4.2 — Ověření funkčnosti lidského dohledu a override mechanismů</h3>
+<h3>Krok 4.2 — Nastavení přístupových práv k AI systémům</h3>
+<p>Omezte přístup k high-risk AI systémům pouze na zaměstnance, kteří je potřebují ke své práci. Příklad: přístup k AI systému pro kreditní scoring by měli mít pouze zaměstnanci finančního oddělení. Nastavte role a oprávnění v každém systému a veďte evidenci přístupů.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> IT oddělení</li>
+  <li><strong>Výstup:</strong> Matice přístupových práv k AI systémům, nastavena v systémech</li>
+  <li><strong>Zajištěno Kitem:</strong> Interní AI politika definuje zásady přístupu</li>
+  <li><strong>Akce klienta:</strong> Audit stávajících přístupů, nastavení rolí, revize oprávnění</li>
+</ul>
 
-<p><strong>Zodpovídá:</strong> IT oddělení ve spolupráci s vedoucími oddělení. <strong>Výstup:</strong> Písemný popis override procesu pro každý high-risk systém, proškolení zaměstnanců.</p>
+<h3>Krok 4.3 — Zajištění možnosti přepsání rozhodnutí AI (čl. 14 AI Act)</h3>
+<p>Zaměstnanci pracující s high-risk AI systémy musí mít technickou i procesní možnost rozhodnutí AI nepřijmout, přepsat nebo zrušit (čl. 14 odst. 4 písm. d) AI Act). Příklad: pokud AI systém pro schvalování žádostí doporučí zamítnutí, musí mít zaměstnanec v systému tlačítko „Přepsat rozhodnutí" a povinnost zaznamenat důvod přepsání. Ověřte tuto funkci u každého high-risk systému a případně požádejte dodavatele o její implementaci.</p>
+<ul>
+  <li><strong>Zodpovídá:</strong> IT oddělení + vedoucí dotčených oddělení</li>
+  <li><strong>Výstup:</strong> Dokumentovaná možnost override u každého high-risk systému</li>
+  <li><strong>Zajištěno Kitem:</strong> Dokument Transparentnost a lidský dohled</li>
+  <li><strong>Akce klienta:</strong> Ověřit technickou dostupnost override, případně vyžádat od dodavatele</li>
+</ul>
 
-<p>Dle čl. 14 odst. 4 písm. d) AI Act musí mít zaměstnanci možnost rozhodnutí AI systému nepoužít, přepsat nebo zrušit. Z dotazníku vyplývá, že tato možnost existuje. Formalizujte ji: pro každý high-risk systém zdokumentujte, jak zaměstnanec rozhodnutí AI přepíše, kdo toto přepsání schvaluje a jak se zaznamenává.</p>
+<h3>Krok 4.4 — Registrace high-risk systémů v EU databázi</h3>
 
-<p>Příklad: pokud AI systém kreditního scoringu doporučí zamítnutí žádosti, musí mít úvěrový analytik zdokumentovaný postup, jak toto rozhodnutí přezkoumat a případně změnit. Zákazník má zároveň právo na vysvětlení dle čl. 86 AI Act — toto právo se vztahuje na fyzické osoby dotčené rozhodnutím high-risk AI systému dle Přílohy III a musí jim být aktivně komunikováno.</p>
-
-<h3>Krok 4.3 — Registrace high-risk systémů v EU databázi</h3>
-
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI ve spolupráci s právním poradcem. <strong>Výstup:</strong> Registrace provedena v EU databázi dle čl. 49 odst. 2 AI Act před termínem 2. 8. 2026.</p>
-
-<p>Nasazovatelé high-risk AI systémů dle Přílohy III mají povinnost registrovat nasazení v EU databázi dle čl. 49 odst. 2 AI Act. Výjimku tvoří systémy v oblasti kritické infrastruktury (systém označený jako „pospa ing."), kde se registrace provádí u národního orgánu dle čl. 49 odst. 4 — v ČR je příslušným orgánem NÚKIB. Zahajte přípravu registrací s dostatečným předstihem.</p>
-
-<h3>Krok 4.4 — Posouzení shody (conformity assessment) pro high-risk systémy (čl. 43 AI Act)</h3>
-
-<p><strong>Zodpovídá:</strong> Odpovědná osoba za AI ve spolupráci s právním poradcem a IT oddělením. <strong>Výstup:</strong> Dokončené posouzení shody pro každý high-risk systém, kde firma vystupuje jako poskytovatel; prohlášení o shodě dle čl. 47 AI Act; CE označení dle čl. 48 AI Act.</p>
-
-<div class='warning'>
-<strong>Zákonný deadline: 2. 8. 2026.</strong> Posouzení shody je jednou z nejzásadnějších povinností pro high-risk systémy. Bez něj nelze systém legálně provozovat.
+<div class='info'>
+<strong>Rozlišení rolí při registraci:</strong> Jako <strong>nasazovatel</strong> systémů třetích stran (CRIF, LinkedIn Recruiter, Guidewire aj.) primárně ověřte, že váš dodavatel (poskytovatel) provedl registraci high-risk systému v EU databázi dle čl. 49 odst. 2 AI Act. Jako <strong>poskytovatel</strong> vlastních AI systémů máte přímou povinnost registrace dle čl. 49 odst. 1 AI Act.
 </div>
 
-<p>Firma Martin Haynes vyvíjí vlastní AI systémy a mění účel existujících systémů (čl. 25 AI Act) — tím na sebe přebírá povinnosti poskytovatele dle čl. 16 AI Act. Pro tyto systémy platí:</p>
+<p>Registrace probíhá na portálu EU AI databáze. Připravte si: název systému, název dodavatele, účel použití, kategorii rizika a kontaktní údaje odpovědné osoby. Odhadovaná časová náročnost: 30–60 minut na systém.</p>
+
+<p><strong>Výjimka — kritická infrastruktura (systém „pospa ing."):</strong> Systémy v oblasti kritické infrastruktury (Příloha III bod 2) se registrují u národního orgánu dle čl. 49 odst. 4 AI Act, nikoliv ve veřejné EU databázi.</p>
+
+<div class='callout'>
+<strong>Postup registrace u NÚKIB:</strong>
+<ol>
+  <li>Upřesněte přesný název a účel systému „pospa ing." (viz krok 2.2)</li>
+  <li>Připravte technickou dokumentaci systému: popis funkce, vstupní/výstupní data, bezpečnostní opatření</li>
+  <li>Kontaktujte NÚKIB prostřednictvím datové schránky nebo kontaktního formuláře na nukib.gov.cz</li>
+  <li>Vyžádejte si formulář pro registraci AI systému v kritické infrastruktuře</li>
+  <li>Doporučujeme konzultaci s právním poradcem před podáním — AIshield připraví podklady</li>
+</ol>
+</div>
+
+<ul>
+  <li><strong>Zodpovídá:</strong> Odpovědná osoba za AI</li>
+  <li><strong>Výstup:</strong> Potvrzení registrace vlastních AI systémů; potvrzení od dodavatelů o jejich registraci</li>
+  <li><strong>Zákonný milník:</strong> čl. 49 — informativně od 2. 8. 2026</li>
+  <li><strong>Akce klienta:</strong> U vlastních systémů: vytvořit účet na EU AI databázi a zaregistrovat. U systémů třetích stran: vyžádat potvrzení registrace od dodavatele.</li>
+</ul>
+
+<h3>Krok 4.5 — Plnění povinností poskytovatele pro vlastní AI systémy</h3>
+
+<p>Firma deklarovala „Vlastní vývoj AI" a „Změna účelu AI systému". V obou případech firma vystupuje jako <strong>poskytovatel</strong> (provider) dle AI Act a přebírá plné povinnosti dle čl. 16 AI Act. Změna účelu AI systému dle čl. 25 AI Act přenáší povinnosti původního poskytovatele na firmu.</p>
 
 <table>
   <thead>
     <tr>
       <th>Povinnost</th>
-      <th>Reference</th>
-      <th>Poznámka</th>
+      <th>Článek AI Act</th>
+      <th>Popis</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Posouzení shody</td>
-      <td>čl. 43 AI Act</td>
-      <td>Pro většinu systémů postačuje interní posouzení (čl. 43 odst. 2). Biometrické systémy vyžadují zapojení notifikovaného subjektu.</td>
+      <td>Technická dokumentace</td>
+      <td>čl. 11, Příloha IV</td>
+      <td>Vypracujte dokumentaci: popis systému, účel, výkonnostní metriky, data použitá k trénování, opatření pro lidský dohled, známá omezení.</td>
     </tr>
     <tr>
-      <td>Technická dokumentace</td>
-      <td>Příloha IV AI Act; čl. 11</td>
-      <td>Povinná pro všechny systémy, kde firma vystupuje jako poskytovatel — vlastní vývoj AI i systémy upravené dle čl. 25.</td>
+      <td>Posouzení shody</td>
+      <td>čl. 43</td>
+      <td>Proveďte interní posouzení shody dle Přílohy VI (notifikovaný subjekt není nutný, kromě biometrie). Ověřte soulad se všemi požadavky kapitoly III oddílu 2 AI Act.</td>
     </tr>
     <tr>
       <td>Prohlášení o shodě</td>
-      <td>čl. 47 AI Act</td>
-      <td>Vydává poskytovatel po úspěšném posouzení shody.</td>
-    </tr>
-    <tr>
-      <td>CE označení</td>
-      <td>čl. 48 AI Act</td>
-      <td>Povinné pro high-risk systémy uváděné na trh EU.</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class='info'>
-<strong>Jak na to konkrétně:</strong> (1) Identifikujte všechny systémy, kde firma vystupuje jako poskytovatel (vlastní vývoj, změna účelu). (2) Pro každý systém připravte technickou dokumentaci dle Přílohy IV AI Act. (3) Proveďte interní posouzení shody dle čl. 43 odst. 2 (pro biometrické systémy kontaktujte notifikovaný subjekt). (4) Po úspěšném posouzení vydejte prohlášení o shodě a opatřete systém CE označením. Podklady pro dokumentaci jsou součástí Compliance Kitu — AIshield připraví pre-filled šablony.
-</div>
-
-<h2>7. Průběžné aktivity</h2>
-
-<p>Soulad s AI Act je kontinuální proces. Nastavte následující pravidelné aktivity:</p>
-
-<ul>
-  <li><strong>Aktualizace registru AI systémů (min. 1x za 6 měsíců):</strong> Projděte registr s vedoucími oddělení. Každý nový AI systém zařaďte do registru před jeho nasazením do provozu.</li>
-  <li><strong>Čtvrtletní review transparentnosti:</strong> Ověřte, zda jsou oznámení u všech AI systémů aktuální a viditelná. Zkontrolujte, zda transparenční stránka na webu odpovídá aktuálnímu stavu nasazených systémů.</li>
-  <li><strong>Roční revize interní AI politiky:</strong> Aktualizujte politiku tak, aby reflektovala nové systémy, změny v legislativě a zkušenosti z provozu. Aktualizovanou verzi podepište a distribuujte zaměstnancům.</li>
-  <li><strong>Školení nových zaměstnanců:</strong> Každý nový zaměstnanec musí absolvovat školení AI gramotnosti v rámci onboardingu. Využijte PowerPointovou prezentaci z Compliance Kitu a veďte prezenční listiny.</li>
-  <li><strong>Monitoring legislativních změn:</strong> Sledujte prováděcí akty a pokyny Evropského úřadu pro AI (AI Office), které upřesňují aplikaci AI Act — zejména určení národního příslušného orgánu v ČR. Relevantní změny promítněte do interní dokumentace.</li>
-  <li><strong>Post-market monitoring high-risk systémů (čl. 72 AI Act):</strong> Průběžně monitorujte výstupy high-risk systémů. Výsledky dokumentujte a uchovávejte pro případnou kontrolu.</li>
-</ul>
-
-<h2>8. Kontrolní tabulka — přehled všech kroků</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Krok</th>
-      <th>Popis</th>
-      <th>Fáze</th>
-      <th>Zodpovídá</th>
-      <th>Zákonný deadline</th>
-      <th>Zajištěno Kitem</th>
-      <th>Akce klienta</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1.1</td>
-      <td>Školení AI gramotnosti zaměstnanců (čl. 4)</td>
-      <td>1 — Okamžitá priorita</td>
-      <td>Martin Haynes / HR</td>
-      <td><span class='badge-high'>2. 2. 2025 — OKAMŽITĚ</span></td>
-      <td>PowerPoint prezentace dodána</td>
-      <td>Realizovat školení, vést prezenční listiny</td>
-    </tr>
-    <tr>
-      <td>1.2</td>
-      <td>Formální jmenování odpovědné osoby za AI</td>
-      <td>1 — Okamžitá priorita</td>
-      <td>Martin Haynes (jednatel)</td>
-      <td><span class='badge-high'>2. 2. 2025 — OKAMŽITĚ</span></td>
-      <td>Šablona jmenování v Kitu</td>
-      <td>Podepsat a distribuovat jmenování</td>
-    </tr>
-    <tr>
-      <td>1.3</td>
-      <td>Nasazení transparenční stránky na web</td>
-      <td>1 — Okamžitá priorita</td>
-      <td>IT oddělení / správce webu</td>
-      <td><span class='badge-high'>2. 2. 2025 — OKAMŽITĚ</span></td>
-      <td>HTML kód stránky dodán</td>
-      <td>Nahrát na web, přidat odkaz do patičky</td>
-    </tr>
-    <tr>
-      <td>1.4</td>
-      <td>Aktivace oznámení u AI chatbotů (čl. 50 odst. 1)</td>
-      <td>1 — Okamžitá priorita</td>
-      <td>IT oddělení</td>
-      <td><span class='badge-high'>2. 2. 2025 — OKAMŽITĚ</span></td>
-      <td>Texty oznámení dodány</td>
-      <td>Implementovat texty do chatbotů a aplikací</td>
-    </tr>
-    <tr>
-      <td>1.5</td>
-      <td>Audit systémů s potenciálně zakázanými funkcemi (čl. 5)</td>
-      <td>1 — Okamžitá priorita</td>
-      <td>Martin Haynes + IT + právník</td>
-      <td><span class='badge-high'>2. 2. 2025 — OKAMŽITĚ</span></td>
-      <td>Metodika auditu v Compliance Reportu</td>
-      <td>Provést audit, konzultovat s právníkem, zdokumentovat závěry</td>
-    </tr>
-    <tr>
-      <td>2.1</td>
-      <td>Podpis a distribuce interní AI politiky</td>
-      <td>2 — Interní procesy</td>
-      <td>Martin Haynes (jednatel)</td>
-      <td>2. 8. 2026</td>
-      <td>Dokument AI politiky dodán</td>
-      <td>Podepsat, distribuovat zaměstnancům</td>
-    </tr>
-    <tr>
-      <td>2.2</td>
-      <td>Validace a aktivace registru AI systémů</td>
-      <td>2 — Interní procesy</td>
-      <td>Odpovědná osoba za AI</td>
-      <td>2. 8. 2026</td>
-      <td>Předvyplněný registr dodán</td>
-      <td>Ověřit úplnost, doplnit Shadow AI, aktivovat jako živý dokument</td>
-    </tr>
-    <tr>
-      <td>2.3</td>
-      <td>Aktivace plánu řízení incidentů (čl. 73 — lhůta 15 dní)</td>
-      <td>2 — Interní procesy</td>
-      <td>Odpovědná osoba za AI</td>
-      <td>2. 8. 2026</td>
-      <td>Šablona plánu dodána</td>
-      <td>Doplnit jména a kontakty, distribuovat zaměstnancům</td>
-    </tr>
-    <tr>
-      <td>2.4</td>
-      <td>Nastavení monitoringu AI výstupů (čl. 9)</td>
-      <td>2 — Interní procesy</td>
-      <td>IT oddělení + odpovědná osoba za AI</td>
-      <td>2. 8. 2026</td>
-      <td>Monitoring plán dodán</td>
-      <td>Definovat KPI, nastavit měsíční kontrolní rutinu</td>
-    </tr>
-    <tr>
-      <td>2.5</td>
-      <td>Dokončení FRIA pro high-risk systémy (čl. 27)</td>
-      <td>2 — Interní procesy</td>
-      <td>Odpovědná osoba za AI + právník</td>
-      <td>2. 8. 2026</td>
-      <td>Podklady FRIA dodány v Kitu</td>
-      <td>Doplnit specifika systémů, dokončit posouzení pro každý high-risk systém</td>
-    </tr>
-    <tr>
-      <td>3.1</td>
-      <td>Due diligence klíčových dodavatelů AI</td>
-      <td>3 — Dodavatelé</td>
-      <td>Odpovědná osoba za AI + právník</td>
-      <td>2. 8. 2026</td>
-      <td>Dodavatelský checklist dodán</td>
-      <td>Kontaktovat dodavatele, vyplnit checklist pro každého</td>
-    </tr>
-    <tr>
-      <td>3.2</td>
-      <td>Uzavření nebo aktualizace DPA smluv (GDPR čl. 28)</td>
-      <td>3 — Dodavatelé</td>
-      <td>Právní oddělení / jednatel</td>
-      <td>2. 8. 2026</td>
-      <td>Šablona DPA v Kitu</td>
-      <td>Podepsat DPA s každým AI dodavatelem zpracovávajícím osobní údaje</td>
-    </tr>
-    <tr>
-      <td>3.3</td>
-      <td>Ověření GPAI povinností dodavatelů (čl. 51–54)</td>
-      <td>3 — Dodavatelé</td>
-      <td>Odpovědná osoba za AI</td>
-      <td><span class='badge-high'>2. 8. 2025 — OKAMŽITĚ</span></td>
-      <td>Checklist GPAI v Kitu</td>
-      <td>Získat písemné potvrzení od OpenAI, Anthropic, Google, Mistral</td>
-    </tr>
-    <tr>
-      <td>4.1</td>
-      <td>Ověření a dokumentace logování AI systémů (čl. 19 odst. 1 + čl. 26 odst. 5)</td>
-      <td>4 — Technická opatření</td>
-      <td>IT oddělení</td>
-      <td>2. 8. 2026</td>
-      <td>Monitoring plán s požadavky na logy</td>
-      <td>Ověřit lhůty uchovávání, zdokumentovat nastavení logování</td>
-    </tr>
-    <tr>
-      <td>4.2</td>
-      <td>Formalizace override mechanismů (čl. 14 odst. 4) + právo na vysvětlení (čl. 86)</td>
-      <td>4 — Technická opatření</td>
-      <td>IT + vedoucí oddělení</td>
-      <td>2. 8. 2026</td>
-      <td>Dokument lidského dohledu v Kitu</td>
-      <td>Zdokumentovat override postup pro každý high-risk systém, proškolit zaměstnance</td>
-    </tr>
-    <tr>
-      <td>4.3</td>
-      <td>Registrace high-risk systémů v EU databázi (čl. 49 odst. 2)</td>
-      <td>4 — Technická opatření</td>
-      <td>Odpovědná osoba za AI + právník</td>
-      <td>2. 8. 2026</td>
-      <td>Podklady pro registraci v Kitu</td>
-      <td>Provést registraci v EU databázi; pro kritickou infrastrukturu kontaktovat NÚKIB</td>
-    </tr>
-    <tr>
-      <td>4.4</td>
-      <td>Posouzení shody pro high-risk systémy (čl. 43) + technická dokumentace (Příloha IV) + CE označení (čl. 48) + prohlášení o shodě (čl. 47)</td>
-      <td>4 — Technická opatření</td>
-      <td>Odpovědná osoba za AI + právník + IT</td>
-      <td><span class='badge-high'>2. 8. 2026</span></td>
-      <td>Pre-filled šablony dokumentace v Kitu</td>
-      <td>Dokončit posouzení shody, připravit technickou dokumentaci, vydat prohlášení o shodě, opatřit CE označením</td>
-    </tr>
-    <tr>
-      <td>P.1</td>
-      <td>Aktualizace registru AI systémů (min. 1x za 6 měsíců)</td>
-      <td>Průběžně</td>
-      <td>Odpovědná osoba za AI</td>
-      <td>Průběžně</td>
-      <td>Šablona registru dodána</td>
-      <td>Provádět pravidelné aktualizace</td>
-    </tr>
-    <tr>
-      <td>P.2</td>
-      <td>Čtvrtletní review transparentnosti a dohledu</td>
-      <td>Průběžně</td>
-      <td>Odpovědná osoba za AI</td>
-      <td>Průběžně</td>
-      <td>Monitoring plán dodán</td>
-      <td>Realizovat čtvrtletní kontroly, dokumentovat výsledky</td>
-    </tr>
-    <tr>
-      <td>P.3</td>
-      <td>Roční revize interní AI politiky</td>
-      <td>Průběžně</td>
-      <td>Martin Haynes (jednatel)</td>
-      <td>Průběžně</td>
-      <td>Šablona politiky dodána</td>
-      <td>Aktualizovat, podepsat a distribuovat novou verzi</td>
-    </tr>
-    <tr>
-      <td>P.4</td>
-      <td>Školení nových zaměstnanců při nástupu (čl. 4)</td>
-      <td>Průběžně</td>
-      <td>HR oddělení</td>
-      <td>Průběžně</td>
-      <td>PowerPoint prezentace dodána</td>
-      <td>Zařadit do onboardingového procesu, vést prezenční listiny</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class='callout'>
-Tento akční plán je součástí AI Act Compliance Kitu dodaného firmě Martin Haynes (IČO: 17889251) společností AIshield.cz. Dokument má charakter odborné technické pomůcky a nepředstavuje právní poradenství. Pro posouzení konkrétních právních dopadů — zejména v souvislosti s potenciálně zakázanými systémy (Krok 1.5), posouzením shody (Krok 4.4), změnou účelu AI systémů (čl. 25 AI Act) a určením příslušného dozorového orgánu v ČR — doporučujeme konzultaci s právníkem specializovaným na AI regulaci.
-</div>
-
-<div class='sig-block'>
-  <div class='sig-field'>Za firmu Martin Haynes, IČO: 17889251</div>
-  <div class='sig-field'>Za AIshield.cz</div>
-</div>
+      <td>čl. 47</td>
+      <td>Vydejte EU prohlášení o shodě pro každý vlastní high-risk AI systém.</td>
