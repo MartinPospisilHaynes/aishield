@@ -265,6 +265,14 @@ tr:nth-child(even) td {
 .page-break { page-break-before: always; }
 .no-break { page-break-inside: avoid; }
 
+/* ── Ochrana proti osiřelým nadpisům ── */
+h1 + table, h1 + p, h1 + ul, h1 + ol, h1 + div, h1 + dl,
+h2 + table, h2 + p, h2 + ul, h2 + ol, h2 + div, h2 + dl,
+h3 + table, h3 + p, h3 + ul, h3 + ol, h3 + div, h3 + dl {
+    page-break-before: avoid;
+    break-before: avoid;
+}
+
 /* ── Sekce ── */
 .section {
     page-break-before: always;

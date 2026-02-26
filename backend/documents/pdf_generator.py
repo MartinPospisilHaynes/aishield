@@ -10,6 +10,29 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 
+def _fix_orphaned_headings(html: str) -> str:
+    """
+    Post-processing: obalí každý <h2>/<h3> + první následující element
+    do <div style="break-inside:avoid"> aby nadpis nezůstal sám na konci stránky.
+    """
+    import re
+    # Pattern: h2 or h3 tag, then optional whitespace, then next block element
+    # We wrap the heading + next element in a no-break div
+    pattern = r'(<h[23][^>]*>.*?</h[23]>)(\s*)(<(?:table|p|ul|ol|div|dl)[^>]*>.*?</(?:table|p|ul|ol|div|dl)>)'
+    
+    def _wrap(m):
+        return f'<div style="break-inside:avoid;page-break-inside:avoid">{m.group(1)}{m.group(2)}{m.group(3)}</div>'
+    
+    result = re.sub(pattern, _wrap, html, flags=re.DOTALL)
+    
+    # Count wraps for logging
+    wraps = result.count('break-inside:avoid;page-break-inside:avoid')
+    if wraps > 0:
+        logger.info(f"Orphan fix: {wraps} headings wrapped with next element")
+    
+    return result
+
+
 def html_to_pdf(html_content: str) -> bytes:
     """
     Konvertuje HTML string na PDF bytes.
@@ -17,6 +40,7 @@ def html_to_pdf(html_content: str) -> bytes:
     """
     try:
         from weasyprint import HTML
+        html_content = _fix_orphaned_headings(html_content)
         pdf_bytes = HTML(string=html_content).write_pdf()
         logger.info(f"PDF vygenerováno: {len(pdf_bytes)} bytes")
         return pdf_bytes
