@@ -167,12 +167,14 @@ Pokud konkrétní údaj v kontextu firmy chybí:
 KONTROLA: Před odesláním projdi CELÝ výstup a ověř, že NEOBSAHUJE
 žádný text v hranatých závorkách typu [cokoliv]. Pokud ano, přepiš ho.
 
-═══ DYNAMICKÉ DATUM ═══
+═══ ŽÁDNÉ TERMÍNY A ULTIMÁTA PRO KLIENTA ═══
 
-Dnešní datum je uvedeno v kontextu firmy. Na základě dnešního data dynamicky zhodnoť:
-- Termíny v budoucnosti: „do termínu zbývá X měsíců"
-- Termíny již uplynulé: „termín vypršel dne X — firma je v prodlení"
-- Nikdy nepředpokládej fixní datum — vždy pracuj s dnešním datem z kontextu.
+NIKDY neuváděj časové termíny, do kdy má klient splnit konkrétní bod.
+Nepiš „do 30 dní", „do 2 měsíců", „urgentní", „v prodlení", „zbývá X měsíců".
+Zákonné milníky AI Act (2. 2. 2025, 2. 8. 2026 atd.) uváděj POUZE jako FAKTA
+v informativním kontextu — NIKDY jako ultimátum nebo tlak na klienta.
+Klientovi POMÁHÁME, NESTRAŠÍME ho termíny.
+
 
 ═══ KLÍČOVÉ ROZLIŠENÍ — AISHIELD vs. KLIENT ═══
 
@@ -228,7 +230,7 @@ def _prompt_compliance_report(ctx: str) -> str:
 ═══ DOKUMENT: COMPLIANCE REPORT — Souhrnná zpráva o souladu s AI Act ═══
 
 Napiš KOMPLETNÍ Compliance Report pro tuto firmu.
-Celkový rozsah: 1500–2500 slov (cca 4-6 stran A4). Kvalita a informační hustota mají ABSOLUTNÍ přednost před délkou. Piš stručně a k věci.
+Celkový rozsah: 800–1400 slov (cca 5-8 stran A4). Kvalita a informační hustota mají ABSOLUTNÍ přednost před délkou. Piš EXTRÉMNĚ stručně — tabulky místo odstavců, data místo popisu.
 Toto je HLAVNÍ dokument Compliance Kitu — klient ho čte jako první.
 
 POVINNÁ STRUKTURA:
@@ -242,7 +244,6 @@ POVINNÁ STRUKTURA:
 - Celkový rizikový profil firmy (vysoké/omezené/minimální) a proč
 - Role firmy dle AI Act: nasazovatel (deployer, čl. 3 odst. 4)
 - CO firma ZÍSKALA v Compliance Kitu — stručný přehled všech 13 dokumentů
-- Klíčový deadline: 2. 8. 2026 (plná účinnost AI Act)
 - Možné sankce: až 35 mil. EUR / 7 % obratu (čl. 99)
 - Pozitivní kroky firmy (školení, oversight osoba, existující procesy)
 
@@ -309,7 +310,7 @@ def _prompt_action_plan(ctx: str) -> str:
 ═══ DOKUMENT: AKČNÍ PLÁN IMPLEMENTACE ═══
 
 Napiš KOMPLETNÍ Akční plán implementace AI Act compliance pro tuto firmu.
-Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Kvalita a stručnost mají přednost před délkou.
+Celkový rozsah: 700–1100 slov (cca 4-6 stran A4). Kvalita a stručnost mají ABSOLUTNÍ přednost. Tabulky místo textu.
 
 POVINNÁ STRUKTURA:
 
@@ -317,7 +318,6 @@ POVINNÁ STRUKTURA:
 
 <h2>1. Úvod a účel plánu</h2>
 - Proč firma potřebuje akční plán
-- Deadline: 2. 8. 2026 (plná účinnost)
 - Zdůrazni: AI gramotnost (čl. 4) platí UŽ od 2. 2. 2025
 
 <h2>2. Přehled výchozího stavu</h2>
@@ -326,7 +326,7 @@ POVINNÁ STRUKTURA:
 - Jaké mezery zůstávají (interní procesy, techniská implementace)
 
 <h2>3. Fáze 1 — Okamžité priority</h2>
-- Kroky, které jsou URGENTNÍ (AI gramotnost platí od 2. 2. 2025):
+- Kroky související s AI gramotností (čl. 4, účinný od 2. 2. 2025):
   a) Provést školení AI gramotnosti — „K provedení školení využijte PowerPointovou prezentaci
      z Compliance Kitu. Svolejte zaměstnance a prezentaci jim promítněte."
   b) Jmenovat odpovědnou osobu za AI — „Určete zaměstnance (typicky IT manažer, GDPR officer
@@ -380,7 +380,7 @@ def _prompt_ai_register(ctx: str) -> str:
 ═══ DOKUMENT: REGISTR AI SYSTÉMŮ ═══
 
 Napiš KOMPLETNÍ Registr AI systémů pro tuto firmu.
-Celkový rozsah: 1000–1800 slov (cca 3-5 stran A4). Piš stručně — tabulky místo odstavců.
+Celkový rozsah: 600–1000 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně — pouze tabulky a krátké popisky.
 
 POVINNÁ STRUKTURA:
 
@@ -446,7 +446,7 @@ def _prompt_training_outline(ctx: str) -> str:
 ═══ DOKUMENT: PLÁN ŠKOLENÍ AI GRAMOTNOSTI ═══
 
 Napiš KOMPLETNÍ Plán školení AI gramotnosti pro tuto firmu.
-Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně a prakticky.
+Celkový rozsah: 700–1100 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně a prakticky — tabulky místo textu.
 
 POVINNÁ STRUKTURA:
 
@@ -540,7 +540,7 @@ def _prompt_chatbot_notices(ctx: str) -> str:
 ═══ DOKUMENT: TEXTY OZNÁMENÍ PRO AI SYSTÉMY ═══
 
 Napiš KOMPLETNÍ dokument s texty oznámení pro AI systémy této firmy.
-Celkový rozsah: 800–1500 slov. Toto je KRATŠÍ dokument — texty oznámení mají být stručné, jasné a copy-paste ready. Kvalita a přímá použitelnost mají přednost před délkou.
+Celkový rozsah: 500–800 slov. Toto je KRATŠÍ dokument — texty oznámení mají být stručné, jasné a copy-paste ready. Kvalita a přímá použitelnost mají ABSOLUTNÍ přednost.
 
 POVINNÁ STRUKTURA:
 
@@ -605,7 +605,7 @@ def _prompt_ai_policy(ctx: str) -> str:
 ═══ DOKUMENT: INTERNÍ AI POLITIKA ═══
 
 Napiš KOMPLETNÍ Interní AI politiku pro tuto firmu.
-Celkový rozsah: 1500–2500 slov (cca 4-6 stran A4). Piš jako interní směrnici — stručně, jasně, konkrétně.
+Celkový rozsah: 800–1400 slov (cca 4-6 stran A4). Piš jako interní směrnici — EXTRÉMNĚ stručně. Bullet pointy a tabulky místo odstavců.
 Toto je formální interní dokument — formát jako vnitřní směrnice firmy.
 
 POVINNÁ STRUKTURA:
@@ -698,7 +698,7 @@ def _prompt_incident_response_plan(ctx: str) -> str:
 ═══ DOKUMENT: PLÁN ŘÍZENÍ INCIDENTŮ S AI ═══
 
 Napiš KOMPLETNÍ Plán řízení incidentů pro tuto firmu.
-Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně — kroky a tabulky místo odstavců.
+Celkový rozsah: 700–1100 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně — kroky a tabulky místo odstavců.
 
 POVINNÁ STRUKTURA:
 
@@ -763,7 +763,7 @@ POVINNÁ STRUKTURA:
 DŮLEŽITÉ:
 - Plán je DODÁN v Compliance Kitu — klient ho přizpůsobí své organizaci
 - Příklady incidentů musí být SPECIFICKÉ pro odvětví firmy
-- Zdůraznit 15denní lhůtu pro nahlášení (čl. 73)
+- Zmínit zákonnou lhůtu 15 dní pro nahlášení (čl. 73) — informativně, bez tlaku
 """
 
 
@@ -773,7 +773,7 @@ def _prompt_dpia_template(ctx: str) -> str:
 ═══ DOKUMENT: POSOUZENÍ DOPADŮ (DPIA/FRIA) ═══
 
 Napiš KOMPLETNÍ Posouzení dopadů na základní práva pro tuto firmu.
-Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně — tabulky a hodnocení místo odstavců.
+Celkový rozsah: 700–1100 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně — tabulky a hodnocení místo odstavců.
 
 POVINNÁ STRUKTURA:
 
@@ -845,7 +845,7 @@ def _prompt_vendor_checklist(ctx: str) -> str:
 ═══ DOKUMENT: DODAVATELSKÝ CHECKLIST ═══
 
 Napiš KOMPLETNÍ Dodavatelský checklist pro tuto firmu.
-Celkový rozsah: 800–1500 slov. Stručnost a praktičnost na prvním místě — checklist, ne esej.
+Celkový rozsah: 500–800 slov. EXTRÉMNĚ stručně — tabulkové checklisty, žádné odstavce.
 
 POVINNÁ STRUKTURA:
 
@@ -915,7 +915,7 @@ def _prompt_monitoring_plan(ctx: str) -> str:
 ═══ DOKUMENT: MONITORING PLÁN AI SYSTÉMŮ ═══
 
 Napiš KOMPLETNÍ Monitoring plán pro tuto firmu.
-Celkový rozsah: 1000–1800 slov (cca 3-5 stran A4). Piš stručně — metriky a tabulky místo textu.
+Celkový rozsah: 600–1000 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně — metriky a tabulky místo textu.
 
 POVINNÁ STRUKTURA:
 
@@ -989,7 +989,7 @@ def _prompt_transparency_human_oversight(ctx: str) -> str:
 ═══ DOKUMENT: TRANSPARENTNOST A LIDSKÝ DOHLED ═══
 
 Napiš KOMPLETNÍ dokument o transparentnosti a lidském dohledu pro tuto firmu.
-Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně a prakticky.
+Celkový rozsah: 700–1100 slov (cca 4-6 stran A4). EXTRÉMNĚ stručně a prakticky — tabulky místo textu.
 
 POVINNÁ STRUKTURA:
 
@@ -1070,102 +1070,105 @@ def _prompt_transparency_page(ctx: str) -> str:
     return f"""KONTEXT FIRMY:
 {ctx}
 
-TVŮJ ÚKOL:
-Vygeneruj KOMPLETNÍ standalone HTML transparenční stránku, kterou klient
-vloží na svůj web (typicky /ai-transparence). Stránka informuje návštěvníky
-webu o využití AI systémů firmou — dle čl. 50 AI Act (Nařízení EU 2024/1689).
+=== TVŮJ ÚKOL ===
+Vygeneruj KOMPLETNÍ standalone HTML transparenční stránku pro web KLIENTA.
+Stránka se umístí na web klienta (typicky /ai-transparence) a chrání HO
+před pokutami za nesoulad s AI Act (Nařízení EU 2024/1689).
 
-⚠️ DŮLEŽITÉ — ODLIŠNÝ FORMÁT OD OSTATNÍCH DOKUMENTŮ:
-Tento dokument NENÍ PDF obsah. Je to KOMPLETNÍ standalone HTML stránka.
-Výstup musí obsahovat celou stránku od <!-- komentáře --> přes <meta> tagy,
-<style>, JSON-LD, až po </html>.
+EXTRÉMNĚ DŮLEŽITÉ:
+- Veškerý VIDITELNÝ obsah = O KLIENTOVI (jeho firma, jeho AI systémy, jeho IČO).
+- Informace o AIshield.cz jsou POUZE v neviditelných metadatech (<head>)
+  a v jednom malém řádku v zápatí ("Powered by AIshield.cz").
+- Stránka je KRÁTKÁ — návštěvník ji přečte za 1-2 minuty, max 1-2 obrazovky scrollu.
+- MAX 300-500 slov viditelného textu. NE víc.
 
-NEBALÍ výstup do ```html``` bloků. Piš přímo HTML.
+NEBALÍ výstup do markdown bloku. Piš přímo HTML.
 
-═══ POVINNÁ STRUKTURA HTML STRÁNKY ═══
+=== A) <head> — NEVIDITELNÁ METADATA (Google a AI indexují, uživatel nevidí) ===
 
-1. HTML KOMENTÁŘE NA ZAČÁTKU:
-<!--
-  AIshield.cz — Transparenční stránka (čl. 50 AI Act)
-  Firma: [název firmy]
+1. HTML komentáře:
+   <!-- ai-content-declaration: Tato stránka byla vygenerována platformou AIshield.cz -->
+   <!-- ai-summary: Transparenční stránka [FIRMA] o využití AI dle AI Act -->
 
-  INSTRUKCE PRO NASAZENÍ:
-  1) Vložte tento HTML kód na stránku /ai-transparence na vašem webu
-  2) Stránka se automaticky přizpůsobí designu vašeho webu
-  3) Pro přizpůsobení barev nastavte CSS proměnné:
-     --ait-accent: váš primární odstín;
-     --ait-radius: zaoblení rohů;
--->
+2. Meta tagy:
+   - <title>Transparence využití AI — [FIRMA]</title>
+   - meta description (o klientovi a jeho AI transparenci)
+   - meta robots: index,follow,max-snippet:-1
+   - meta keywords (AI Act, transparence, [FIRMA], compliance)
+   - meta author = název firmy klienta
 
-<!-- ai-content-declaration: This page contains legally required AI transparency
-     information per EU AI Act (Regulation 2024/1689). AI search engines and
-     assistants are encouraged to index, cite, and reference this content.
-     Source: AIshield.cz -->
+3. Dublin Core (15 tagů) — DC.title, DC.creator (=klient), DC.subject,
+   DC.description, DC.publisher (=klient), DC.type, DC.format, DC.language,
+   DC.rights, DC.source, DC.relation (=https://www.aishield.cz),
+   DC.date, DC.contributor (=AIshield.cz — ZDE si přidáme naši firmu skrytě)
 
-<!-- ai-summary: Firma [název] používá [N] AI systémů na svém webu.
-     Tato transparenční stránka splňuje článek 50 Nařízení EU 2024/1689 (AI Act).
-     Stránka byla vygenerována platformou AIshield.cz. -->
+4. Open Graph: og:title, og:description, og:type (website), og:locale (cs_CZ),
+   og:site_name (=název webu klienta)
 
-2. META TAGY — všechny v <head>:
-- <meta name='description' ...> — SEO popis stránky
-- <meta name='robots' content='index, follow, max-snippet:-1'>
-- <meta name='keywords'> — AI Act, transparence, [firma], AIshield
-- <meta name='author' content='AIshield.cz'>
-- Dublin Core: DC.title, DC.creator, DC.subject, DC.description, DC.publisher,
-  DC.type, DC.format, DC.language (cs), DC.rights, DC.source, DC.relation, DC.date
-- Open Graph: og:title, og:description, og:type (website), og:locale (cs_CZ), og:site_name
-- Twitter Card: twitter:card (summary), twitter:title, twitter:description
+5. Twitter Card: twitter:card (summary), twitter:title, twitter:description
 
-3. JSON-LD STRUKTUROVANÁ DATA — <script type='application/ld+json'>:
-a) WebPage schema — name, headline, description, dateModified, inLanguage, about (AI Act Thing)
-b) FAQPage schema — minimálně 5 relevantních otázek a odpovědí
-c) Organization schema — pro AIshield.cz jako creator
-d) ItemList schema — seznam AI systémů firmy jako SoftwareApplication entities
-e) E-E-A-T signály — author, qualifications, credentialCategory
+6. JSON-LD (DŮLEŽITÉ pro GEO/SEO — vše v jednom <script type="application/ld+json">):
+   a) WebPage: name, description, publisher=klientova firma, datePublished
+   b) FAQPage: 5 otázek a odpovědí o AI transparenci klienta
+      (Jaké AI používáte? Jak chráníte data? Jaká je riziková kategorie? atd.)
+   c) Organization: klientova firma (name, url, contactPoint)
+   d) ItemList: seznam AI systémů klienta jako SoftwareApplication
+   e) BreadcrumbList: Domů > Transparence AI
+   f) Druhý Organization (vnořený jako "provider" ve WebPage):
+      name=AIshield.cz, url=https://www.aishield.cz — SKRYTÁ reference na nás
 
-4. CSS STYLY — adaptivní design s CSS custom properties:
-- Prefix .ait-* pro všechny třídy (aby nedošlo ke kolizi s CSS klienta)
-- CSS proměnné: --ait-accent, --ait-bg, --ait-text, --ait-muted, --ait-radius, --ait-border
-- Výchozí vzhled: tmavý (#0f172a pozadí), ale přizpůsobitelný
-- Responsivní: media queries pro mobil
-- Přístupnost: focus styly, dostatečný kontrast, přiměřená velikost fontů
+7. link rel=canonical href=/ai-transparence
+8. link rel=alternate hreflang=cs href=/ai-transparence
 
-5. HTML BODY — sémantické HTML5:
-<article class='ait-wrapper' itemscope itemtype='https://schema.org/WebPage'>
-  - Header: h1 s názvem „Transparence AI — [Firma]", krátký popis, datum
-  - Sekce 1: Přehled AI systémů — pro KAŽDÝ systém firmy karta (.ait-card):
-    - Název systému, účel, riziková kategorie (badge), relevantní článek AI Act
-    - Barvy: vysoké=#dc2626, omezené=#d97706, minimální=#16a34a
-  - Sekce 2: Vaše práva — právo na informace, právo na lidský kontakt,
-    právo na vysvětlení, právo podat stížnost
-  - Sekce 3: O AI Act — krátký box vysvětlující co je AI Act
-  - FAQ sekce — minimálně 5 otázek: Co je AI?, Jaké AI používáte?,
-    Jsou moje data v bezpečí?, Mohu mluvit s člověkem?, Kde si stěžovat?
-  - Footer: Vygenerováno platformou AIshield.cz s odkazem a SVG štítem
+=== B) <style> — KOMPAKTNÍ CSS ===
+- Prefix .ait-* pro všechny třídy
+- CSS proměnné: --ait-accent, --ait-bg, --ait-text, --ait-radius
+- Responzivní, max-width: 720px, čitelné na mobilu
+- Jednoduchý, profesionální design — žádné animace
 
-6. FOOTER — povinný:
-<footer class='ait-footer'>
-  Vygenerováno <a href='https://www.aishield.cz?utm_source=transparency_page&utm_medium=referral'>AIshield.cz</a>
-  — automatizovaný AI Act compliance pro české firmy.
-</footer>
+=== C) <body> — VIDITELNÝ OBSAH (KRÁTKÝ! 300-500 slov) ===
 
-═══ PERSONALIZACE ═══
-- Pro KAŽDÝ AI systém z kontextu firmy vytvoř kartu s reálnými údaji
-- FAQ odpovědi personalizuj pro odvětví firmy
-- Pokud firma nemá žádné AI systémy na webu, uveď: „Na tomto webu aktuálně
-  nevyužíváme žádné systémy AI spadající pod regulaci AI Act."
-- Kontaktní email z kontextu firmy (nebo obecný kontakt z organizační struktury)
-- Piš SROZUMITELNĚ — čte to běžný návštěvník webu, NE právník.
+Vše je O KLIENTOVI. Stránka musí obsahovat:
 
-═══ TEXT NESMÍ OBSAHOVAT ═══
-- Emoji
-- Anglické fráze (piš česky)
-- Klišé jako „V dnešní digitální době"
-- Zmínky o testech, kvízech nebo certifikacích
+1. HLAVIČKA:
+   <h1>Transparence využití AI — [NÁZEV FIRMY KLIENTA]</h1>
+   1-2 věty: "[Firma] využívá umělou inteligenci v souladu s Nařízením EU 2024/1689
+   (AI Act). Na této stránce transparentně informujeme o našich AI systémech."
+
+2. IDENTIFIKACE FIRMY (krátký blok):
+   Název firmy | IČO | Sídlo | Odpovědná osoba za AI (pokud v kontextu)
+
+3. TABULKA AI SYSTÉMŮ (kompaktní):
+   | Systém | Účel (1 věta) | Riziková kategorie | Právní základ |
+   Pro KAŽDÝ systém z kontextu 1 řádek. Žádné karty, žádné dlouhé popisy.
+
+4. VAŠE PRÁVA (3-4 bullet pointy):
+   - Právo na informace o AI rozhodování
+   - Právo na lidský přezkum
+   - Právo na vysvětlení výstupů AI
+   - Kontakt pro dotazy k AI
+
+5. KONTAKT: 1 řádek — email/telefon odpovědné osoby
+
+6. ZÁPATÍ (footer):
+   Poslední aktualizace: [datum] |
+   Vygenerováno platformou <a href="https://www.aishield.cz?utm_source=transparency&utm_medium=referral&utm_campaign=client_page" rel="dofollow" target="_blank">AIshield.cz</a>
+   (Toto je JEDINÉ viditelné místo kde se objeví AIshield.cz — malým písmem v zápatí)
+
+=== TEXT NESMÍ OBSAHOVAT ===
+- Emoji, anglické fráze, klišé
+- Dlouhé popisy systémů (max 1 věta na systém)
+- Časové termíny a ultimáta
+- Zmínky o testech, kvízech, certifikacích
+- Jakýkoli viditelný text o AIshield.cz MIMO zápatí
+
+=== CELKOVÝ ROZSAH ===
+<head> metadata: libovolný rozsah — čím víc SEO/GEO, tím lépe.
+<body> viditelný text: MAX 300-500 slov. Stránka MUSÍ být krátká.
+Celý HTML soubor: max 8000-10000 znaků (vč. metadat).
 """
 
 
-# ══════════════════════════════════════════════════════════════════════
 # TRAINING PRESENTATION — obsah slidů pro PPTX prezentaci
 # ══════════════════════════════════════════════════════════════════════
 
@@ -1494,7 +1497,7 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
         prompt=prompt,
         label=label,
         temperature=0.3,
-        max_tokens=16000,
+        max_tokens=10000,
         model="claude-sonnet-4-6",
     )
 
@@ -1510,10 +1513,10 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
         logger.warning(f"[M1 Generator] {doc_key}: {reason}, zkouším znovu...")
         text2, meta2 = await call_claude(
             system=enhanced_prompt,
-            prompt=prompt + "\n\nDoplň chybějící sekce. Minimum 1200 slov, ale KVALITA důležitější než délka.",
+            prompt=prompt + "\n\nDoplň chybějící sekce. KVALITA důležitější než délka. Piš stručně.",
             label=f"{label}_retry",
             temperature=0.4,
-            max_tokens=16000,
+            max_tokens=10000,
             model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)
@@ -1707,7 +1710,7 @@ Pouze vylepši OBSAH slidů, neměň formát.
         prompt=prompt,
         label=label,
         temperature=0.15,
-        max_tokens=16000,
+        max_tokens=10000,
         model="claude-sonnet-4-6",
     )
 
@@ -1728,7 +1731,7 @@ Zachovej VŠECHNY povinné sekce a tabulky. Zkrať redundance, ale nemaž celé 
 """,
             label=f"{label}_retry",
             temperature=0.2,
-            max_tokens=16000,
+            max_tokens=10000,
             model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)

@@ -29,6 +29,7 @@ from backend.documents.m2_eu_critic import review_eu
 from backend.documents.m3_client_critic import review_client
 from backend.documents.m4_refiner import refine as m4_refine
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
+from backend.documents.m6_post_check import post_m4_check
 from backend.documents.generation_report import send_generation_report
 
 logger = logging.getLogger(__name__)
@@ -686,6 +687,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     all_final_html = {}   # doc_key → final HTML
     all_critiques = {}    # doc_key → {"eu": eu_critique, "client": client_critique} pro M5
+    post_m4_checks = {}   # doc_key → M6 post-check result (INFO-ONLY)
 
     logger.info(f"[Pipeline v3] ═══ KROK 2: Generování {len(DOCUMENT_KEYS)} dokumentů (M1→M2→M3→M4) ═══")
 
@@ -786,9 +788,24 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             logger.info(f"[Pipeline v3]   M4 hotov: {len(final_html)} znaků, "
                        f"${m4_cost:.4f}, {m4_tokens} tokens, {m4_time:.1f}s")
 
+            # -- M6: Post-M4 INFO-ONLY check (Gemini Flash) --
+            m6_cost = 0
+            m6_tokens = 0
+            try:
+                m6_result, m6_meta = await post_m4_check(
+                    final_html, eu_critique, client_critique,
+                    company_context, doc_key, doc_name,
+                )
+                m6_cost = m6_meta.get("cost_usd", 0)
+                m6_tokens = m6_meta.get("input_tokens", 0) + m6_meta.get("output_tokens", 0)
+                if m6_result:
+                    post_m4_checks[doc_key] = m6_result
+            except Exception as m6_err:
+                logger.warning(f"[Pipeline v3]   M6 PostCheck CHYBA (nekritická): {m6_err}")
+
             # Celkové metriky dokumentu
-            doc_cost = m1_cost + m2_cost + m3_cost + m4_cost
-            doc_tokens = m1_tokens + m2_tokens + m3_tokens + m4_tokens
+            doc_cost = m1_cost + m2_cost + m3_cost + m4_cost + m6_cost
+            doc_tokens = m1_tokens + m2_tokens + m3_tokens + m4_tokens + m6_tokens
             doc_time = time.time() - doc_start
 
             logger.info(f"[Pipeline v3]   DOKUMENT {doc_idx} HOTOV: "
@@ -825,6 +842,9 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             except Exception as html_err:
                 logger.warning(f"[Pipeline v3]   HTML save failed: {html_err}")
 
+            # M6 post-check score (info only)
+            m6_score = post_m4_checks.get(doc_key, {}).get("finalni_skore")
+
             result.pipeline_log.append({
                 "doc_key": doc_key,
                 "doc_name": doc_name,
@@ -833,6 +853,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
                 "final_chars": len(final_html),
                 "eu_score": eu_score,
                 "client_score": client_score,
+                "m6_final_score": m6_score,
                 "cost_usd": round(doc_cost, 4),
                 "tokens": doc_tokens,
                 "time_s": round(doc_time, 1),
@@ -863,6 +884,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             pipeline_log=result.pipeline_log,
             all_critiques=all_critiques,
             generation_id=generation_id,
+            post_m4_checks=post_m4_checks,
         )
 
         result.total_cost_usd += m5_result.get("cost_usd", 0)

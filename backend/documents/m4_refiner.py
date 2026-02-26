@@ -73,6 +73,8 @@ KVALITATIVNÍ PRAVIDLA:
 - Zachovej profesionální ton
 - V textu používej české typografické uvozovky: „text“
 - NEPOUŽÍVEJ emoji
+- AKTIVNĚ zkracuj dokument — cíl je STRUČNOST. Raději 5 silných vět než 20 slabých.
+- NIKDY nepřidávej časové termíny nebo ultimáta pro klienta
 
 ZAKÁZÁNO:
 - Mazat celé sekce nebo tabulky z draftu
@@ -80,7 +82,9 @@ ZAKÁZÁNO:
 - Měnit fakticky správné informace
 - Odstraňovat tabulky nebo strukturované přehledy
 - Klišé: „V dnešní digitální době", „Závěrem lze říci"
-- Časové lhůty pro nápravná opatření (mimo zákonné deadliny)
+- Jakékoli časové termíny, ultimáta nebo tlak na klienta („do 30 dní“,
+  „do 2 měsíců“, „urgentní“, „zbývá X měsíců“, „firma je v prodlení“).
+  Zákonné milníky AI Act uváděj POUZE jako informativní fakta — NIKDY jako tlak
 - Zmínky o testech, certifikacích, kvízech
 """
 
@@ -243,7 +247,7 @@ NEMĚŇ formát — pouze vylepši OBSAH slidů.
         prompt=prompt,
         label=label,
         temperature=0.15,   # very focused, minimal creativity
-        max_tokens=16000,   # must be >= M1 output
+        max_tokens=10000,   # must be >= M1 output
         model="claude-opus-4-6",
     )
 
@@ -281,7 +285,7 @@ Můžeš zkrátit redundance, ale nemaž celé bloky.
 """,
             label=f"{label}_retry",
             temperature=0.2,
-            max_tokens=16000,
+            max_tokens=10000,
             model="claude-opus-4-6",
         )
         html2 = extract_html_content(text2)

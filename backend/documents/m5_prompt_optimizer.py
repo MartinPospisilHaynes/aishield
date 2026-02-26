@@ -315,6 +315,7 @@ async def analyze_and_optimize(
     pipeline_log: List[dict],
     all_critiques: Dict[str, dict],
     generation_id: str = "unknown",
+    post_m4_checks: Dict[str, dict] = None,
 ) -> dict:
     """
     Hlavní vstupní bod M5 — analyzuje generaci a navrhne vylepšení promptu.
@@ -323,6 +324,7 @@ async def analyze_and_optimize(
         pipeline_log: pipeline_log z ComplianceKitResult — seznam dict per doc
         all_critiques: dict {doc_key: {"eu": eu_critique, "client": client_critique}}
         generation_id: identifikátor generace (gen12, gen13, ...)
+        post_m4_checks: dict {doc_key: M6 post-check result} — INFO-ONLY finální skóre
 
     Returns:
         dict s výsledky M5 analýzy
@@ -352,7 +354,7 @@ async def analyze_and_optimize(
     logger.info(f"[M5 PromptOptimizer] Zbývá iterací: {conv_status['iterations_remaining']}")
 
     # ── 2. Agregace dat z M2+M3 ──
-    aggregated = _aggregate_critiques(pipeline_log, all_critiques)
+    aggregated = _aggregate_critiques(pipeline_log, all_critiques, post_m4_checks or {})
     logger.info(f"[M5 PromptOptimizer] Agregace: {aggregated['doc_count']} dokumentů, "
                 f"EU avg={aggregated['eu_avg']:.1f}, Client avg={aggregated['client_avg']:.1f}")
 
@@ -444,13 +446,17 @@ async def analyze_and_optimize(
 def _aggregate_critiques(
     pipeline_log: List[dict],
     all_critiques: Dict[str, dict],
+    post_m4_checks: Dict[str, dict] = None,
 ) -> dict:
-    """Agreguje nálezy M2+M3 přes všechny dokumenty."""
+    """Agreguje nálezy M2+M3+M6 přes všechny dokumenty."""
     eu_scores = []
     client_scores = []
+    m6_scores = []
     all_eu_findings = []
     all_client_findings = []
+    all_m6_findings = []
     doc_count = 0
+    post_m4_checks = post_m4_checks or {}
 
     for entry in pipeline_log:
         doc_key = entry.get("doc_key")
@@ -485,9 +491,25 @@ def _aggregate_critiques(
                 **finding,
             })
 
+        # M6 post-M4 check findings
+        m6_data = post_m4_checks.get(doc_key, {})
+        m6_score = m6_data.get("finalni_skore")
+        if isinstance(m6_score, (int, float)):
+            m6_scores.append(m6_score)
+        for finding in m6_data.get("pretrvavajici_problemy", []):
+            all_m6_findings.append({
+                "doc_key": doc_key,
+                "doc_name": entry.get("doc_name", doc_key),
+                **finding,
+            })
+
     return {
         "doc_count": doc_count,
         "eu_avg": sum(eu_scores) / len(eu_scores) if eu_scores else 0,
+        "m6_avg": sum(m6_scores) / len(m6_scores) if m6_scores else 0,
+        "m6_scores": m6_scores,
+        "m6_findings": all_m6_findings,
+        "m6_findings_count": len(all_m6_findings),
         "client_avg": sum(client_scores) / len(client_scores) if client_scores else 0,
         "eu_scores": eu_scores,
         "client_scores": client_scores,
@@ -504,11 +526,14 @@ def _build_m5_prompt(aggregated: dict, current_rules: str, version: int) -> str:
     # Formátování nálezů
     eu_text = _format_findings(aggregated["eu_findings"], "EU Inspector (M2)")
     client_text = _format_findings(aggregated["client_findings"], "Client (M3)")
+    m6_text = _format_findings(aggregated.get("m6_findings", []), "Post-M4 Verifikace (M6)")
 
     # Skóre přehled
     scores_text = "SKÓRE PO DOKUMENTECH:\n"
+    m6_scores_list = aggregated.get("m6_scores", [])
     for i, (eu, cl) in enumerate(zip(aggregated["eu_scores"], aggregated["client_scores"]), 1):
-        scores_text += f"  Doc {i}: EU={eu}/10, Client={cl}/10\n"
+        m6_s = m6_scores_list[i-1] if i-1 < len(m6_scores_list) else "?"
+        scores_text += f"  Doc {i}: EU(draft)={eu}/10, Client(draft)={cl}/10, M6(final)={m6_s}/10\n"
 
     rules_section = ""
     if current_rules:
@@ -523,11 +548,17 @@ UPOZORNĚNÍ: Nenavrhuj pravidla, která již existují (byť jinak formulovaná
 
 ═══ PŘEHLED GENERACE ═══
 Dokumentů: {aggregated['doc_count']}
-Průměrné skóre EU (M2): {aggregated['eu_avg']:.1f}/10
-Průměrné skóre Client (M3): {aggregated['client_avg']:.1f}/10
-Celkový průměr: {(aggregated['eu_avg'] + aggregated['client_avg']) / 2:.1f}/10
-Počet EU nálezů: {aggregated['eu_findings_count']}
-Počet Client nálezů: {aggregated['client_findings_count']}
+Průměrné skóre EU (M2, draft): {aggregated['eu_avg']:.1f}/10
+Průměrné skóre Client (M3, draft): {aggregated['client_avg']:.1f}/10
+Průměrné skóre M6 (finál po M4): {aggregated.get('m6_avg', 0):.1f}/10
+Celkový průměr draft: {(aggregated['eu_avg'] + aggregated['client_avg']) / 2:.1f}/10
+Počet EU nálezů (draft): {aggregated['eu_findings_count']}
+Počet Client nálezů (draft): {aggregated['client_findings_count']}
+Počet přetrvávajících nálezů po M4: {aggregated.get('m6_findings_count', 0)}
+
+DŮLEŽITÉ: M6 skóre hodnotí FINÁLNÍ verzi po M4 úpravách.
+Pokud M6 skóre >> M2/M3 skóre → M4 refiner funguje dobře.
+Pokud M6 stále nachází problémy → prompt M1 potřebuje úpravu.
 
 {scores_text}
 
@@ -536,6 +567,8 @@ Počet Client nálezů: {aggregated['client_findings_count']}
 
 ═══ NÁLEZY KLIENTA (M3) — {aggregated['client_findings_count']} celkem ═══
 {client_text}
+
+{m6_text}
 {rules_section}
 ═══ TVŮJ ÚKOL ═══
 1. Identifikuj opakující se VZORY — problémy, které se objevují ve ≥{MIN_PATTERN_OCCURRENCES} dokumentech.

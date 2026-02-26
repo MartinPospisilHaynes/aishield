@@ -79,6 +79,18 @@ def build_report_html(
     avg_client = sum(client_scores) / len(client_scores) if client_scores else 0
     avg_overall = (avg_eu + avg_client) / 2 if (eu_scores and client_scores) else 0
 
+    # M6 final scores
+    m6_scores = []
+    for entry in pipeline_log:
+        if entry.get("doc_key") and not entry.get("error"):
+            try:
+                m6_s = entry.get("m6_final_score")
+                if m6_s is not None:
+                    m6_scores.append(int(m6_s))
+            except (ValueError, TypeError):
+                pass
+    avg_m6 = sum(m6_scores) / len(m6_scores) if m6_scores else 0
+
     # Celkový verdikt
     if avg_overall >= 8:
         verdict = "VYHOVUJÍCÍ"
@@ -144,6 +156,8 @@ def build_report_html(
 
         eu_s = entry.get("eu_score", "?")
         cl_s = entry.get("client_score", "?")
+        m6_s = entry.get("m6_final_score", "?")
+        m6_s = entry.get("m6_final_score", "?")
         cost = entry.get("cost_usd", 0)
         chars = entry.get("final_chars", 0)
         time_s = entry.get("time_s", 0)
@@ -167,6 +181,8 @@ def build_report_html(
       EU: <span style="color:{_score_color(eu_s)};font-weight:bold;">{eu_s}/10</span>
       &nbsp;|&nbsp;
       Klient: <span style="color:{_score_color(cl_s)};font-weight:bold;">{cl_s}/10</span>
+      &nbsp;|&nbsp;
+      Finál: <span style="color:{_score_color(m6_s)};font-weight:bold;">{m6_s}/10</span>
       &nbsp;|&nbsp;
       ${cost:.3f} &nbsp;|&nbsp; {chars:,} zn &nbsp;|&nbsp; {time_s:.0f}s
     </span>

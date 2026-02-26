@@ -1,0 +1,150 @@
+{
+  "version": 4,
+  "generation_id": "gen_20260226_164138",
+  "timestamp": "2026-02-26T18:50:26.205488+00:00",
+  "m5_full_response": {
+    "analyza": {
+      "prumerny_eu_score": 7.2,
+      "prumerny_client_score": 6.9,
+      "celkovy_prumer": 7.1,
+      "identifikovane_vzory": [
+        {
+          "vzor": "ÚOOÚ nesprávně identifikován jako dozorový orgán pro AI Act místo správného orgánu (DIA nebo dosud neurčený)",
+          "pocet_vyskytu": 8,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, akční plán, plán školení, interní AI politika, plán řízení incidentů, transparentnost a lidský dohled",
+          "typicky_nalez": "Dokument uvádí ÚOOÚ jako 'koordinační orgán' pro AI Act. ÚOOÚ je dozorový orgán pro GDPR, nikoli pro AI Act. AI Act v čl. 70 vyžaduje jmenování národního příslušného orgánu — ČR formálně jmenovala DIA jako koordinátora."
+        },
+        {
+          "vzor": "Nesprávná citace čl. 73 odst. 5 pro hlášení incidentů nasazovatelem a chybějící konkrétní lhůta 15 dní",
+          "pocet_vyskytu": 8,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, plán řízení incidentů, školící prezentace, transparentnost a lidský dohled",
+          "typicky_nalez": "Dokument uvádí 'bez zbytečného odkladu dle čl. 73 odst. 5' — odstavec 5 se vztahuje na výrobce produktů dle sektorové legislativy. Pro nasazovatele platí čl. 73 odst. 4 s lhůtou 15 dní, pro poskytovatele čl. 73 odst. 1."
+        },
+        {
+          "vzor": "Citace neexistujícího nebo nesprávně aplikovaného čl. 86 AI Act pro právo na vysvětlení",
+          "pocet_vyskytu": 9,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, posouzení dopadů, školící prezentace, texty oznámení, monitoring plán, transparentnost a lidský dohled",
+          "typicky_nalez": "Dokument opakovaně odkazuje na 'čl. 86 AI Act' — v DPIA/FRIA dokumentu je konstatováno, že článek 86 v Nařízení 2024/1689 neexistuje. Právo na vysvětlení je v čl. 86 (existuje, má 113 článků + recitály), ale bez odstavce a bez časového kontextu účinnosti 2.8.2026."
+        },
+        {
+          "vzor": "Chybějící nebo nedostatečné pokrytí FRIA jako konkrétního akčního kroku s postupem",
+          "pocet_vyskytu": 9,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, plán řízení incidentů, monitoring plán, transparenční stránka, dodavatelský checklist, posouzení dopadů, transparentnost a lidský dohled",
+          "typicky_nalez": "Dokument zmiňuje FRIA jako součást Compliance Kitu, ale nikde není vysvětleno, kdy a pro koho je FRIA povinná, chybí akční krok s termínem a zodpovědností."
+        },
+        {
+          "vzor": "Nedostatečná praktičnost a konkrétnost — klient opakovaně žádá návody 'jak to udělat', konkrétní URL, postupy, formuláře",
+          "pocet_vyskytu": 12,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, registr AI systémů, texty oznámení, dodavatelský checklist, monitoring plán, transparentnost a lidský dohled",
+          "typicky_nalez": "U registrace high-risk AI systémů v EU databázi chybí konkrétní návod, jak to provést. Kde najdu databázi? Jaké informace budu potřebovat? U KPI chybí návod jak měřit. U dodavatelů jen 'Ověřit na webu' bez konkrétních odkazů."
+        },
+        {
+          "vzor": "Nesprávná citace čl. 26 odst. 5 pro uchovávání logů — zaměňování odstavců a rolí provider/deployer",
+          "pocet_vyskytu": 7,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, dodavatelský checklist, monitoring plán, školící prezentace, transparentnost a lidský dohled",
+          "typicky_nalez": "Dokument cituje čl. 26 odst. 5 pro 6měsíční lhůtu uchovávání logů. Čl. 26 odst. 5 se týká jiné povinnosti nasazovatele. Minimální lhůta 6 měsíců je v čl. 19 odst. 1 pro poskytovatele."
+        },
+        {
+          "vzor": "Chybějící povinnosti poskytovatele (čl. 16-18, čl. 43, čl. 47-48, Příloha IV) pro firmy s vlastním vývojem AI",
+          "pocet_vyskytu": 6,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "interní AI politika, akční plán, registr AI systémů, posouzení dopadů, transparenční stránka",
+          "typicky_nalez": "Celý dokument se fakticky věnuje pouze povinnostem nasazovatele. Pro roli poskytovatele vlastních AI řešení chybí: technická dokumentace dle Přílohy IV, systém řízení kvality dle čl. 17, CE označení dle čl. 48, prohlášení o shodě dle čl. 47."
+        }
+      ]
+    },
+    "doporuceni": {
+      "nova_pravidla": [
+        {
+          "pravidlo": "Nikdy neoznačuj ÚOOÚ jako dozorový orgán pro AI Act — v kontextu ČR uveď, že národní příslušný orgán pro AI Act dosud nebyl legislativně definitivně určen, jako pravděpodobného koordinátora uveď Digitální a informační agenturu (DIA) a pro sektorový dohled uveď příslušné orgány (ČNB pro finance, SÚKL pro zdravotnictví, NÚKIB pro kritickou infrastrukturu); ÚOOÚ zmiňuj výhradně v kontextu GDPR povinností.",
+          "duvod": "Kritický vzor — 8 dokumentů nesprávně identifikuje ÚOOÚ jako AI Act orgán, což může vést k chybnému hlášení incidentů a nesouladu s regulatorními požadavky.",
+          "ocekavany_efekt": "Eliminace nejčastější kritické právní chyby napříč všemi dokumenty, správné nasměrování klienta při hlášení incidentů."
+        },
+        {
+          "pravidlo": "Pro hlášení závažných incidentů dle čl. 73 AI Act vždy rozlišuj: nasazovatel hlásí poskytovateli dle čl. 73 odst. 3 bez zbytečného odkladu, poskytovatel hlásí dozorovému orgánu dle čl. 73 odst. 1 s lhůtou 15 dní od zjištění (a bez zbytečného odkladu při ohrožení života/bezpečnosti); nikdy necituj čl. 73 odst. 5 pro obecné nasazovatele, protože odst. 5 se vztahuje na výrobce produktů dle sektorové legislativy.",
+          "duvod": "Kritický vzor — 8 dokumentů chybně cituje čl. 73 odst. 5 a nerozlišuje povinnosti nasazovatele vs. poskytovatele při hlášení incidentů, což přímo ohrožuje compliance.",
+          "ocekavany_efekt": "Přesné citace článků a odstavců čl. 73, správné přiřazení lhůt podle role firmy, eliminace zavádějících informací o incident reportingu."
+        },
+        {
+          "pravidlo": "Při citaci čl. 86 AI Act (právo na vysvětlení rozhodnutí high-risk AI systému) vždy uveď: (a) že se vztahuje výhradně na rozhodnutí přijatá na základě výstupů high-risk AI systémů dle Přílohy III, (b) konkrétní odstavec (čl. 86 odst. 1), (c) že plná účinnost nastává 2. 8. 2026, a (d) že do té doby se právo na vysvětlení automatizovaného rozhodování řídí GDPR čl. 22 odst. 3.",
+          "duvod": "Kritický vzor — 9 dokumentů cituje čl. 86 bez odstavce, bez časového kontextu a bez omezení na high-risk systémy, v jednom dokumentu je dokonce označen jako neexistující.",
+          "ocekavany_efekt": "Přesné a konzistentní citace čl. 86 s plným právním kontextem, eliminace nejasností o časové účinnosti a rozsahu aplikace."
+        },
+        {
+          "pravidlo": "Ke každé povinnosti, která vyžaduje praktickou akci klienta (registrace v EU databázi, provedení FRIA, podání hlášení incidentu, implementace C2PA metadat), vždy přidej stručný praktický návod obsahující: (a) kde akci provést (konkrétní URL nebo název platformy, je-li znám), (b) jaké informace/dokumenty si připravit, (c) odhadovanou časovou náročnost; nikdy nenechávej akční krok pouze jako obecnou výzvu typu 'zajistěte', 'proveďte' nebo 'ověřte'.",
+          "duvod": "Důležitý vzor — 12 klientských nálezů žádá konkrétní návody místo obecných výzev; klient opakovaně neví, jak registrovat systémy, kde najít EU databázi, jak měřit KPI nebo jak technicky implementovat požadavky.",
+          "ocekavany_efekt": "Výrazné zvýšení praktické použitelnosti dokumentů, snížení klientské frustrace, méně follow-up dotazů."
+        },
+        {
+          "pravidlo": "Pokud firma vystupuje jako poskytovatel (provider) vlastních AI systémů nebo mění účel systému třetí strany dle čl. 25 AI Act, vždy v příslušných dokumentech (registr, akční plán, politika, DPIA/FRIA, monitoring) zařaď samostatnou sekci s kompletním výčtem povinností poskytovatele: technická dokumentace (Příloha IV), systém řízení kvality (čl. 17), posouzení shody (čl. 43), CE označení (čl. 48), prohlášení o shodě (čl. 47), post-market monitoring (čl. 72) a registrace v EU databázi (čl. 49 odst. 1).",
+          "duvod": "Důležitý vzor — 6 dokumentů pokrývá téměř výhradně povinnosti nasazovatele a zcela opomíjí povinnosti poskytovatele, přestože firma vyvíjí vlastní AI a integruje GPAI do produktů.",
+          "ocekavany_efekt": "Kompletní pokrytí obou rolí firmy (provider + deployer), eliminace slepých míst v compliance dokumentaci pro vlastní vývoj AI."
+        }
+      ],
+      "konvergence": false,
+      "komentar": "Kvalita dokumentů je na úrovni 7.1/10, což indikuje systematické problémy vyžadující zásah. Tři nejzávažnější vzory jsou: (1) nesprávná identifikace dozorového orgánu ÚOOÚ místo DIA, (2) chybné citace čl. 73 odst. 5 pro incident reporting, a (3) nepřesné použití čl. 86 bez kontextu. Navržená pravidla cílí na eliminaci těchto opakujících se právních chyb a současně na zvýšení praktické použitelnosti dokumentů, která je hlavním zdrojem klientské nespokojenosti (průměr 6.9). Existující pravidlo v M5 v2 o ÚOOÚ jako koordinačním orgánu je přímo v rozporu s nálezy — nové pravidlo ho nahrazuje přesnější formulací."
+    }
+  },
+  "analysis_input": {
+    "prumerny_eu_score": 7.2,
+    "prumerny_client_score": 6.9,
+    "celkovy_prumer": 7.1,
+    "identifikovane_vzory": [
+      {
+        "vzor": "ÚOOÚ nesprávně identifikován jako dozorový orgán pro AI Act místo správného orgánu (DIA nebo dosud neurčený)",
+        "pocet_vyskytu": 8,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, akční plán, plán školení, interní AI politika, plán řízení incidentů, transparentnost a lidský dohled",
+        "typicky_nalez": "Dokument uvádí ÚOOÚ jako 'koordinační orgán' pro AI Act. ÚOOÚ je dozorový orgán pro GDPR, nikoli pro AI Act. AI Act v čl. 70 vyžaduje jmenování národního příslušného orgánu — ČR formálně jmenovala DIA jako koordinátora."
+      },
+      {
+        "vzor": "Nesprávná citace čl. 73 odst. 5 pro hlášení incidentů nasazovatelem a chybějící konkrétní lhůta 15 dní",
+        "pocet_vyskytu": 8,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, plán řízení incidentů, školící prezentace, transparentnost a lidský dohled",
+        "typicky_nalez": "Dokument uvádí 'bez zbytečného odkladu dle čl. 73 odst. 5' — odstavec 5 se vztahuje na výrobce produktů dle sektorové legislativy. Pro nasazovatele platí čl. 73 odst. 4 s lhůtou 15 dní, pro poskytovatele čl. 73 odst. 1."
+      },
+      {
+        "vzor": "Citace neexistujícího nebo nesprávně aplikovaného čl. 86 AI Act pro právo na vysvětlení",
+        "pocet_vyskytu": 9,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, posouzení dopadů, školící prezentace, texty oznámení, monitoring plán, transparentnost a lidský dohled",
+        "typicky_nalez": "Dokument opakovaně odkazuje na 'čl. 86 AI Act' — v DPIA/FRIA dokumentu je konstatováno, že článek 86 v Nařízení 2024/1689 neexistuje. Právo na vysvětlení je v čl. 86 (existuje, má 113 článků + recitály), ale bez odstavce a bez časového kontextu účinnosti 2.8.2026."
+      },
+      {
+        "vzor": "Chybějící nebo nedostatečné pokrytí FRIA jako konkrétního akčního kroku s postupem",
+        "pocet_vyskytu": 9,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, plán řízení incidentů, monitoring plán, transparenční stránka, dodavatelský checklist, posouzení dopadů, transparentnost a lidský dohled",
+        "typicky_nalez": "Dokument zmiňuje FRIA jako součást Compliance Kitu, ale nikde není vysvětleno, kdy a pro koho je FRIA povinná, chybí akční krok s termínem a zodpovědností."
+      },
+      {
+        "vzor": "Nedostatečná praktičnost a konkrétnost — klient opakovaně žádá návody 'jak to udělat', konkrétní URL, postupy, formuláře",
+        "pocet_vyskytu": 12,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, registr AI systémů, texty oznámení, dodavatelský checklist, monitoring plán, transparentnost a lidský dohled",
+        "typicky_nalez": "U registrace high-risk AI systémů v EU databázi chybí konkrétní návod, jak to provést. Kde najdu databázi? Jaké informace budu potřebovat? U KPI chybí návod jak měřit. U dodavatelů jen 'Ověřit na webu' bez konkrétních odkazů."
+      },
+      {
+        "vzor": "Nesprávná citace čl. 26 odst. 5 pro uchovávání logů — zaměňování odstavců a rolí provider/deployer",
+        "pocet_vyskytu": 7,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční plán, interní AI politika, dodavatelský checklist, monitoring plán, školící prezentace, transparentnost a lidský dohled",
+        "typicky_nalez": "Dokument cituje čl. 26 odst. 5 pro 6měsíční lhůtu uchovávání logů. Čl. 26 odst. 5 se týká jiné povinnosti nasazovatele. Minimální lhůta 6 měsíců je v čl. 19 odst. 1 pro poskytovatele."
+      },
+      {
+        "vzor": "Chybějící povinnosti poskytovatele (čl. 16-18, čl. 43, čl. 47-48, Příloha IV) pro firmy s vlastním vývojem AI",
+        "pocet_vyskytu": 6,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "interní AI politika, akční plán, registr AI systémů, posouzení dopadů, transparenční stránka",
+        "typicky_nalez": "Celý dokument se fakticky věnuje pouze povinnostem nasazovatele. Pro roli poskytovatele vlastních AI řešení chybí: technická dokumentace dle Přílohy IV, systém řízení kvality dle čl. 17, CE označení dle čl. 48, prohlášení o shodě dle čl. 47."
+      }
+    ]
+  }
+}
