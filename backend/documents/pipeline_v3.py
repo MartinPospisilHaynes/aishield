@@ -21,12 +21,13 @@ from typing import Dict, List, Optional
 
 from backend.database import get_supabase
 from backend.documents.pdf_generator import html_to_pdf, save_to_supabase_storage
-from backend.documents.pdf_renderer import render_section_html, render_full_document
+from backend.documents.pdf_renderer import render_section_html
 from backend.documents.m1_generator import generate_draft, DOCUMENT_NAMES, PROMPT_BUILDERS
 from backend.documents.m2_eu_critic import review_eu
 from backend.documents.m3_client_critic import review_client
 from backend.documents.m4_refiner import refine
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
+from backend.documents.generation_report import send_generation_report
 
 logger = logging.getLogger(__name__)
 
@@ -590,16 +591,41 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             logger.info(f"[Pipeline v3]   M2 hotov: skóre={eu_score}/10, "
                        f"${m2_cost:.4f}, {m2_tokens} tokens, {m2_time:.1f}s")
 
-            # ── M3: Client Critic (Gemini 3.1 Pro) ──
-            m3_start = time.time()
-            logger.info(f"[Pipeline v3]   M3 Client Critic (Gemini) → {doc_name}...")
-            client_critique, m3_meta = await review_client(draft_html, company_context, doc_key)
-            m3_time = time.time() - m3_start
-            m3_cost = m3_meta.get("cost_usd", 0)
-            m3_tokens = m3_meta.get("input_tokens", 0) + m3_meta.get("output_tokens", 0)
-            client_score = client_critique.get("skore", "?")
-            logger.info(f"[Pipeline v3]   M3 hotov: skóre={client_score}/10, "
-                       f"${m3_cost:.4f}, {m3_tokens} tokens, {m3_time:.1f}s")
+            # ── M3: Client Critic — SKIP if EU skóre >= 8 (cost optimization) ──
+            eu_score_num = 0
+            try:
+                eu_score_num = int(eu_score)
+            except (ValueError, TypeError):
+                eu_score_num = 0
+
+            if eu_score_num >= 8:
+                logger.info(f"[Pipeline v3]   M3 SKIP: EU skóre {eu_score_num} >= 8, klient review přeskočen (úspora tokenů)")
+                client_critique = {
+                    "myslenkovy_proces": f"Přeskočeno — EU skóre {eu_score_num}/10 je dostatečné.",
+                    "celkove_hodnoceni": "dobré",
+                    "skore": eu_score_num,
+                    "nalezy": [],
+                    "silne_stranky": ["EU inspektor dal vysoké skóre — dokument splňuje standardy."],
+                    "chybejici_obsah": [],
+                    "otazky_klienta": [],
+                    "celkove_doporuceni": "Dokument splňuje kvalitativní standardy.",
+                }
+                m3_meta = {"cost_usd": 0, "input_tokens": 0, "output_tokens": 0}
+                m3_cost = 0
+                m3_tokens = 0
+                m3_time = 0.0
+                client_score = eu_score_num
+            else:
+                # ── M3: Client Critic (Gemini 3.1 Pro) ──
+                m3_start = time.time()
+                logger.info(f"[Pipeline v3]   M3 Client Critic (Gemini) → {doc_name}...")
+                client_critique, m3_meta = await review_client(draft_html, company_context, doc_key)
+                m3_time = time.time() - m3_start
+                m3_cost = m3_meta.get("cost_usd", 0)
+                m3_tokens = m3_meta.get("input_tokens", 0) + m3_meta.get("output_tokens", 0)
+                client_score = client_critique.get("skore", "?")
+                logger.info(f"[Pipeline v3]   M3 hotov: skóre={client_score}/10, "
+                           f"${m3_cost:.4f}, {m3_tokens} tokens, {m3_time:.1f}s")
 
             # Uložit kritiky pro M5 analýzu
             all_critiques[doc_key] = {
@@ -672,12 +698,11 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             })
 
     # ── 3b. M5: Prompt Self-Optimization (Claude Opus 4.6) ──
+    generation_id = f"gen_{timestamp}"
+    m5_result = None
     try:
         logger.info(f"")
         logger.info(f"[Pipeline v3] ═══ M5: Prompt Self-Optimization ═══")
-
-        # Detekce generation_id z logů nebo timestamp
-        generation_id = f"gen_{timestamp}"
 
         m5_result = await analyze_and_optimize(
             pipeline_log=result.pipeline_log,
@@ -699,10 +724,32 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
 
     except Exception as e:
         logger.error(f"[Pipeline v3] M5 CHYBA (nekritická): {e}", exc_info=True)
+        m5_result = {"status": "error", "error": str(e)}
         result.pipeline_log.append({
             "step": "m5_optimization",
             "error": str(e),
         })
+
+    # ── 3c. Email report M2/M3/M5 ──
+    try:
+        total_time = time.time() - pipeline_start
+        logger.info(f"[Pipeline v3] ═══ Odesílám report generace emailem ═══")
+        report_result = await send_generation_report(
+            generation_id=generation_id,
+            all_critiques=all_critiques,
+            m5_result=m5_result,
+            pipeline_log=result.pipeline_log,
+            total_cost=result.total_cost_usd,
+            total_tokens=result.total_tokens,
+            total_time=total_time,
+            doc_names=DOCUMENT_NAMES,
+        )
+        if report_result.get("sent"):
+            logger.info(f"[Pipeline v3] Report odeslán (resend_id={report_result.get('resend_id')})")
+        else:
+            logger.warning(f"[Pipeline v3] Report se nepodařilo odeslat: {report_result.get('error', '?')}")
+    except Exception as e:
+        logger.error(f"[Pipeline v3] Report email CHYBA (nekritická): {e}", exc_info=True)
 
     # ── 4. Generate PDFs ──
     logger.info(f"")
@@ -738,37 +785,8 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             result.errors.append(f"PDF {doc_key}: {str(e)}")
             logger.error(f"[Pipeline v3]   PDF CHYBA {doc_name}: {e}", exc_info=True)
 
-    # ── 5. Unified PDF ──
-    logger.info(f"[Pipeline v3] ═══ KROK 4: Unified PDF ═══")
-    try:
-        # Exclude special-format docs (HTML page, PPTX slides) from unified PDF
-        pdf_docs_html = {k: v for k, v in all_final_html.items()
-                         if k not in ("transparency_page", "training_presentation")}
-        unified_html = render_full_document(
-            pdf_docs_html, company_name, ico, overall_risk,
-        )
-        unified_pdf = html_to_pdf(unified_html)
-        unified_filename = f"compliance_kit_komplet_{timestamp}.pdf"
-        unified_url = save_to_supabase_storage(
-            unified_pdf, unified_filename, company_id,
-            content_type="application/pdf",
-        )
-        unified_info = {
-            "template_key": "unified_compliance_kit",
-            "template_name": "AI Act Compliance Kit — Kompletní dokument",
-            "filename": unified_filename, "download_url": unified_url,
-            "size_bytes": len(unified_pdf), "format": "pdf",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-        }
-        result.documents.append(unified_info)
-        _save_document_record(company_id, unified_info)
-        logger.info(f"[Pipeline v3]   Unified PDF: {len(unified_pdf):,} bytes")
-    except Exception as e:
-        result.errors.append(f"unified_pdf: {str(e)}")
-        logger.error(f"[Pipeline v3]   Unified PDF CHYBA: {e}", exc_info=True)
-
-    # ── 6. Transparenční stránka (HTML) — LLM-generated via M1→M4 ──
-    logger.info(f"[Pipeline v3] ═══ KROK 5: Transparenční stránka HTML ═══")
+    # ── 5. Transparenční stránka (HTML) — LLM-generated via M1→M4 ──
+    logger.info(f"[Pipeline v3] ═══ KROK 4: Transparenční stránka HTML ═══")
     try:
         tp_html = all_final_html.get("transparency_page")
         if tp_html:
@@ -795,8 +813,8 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         result.errors.append(f"transparency_page: {str(e)}")
         logger.error(f"[Pipeline v3]   HTML CHYBA: {e}", exc_info=True)
 
-    # ── 7. PPTX prezentace — LLM-generated via M1→M4, then converted ──
-    logger.info(f"[Pipeline v3] ═══ KROK 6: PPTX prezentace ═══")
+    # ── 6. PPTX prezentace — LLM-generated via M1→M4, then converted ──
+    logger.info(f"[Pipeline v3] ═══ KROK 5: PPTX prezentace ═══")
     try:
         pres_html = all_final_html.get("training_presentation")
         if pres_html:
@@ -822,6 +840,36 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     except Exception as e:
         result.errors.append(f"pptx: {str(e)}")
         logger.error(f"[Pipeline v3]   PPTX CHYBA: {e}", exc_info=True)
+
+    # ── 7. Statické VOP (PDF) — přesná kopie z webu, bez LLM ──
+    logger.info(f"[Pipeline v3] ═══ KROK 6: Statické VOP (PDF) ═══")
+    try:
+        vop_html_path = os.path.join(os.path.dirname(__file__), "vop_template.html")
+        if os.path.exists(vop_html_path):
+            with open(vop_html_path, "r", encoding="utf-8") as f:
+                vop_html = f.read()
+            vop_pdf_bytes = html_to_pdf(vop_html)
+            vop_filename = f"vop_aishield_{timestamp}.pdf"
+            vop_url = save_to_supabase_storage(
+                vop_pdf_bytes, vop_filename, company_id,
+                content_type="application/pdf",
+            )
+            vop_info = {
+                "template_key": "vop",
+                "template_name": "Všeobecné obchodní podmínky (VOP)",
+                "filename": vop_filename, "download_url": vop_url,
+                "size_bytes": len(vop_pdf_bytes), "format": "pdf",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "static": True,
+            }
+            result.documents.append(vop_info)
+            _save_document_record(company_id, vop_info)
+            logger.info(f"[Pipeline v3]   VOP PDF: {len(vop_pdf_bytes):,} bytes (statický dokument)")
+        else:
+            logger.warning(f"[Pipeline v3]   VOP šablona nenalezena: {vop_html_path}")
+    except Exception as e:
+        result.errors.append(f"vop: {str(e)}")
+        logger.error(f"[Pipeline v3]   VOP CHYBA: {e}", exc_info=True)
 
     # ── HOTOVO ──
     total_time = time.time() - pipeline_start
