@@ -80,11 +80,13 @@ for doc in gen_docs:
         print(f"  SKIP {doc_name} — no URL")
         continue
     
-    # Build filename from type + format
-    ext = fmt if fmt else "bin"
-    filename = f"{doc_type}.{ext}"
+    # Extract real Czech filename from Supabase URL
+    filename = url.split("/")[-1].split("?")[0]
+    if not filename or filename == url:
+        ext = fmt if fmt else "bin"
+        filename = f"{doc_type}.{ext}"
     
-    print(f"  Downloading {doc_name} ({fmt}, {size:,} bytes)...")
+    print(f"  Downloading {doc_name} → {filename} ({size:,} bytes)...")
     
     try:
         r = requests.get(url, timeout=30)

@@ -86,6 +86,9 @@ ZAKÁZÁNO:
   „do 2 měsíců“, „urgentní“, „zbývá X měsíců“, „firma je v prodlení“).
   Zákonné milníky AI Act uváděj POUZE jako informativní fakta — NIKDY jako tlak
 - Zmínky o testech, certifikacích, kvízech
+- Anglické nadpisy: Executive Summary → Shrnutí, Reporting → Výkaznictví,
+  Review → Revize, Checklist → Kontrolní seznam, Scope → Rozsah atd.
+  VŠECHNY nadpisy MUSEJÍ být česky. Pokud najdeš anglický nadpis v draftu, přelož ho.
 """
 
 

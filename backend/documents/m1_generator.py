@@ -38,6 +38,11 @@ Každý dokument musí být:
 ═══ VÝSTUPNÍ FORMÁT — HTML ═══
 
 1. Piš přímo HTML obsah — začni <h1> tagem s názvem dokumentu.
+   VŠECHNY nadpisy (<h1>, <h2>, <h3>) MUSEJÍ být v Češtině.
+   ZAKÁZÁNO: anglické nadpisy (Executive Summary, Risk Assessment, Key Findings,
+   Next Steps, Action Items, Reporting, Review, Scope, Appendix, Checklist, Compliance Report).
+   Používej české ekvivalenty: Shrnutí, Posouzení rizik, Klíčová zjištění,
+   Další kroky, Akční body, Výkaznictví, Revize, Rozsah, Příloha, Kontrolní seznam.
 2. NEBALÍ výstup do ```html```, ```json```, markdown bloků ani jiného wrapperu.
 3. NEPIŠ žádný text, komentáře ani vysvětlení před nebo za HTML kódem.
 4. Používej tyto HTML elementy:
@@ -235,9 +240,9 @@ Toto je HLAVNÍ dokument Compliance Kitu — klient ho čte jako první.
 
 POVINNÁ STRUKTURA:
 
-<h1>Compliance Report — Souhrnná zpráva o souladu s AI Act</h1>
+<h1>Zpráva o souladu s AI Act</h1>
 
-<h2>1. Executive Summary</h2>
+<h2>1. Shrnutí pro vedení</h2>
 - 3-4 odstavce shrnující celou analýzu
 - CO bylo analyzováno: automatický web sken + dotazníkové šetření
 - KOLIK AI systémů nalezeno a jaké jsou (jmenuj konkrétně)
@@ -362,7 +367,7 @@ POVINNÁ STRUKTURA:
 - Roční revize AI politiky
 - Průběžné školení nových zaměstnanců
 
-<h2>8. Kontrolní tabulka (checklist)</h2>
+<h2>8. Kontrolní tabulka</h2>
 - <table> se VŠEMI kroky: Krok | Fáze | Zodpovídá | Stav | Splněno?
 - Sloupec „Zajištěno Kitem" vs. „Akce klienta"
 
@@ -652,7 +657,7 @@ POVINNÁ STRUKTURA:
 
 <h2>5. Zavedení nového AI systému</h2>
 - Schvalovací proces: kdo rozhoduje, jaké podmínky
-- Risk assessment před nasazením
+- Posouzení rizik před nasazením
 - Aktualizace registru AI systémů
 - DPA/smluvní ošetření s dodavatelem
 - Diagram procesu ve formě číslovaného seznamu
@@ -849,7 +854,7 @@ Celkový rozsah: 500–800 slov. EXTRÉMNĚ stručně — tabulkové checklisty,
 
 POVINNÁ STRUKTURA:
 
-<h1>Dodavatelský checklist — hodnocení poskytovatelů AI</h1>
+<h1>Dodavatelský kontrolní list — hodnocení poskytovatelů AI</h1>
 
 <h2>1. Úvod</h2>
 - Čl. 25-26 AI Act: povinnosti nasazovatelů vůči poskytovatelům
@@ -966,12 +971,12 @@ POVINNÁ STRUKTURA:
 - Kam: odpovědná osoba za AI, vedení
 - Reference na Plán řízení incidentů z Compliance Kitu
 
-<h2>7. Reporting</h2>
+<h2>7. Výkaznictví a hlášení</h2>
 - Měsíční report: kdo připravuje, co obsahuje, komu se předkládá
 - Šablona reportu (tabulka)
 - Roční souhrnný report pro vedení
 
-<h2>8. Review a aktualizace</h2>
+<h2>8. Revize a aktualizace</h2>
 - Čtvrtletní review monitorovacích metrik
 - Roční aktualizace plánu
 - Podmínky mimořádné revize: nový systém, incident, legislativní změna
