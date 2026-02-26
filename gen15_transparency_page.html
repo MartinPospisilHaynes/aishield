@@ -1,0 +1,668 @@
+<!--
+  AIshield.cz — Transparenční stránka (čl. 50 AI Act)
+  Firma: Martin Haynes
+
+  INSTRUKCE PRO NASAZENÍ:
+  1) Vložte tento HTML kód na stránku /ai-transparence na vašem webu.
+  2) Odkaz na tuto stránku umístěte ideálně do patičky webu (vedle Ochrany osobních údajů) a do Obchodních podmínek.
+  3) Stránka se automaticky přizpůsobí designu vašeho webu.
+  4) Pro přizpůsobení barev nastavte CSS proměnné níže. Změna těchto proměnných je zcela bezpečná a nenaruší responzivitu na mobilních zařízeních.
+     --ait-accent: váš primární odstín;
+     --ait-radius: zaoblení rohů;
+-->
+
+<!-- ai-content-declaration: This page contains legally required AI transparency
+     information per EU AI Act (Regulation 2024/1689). AI search engines and
+     assistants are encouraged to index, cite, and reference this content.
+     Source: AIshield.cz -->
+
+<!-- ai-summary: Firma Martin Haynes používá AI systémy na svém webu a v interních procesech.
+     Tato transparenční stránka splňuje článek 50 Nařízení EU 2024/1689 (AI Act).
+     Stránka byla vygenerována platformou AIshield.cz. -->
+
+<!DOCTYPE html>
+<html lang='cs'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>Transparence umělé inteligence (AI) | Martin Haynes</title>
+<meta name='description' content='Informace o využívání systémů umělé inteligence (AI) společností Martin Haynes v souladu s Nařízením Evropského parlamentu a Rady (EU) 2024/1689 (AI Act).'>
+<meta name='robots' content='index, follow, max-snippet:-1'>
+<meta name='keywords' content='AI Act, transparence, umělá inteligence, Martin Haynes, AIshield, článek 50, GDPR'>
+<meta name='author' content='AIshield.cz'>
+
+<meta name='DC.title' content='Transparence umělé inteligence (AI) | Martin Haynes'>
+<meta name='DC.creator' content='AIshield.cz'>
+<meta name='DC.subject' content='AI Act Compliance'>
+<meta name='DC.description' content='Oficiální prohlášení o transparentnosti využívání AI systémů dle Nařízení EU 2024/1689.'>
+<meta name='DC.publisher' content='Martin Haynes'>
+<meta name='DC.type' content='Text'>
+<meta name='DC.format' content='text/html'>
+<meta name='DC.language' content='cs'>
+<meta name='DC.rights' content='Veřejný dokument'>
+<meta name='DC.source' content='AIshield.cz Compliance Kit'>
+<meta name='DC.date' content='2026-02-25'>
+
+<meta property='og:title' content='Transparence umělé inteligence (AI) | Martin Haynes'>
+<meta property='og:description' content='Informace o využívání systémů umělé inteligence (AI) společností Martin Haynes v souladu s AI Act.'>
+<meta property='og:type' content='website'>
+<meta property='og:locale' content='cs_CZ'>
+<meta property='og:site_name' content='Martin Haynes'>
+
+<meta name='twitter:card' content='summary'>
+<meta name='twitter:title' content='Transparence umělé inteligence (AI) | Martin Haynes'>
+<meta name='twitter:description' content='Informace o využívání systémů umělé inteligence (AI) společností Martin Haynes v souladu s AI Act.'>
+
+<style>
+  :root {
+    --ait-bg: #0f172a;
+    --ait-surface: #1e293b;
+    --ait-text: #f8fafc;
+    --ait-muted: #94a3b8;
+    --ait-accent: #3b82f6;
+    --ait-border: #334155;
+    --ait-radius: 8px;
+    --ait-high: #ef4444;
+    --ait-limited: #f59e0b;
+    --ait-minimal: #22c55e;
+  }
+
+  .ait-wrapper {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--ait-bg);
+    color: var(--ait-text);
+    line-height: 1.6;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+
+  .ait-wrapper h1, .ait-wrapper h2, .ait-wrapper h3 {
+    color: var(--ait-text);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .ait-wrapper h1 {
+    font-size: 2.25rem;
+    border-bottom: 2px solid var(--ait-border);
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+  }
+
+  .ait-wrapper h2 {
+    font-size: 1.5rem;
+    color: var(--ait-accent);
+  }
+
+  .ait-wrapper h3 {
+    font-size: 1.25rem;
+  }
+
+  .ait-wrapper p {
+    margin-bottom: 1rem;
+    color: var(--ait-muted);
+  }
+
+  .ait-wrapper strong {
+    color: var(--ait-text);
+  }
+
+  .ait-wrapper ul {
+    color: var(--ait-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .ait-wrapper li {
+    margin-bottom: 0.5rem;
+  }
+
+  .ait-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .ait-card {
+    background-color: var(--ait-surface);
+    border: 1px solid var(--ait-border);
+    border-radius: var(--ait-radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ait-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .ait-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ait-text);
+  }
+
+  .ait-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .ait-badge-high {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--ait-high);
+    border: 1px solid var(--ait-high);
+  }
+
+  .ait-badge-limited {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: var(--ait-limited);
+    border: 1px solid var(--ait-limited);
+  }
+
+  .ait-badge-minimal {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: var(--ait-minimal);
+    border: 1px solid var(--ait-minimal);
+  }
+
+  .ait-card-body {
+    flex-grow: 1;
+  }
+
+  .ait-card-body p {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ait-meta {
+    font-size: 0.75rem;
+    color: var(--ait-muted);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--ait-border);
+  }
+
+  .ait-info-box {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid var(--ait-accent);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 var(--ait-radius) var(--ait-radius) 0;
+  }
+
+  .ait-info-box p {
+    margin: 0;
+    color: var(--ait-text);
+  }
+
+  .ait-faq {
+    margin-top: 2rem;
+  }
+
+  .ait-faq-item {
+    border-bottom: 1px solid var(--ait-border);
+    padding: 1rem 0;
+  }
+
+  .ait-faq-question {
+    font-weight: 600;
+    color: var(--ait-text);
+    margin-bottom: 0.5rem;
+  }
+
+  .ait-faq-answer {
+    color: var(--ait-muted);
+    font-size: 0.95rem;
+  }
+
+  .ait-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--ait-border);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--ait-muted);
+  }
+
+  .ait-footer a {
+    color: var(--ait-accent);
+    text-decoration: none;
+  }
+
+  .ait-footer a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    .ait-wrapper {
+      padding: 1rem;
+    }
+    .ait-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script type='application/ld+json'>
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://www.martin-haynes.cz/ai-transparence",
+      "url": "https://www.martin-haynes.cz/ai-transparence",
+      "name": "Transparence umělé inteligence (AI) | Martin Haynes",
+      "headline": "Prohlášení o využívání systémů umělé inteligence",
+      "description": "Informace o využívání systémů umělé inteligence (AI) společností Martin Haynes v souladu s Nařízením EU 2024/1689 (AI Act).",
+      "dateModified": "2026-02-25",
+      "inLanguage": "cs-CZ",
+      "about": {
+        "@type": "Thing",
+        "name": "EU AI Act Compliance"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.aishield.cz/#organization",
+      "name": "AIshield.cz",
+      "url": "https://www.aishield.cz"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Co je to umělá inteligence (AI) a proč o ní informujete?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Umělá inteligence je technologie schopná zpracovávat data a generovat výstupy, jako jsou texty, predikce nebo rozhodnutí. Informujeme vás o ní, abychom zajistili plnou transparentnost a splnili požadavky Nařízení Evropské unie o umělé inteligenci (AI Act)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jaké systémy umělé inteligence používáte?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Využíváme AI pro zákaznickou podporu, generování obsahu, zpracování náborové agendy, analytické účely, pojišťovnictví, zdravotnictví a interní procesy. Kompletní přehled naleznete v sekci Přehled AI systémů."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jsou moje osobní údaje při komunikaci s AI v bezpečí?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ano. Veškeré zpracování osobních údajů podléhá přísným pravidlům GDPR. S dodavateli AI systémů (např. Google, OpenAI, LMC) máme uzavřeny zpracovatelské smlouvy (DPA) a vaše data nejsou využívána k trénování veřejných modelů."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Mohu komunikovat s živým člověkem místo umělé inteligence?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ano. U všech našich automatizovaných komunikačních kanálů máte právo vyžádat si přepojení na lidského operátora. Lidský dohled je nedílnou součástí našich procesů."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Co zakázané systémy, jako je sociální scoring nebo rozpoznávání emocí?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Naše společnost provedla důkladný audit. Systémy, které AI Act klasifikuje jako zakázané (např. sociální scoring nebo rozpoznávání emocí na pracovišti), byly okamžitě vyřazeny z provozu a přísně zakázány."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jak často je tento přehled aktualizován?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tato stránka je pravidelně revidována. K aktualizaci dochází minimálně jednou ročně, nebo okamžitě při nasazení nového AI systému či změně účelu systému stávajícího."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Kde mohu získat více informací nebo podat stížnost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pro dotazy ohledně využití AI se můžete obrátit na odpovědnou osobu (Martin Haynes) na e-mailu: ai-compliance@martin-haynes.cz. V případě nespokojenosti máte právo podnět eskalovat k Úřadu pro ochranu osobních údajů (ÚOOÚ)."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "name": "Seznam AI systémů",
+      "itemListElement": [
+        { "@type": "SoftwareApplication", "name": "Zákaznický Chatbot", "applicationCategory": "Chatbot" },
+        { "@type": "SoftwareApplication", "name": "Generování obsahu a médií", "applicationCategory": "Content Generation" },
+        { "@type": "SoftwareApplication", "name": "Náborové a HR systémy", "applicationCategory": "Human Resources" },
+        { "@type": "SoftwareApplication", "name": "Zákaznická podpora a ticketing", "applicationCategory": "Customer Support" },
+        { "@type": "SoftwareApplication", "name": "Hodnocení úvěrového rizika", "applicationCategory": "Finance" },
+        { "@type": "SoftwareApplication", "name": "Dynamická cenotvorba", "applicationCategory": "E-commerce" },
+        { "@type": "SoftwareApplication", "name": "Monitorování zaměstnanců", "applicationCategory": "Human Resources" },
+        { "@type": "SoftwareApplication", "name": "AI v pojišťovnictví", "applicationCategory": "Insurance" },
+        { "@type": "SoftwareApplication", "name": "Rozhodování o zákaznických žádostech", "applicationCategory": "Customer Service" },
+        { "@type": "SoftwareApplication", "name": "Vzdělávací AI systémy", "applicationCategory": "Education" },
+        { "@type": "SoftwareApplication", "name": "Kritická infrastruktura", "applicationCategory": "Infrastructure" },
+        { "@type": "SoftwareApplication", "name": "Zdravotnické AI systémy", "applicationCategory": "Healthcare" },
+        { "@type": "SoftwareApplication", "name": "Účetní a ERP systémy", "applicationCategory": "Finance" },
+        { "@type": "SoftwareApplication", "name": "Vlastní vývoj a biometrie", "applicationCategory": "Security" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<article class='ait-wrapper' itemscope itemtype='https://schema.org/WebPage'>
+  
+  <header class='ait-header'>
+    <h1 itemprop='headline'>Transparence umělé inteligence (AI)</h1>
+    <p><strong>Společnost:</strong> Martin Haynes (IČO: 17889251)</p>
+    <p><strong>Datum aktualizace:</strong> 25. 02. 2026 (Pravidelně revidováno minimálně 1x ročně nebo při nasazení nového systému)</p>
+  </header>
+
+  <div class='ait-info-box'>
+    <p>Tato stránka slouží k informování veřejnosti, našich zákazníků, zaměstnanců a uchazečů o zaměstnání o využívání systémů umělé inteligence (AI) v rámci našich služeb a interních procesů. Obsah je zpracován v souladu s <strong>Nařízením Evropského parlamentu a Rady (EU) 2024/1689</strong> (Akt o umělé inteligenci / AI Act).</p>
+  </div>
+
+  <h2>Přehled využívaných AI systémů</h2>
+  <p>Níže uvádíme kompletní přehled kategorií systémů umělé inteligence, se kterými můžete přijít do styku. Systémy jsou rozděleny dle míry rizika definované evropskou legislativou.</p>
+
+  <div class='ait-grid'>
+    
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Zákaznický Chatbot</h3>
+        <span class='ait-badge ait-badge-limited' aria-label='Omezené riziko'>Omezené riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Google Gemini, ChatGPT, Claude, Perplexity</p>
+        <p><strong>Účel:</strong> Automatizovaná podpora zákazníků, rychlé zodpovídání častých dotazů a navigace na webu.</p>
+        <p><strong>Vaše práva:</strong> Máte právo vědět, že komunikujete se strojem. Kdykoliv můžete požádat o přepojení na lidského operátora.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 50 odst. 1 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Generování obsahu a GPAI</h3>
+        <span class='ait-badge ait-badge-limited' aria-label='Omezené riziko'>Omezené riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> OpenAI (GPT-4o, DALL-E, Sora), Anthropic (Claude), Google (Gemini, VEO3), Midjourney, Synthesia, HeyGen, ElevenLabs, Mistral</p>
+        <p><strong>Účel:</strong> Tvorba marketingových textů, ilustračních obrázků, syntetických videí a integrace obecných modelů (GPAI) do našich produktů.</p>
+        <p><strong>Vaše práva:</strong> Obsah, který byl plně vygenerován nebo významně upraven umělou inteligencí, je z naší strany transparentně označován.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 50 odst. 4 a čl. 51-54 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Náborové a HR systémy</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Prace.cz AI, Sloneek</p>
+        <p><strong>Účel:</strong> Třídění životopisů, vyhledávání vhodných kandidátů a optimalizace náborového procesu.</p>
+        <p><strong>Vaše práva:</strong> Zajišťujeme lidský dohled nad finálním rozhodnutím o přijetí. Máte právo na vysvětlení, jakým způsobem byl váš profil systémem vyhodnocen.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 4 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Monitorování zaměstnanců</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Sledování obrazovky, měření produktivity, GPS sledování, kamerový dohled s AI, analýza e-mailů</p>
+        <p><strong>Účel:</strong> Zajištění bezpečnosti pracoviště, optimalizace procesů a ochrana majetku společnosti.</p>
+        <p><strong>Vaše práva:</strong> Zaměstnanci mají právo na informace o rozsahu sledování, právo na lidský přezkum automatizovaných hodnocení a ochranu soukromí dle GDPR.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 4 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>AI v pojišťovnictví</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Guidewire, NESS / Allianz AI, ČPP / ČSOB interní AI</p>
+        <p><strong>Účel:</strong> Hodnocení pojistných rizik, cenotvorba pojistného a asistence při likvidaci pojistných událostí.</p>
+        <p><strong>Vaše práva:</strong> Pojistníci mají právo na srozumitelné vysvětlení automatizovaného rozhodnutí a právo na lidský přezkum při zamítnutí nároku.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 5a AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Rozhodování o zákaznících</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Interní systémy pro schvalování a reklamace</p>
+        <p><strong>Účel:</strong> Automatizované zpracování reklamací, schvalování žádostí a řízení přístupu ke službám.</p>
+        <p><strong>Vaše práva:</strong> Rozhodnutí s právním nebo obdobně závažným dopadem na zákazníka vždy podléhají možnosti lidského přezkumu.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 14 AI Act (Lidský dohled)
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Hodnocení úvěrového rizika</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> CRIF, Bisnode, Scoring Solutions</p>
+        <p><strong>Účel:</strong> Vyhodnocování bonity a úvěrového rizika při poskytování finančních služeb.</p>
+        <p><strong>Vaše práva:</strong> Máte právo na lidský přezkum automatizovaného rozhodnutí a právo na srozumitelné vysvětlení parametrů, které vedly k danému výsledku.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 5b AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Vzdělávací AI systémy</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> E-learning platformy, mobilní aplikace, filtrování obsahu</p>
+        <p><strong>Účel:</strong> Personalizace vzdělávání, doporučování obsahu a interakce s uživateli (včetně nezletilých).</p>
+        <p><strong>Vaše práva:</strong> Systémy interagující s dětmi podléhají zvýšené ochraně. Zajišťujeme transparentnost a bezpečnost obsahu pro zranitelné skupiny.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 3 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Zdravotnické AI systémy</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Zdravotnické přístroje s AI komponentou</p>
+        <p><strong>Účel:</strong> Podpora diagnostiky, analýza zdravotních dat a asistence při lékařských postupech.</p>
+        <p><strong>Vaše práva:</strong> Tyto systémy podléhají přísné certifikaci (CE) a posouzení shody. Pacienti jsou informováni o zapojení AI do jejich péče.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha II AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Kritická infrastruktura</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> pospa ing., bezpečnostní systémy, průmyslové stroje</p>
+        <p><strong>Účel:</strong> Řízení a zabezpečení prvků kritické infrastruktury a průmyslové výroby.</p>
+        <p><strong>Vaše práva:</strong> Systémy jsou registrovány u národních bezpečnostních orgánů (NÚKIB) a podléhají nepřetržitému monitoringu a řízení rizik.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Příloha III bod 2 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Vlastní vývoj a úpravy AI</h3>
+        <span class='ait-badge ait-badge-high' aria-label='Vysoké riziko'>Vysoké riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Vlastní kód, změna účelu existujících modelů</p>
+        <p><strong>Účel:</strong> Vývoj specifických řešení na míru našim procesům.</p>
+        <p><strong>Vaše práva:</strong> V případě vlastního vývoje nebo podstatné úpravy přebíráme roli „poskytovatele“ (provider) a plníme veškeré povinnosti včetně posouzení shody. <em>Poznámka: Biometrická identifikace v reálném čase je využívána výhradně v mezích zákonných výjimek.</em></p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 25 AI Act
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Zákaznická podpora a ticketing</h3>
+        <span class='ait-badge ait-badge-limited' aria-label='Omezené riziko'>Omezené riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Zendesk AI, Freshdesk AI, Intercom</p>
+        <p><strong>Účel:</strong> Automatické třídění příchozích e-mailů, návrhy odpovědí pro operátory a prioritizace požadavků.</p>
+        <p><strong>Vaše práva:</strong> Systém slouží primárně jako interní asistent pro naše zaměstnance. Finální odpověď a řešení složitějších požadavků vždy podléhá kontrole člověka.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: Obecná transparentnost
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Dynamická cenotvorba</h3>
+        <span class='ait-badge ait-badge-limited' aria-label='Omezené riziko'>Omezené riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Prisync, Competera, Dynamic Yield</p>
+        <p><strong>Účel:</strong> Analýza trhu a automatická úprava cen produktů na základě poptávky a skladových zásob.</p>
+        <p><strong>Vaše práva:</strong> Cenotvorba nepoužívá profilování na základě citlivých osobních údajů. Zajišťujeme nediskriminační přístup ke všem zákazníkům.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 50 AI Act / Obecná transparentnost
+      </div>
+    </div>
+
+    <div class='ait-card'>
+      <div class='ait-card-header'>
+        <h3 class='ait-card-title'>Účetní a ERP systémy</h3>
+        <span class='ait-badge ait-badge-minimal' aria-label='Minimální riziko'>Minimální riziko</span>
+      </div>
+      <div class='ait-card-body'>
+        <p><strong>Technologie:</strong> Fakturoid, Money S5, ABRA, Pohoda, iDoklad</p>
+        <p><strong>Účel:</strong> Vytěžování dat z faktur, predikce cash-flow a automatizace účetních procesů.</p>
+        <p><strong>Vaše práva:</strong> Tyto systémy představují minimální riziko pro práva občanů a slouží výhradně k optimalizaci interní administrativy.</p>
+      </div>
+      <div class='ait-meta'>
+        Právní základ: čl. 4 AI Act (AI gramotnost)
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Vaše práva v souvislosti s AI</h2>
+  <p>Společnost Martin Haynes plně respektuje vaše práva garantovaná evropskou legislativou. Pro vysoce rizikové systémy jsme provedli <strong>Posouzení dopadu na základní práva (FRIA)</strong> dle čl. 27 AI Act. Vaše práva se liší podle toho, v jakém vztahu k naší společnosti vystupujete:</p>
+
+  <h3>1. Práva zákazníků a návštěvníků webu</h3>
+  <ul>
+    <li><strong>Právo na informace:</strong> Máte právo vědět, že komunikujete se systémem umělé inteligence nebo že konzumujete obsah generovaný AI.</li>
+    <li><strong>Právo na lidský zásah:</strong> U automatizovaných systémů (např. chatbotů) máte vždy možnost vyžádat si komunikaci s živým člověkem.</li>
+    <li><strong>Právo na vysvětlení:</strong> Pokud je vůči vám použito rozhodnutí založené na vysokorizikovém AI systému (např. při finančním scoringu, pojištění nebo reklamaci), máte právo na srozumitelné vysvětlení role AI v tomto procesu.</li>
+  </ul>
+
+  <h3>2. Práva uchazečů o zaměstnání</h3>
+  <ul>
+    <li><strong>Právo na transparentnost:</strong> Jste informováni, pokud je váš životopis nebo profil vyhodnocován pomocí AI nástrojů (např. Teamio, LMC AI).</li>
+    <li><strong>Právo na lidský přezkum:</strong> Finální rozhodnutí o přijetí či zamítnutí kandidáta vždy činí člověk. Máte právo požádat o přezkum automatizovaného hodnocení.</li>
+  </ul>
+
+  <h3>3. Práva zaměstnanců</h3>
+  <ul>
+    <li><strong>Právo na ochranu soukromí:</strong> Použití AI pro monitorování výkonu nebo analýzu komunikace podléhá přísným pravidlům minimalizace dat a GDPR.</li>
+    <li><strong>Právo na odpojení a override:</strong> Zaměstnanci mají možnost rozhodnutí AI systému nepoužít, přepsat nebo zrušit (čl. 14 AI Act), pokud to situace vyžaduje.</li>
+  </ul>
+
+  <h2>Často kladené dotazy (FAQ)</h2>
+  <div class='ait-faq' role='region' aria-labelledby='faq-heading'>
+    <h3 id='faq-heading' style='display:none;'>FAQ</h3>
+    
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Co je to umělá inteligence (AI) a proč o ní informujete?</div>
+      <div class='ait-faq-answer'>Umělá inteligence je technologie schopná zpracovávat data a generovat výstupy, jako jsou texty, predikce nebo rozhodnutí. Informujeme vás o ní, abychom zajistili plnou transparentnost a splnili požadavky Nařízení Evropské unie o umělé inteligenci (AI Act).</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Jaké systémy umělé inteligence používáte?</div>
+      <div class='ait-faq-answer'>Využíváme AI pro zákaznickou podporu (Zendesk, Gemini), generování obsahu, zpracování náborové agendy (Teamio), analytické účely, pojišťovnictví (Guidewire), zdravotnictví a interní procesy. Kompletní přehled naleznete v sekci Přehled AI systémů na této stránce.</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Jsou moje osobní údaje při komunikaci s AI v bezpečí?</div>
+      <div class='ait-faq-answer'>Ano. Veškeré zpracování osobních údajů podléhá přísným pravidlům GDPR. S dodavateli AI systémů (např. Google, OpenAI, LMC) máme uzavřeny zpracovatelské smlouvy (DPA) a vaše data nejsou využívána k trénování veřejných modelů.</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Mohu komunikovat s živým člověkem místo umělé inteligence?</div>
+      <div class='ait-faq-answer'>Ano. U všech našich automatizovaných komunikačních kanálů máte právo vyžádat si přepojení na lidského operátora (např. kliknutím na tlačítko „Přepojit na člověka“ v chatu nebo zasláním e-mailu). Lidský dohled je nedílnou součástí našich procesů.</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Co zakázané systémy, jako je sociální scoring nebo rozpoznávání emocí?</div>
+      <div class='ait-faq-answer'>Naše společnost provedla důkladný audit všech technologií. Systémy, které AI Act klasifikuje jako zakázané (např. sociální scoring nebo rozpoznávání emocí na pracovišti), byly okamžitě vyřazeny z provozu a jejich použití je v naší organizaci přísně zakázáno.</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Jak často je tento přehled aktualizován?</div>
+      <div class='ait-faq-answer'>Tato stránka je pravidelně revidována. K aktualizaci dochází minimálně jednou ročně, nebo okamžitě při nasazení nového AI systému či podstatné změně účelu systému stávajícího.</div>
+    </div>
+
+    <div class='ait-faq-item'>
+      <div class='ait-faq-question'>Kde mohu získat více informací nebo podat stížnost?</div>
+      <div class='ait-faq-answer'>Pro dotazy ohledně využití AI v naší společnosti se můžete obrátit na odpovědnou osobu (Martin Haynes). Kontaktovat nás můžete na e-mailu: <strong>ai-compliance@martin-haynes.cz</strong>. Pokud se domníváte, že naše využívání AI porušuje vaše práva, můžete podat stížnost u příslušného dozorového úřadu, kterým je v České republice <strong>Úřad pro ochranu osobních údajů (ÚOOÚ)</strong>.</div>
+    </div>
+
+  </div>
+
+  <footer class='ait-footer'>
+    Vygenerováno <a href='https://www.aishield.cz?utm_source=transparency_page&utm_medium=referral'>AIshield.cz</a>
+    — automatizovaný AI Act compliance pro české firmy.
+  </footer>
+
+</article>
+
+</body>
+</html>

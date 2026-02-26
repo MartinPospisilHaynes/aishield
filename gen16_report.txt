@@ -1,0 +1,296 @@
+======================================================================
+  AISHIELD — REPORT GENERACE 16 (gen_20260226_064455)
+  26.02.2026
+======================================================================
+
+SOUHRN
+----------------------------------------
+  Dokumenty:        13 (8 Part1 + 6 Part2, 1 VOP statická)
+  EU skóre (avg):   6.1/10
+  Klient skóre:     5.7/10
+  Celkový průměr:   5.9/10
+  Celkové náklady:  ~$3.64 (Part1: $2.14 + Part2: ~$1.50)
+  Celkový čas:      ~80 min (Part1: 46.6 + Part2: 33.4)
+
+  Part 1 (8 docs): CLAUDE API LIMIT hit na doc 5-10,
+    docs 11-13 prošly po obnovení limitu.
+  Part 2 (6 docs): Dogenerace chybějících — 6/6 OK.
+
+SKÓRE PO DOKUMENTECH
+----------------------------------------------------------------------
+  Dokument                                     EU  Klient   EU nálezy  Kl. nálezy
+  ──────────────────────────────────────────    ──  ──────  ──────────  ──────────
+  Compliance Report                             7       6          10           3
+  Akční plán                                    5       7          10           3
+  Registr AI systémů                            7       5           9           4
+  Plán školení                                  5       5          10           3
+  Transparentnost a lidský dohled               6       8          10           3
+  Transparenční stránka (HTML)                  5       8          10           3
+  Školící prezentace (PPTX)                     6       5          11           4
+  Texty oznámení                                5       7          12           3
+  Interní AI politika                           7       5          11           4
+  Plán řízení incidentů                         5       4          11           4
+  DPIA/FRIA                                     7       5          12           3
+  Dodavatelský checklist                        7       4          10           4
+  Monitoring plán                               7       5          10           3
+
+
+======================================================================
+  M2 — EU INSPEKTOR (Claude Sonnet 4): PŘEHLED VÝTEK
+======================================================================
+
+  POZN.: Detailní text nálezů nebyl v Gen16 ukládán do
+  logu (pouze skóre + počet). Od Gen17 bude automaticky
+  zachycen a odeslán emailem s plným textem nálezů.
+
+  [!!] [5/10] Akční plán
+         Hodnocení: průměrné, 10 nálezů
+
+  [OK] [7/10] Interní AI politika
+         Hodnocení: dobré, 11 nálezů
+
+  [OK] [7/10] Registr AI systémů
+         Hodnocení: dobré, 9 nálezů
+
+  [!!] [5/10] Texty oznámení
+         Hodnocení: průměrné, 12 nálezů
+
+  [OK] [7/10] Compliance Report
+         Hodnocení: dobré, 10 nálezů
+
+  [OK] [7/10] DPIA/FRIA
+         Hodnocení: dobré, 12 nálezů
+
+  [!!] [5/10] Plán řízení incidentů
+         Hodnocení: průměrné, 11 nálezů
+
+  [OK] [7/10] Monitoring plán
+         Hodnocení: dobré, 10 nálezů
+
+  [!!] [5/10] Plán školení
+         Hodnocení: průměrné, 10 nálezů
+
+  [!] [6/10] Školící prezentace (PPTX)
+         Hodnocení: průměrné, 11 nálezů
+
+  [!] [6/10] Transparentnost a lidský dohled
+         Hodnocení: průměrné, 10 nálezů
+
+  [!!] [5/10] Transparenční stránka (HTML)
+         Hodnocení: průměrné, 10 nálezů
+
+  [OK] [7/10] Dodavatelský checklist
+         Hodnocení: dobré, 10 nálezů
+
+  VZORY IDENTIFIKOVANÉ M5 Z EU INSPEKCÍ:
+  --------------------------------------------------
+  1. Masivní výskyt placeholderů '[K DOPLNĚNÍ KLIENTEM]' napříč všemi dokumenty — dokumenty jsou generické šablony bez identity klienta
+     Výskyt: 7x | Dokumenty: 
+
+  2. Dokumenty generují obsah pro neexistující AI systémy — firma má 0 AI systémů, ale dokumenty obsahují detailní kroky pro logování, kill-switch, GPAI due diligence, transparenční stránku
+     Výskyt: 6x | Dokumenty: 
+
+  3. Opakovaně chybná citace čl. 26 odst. 1 písm. f) pro povinnost uchovávání logů — správně je čl. 26 odst. 5 (nasazovatel) resp. čl. 19 odst. 1 (poskytovatel)
+     Výskyt: 5x | Dokumenty: 
+
+  4. FRIA (čl. 27) je opakovaně prezentována jako povinná pouze pro veřejný sektor — chybí zmínka o soukromých nasazovatelích high-risk systémů poskytujících veřejné služby nebo zpracovávajících data fyzických osob
+     Výskyt: 5x | Dokumenty: 
+
+  5. Chybějící zákonná lhůta 15 dní pro hlášení incidentů dle čl. 73 a absence identifikace národního dozorového orgánu (ÚOOÚ)
+     Výskyt: 4x | Dokumenty: 
+
+  6. Použití Unicode symbolů (✓, →, ⚠, ✅) v compliance dokumentech navzdory existujícímu pravidlu
+     Výskyt: 5x | Dokumenty: 
+
+
+======================================================================
+  M3 — ZÁKAZNÍK (Gemini): PŘEHLED VÝTEK
+======================================================================
+
+  [OK] [7/10] Akční plán
+         Hodnocení: dobré, 3 nálezů
+
+  [!!] [5/10] Interní AI politika
+         Hodnocení: průměrné, 4 nálezů
+
+  [!!] [5/10] Registr AI systémů
+         Hodnocení: průměrné, 4 nálezů
+
+  [OK] [7/10] Texty oznámení
+         Hodnocení: dobré, 3 nálezů
+
+  [!] [6/10] Compliance Report
+         Hodnocení: průměrné, 3 nálezů
+
+  [!!] [5/10] DPIA/FRIA
+         Hodnocení: průměrné, 3 nálezů
+
+  [!!!] [4/10] Plán řízení incidentů
+         Hodnocení: nedostatečné, 4 nálezů
+
+  [!!] [5/10] Monitoring plán
+         Hodnocení: průměrné, 3 nálezů
+
+  [!!] [5/10] Plán školení
+         Hodnocení: průměrné, 3 nálezů
+
+  [!!] [5/10] Školící prezentace (PPTX)
+         Hodnocení: průměrné, 4 nálezů
+
+  [OK] [8/10] Transparentnost a lidský dohled
+         Hodnocení: dobré, 3 nálezů
+
+  [OK] [8/10] Transparenční stránka (HTML)
+         Hodnocení: dobré, 3 nálezů
+
+  [!!!] [4/10] Dodavatelský checklist
+         Hodnocení: nedostatečné, 4 nálezů
+
+  NEJHŮŘE HODNOCENÉ ZÁKAZNÍKEM:
+    - Plán řízení incidentů: 4/10
+    - Dodavatelský checklist: 4/10
+    - Registr AI systémů: 5/10
+
+
+======================================================================
+  M5 — SELF-IMPROVEMENT: CO SE NAUČIL A ZAPSAL DO M1
+======================================================================
+
+  Verze pravidel: v2
+  Generace:       gen_20260226_064455
+  Nových pravidel: 5
+  EU průměr:      5.9
+  Klient průměr:  6.3
+  Konvergováno:   NE
+  Náklady M5:     $0.1676
+
+  NOVÁ PRAVIDLA ZAPSANÁ ZPĚT DO M1:
+  ==================================================
+
+  PRAVIDLO #1:
+    Pokud kontext firmy obsahuje údaje jako název, IČO, sídlo,
+    odvětví, jméno jednatele nebo odpovědné osoby, vždy je dosaď
+    přímo do textu dokumentu na všechna relevantní místa;
+    placeholder '[K DOPLNĚNÍ KLIENTEM]' používej VÝHRADNĚ pro
+    informace, které kontext firmy prokazatelně neobsahuje, a v
+    takovém případě ke každému placeholderu přidej konkrétní
+    instrukci, co přesně má klient vyplnit a proč.
+
+  DŮVOD:
+    Všech 7 dokumentů obsahuje masivní množství placeholderů (5–14
+    na dokument) i pro údaje, které jsou dostupné v kontextu firmy
+    nebo které by měly být odvozeny. Klienti opakovaně kritizují, že
+    za placenou službu dostávají nevyplněné šablony.
+
+
+  PRAVIDLO #2:
+    Pokud firma deklaruje 0 AI systémů a celkové riziko minimální,
+    strukturuj každý dokument do dvou jasně oddělených částí: (1)
+    'AKTUÁLNÍ POVINNOSTI' — pouze povinnosti platné ihned bez ohledu
+    na AI systémy (čl. 4 AI gramotnost, čl. 5 zakázané praktiky,
+    Shadow AI audit) a (2) 'POVINNOSTI PŘI BUDOUCÍM NASAZENÍ AI' —
+    podmíněné kroky aktivované teprve při pořízení konkrétního AI
+    systému, s jasným triggerem pro každý krok.
+
+  DŮVOD:
+    6 ze 7 dokumentů generuje detailní kroky (logování, kill-switch,
+    GPAI due diligence, transparenční oznámení) pro firmu bez
+    jakýchkoli AI systémů. EU inspektor i klient toto hodnotí jako
+    kritický problém — dokument ukládá neexistující povinnosti a
+    mate klienta.
+
+
+  PRAVIDLO #3:
+    Pro povinnost nasazovatele uchovávat logy generované high-risk
+    AI systémy vždy cituj čl. 26 odst. 5 AI Act (nikoli čl. 26 odst.
+    1 písm. f), který neexistuje v tomto znění); minimální lhůtu 6
+    měsíců cituj pouze v kontextu povinností poskytovatele dle čl.
+    19 odst. 1 a u nasazovatele uveď, že lhůta se řídí pokyny
+    poskytovatele, minimálně však 6 měsíců dle čl. 26 odst. 5.
+
+  DŮVOD:
+    Chybná citace 'čl. 26 odst. 1 písm. f)' se opakuje v 5 ze 7
+    dokumentů a je identifikována jako kritický nález EU
+    inspektorem. Stávající M5 pravidlo v1 tuto chybnou citaci
+    dokonce doporučuje ('používej čl. 26 odst. 1 písm. f) pro
+    nasazovatele'), čímž chybu perpetuuje.
+
+
+  PRAVIDLO #4:
+    Při zmínce o FRIA (čl. 27 AI Act) vždy uveď kompletní rozsah
+    povinných subjektů: (a) veřejnoprávní subjekty nasazující
+    high-risk systémy dle Přílohy III, (b) soukromé subjekty
+    poskytující veřejné služby nasazující high-risk systémy dle
+    Přílohy III, a (c) soukromé subjekty nasazující high-risk
+    systémy v oblastech uvedených v čl. 27 odst. 1 písm. b) —
+    zejména HR screening, přístup ke vzdělání, úvěrové hodnocení;
+    nikdy neoznačuj FRIA jako povinnou 'pouze pro veřejný sektor'.
+
+  DŮVOD:
+    V 5 dokumentech je FRIA prezentována zúženě jako povinnost
+    'primárně pro veřejný sektor'. Stávající M5 pravidlo v1 tuto
+    nepřesnost částečně obsahuje ('zákonná povinnost se vztahuje na
+    veřejnoprávní subjekty a soukromé subjekty poskytující veřejné
+    služby'). Nové pravidlo rozšiřuje a zpřesňuje rozsah dle
+    skutečného znění čl. 27.
+
+
+  PRAVIDLO #5:
+    V každém dokumentu, který zmiňuje hlášení incidentů, vždy uveď
+    konkrétní zákonnou lhůtu (bez zbytečného odkladu pro
+    nasazovatele dle čl. 73 odst. 5, 15 dní pro poskytovatele dle
+    čl. 73 odst. 1) a identifikuj příslušný národní dozorový orgán —
+    pro ČR uveď Úřad pro ochranu osobních údajů (ÚOOÚ) jako
+    koordinační orgán s poznámkou, že sektorové orgány mohou mít
+    dílčí kompetence.
+
+  DŮVOD:
+    Ve 4 dokumentech chybí zákonná lhůta pro hlášení incidentů a v
+    žádném dokumentu není identifikován národní dozorový orgán. Bez
+    těchto informací klient nemůže nastavit interní incident
+    management proces.
+
+
+  KOMENTÁŘ M5 (Claude Opus 4.6):
+  --------------------------------------------------
+  Kvalita dokumentů je výrazně pod cílovou úrovní (6.1/10). Dva
+  dominantní problémy tvoří většinu nálezů: (1) masivní generičnost
+  dokumentů s desítkami placeholderů i pro dostupné údaje a (2)
+  generování obsahu pro neexistující AI systémy u firmy s nulovým AI
+  portfoliem. Třetím systémovým problémem je opakovaná chybná citace
+  čl. 26 odst. 1 písm. f), která je paradoxně zakódována v
+  existujícím M5 pravidle v1 — toto pravidlo je třeba přepsat.
+  Navržených 5 pravidel cílí na nejzávažnější vzory; po jejich
+  implementaci očekávám posun průměru na 7.5–8.0.
+
+
+  AKTUÁLNÍ M5_RULES.TXT (kompletní soubor):
+  --------------------------------------------------
+  # --- M5 v1 (2026-02-25) ---
+  - Při citaci povinností vždy rozlišuj roli firmy jako poskytovatele (provider, čl. 16–18) vs. nasazovatele (deployer, čl. 26) a přiřazuj články přesně podle role — zejména pro logování používej čl. 26 odst. 1 písm. f) pro nasazovatele a čl. 12/19 pouze pro poskytovatele. Nikdy necituj článek bez ověření, zda se vztahuje na roli, ve které firma u daného systému vystupuje.
+  - Pokud firma integruje LLM/GPAI modely (OpenAI, Anthropic, Google Gemini, Mistral) do vlastních produktů nebo zákaznických řešení, vždy zařaď samostatnou sekci o GPAI povinnostech dle čl. 51–54 AI Act s konkrétními kroky pro firmu — v každém dokumentu, kde je to relevantní (registr, akční plán, školení, monitoring, politika, dodavatelský checklist).
+  - Nikdy neuváděj v dokumentech určených pro zaměstnance nebo v interních směrnicích explicitní konstatování, že firma porušuje zákon, je v prodlení nebo provozuje zakázané systémy — místo toho formuluj jako 'identifikované systémy vyžadující okamžitou revizi klasifikace' nebo 'systémy s prioritní nápravnou akcí' a citlivé detaily ponechej pouze v dokumentech určených výhradně pro vedení/právního poradce.
+  - Nikdy nepoužívej v textu compliance dokumentů emoji, Unicode symboly (✓, ✅, ⚠, →, 🤖) ani neformální výrazy ('Skvělá práce!', 'drakonické pokuty', 'španělská vesnice') — pro vizuální strukturování používej výhradně HTML třídy definované v šabloně (badge, callout, highlight) a pro seznamy standardní odrážky nebo číslování.
+  - Při práci s FRIA (čl. 27 AI Act) vždy explicitně uveď, že zákonná povinnost provést FRIA se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby — pro ostatní soukromé firmy FRIA prezentuj jako doporučenou best practice s vysvětlením, proč je i pro ně vhodná, ale nikdy ji neoznačuj jako zákonnou povinnost soukromého subjektu bez dalšího rozlišení.
+  # --- M5 v2 (2026-02-26) ---
+  - Pokud kontext firmy obsahuje údaje jako název, IČO, sídlo, odvětví, jméno jednatele nebo odpovědné osoby, vždy je dosaď přímo do textu dokumentu na všechna relevantní místa; placeholder '[K DOPLNĚNÍ KLIENTEM]' používej VÝHRADNĚ pro informace, které kontext firmy prokazatelně neobsahuje, a v takovém případě ke každému placeholderu přidej konkrétní instrukci, co přesně má klient vyplnit a proč.
+  - Pokud firma deklaruje 0 AI systémů a celkové riziko minimální, strukturuj každý dokument do dvou jasně oddělených částí: (1) 'AKTUÁLNÍ POVINNOSTI' — pouze povinnosti platné ihned bez ohledu na AI systémy (čl. 4 AI gramotnost, čl. 5 zakázané praktiky, Shadow AI audit) a (2) 'POVINNOSTI PŘI BUDOUCÍM NASAZENÍ AI' — podmíněné kroky aktivované teprve při pořízení konkrétního AI systému, s jasným triggerem pro každý krok.
+  - Pro povinnost nasazovatele uchovávat logy generované high-risk AI systémy vždy cituj čl. 26 odst. 5 AI Act (nikoli čl. 26 odst. 1 písm. f), který neexistuje v tomto znění); minimální lhůtu 6 měsíců cituj pouze v kontextu povinností poskytovatele dle čl. 19 odst. 1 a u nasazovatele uveď, že lhůta se řídí pokyny poskytovatele, minimálně však 6 měsíců dle čl. 26 odst. 5.
+  - Při zmínce o FRIA (čl. 27 AI Act) vždy uveď kompletní rozsah povinných subjektů: (a) veřejnoprávní subjekty nasazující high-risk systémy dle Přílohy III, (b) soukromé subjekty poskytující veřejné služby nasazující high-risk systémy dle Přílohy III, a (c) soukromé subjekty nasazující high-risk systémy v oblastech uvedených v čl. 27 odst. 1 písm. b) — zejména HR screening, přístup ke vzdělání, úvěrové hodnocení; nikdy neoznačuj FRIA jako povinnou 'pouze pro veřejný sektor'.
+  - V každém dokumentu, který zmiňuje hlášení incidentů, vždy uveď konkrétní zákonnou lhůtu (bez zbytečného odkladu pro nasazovatele dle čl. 73 odst. 5, 15 dní pro poskytovatele dle čl. 73 odst. 1) a identifikuj příslušný národní dozorový orgán — pro ČR uveď Úřad pro ochranu osobních údajů (ÚOOÚ) jako koordinační orgán s poznámkou, že sektorové orgány mohou mít dílčí kompetence.
+  
+
+
+======================================================================
+  CO SE ZMĚNÍ V GEN17
+======================================================================
+
+  1. M5 pravidla v2 budou automaticky vložena do M1 promptu
+  2. Nový auto-report modul bude odesílat plné M2/M3 nálezy
+  3. M5 pravidla zdvojnásobila objem (2077 -> 4158 znaků)
+     Part2 už běžela s novými pravidly — efekt viditelný
+
+----------------------------------------------------------------------
+  Automaticky generováno | AIshield Pipeline v3
+  Od Gen17 budou v reportu plné texty M2/M3 nálezů.
+----------------------------------------------------------------------

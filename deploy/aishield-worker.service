@@ -1,0 +1,26 @@
+[Unit]
+Description=AIshield ARQ Worker — Background Job Processing
+After=network.target redis-server.service
+Requires=redis-server.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aishield
+ExecStart=/opt/aishield/venv/bin/arq backend.jobs.worker.WorkerSettings
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/opt/aishield
+EnvironmentFile=/opt/aishield/.env
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aishield-worker
+
+# Resource limits (Playwright → RAM)
+MemoryMax=2G
+TasksMax=50
+
+[Install]
+WantedBy=multi-user.target

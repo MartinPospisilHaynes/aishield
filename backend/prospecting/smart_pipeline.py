@@ -1,0 +1,295 @@
+"""
+AIshield.cz — Smart Prospecting Pipeline v2
+Převrácené pořadí: Najdi web → Skenuj → MÁ AI? → Najdi email → Pošli
+
+STARÝ PŘÍSTUP (v1):
+  ARES → najdi web → najdi email → skenuj → pošli email VŠEM
+
+NOVÝ PŘÍSTUP (v2):
+  1. ZDROJE: Shoptet + Heureka + ARES → získej firmy s webem
+  2. SKEN: Playwright sken webu → najdi AI systémy
+  3. KVALIFIKACE: Má AI findings? → Pokud NE → SKIP (neplýtvat)
+  4. EMAIL: Najdi email POUZE pro firmy kde jsme NĚCO našli
+  5. SCORING: Ohodnoť lead (počet findings × závažnost × velikost)
+  6. OUTREACH: Pošli email POUZE HOT leadům
+
+Výhody:
+- Neposíláme zbytečné emaily firmám bez AI
+- Šetříme Resend kredity i reputaci
+- Vyšší konverzní poměr (nabízíme řešení KONKRÉTNÍHO problému)
+"""
+
+import asyncio
+from datetime import datetime
+from backend.database import get_supabase
+
+
+# ── Fáze 1: Získání firem z více zdrojů ──
+
+async def phase_gather_companies(
+    sources: list[str] | None = None,
+    max_per_source: int = 100,
+) -> dict:
+    """
+    Fáze 1: Stáhne firmy z katalogů (Shoptet, Heureka) + ARES.
+    Uloží do DB se statusem scan_status='pending'.
+    """
+    available_sources = sources or ["shoptet", "heureka", "ares"]
+    stats = {"total_new": 0, "by_source": {}}
+
+    for source in available_sources:
+        print(f"[Pipeline v2] Fáze 1 — zdroj: {source}")
+        source_stats = {}
+
+        try:
+            if source == "shoptet":
+                from backend.prospecting.shoptet import import_shoptet_to_db
+                source_stats = await import_shoptet_to_db(
+                    max_pages_per_category=2,
+                )
+            elif source == "heureka":
+                from backend.prospecting.heureka import import_heureka_to_db
+                source_stats = await import_heureka_to_db(
+                    max_pages_per_category=2,
+                    min_reviews=3,
+                )
+            elif source == "ares":
+                from backend.prospecting.pipeline import run_prospecting
+                source_stats = await run_prospecting(
+                    max_per_nace=max_per_source // 5,
+                )
+        except Exception as e:
+            print(f"[Pipeline v2] Chyba zdroje {source}: {e}")
+            source_stats = {"error": str(e)}
+
+        stats["by_source"][source] = source_stats
+        stats["total_new"] += source_stats.get("new", 0) + source_stats.get("new_companies", 0)
+
+    print(f"[Pipeline v2] Fáze 1 hotova: {stats['total_new']} nových firem")
+    return stats
+
+
+# ── Fáze 2: Skenování webů (hledáme AI) ──
+
+async def phase_scan_websites(limit: int = 50) -> dict:
+    """
+    Fáze 2: Vezmi firmy s URL + scan_status='pending' a naskenuj je.
+    Hledáme: chatboty, AI systémy, recommendation engines...
+    """
+    from backend.scanner.pipeline import run_scan
+
+    supabase = get_supabase()
+    stats = {"scanned": 0, "with_findings": 0, "errors": 0}
+
+    # Firmy s webem, které ještě nebyly skenovány
+    res = supabase.table("companies").select(
+        "ico, name, url"
+    ).eq(
+        "scan_status", "pending"
+    ).neq(
+        "url", ""
+    ).limit(limit).execute()
+
+    companies = res.data or []
+    print(f"[Pipeline v2] Fáze 2 — skenování {len(companies)} webů...")
+
+    for company in companies:
+        url = company["url"]
+        ico = company.get("ico", "")
+
+        try:
+            scan_result = await run_scan(url)
+            scan_id = scan_result.get("scan_id", "")
+            total_findings = scan_result.get("total_findings", 0)
+
+            # Aktualizuj firmu
+            update = {
+                "scan_status": "scanned",
+                "last_scan_id": scan_id,
+                "scanned_at": datetime.utcnow().isoformat(),
+                "total_findings": total_findings,
+            }
+
+            if ico:
+                supabase.table("companies").update(update).eq("ico", ico).execute()
+            else:
+                supabase.table("companies").update(update).eq("url", url).execute()
+
+            stats["scanned"] += 1
+            if total_findings > 0:
+                stats["with_findings"] += 1
+
+        except Exception as e:
+            print(f"[Pipeline v2] Sken chyba {url}: {e}")
+            stats["errors"] += 1
+
+            # Označ jako failed
+            update = {"scan_status": "scan_failed"}
+            if ico:
+                supabase.table("companies").update(update).eq("ico", ico).execute()
+            else:
+                supabase.table("companies").update(update).eq("url", url).execute()
+
+    print(f"[Pipeline v2] Fáze 2 hotova: {stats}")
+    return stats
+
+
+# ── Fáze 3: Kvalifikace — filtruj jen firmy s AI findings ──
+
+async def phase_qualify_leads() -> dict:
+    """
+    Fáze 3: Vezmeme naskenované firmy a odfiltrujeme jen ty,
+    které mají AI findings (= mají co řešit → jsou náš zákazník).
+    Firmám BEZ findings nastavíme prospecting_status='no_ai_found'.
+    """
+    supabase = get_supabase()
+    stats = {"qualified": 0, "disqualified": 0}
+
+    # Najdi firmy naskenované, ale ještě nekvalifikované
+    res = supabase.table("companies").select(
+        "ico, url, total_findings"
+    ).eq(
+        "scan_status", "scanned"
+    ).eq(
+        "prospecting_status", "found"
+    ).execute()
+
+    companies = res.data or []
+
+    for company in companies:
+        ico = company.get("ico", "")
+        url = company.get("url", "")
+        findings = company.get("total_findings", 0)
+
+        new_status = "qualified" if findings > 0 else "no_ai_found"
+
+        if ico:
+            supabase.table("companies").update({
+                "prospecting_status": new_status,
+            }).eq("ico", ico).execute()
+        else:
+            supabase.table("companies").update({
+                "prospecting_status": new_status,
+            }).eq("url", url).execute()
+
+        if findings > 0:
+            stats["qualified"] += 1
+        else:
+            stats["disqualified"] += 1
+
+    print(f"[Pipeline v2] Fáze 3 hotova: {stats['qualified']} kvalifikovaných, {stats['disqualified']} vyřazených")
+    return stats
+
+
+# ── Fáze 4: Najdi email POUZE pro kvalifikované leady ──
+
+async def phase_find_emails(
+    use_playwright: bool = True,
+    use_vision: bool = False,
+    limit: int = 50,
+) -> dict:
+    """
+    Fáze 4: Pro kvalifikované firmy (mají AI, nemají email)
+    spustíme smart email finder.
+    """
+    from backend.prospecting.smart_email_finder import find_email_smart
+
+    supabase = get_supabase()
+    stats = {"searched": 0, "found": 0, "not_found": 0}
+
+    # Firmy kvalifikované, BEZ emailu
+    res = supabase.table("companies").select(
+        "ico, url, name"
+    ).eq(
+        "prospecting_status", "qualified"
+    ).in_(
+        "email", ["", None]
+    ).limit(limit).execute()
+
+    companies = res.data or []
+    print(f"[Pipeline v2] Fáze 4 — hledám emaily pro {len(companies)} firem...")
+
+    for company in companies:
+        url = company.get("url", "")
+        ico = company.get("ico", "")
+        if not url:
+            continue
+
+        stats["searched"] += 1
+
+        result = await find_email_smart(
+            url,
+            use_playwright=use_playwright,
+            use_vision=use_vision,
+        )
+
+        if result.email:
+            update = {
+                "email": result.email,
+                "email_source": result.source,
+                "email_confidence": result.confidence,
+            }
+            if ico:
+                supabase.table("companies").update(update).eq("ico", ico).execute()
+            else:
+                supabase.table("companies").update(update).eq("url", url).execute()
+            stats["found"] += 1
+        else:
+            stats["not_found"] += 1
+
+        await asyncio.sleep(0.3)
+
+    print(f"[Pipeline v2] Fáze 4 hotova: {stats}")
+    return stats
+
+
+# ── Kompletní pipeline ──
+
+async def run_smart_pipeline(
+    gather: bool = True,
+    scan: bool = True,
+    qualify: bool = True,
+    find_emails: bool = True,
+    sources: list[str] | None = None,
+    scan_limit: int = 50,
+    email_limit: int = 50,
+) -> dict:
+    """
+    Kompletní smart pipeline v2:
+    gather → scan → qualify → find_emails
+
+    Každá fáze jde spustit i samostatně.
+    """
+    results = {}
+
+    if gather:
+        print("═" * 60)
+        print("[Pipeline v2] FÁZE 1: Shromažďování firem z katalogů")
+        print("═" * 60)
+        results["gather"] = await phase_gather_companies(sources=sources)
+
+    if scan:
+        print("═" * 60)
+        print("[Pipeline v2] FÁZE 2: Skenování webů")
+        print("═" * 60)
+        results["scan"] = await phase_scan_websites(limit=scan_limit)
+
+    if qualify:
+        print("═" * 60)
+        print("[Pipeline v2] FÁZE 3: Kvalifikace leadů + scoring")
+        print("═" * 60)
+        results["qualify"] = await phase_qualify_leads()
+        # Lead scoring — ohodnoť kvalifikované leady
+        from backend.prospecting.lead_scoring import score_all_leads
+        results["scoring"] = await score_all_leads()
+
+    if find_emails:
+        print("═" * 60)
+        print("[Pipeline v2] FÁZE 4: Hledání emailů")
+        print("═" * 60)
+        results["emails"] = await phase_find_emails(limit=email_limit)
+
+    print("═" * 60)
+    print(f"[Pipeline v2] HOTOVO: {results}")
+    print("═" * 60)
+    return results

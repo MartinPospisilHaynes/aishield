@@ -1,0 +1,858 @@
+"""
+AIshield.cz — LLM Content Generator for Documents (v4)
+
+Generuje personalizované odborné texty pomocí 11 paralelních LLM volání —
+každá sekce má vlastní specializovaný prompt pro maximální kvalitu.
+
+Architektura:
+  - 11 paralelních volání (asyncio.gather) — každá sekce fokusovaný prompt
+  - Pydantic validace každého výstupu
+  - Retry s error feedbackem (2 pokusy Gemini, 2 pokusy Claude fallback)
+  - Graceful degradation: pokud sekce selže, ostatní pokračují
+  - Průměrný cost: ~$0.20 per generace (11× Gemini 3.1 Pro)
+"""
+
+import asyncio
+import json
+import logging
+import os
+import re
+from typing import Optional, Dict, List, Tuple
+
+from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Per-section Pydantic modely — každá sekce má vlastní model
+# ══════════════════════════════════════════════════════════════════════
+
+class _SectionBase(BaseModel):
+    myslenkovy_proces: str = ""  # Chain-of-thought (stripped from output)
+    content: str = ""            # Main HTML content
+
+
+class ExecutiveSummaryContent(_SectionBase): pass
+class RiskAnalysisContent(_SectionBase): pass
+class ComplianceRoadmapContent(_SectionBase): pass
+class AIPolicyIntroContent(_SectionBase): pass
+class DPIANarrativeContent(_SectionBase): pass
+class IncidentGuidanceContent(_SectionBase): pass
+class ChatbotNoticesContent(_SectionBase): pass
+class AIRegisterIntroContent(_SectionBase): pass
+class TrainingRecsContent(_SectionBase): pass
+class VendorAssessmentContent(_SectionBase): pass
+class MonitoringRecsContent(_SectionBase): pass
+
+
+ALL_EXPECTED_KEYS = [
+    "executive_summary", "risk_analysis", "compliance_roadmap", "ai_policy_intro",
+    "dpia_narrative", "incident_guidance", "chatbot_notices_custom", "ai_register_intro",
+    "training_recommendations", "vendor_assessment", "monitoring_recommendations",
+]
+
+
+# ══════════════════════════════════════════════════════════════════════
+# SYSTEM PROMPT — Expert AI Act Compliance Writer
+# ══════════════════════════════════════════════════════════════════════
+
+SYSTEM_PROMPT = """Jsi přední český expert na EU AI Act (Nařízení (EU) 2024/1689)
+a píšeš profesionální compliance dokumentaci pro české firmy.
+
+STYL:
+- Formální, autoritativní, srozumitelná čeština vhodná pro tisk a vazbu.
+- Konkrétní a relevantní pro danou firmu — žádné obecné floskule.
+- Cituj konkrétní články AI Act kde je to relevantní.
+- Používej odbornou terminologii konzistentně.
+- Vždy zmiň roli firmy: poskytovatel (provider, čl. 3(2)) nebo nasazovatel (deployer, čl. 3(4)).
+
+ZAKÁZÁNO:
+- Klišé fráze typu „V dnešní digitální době", „Závěrem lze říci", „je důležité si uvědomit".
+- Obecné statistiky bez vztahu k firmě. Běž rovnou k věci.
+- Emoji. Používej pouze text a HTML tagy.
+
+PRÁVNÍ FAKTA (použij přesně):
+- AI Act vstoupil v platnost 1. 8. 2024.
+- Zakázané praktiky (čl. 5) + AI literacy (čl. 4): od 2. 2. 2025.
+- GPAI modely (čl. 51-56): od 2. 8. 2025.
+- Plná účinnost pro většinu povinností: 2. 8. 2026.
+- High-risk systémy dle Přílohy I: 2. 8. 2027.
+- Pokuty: 35 mil. EUR / 7 % obratu za zakázané praktiky (čl. 99 odst. 3),
+  15 mil. EUR / 3 % za ostatní porušení (čl. 99 odst. 4).
+- Incidenty (čl. 73): nahlásit do 15 dnů obecně.
+- Logging schopnosti: čl. 12. Uchovávání logů min. 6 měsíců: čl. 19 odst. 1.
+- FRIA: čl. 27 (povinnost nasazovatelů u vybraných high-risk scénářů).
+- Neposkytuj právní poradenství — jde o technickou pomůcku.
+
+PŘÍSNÁ PRAVIDLA PRO VÝSTUP:
+1. Odpověz VÝHRADNĚ platným JSON objektem.
+2. Začni přímo znakem { a skonči znakem }. Žádné ```json bloky, žádný text před/za JSON.
+3. Hodnoty v JSONu jsou HTML stringy: <p>, <ul><li>, <strong>.
+4. Pro HTML atributy používej VÝHRADNĚ jednoduché uvozovky (např. <span class='highlight'>).
+5. V textu používej české typografické uvozovky („ ") místo rovných (").
+6. Nepoužívej skutečné odřádkování uvnitř JSON hodnot — formátuj pouze HTML tagy."""
+
+
+# ══════════════════════════════════════════════════════════════════════
+# COMPANY CONTEXT BUILDER — sdílený kontext pro všechna volání
+# ══════════════════════════════════════════════════════════════════════
+
+def _build_company_context(data: dict) -> str:
+    """Sestaví sdílený kontext firmy pro všechna LLM volání."""
+    company = data.get("company_name", "Neznámá firma")
+    industry = data.get("q_company_industry", "neznámé")
+    size = data.get("q_company_size", "neznámá")
+    overall_risk = data.get("overall_risk", "minimal")
+    risk_breakdown = data.get("risk_breakdown", {"high": 0, "limited": 0, "minimal": 0})
+    oversight = data.get("oversight_person", {})
+    data_prot = data.get("data_protection", {})
+    training = data.get("training", {})
+    incident = data.get("incident", {})
+
+    findings_lines = []
+    for f in data.get("findings", []):
+        findings_lines.append(
+            f"  - {f.get('name', '?')}: kategorie={f.get('category', '?')}, "
+            f"riziko={f.get('risk_level', '?')}, článek={f.get('ai_act_article', '?')}, "
+            f"akce={f.get('action_required', '?')}"
+        )
+    findings_summary = "\n".join(findings_lines) if findings_lines else "  Žádné AI systémy nebyly detekovány na webu."
+
+    declared_lines = []
+    for d in data.get("ai_systems_declared", []):
+        declared_lines.append(f"  - {d.get('tool_name', d.get('key', '?'))}")
+    declared_summary = "\n".join(declared_lines) if declared_lines else "  Žádné AI systémy nebyly deklarovány v dotazníku."
+
+    recs_lines = []
+    for r in data.get("recommendations", []):
+        recs_lines.append(f"  - [{r.get('risk_level','')}] {r.get('tool_name','')}: {r.get('recommendation','')}")
+    recs_summary = "\n".join(recs_lines) if recs_lines else "  Žádná specifická doporučení."
+
+    return f"""KONTEXT FIRMY:
+Firma: {company}
+Odvětví: {industry}
+Velikost: {size}
+Celkové riziko: {overall_risk}
+Rizikový rozpad: {risk_breakdown.get('high',0)} vysoké, {risk_breakdown.get('limited',0)} omezené, {risk_breakdown.get('minimal',0)} minimální
+
+NALEZENÉ AI SYSTÉMY (web sken):
+{findings_summary}
+
+DEKLAROVANÉ AI SYSTÉMY (dotazník):
+{declared_summary}
+
+DOPORUČENÍ Z ANALÝZY:
+{recs_summary}
+
+ODPOVĚDNÁ OSOBA ZA AI: {oversight.get('name', 'nejmenována')} ({oversight.get('role', 'neurčena')})
+ZPRACOVÁVÁ OSOBNÍ ÚDAJE PŘES AI: {'ANO' if data_prot.get('processes_personal_data') else 'NE'}
+MÁ ŠKOLENÍ AI: {'ANO' if training.get('has_training') else 'NE'}
+MÁ INCIDENT PLÁN: {'ANO' if incident.get('has_plan') else 'NE'}"""
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 11 SECTION-SPECIFIC PROMPT BUILDERS
+# Každý prompt je specializovaný — LLM se soustředí na jedno téma
+# ══════════════════════════════════════════════════════════════════════
+
+_COT_INSTRUCTION = """Prvním klíčem je "myslenkovy_proces" — sem zapiš svůj podrobný rozbor
+relevantní pro tuto konkrétní sekci. Tento text nebude v dokumentu — slouží ti k lepšímu přemýšlení.
+Druhým klíčem je "content" — HTML string s textem sekce."""
+
+
+def _prompt_executive_summary(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ EXECUTIVE SUMMARY pro compliance report této firmy.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce <p>):
+- Začni: „Společnost [firma] byla podrobena komplexní analýze souladu s Nařízením (EU) 2024/1689."
+- Shrň nalezené AI systémy (web sken + dotazník), celkové riziko, klíčové kroky
+- Uveď roli firmy: nasazovatel (deployer) dle čl. 3 odst. 4
+- Zmiň deadline 2. 8. 2026 a důsledky nesplnění (pokuty dle čl. 99)
+- Vyzdvihni pozitivní kroky firmy (pokud má školení, oversight osobu, atd.)
+- Uzavři doporučením dalších kroků
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_risk_analysis(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ DETAILNÍ ANALÝZU RIZIK nalezených AI systémů.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce <p> + volitelně <ul><li>):
+- Pro KAŽDÝ nalezený systém vysvětli PROČ má dané riziko dle AI Act
+- Rozliš: vysoké riziko (čl. 6-15, Příloha III — okamžitá akce), omezené riziko
+  (čl. 50 — transparenční povinnosti), minimální riziko (dobrovolné best practices)
+- Vysvětli roli nasazovatele vs. poskytovatele a co z toho plyne
+- U high-risk systémů zmiň povinnosti: QMS (čl. 17), logging (čl. 12), FRIA (čl. 27),
+  lidský dohled (čl. 14), transparentnost (čl. 13)
+- Zmiň konkrétní rizika specifická pro odvětví firmy
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_compliance_roadmap(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ KONKRÉTNÍ HARMONOGRAM COMPLIANCE (akční plán) pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-500 slov, strukturované jako <h3>Fáze</h3> + <ul><li>):
+- Fáze 1: Měsíc 1-2 (Okamžité kroky) — co udělat TEĎ: jmenovat odpovědnou osobu,
+  provést audit zakázaných praktik (čl. 5), zahájit školení (čl. 4)
+- Fáze 2: Měsíc 3-6 (Implementace) — registr AI systémů, DPIA, integrace oznámení,
+  smlouvy s dodavateli, interní AI politika
+- Fáze 3: Měsíc 7-12 (Udržování) — monitoring, re-assessment, aktualizace dokumentace,
+  příprava na plnou účinnost 2. 8. 2026
+- Přizpůsob rizikovému profilu (high-risk firma potřebuje víc)
+- U každého kroku uveď kdo je zodpovědný a deadline
+
+{{"myslenkovy_proces": "...", "content": "<h3>...</h3><ul><li>...</li></ul>"}}"""
+
+
+def _prompt_ai_policy_intro(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ ÚVOD K INTERNÍ AI POLITICE (preambuli) pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce <p>):
+- Formální preambule — proč firma přijímá interní AI politiku
+- Odkaž na konkrétní nalezené AI systémy a rizika
+- Zmiň čl. 4 AI Act (AI gramotnost — povinnost od 2. 2. 2025)
+- Zmiň čl. 5 (zakázané praktiky — co firma NESMÍ dělat)
+- Zahrň doporučení specifická pro odvětví firmy
+- Definuj rozsah politiky: na koho se vztahuje, jaké systémy pokrývá
+- Napiš jako formální dokument vhodný pro podpis vedením
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_dpia_narrative(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ POSOUZENÍ VLIVU NA ZÁKLADNÍ PRÁVA (FRIA/DPIA) pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (500-700 slov, 4-5 odstavců <p> + volitelně <ul><li>):
+- Kombinuj AI Act čl. 27 (FRIA — Fundamental Rights Impact Assessment) s GDPR čl. 35 (DPIA)
+- Identifikuj dotčené skupiny na základě odvětví firmy (zaměstnanci, zákazníci, veřejnost)
+- Pro každý nalezený systém zhodnoť dopad na: právo na soukromí, nediskriminaci,
+  vysvětlení rozhodnutí (čl. 86 AI Act), lidský přezkum
+- Navrhni konkrétní technická a organizační opatření pro zmírnění rizik
+- Zmiň povinnost nasazovatelů provést FRIA u vybraných high-risk scénářů (čl. 27)
+- Zahrň sekci o zpracování osobních údajů přes AI
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_incident_guidance(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ NÁVOD PRO ŘÍZENÍ INCIDENTŮ S AI pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-500 slov, 3-4 odstavce + <ul><li>):
+- Čl. 73 AI Act: závažný incident nahlásit do 15 dnů dozorčímu orgánu
+- Definice závažného incidentu: smrt, vážná poškození zdraví, narušení základních práv,
+  škody na majetku/životním prostředí
+- Uveď 3-4 konkrétní příklady incidentů relevantních PRO ODVĚTVÍ této firmy
+- Navrhni eskalační scénáře: L1 (operátor), L2 (odpovědná osoba za AI), L3 (vedení + právník)
+- Zmiň povinnost dokumentace: co zaznamenat (čas, systém, dopad, opatření)
+- Uchovávání důkazů a logů (čl. 12 + čl. 19 — min. 6 měsíců)
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p><ul><li>...</li></ul>"}}"""
+
+
+def _prompt_chatbot_notices(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ DOPORUČENÍ K AI OZNÁMENÍM A TRANSPARENCI pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-500 slov, 3-4 odstavce + volitelně <ul><li>):
+- Na základě KONKRÉTNÍCH nalezených systémů vysvětli:
+  KTERÉ oznámení dle čl. 50 jsou POVINNÉ a které DOPORUČENÉ
+- Čl. 50 odst. 1: chatboty/voiceboty — uživatel MUSÍ být informován
+- Čl. 50 odst. 2: detekce emocí/biometrická kategorizace — informovat dotčené osoby
+- Čl. 50 odst. 4: AI-generovaný obsah (deep fakes, syntetický text) — označit
+- Doporuč kde a jak oznámení nasadit: web banner, chatbot intro, e-mail footer
+- Zahrň doporučení k transparenční stránce na webu
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_ai_register_intro(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ ÚVOD K REGISTRU AI SYSTÉMŮ pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (300-500 slov, 2-3 odstavce <p>):
+- Vysvětli právní základ: čl. 49 AI Act + Příloha VIII
+- Shrň co bylo nalezeno: kolik systémů web sken, kolik dotazník, jaké rizikové úrovně
+- Zdůrazni že registr je ŽIVÝ dokument — aktualizovat při každé změně
+  (nasazení, vyřazení, change verze, změna účelu)
+- Doporuč revizi min. 1× za 6 měsíců
+- Pro vysoce rizikové: registr MUSÍ obsahovat poskytovatele, účel, stav, datum,
+  členské státy použití, dotčené osoby
+- Zmiň EU databázi (čl. 71) — povinnost registrace high-risk systémů
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_training_recommendations(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ DOPORUČENÍ PRO ŠKOLENÍ AI GRAMOTNOSTI pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce + volitelně <ul><li>):
+- Čl. 4 AI Act: AI literacy povinná od 2. 2. 2025 pro VŠECHNY firmy používající AI
+- Zdůrazni automation bias — tendenci nekriticky přijímat výstupy AI
+- Kritické myšlení a ověřování výstupů AI
+- Přizpůsob odvětví firmy — jiné příklady pro zdravotnictví vs. e-commerce vs. výrobu
+- Navrhni strukturu: úvodní školení (3-4h) + roční refresher (2h)
+- Cílové skupiny: vedení, IT, běžní uživatelé — různá hloubka
+- Zmíň postih za nesplnění (čl. 99 odst. 4 — pokuty do 15M EUR / 3% obratu)
+- Doporuč praktické příklady a quiz na závěr
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+def _prompt_vendor_assessment(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ HODNOCENÍ DODAVATELŮ AI pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce + <ul><li>):
+- Pro KAŽDÉHO detekovaného dodavatele/poskytovatele AI vysvětli specifické riziko
+- Oblasti due diligence: transparenční dokumentace, opt-out trénování na datech klienta,
+  SLA podmínky, DPA (smlouva o zpracování dle GDPR), certifikace
+- Čl. 25-26 AI Act: povinnosti nasazovatelů vůči poskytovatelům
+- Doporuč konkrétní otázky pro due diligence jednání s dodavateli:
+  „Trénujete model na našich datech?", „Kde se data zpracovávají?",
+  „Máte ISO 42001?", „Poskytujete auditní logy?"
+- Zmiň riziko vendor lock-in a exit strategie
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p><ul><li>...</li></ul>"}}"""
+
+
+def _prompt_monitoring_recommendations(ctx: str) -> str:
+    return f"""{ctx}
+
+NAPIŠ DOPORUČENÍ PRO MONITORING AI SYSTÉMŮ pro tuto firmu.
+{_COT_INSTRUCTION}
+
+Požadavky na "content" (400-600 slov, 3-4 odstavce + volitelně <ul><li>):
+- Čl. 12 AI Act: automatické logging schopnosti pro high-risk systémy
+- Čl. 19 odst. 1: uchovávání logů min. 6 měsíců
+- Navrhni KPI metriky: přesnost AI výstupů, bias skóre, latence, uživatelská spokojenost,
+  počet eskalací na člověka, false positive/negative rate
+- Doporuč frekvenci monitoringu podle rizikového profilu:
+  high-risk = týdně, limited = měsíčně, minimal = kvartálně
+- Zmiň bezpečnostní audity a review výstupů AI
+- Doporuč nástroje: dashboardy, alerting, trend analýza
+- Kdo je zodpovědný za monitoring (odpovědná osoba za AI)
+
+{{"myslenkovy_proces": "...", "content": "<p>...</p>"}}"""
+
+
+# Registry: output_key → (PydanticModel, prompt_builder_function)
+_SECTION_REGISTRY = {
+    "executive_summary":         (ExecutiveSummaryContent, _prompt_executive_summary),
+    "risk_analysis":             (RiskAnalysisContent,     _prompt_risk_analysis),
+    "compliance_roadmap":        (ComplianceRoadmapContent, _prompt_compliance_roadmap),
+    "ai_policy_intro":           (AIPolicyIntroContent,     _prompt_ai_policy_intro),
+    "dpia_narrative":            (DPIANarrativeContent,     _prompt_dpia_narrative),
+    "incident_guidance":         (IncidentGuidanceContent,  _prompt_incident_guidance),
+    "chatbot_notices_custom":    (ChatbotNoticesContent,    _prompt_chatbot_notices),
+    "ai_register_intro":         (AIRegisterIntroContent,   _prompt_ai_register_intro),
+    "training_recommendations":  (TrainingRecsContent,      _prompt_training_recommendations),
+    "vendor_assessment":         (VendorAssessmentContent,  _prompt_vendor_assessment),
+    "monitoring_recommendations": (MonitoringRecsContent,    _prompt_monitoring_recommendations),
+}
+
+
+# ══════════════════════════════════════════════════════════════════════
+# ROBUST JSON PARSER (opravené backslash bugy)
+# ══════════════════════════════════════════════════════════════════════
+
+
+def _parse_llm_json(text: str, expected_keys: Optional[List[str]] = None) -> Optional[dict]:
+    """
+    Robustní parser JSON odpovědi z LLM.
+    Zvládne: markdown bloky, unescaped newlines, trailing commas,
+    control chars, BOM, extra text kolem JSON.
+    """
+    if not text:
+        return None
+
+    # Strip BOM
+    text = text.lstrip("\ufeff")
+
+    # Strip markdown code blocks
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        first_nl = stripped.find("\n")
+        if first_nl > 0:
+            stripped = stripped[first_nl + 1:]
+        else:
+            stripped = stripped[3:]
+        if stripped.rstrip().endswith("```"):
+            stripped = stripped.rstrip()[:-3]
+        stripped = stripped.strip()
+    else:
+        stripped = text.strip()
+
+    # Pokus 1: Přímý parse
+    for candidate in [stripped, text]:
+        try:
+            result = json.loads(candidate)
+            if isinstance(result, dict):
+                logger.info("[LLM Content] JSON parsed (direct)")
+                return result
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Pokus 2: Extrahuj JSON objekt z textu (najdi balanced braces)
+    json_str = _extract_json_object(stripped)
+    if json_str:
+        try:
+            result = json.loads(json_str)
+            if isinstance(result, dict):
+                logger.info("[LLM Content] JSON parsed (extracted)")
+                return result
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Pokus 3: Oprav běžné problémy a zkus znovu
+    if json_str:
+        cleaned = _fix_json_string(json_str)
+        try:
+            result = json.loads(cleaned)
+            if isinstance(result, dict):
+                logger.info("[LLM Content] JSON parsed (cleaned)")
+                return result
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"[LLM Content] JSON parse after cleaning failed: {e}")
+
+    # Pokus 4: Zpracuj po klíčích pomocí regex
+    keys_to_search = expected_keys or ALL_EXPECTED_KEYS
+    result = _parse_json_by_keys(stripped, keys_to_search)
+    if result:
+        logger.info(f"[LLM Content] JSON parsed (regex, {len(result)} keys)")
+        return result
+
+    return None
+
+
+def _extract_json_object(text: str) -> Optional[str]:
+    """Najde první balanced {} blok v textu."""
+    start = text.find("{")
+    if start < 0:
+        return None
+
+    depth = 0
+    in_string = False
+    escape = False
+
+    for i in range(start, len(text)):
+        c = text[i]
+        if escape:
+            escape = False
+            continue
+        if c == "\\":
+            if in_string:
+                escape = True
+            continue
+        if c == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+
+    # Fallback: vrátit od start do posledního }
+    last_brace = text.rfind("}")
+    if last_brace > start:
+        return text[start:last_brace + 1]
+    return None
+
+
+def _fix_json_string(text: str) -> str:
+    """Opraví běžné problémy v JSON stringu."""
+    # Odstraň řídicí znaky (ale zachovej \n \r \t)
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', ' ', text)
+
+    # Odstraň trailing commas před } nebo ]
+    text = re.sub(r',\s*([}\]])', r'\1', text)
+
+    # Oprav unescaped newlines uvnitř JSON stringů
+    result = []
+    in_str = False
+    esc = False
+    for c in text:
+        if esc:
+            result.append(c)
+            esc = False
+            continue
+        if c == '\\':
+            esc = True
+            result.append(c)
+            continue
+        if c == '"':
+            in_str = not in_str
+            result.append(c)
+            continue
+        if in_str and c == '\n':
+            result.append('\\n')
+            continue
+        if in_str and c == '\r':
+            result.append('\\r')
+            continue
+        if in_str and c == '\t':
+            result.append('\\t')
+            continue
+        result.append(c)
+
+    return ''.join(result)
+
+
+def _parse_json_by_keys(text: str, keys: Optional[List[str]] = None) -> Optional[dict]:
+    """
+    Pokud standardní JSON parsing selže, extrahuj hodnoty pomocí regex.
+    Hledá klíče "key_name": "value..." pattern.
+    """
+    if keys is None:
+        keys = ALL_EXPECTED_KEYS
+
+    result = {}
+    for key in keys:
+        pattern = rf'"{key}"\s*:\s*"((?:[^"\\]|\\.|"")*)"'
+        match = re.search(pattern, text, re.DOTALL)
+        if match:
+            value = match.group(1)
+            value = value.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+            result[key] = value
+
+    if len(result) >= max(1, len(keys) // 2):
+        return result
+    return None
+
+
+# ══════════════════════════════════════════════════════════════════════
+# GEMINI STRUCTURED OUTPUT — google-genai SDK
+# ══════════════════════════════════════════════════════════════════════
+
+_GEMINI_DOC_MODEL = "gemini-3.1-pro-preview"
+_GEMINI_COST_INPUT = 2.0 / 1_000_000   # $2 / 1M input tokens
+_GEMINI_COST_OUTPUT = 12.0 / 1_000_000  # $12 / 1M output tokens
+
+
+async def _call_gemini_structured(
+    chunk_name: str,
+    system: str,
+    user_prompt: str,
+    pydantic_model: type,
+    temperature: float = 0.15,
+    max_tokens: int = 8000,
+) -> Tuple[dict, dict]:
+    """
+    Volá Gemini API s nativním structured output (response_schema).
+    Používá google-genai SDK přímo — nikoliv REST API.
+
+    Returns:
+        (content_dict, metadata_dict)
+    Raises:
+        Exception pokud Gemini selže
+    """
+    from google import genai
+    from google.genai import types
+    from backend.config import get_settings
+
+    settings = get_settings()
+    api_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY není nastavený")
+
+    client = genai.Client(api_key=api_key)
+
+    response = await client.aio.models.generate_content(
+        model=_GEMINI_DOC_MODEL,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            response_mime_type="application/json",
+            response_schema=pydantic_model,
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+        ),
+    )
+
+    # Extract text and usage
+    text = response.text or ""
+    usage = response.usage_metadata
+    input_tokens = getattr(usage, "prompt_token_count", 0) or 0
+    output_tokens = getattr(usage, "candidates_token_count", 0) or 0
+    cost = (input_tokens * _GEMINI_COST_INPUT) + (output_tokens * _GEMINI_COST_OUTPUT)
+
+    logger.info(
+        f"[LLM Content] {chunk_name} Gemini structured: "
+        f"tokens={input_tokens}+{output_tokens}, cost=${cost:.4f}, "
+        f"raw_len={len(text)}"
+    )
+
+    # Parse JSON (structured output guarantees valid JSON)
+    content = json.loads(text)
+
+    # Validate with Pydantic
+    validated = pydantic_model(**content)
+    result_dict = validated.dict() if hasattr(validated, "dict") else validated.model_dump()
+
+    # Strip reasoning field (not used in documents)
+    result_dict.pop("myslenkovy_proces", None)
+
+    # Strip empty values
+    result_dict = {k: v for k, v in result_dict.items() if v}
+
+    metadata = {
+        "provider": "gemini",
+        "model": _GEMINI_DOC_MODEL,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cost_usd": cost,
+    }
+
+    return result_dict, metadata
+
+
+# ══════════════════════════════════════════════════════════════════════
+# LLM CALL — Gemini structured output → Claude fallback
+# ══════════════════════════════════════════════════════════════════════
+
+async def _call_llm_chunk(
+    chunk_name: str,
+    user_prompt: str,
+    expected_keys: List[str],
+    pydantic_model: type,
+) -> dict:
+    """
+    Zavolá LLM pro jeden chunk.
+    Strategie: Gemini structured output (2 pokusy) → Claude fallback (2 pokusy).
+    """
+    # ── Pokus 1: Gemini s nativním structured output ──
+    gemini_available = True
+    try:
+        from google import genai  # noqa: F401
+    except ImportError:
+        gemini_available = False
+        logger.warning("[LLM Content] google-genai SDK není k dispozici, přeskakuji Gemini")
+
+    if gemini_available:
+        for attempt in range(2):
+            try:
+                content, meta = await _call_gemini_structured(
+                    chunk_name=chunk_name,
+                    system=SYSTEM_PROMPT,
+                    user_prompt=user_prompt,
+                    pydantic_model=pydantic_model,
+                    temperature=0.15 if attempt == 0 else 0.1,
+                    max_tokens=16000,
+                )
+
+                if content:
+                    total_chars = sum(len(v) for v in content.values() if isinstance(v, str))
+                    logger.info(
+                        f"[LLM Content] {chunk_name}: {len(content)} sekcí, "
+                        f"{total_chars} znaků (Gemini structured output)"
+                    )
+
+                    # Track usage in Supabase
+                    try:
+                        from backend.ai_engine.llm_client import _record_usage, LLMResult
+                        await _record_usage("gemini", LLMResult(
+                            text="", provider="gemini", model=meta["model"],
+                            input_tokens=meta["input_tokens"],
+                            output_tokens=meta["output_tokens"],
+                            cost_usd=meta["cost_usd"],
+                        ), caller="llm_content_structured")
+                    except Exception:
+                        pass
+
+                    return content
+                else:
+                    logger.warning(
+                        f"[LLM Content] {chunk_name} Gemini attempt {attempt+1}: "
+                        f"prázdný výstup po validaci"
+                    )
+            except Exception as e:
+                logger.warning(
+                    f"[LLM Content] {chunk_name} Gemini attempt {attempt+1} error: {e}"
+                )
+
+    # ── Pokus 2: Claude fallback přes llm_complete() ──
+    logger.warning(f"[LLM Content] {chunk_name}: Gemini selhalo → Claude fallback")
+    from backend.ai_engine.llm_client import llm_complete
+
+    last_text = ""
+    last_error = ""
+
+    for attempt in range(2):
+        try:
+            if attempt == 0:
+                prompt = user_prompt
+            else:
+                # Retry: pošli error feedback
+                prompt = (
+                    f"Tvá předchozí odpověď nebyla platný JSON. Vrať POUZE čistý JSON objekt "
+                    f"s přesně těmito klíči: {', '.join(expected_keys)}.\n\n"
+                    f"Chyba: {last_error}\n"
+                    f"Začátek tvé předchozí odpovědi: {repr(last_text[:300])}\n\n"
+                    f"Oprav a vrať platný JSON. Začni přímo znakem {{."
+                )
+
+            result = await llm_complete(
+                system=SYSTEM_PROMPT,
+                user=prompt,
+                max_tokens=16000,
+                temperature=0.15 if attempt == 0 else 0.1,
+                prefer="claude",
+                prefill="{",
+            )
+
+            logger.info(
+                f"[LLM Content] {chunk_name} Claude attempt {attempt+1}: "
+                f"provider={result.provider}, "
+                f"tokens={result.input_tokens}+{result.output_tokens}, "
+                f"cost=${result.cost_usd:.4f}"
+            )
+
+            text = result.text.strip()
+            last_text = text
+
+            logger.info(f"[LLM Content] {chunk_name} raw length: {len(text)} chars")
+
+            content = _parse_llm_json(text, expected_keys)
+
+            if content is None:
+                last_error = "JSON parsing zcela selhal"
+                logger.warning(f"[LLM Content] {chunk_name} Claude attempt {attempt+1}: parse failed")
+                continue
+
+            # Pydantic validace
+            try:
+                validated = pydantic_model(**content)
+                validated_dict = validated.dict() if hasattr(validated, "dict") else validated.model_dump()
+                validated_dict.pop("myslenkovy_proces", None)
+                validated_dict = {k: v for k, v in validated_dict.items() if v}
+                if validated_dict:
+                    logger.info(
+                        f"[LLM Content] {chunk_name}: {len(validated_dict)} sekcí, "
+                        f"{sum(len(v) for v in validated_dict.values())} znaků (Claude fallback)"
+                    )
+                    return validated_dict
+                else:
+                    last_error = "Všechny klíče jsou prázdné"
+            except Exception as ve:
+                last_error = f"Pydantic validace: {ve}"
+                logger.warning(f"[LLM Content] {chunk_name} validation failed: {ve}")
+                non_empty = {k: v for k, v in content.items() if v and k in expected_keys}
+                if non_empty:
+                    return non_empty
+
+        except Exception as e:
+            last_error = str(e)
+            logger.error(f"[LLM Content] {chunk_name} Claude attempt {attempt+1} error: {e}")
+
+    logger.error(f"[LLM Content] {chunk_name}: Gemini i Claude selhaly")
+    return {}
+
+
+# ══════════════════════════════════════════════════════════════════════
+# MAIN GENERATOR — 11 paralelních volání (asyncio.gather)
+# ══════════════════════════════════════════════════════════════════════
+
+async def _generate_one_section(
+    key: str,
+    pydantic_model: type,
+    prompt_builder,
+    company_context: str,
+) -> Tuple[str, str]:
+    """
+    Generuje jednu sekci — vrací (key, "html content") nebo (key, "").
+    """
+    try:
+        prompt = prompt_builder(company_context)
+        result = await _call_llm_chunk(
+            chunk_name=key,
+            user_prompt=prompt,
+            expected_keys=["content"],
+            pydantic_model=pydantic_model,
+        )
+        content_text = result.get("content", "")
+        if content_text:
+            chars = len(content_text)
+            logger.info(f"[LLM Content] {key}: {chars} znaků OK")
+            return key, content_text
+        else:
+            logger.warning(f"[LLM Content] {key}: prázdný výstup")
+            return key, ""
+    except Exception as e:
+        logger.error(f"[LLM Content] {key} selhalo: {e}")
+        return key, ""
+
+
+async def generate_document_content(data: dict) -> dict:
+    """
+    Generuje personalizovaný obsah pro 11 sekcí — každá má vlastní prompt.
+    Všech 11 volání běží paralelně přes asyncio.gather().
+
+    Returns:
+        dict s 11 klíči (nebo méně při graceful degradation).
+    """
+    logger.info(f"[LLM Content] Generuji obsah — {len(_SECTION_REGISTRY)} paralelních volání")
+
+    company_context = _build_company_context(data)
+
+    # Spustit všech 11 sekcí paralelně
+    tasks = [
+        _generate_one_section(key, model, builder, company_context)
+        for key, (model, builder) in _SECTION_REGISTRY.items()
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Zpracovat výsledky
+    final_content: Dict[str, str] = {}
+    for result in results:
+        if isinstance(result, Exception):
+            logger.error(f"[LLM Content] Paralelní task selhal: {result}")
+            continue
+        key, content = result
+        if content:
+            final_content[key] = content
+
+    # ── Shrnutí ──
+    missing = [k for k in ALL_EXPECTED_KEYS if k not in final_content]
+    if missing:
+        logger.warning(f"[LLM Content] Chybějící klíče ({len(missing)}): {missing}")
+
+    total_chars = sum(len(v) for v in final_content.values())
+    logger.info(
+        f"[LLM Content] Hotovo: {len(final_content)}/{len(_SECTION_REGISTRY)} sekcí, "
+        f"{total_chars} znaků celkem"
+    )
+
+    return final_content

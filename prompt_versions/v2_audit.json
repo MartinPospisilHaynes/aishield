@@ -1,0 +1,136 @@
+{
+  "version": 2,
+  "generation_id": "gen_20260226_064455",
+  "timestamp": "2026-02-26T07:31:02.103063+00:00",
+  "m5_full_response": {
+    "analyza": {
+      "prumerny_eu_score": 5.9,
+      "prumerny_client_score": 6.3,
+      "celkovy_prumer": 6.1,
+      "identifikovane_vzory": [
+        {
+          "vzor": "Masivní výskyt placeholderů '[K DOPLNĚNÍ KLIENTEM]' napříč všemi dokumenty — dokumenty jsou generické šablony bez identity klienta",
+          "pocet_vyskytu": 7,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "Všechny dokumenty (compliance_report, akční_plán, registr, plán_školení, transparentnost, transparenční_stránka, prezentace)",
+          "typicky_nalez": "Dokument obsahuje 10 placeholderů [K DOPLNĚNÍ KLIENTEM], a to včetně tak základních věcí, jako je název mé firmy. Působí to jako nevyplněná šablona."
+        },
+        {
+          "vzor": "Dokumenty generují obsah pro neexistující AI systémy — firma má 0 AI systémů, ale dokumenty obsahují detailní kroky pro logování, kill-switch, GPAI due diligence, transparenční stránku",
+          "pocet_vyskytu": 6,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "akční_plán, plán_školení, transparentnost, registr, prezentace",
+          "typicky_nalez": "Sekce 3.4 (transparenční stránka), sekce 5 (GPAI due diligence), sekce 6.1 (logování) předpokládají existenci konkrétních AI systémů. Firma však deklaruje 0 AI systémů. Dokument tak ukládá klientovi povinnosti, které pro něj v tuto chvíli neexistují."
+        },
+        {
+          "vzor": "Opakovaně chybná citace čl. 26 odst. 1 písm. f) pro povinnost uchovávání logů — správně je čl. 26 odst. 5 (nasazovatel) resp. čl. 19 odst. 1 (poskytovatel)",
+          "pocet_vyskytu": 5,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, akční_plán, registr, plán_školení, prezentace",
+          "typicky_nalez": "Povinnost uchovávat logy po dobu minimálně 6 měsíců vyplývá z 'čl. 26 odst. 1 písm. f)'. Článek 26 odst. 1 AI Act neobsahuje písmeno f) s touto povinností — povinnost nasazovatele uchovávat logy vyplývá z čl. 26 odst. 5 AI Act."
+        },
+        {
+          "vzor": "FRIA (čl. 27) je opakovaně prezentována jako povinná pouze pro veřejný sektor — chybí zmínka o soukromých nasazovatelích high-risk systémů poskytujících veřejné služby nebo zpracovávajících data fyzických osob",
+          "pocet_vyskytu": 5,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční_plán, registr, plán_školení, prezentace",
+          "typicky_nalez": "Čl. 27 odst. 2 AI Act výslovně ukládá povinnost provést FRIA také soukromým nasazovatelům high-risk systémů, pokud tyto systémy jsou určeny k interakci s fyzickými osobami. Prezentace FRIA jako dobrovolné pro soukromé firmy může vést klienta k neplnění zákonné povinnosti."
+        },
+        {
+          "vzor": "Chybějící zákonná lhůta 15 dní pro hlášení incidentů dle čl. 73 a absence identifikace národního dozorového orgánu (ÚOOÚ)",
+          "pocet_vyskytu": 4,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční_plán, transparentnost, transparenční_stránka",
+          "typicky_nalez": "Tabulka povinností uvádí povinnost hlášení incidentů dle čl. 73, ale neuvádí zákonnou lhůtu 15 dní. Dokument nikde neidentifikuje příslušný národní dozorový orgán pro ČR."
+        },
+        {
+          "vzor": "Použití Unicode symbolů (✓, →, ⚠, ✅) v compliance dokumentech navzdory existujícímu pravidlu",
+          "pocet_vyskytu": 5,
+          "zavaznost": "menší",
+          "priklad_dokumentu": "compliance_report, akční_plán, plán_školení, transparentnost, prezentace",
+          "typicky_nalez": "Dokument opakovaně používá symboly '✓' a '→' jako vizuální oddělovače v textu. Toto je v rozporu s požadavky na formální compliance dokumentaci."
+        }
+      ]
+    },
+    "doporuceni": {
+      "nova_pravidla": [
+        {
+          "pravidlo": "Pokud kontext firmy obsahuje údaje jako název, IČO, sídlo, odvětví, jméno jednatele nebo odpovědné osoby, vždy je dosaď přímo do textu dokumentu na všechna relevantní místa; placeholder '[K DOPLNĚNÍ KLIENTEM]' používej VÝHRADNĚ pro informace, které kontext firmy prokazatelně neobsahuje, a v takovém případě ke každému placeholderu přidej konkrétní instrukci, co přesně má klient vyplnit a proč.",
+          "duvod": "Všech 7 dokumentů obsahuje masivní množství placeholderů (5–14 na dokument) i pro údaje, které jsou dostupné v kontextu firmy nebo které by měly být odvozeny. Klienti opakovaně kritizují, že za placenou službu dostávají nevyplněné šablony.",
+          "ocekavany_efekt": "Dramatické snížení počtu placeholderů, dokumenty budou působit jako personalizované pro konkrétní firmu, zvýšení klientské spokojenosti o 1–2 body."
+        },
+        {
+          "pravidlo": "Pokud firma deklaruje 0 AI systémů a celkové riziko minimální, strukturuj každý dokument do dvou jasně oddělených částí: (1) 'AKTUÁLNÍ POVINNOSTI' — pouze povinnosti platné ihned bez ohledu na AI systémy (čl. 4 AI gramotnost, čl. 5 zakázané praktiky, Shadow AI audit) a (2) 'POVINNOSTI PŘI BUDOUCÍM NASAZENÍ AI' — podmíněné kroky aktivované teprve při pořízení konkrétního AI systému, s jasným triggerem pro každý krok.",
+          "duvod": "6 ze 7 dokumentů generuje detailní kroky (logování, kill-switch, GPAI due diligence, transparenční oznámení) pro firmu bez jakýchkoli AI systémů. EU inspektor i klient toto hodnotí jako kritický problém — dokument ukládá neexistující povinnosti a mate klienta.",
+          "ocekavany_efekt": "Dokumenty budou relevantní pro aktuální stav firmy, eliminace falešných compliance závazků, zvýšení EU i klientského skóre o 1–2 body."
+        },
+        {
+          "pravidlo": "Pro povinnost nasazovatele uchovávat logy generované high-risk AI systémy vždy cituj čl. 26 odst. 5 AI Act (nikoli čl. 26 odst. 1 písm. f), který neexistuje v tomto znění); minimální lhůtu 6 měsíců cituj pouze v kontextu povinností poskytovatele dle čl. 19 odst. 1 a u nasazovatele uveď, že lhůta se řídí pokyny poskytovatele, minimálně však 6 měsíců dle čl. 26 odst. 5.",
+          "duvod": "Chybná citace 'čl. 26 odst. 1 písm. f)' se opakuje v 5 ze 7 dokumentů a je identifikována jako kritický nález EU inspektorem. Stávající M5 pravidlo v1 tuto chybnou citaci dokonce doporučuje ('používej čl. 26 odst. 1 písm. f) pro nasazovatele'), čímž chybu perpetuuje.",
+          "ocekavany_efekt": "Eliminace opakované právní chyby v citaci logování, zvýšení právní přesnosti ve všech dokumentech."
+        },
+        {
+          "pravidlo": "Při zmínce o FRIA (čl. 27 AI Act) vždy uveď kompletní rozsah povinných subjektů: (a) veřejnoprávní subjekty nasazující high-risk systémy dle Přílohy III, (b) soukromé subjekty poskytující veřejné služby nasazující high-risk systémy dle Přílohy III, a (c) soukromé subjekty nasazující high-risk systémy v oblastech uvedených v čl. 27 odst. 1 písm. b) — zejména HR screening, přístup ke vzdělání, úvěrové hodnocení; nikdy neoznačuj FRIA jako povinnou 'pouze pro veřejný sektor'.",
+          "duvod": "V 5 dokumentech je FRIA prezentována zúženě jako povinnost 'primárně pro veřejný sektor'. Stávající M5 pravidlo v1 tuto nepřesnost částečně obsahuje ('zákonná povinnost se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby'). Nové pravidlo rozšiřuje a zpřesňuje rozsah dle skutečného znění čl. 27.",
+          "ocekavany_efekt": "Přesná informace o FRIA povinnosti zabrání klientům v neplnění zákonné povinnosti při budoucím nasazení high-risk systémů."
+        },
+        {
+          "pravidlo": "V každém dokumentu, který zmiňuje hlášení incidentů, vždy uveď konkrétní zákonnou lhůtu (bez zbytečného odkladu pro nasazovatele dle čl. 73 odst. 5, 15 dní pro poskytovatele dle čl. 73 odst. 1) a identifikuj příslušný národní dozorový orgán — pro ČR uveď Úřad pro ochranu osobních údajů (ÚOOÚ) jako koordinační orgán s poznámkou, že sektorové orgány mohou mít dílčí kompetence.",
+          "duvod": "Ve 4 dokumentech chybí zákonná lhůta pro hlášení incidentů a v žádném dokumentu není identifikován národní dozorový orgán. Bez těchto informací klient nemůže nastavit interní incident management proces.",
+          "ocekavany_efekt": "Zvýšení praktické použitelnosti dokumentů, klient bude vědět komu a v jaké lhůtě hlásit incidenty."
+        }
+      ],
+      "konvergence": false,
+      "komentar": "Kvalita dokumentů je výrazně pod cílovou úrovní (6.1/10). Dva dominantní problémy tvoří většinu nálezů: (1) masivní generičnost dokumentů s desítkami placeholderů i pro dostupné údaje a (2) generování obsahu pro neexistující AI systémy u firmy s nulovým AI portfoliem. Třetím systémovým problémem je opakovaná chybná citace čl. 26 odst. 1 písm. f), která je paradoxně zakódována v existujícím M5 pravidle v1 — toto pravidlo je třeba přepsat. Navržených 5 pravidel cílí na nejzávažnější vzory; po jejich implementaci očekávám posun průměru na 7.5–8.0."
+    }
+  },
+  "analysis_input": {
+    "prumerny_eu_score": 5.9,
+    "prumerny_client_score": 6.3,
+    "celkovy_prumer": 6.1,
+    "identifikovane_vzory": [
+      {
+        "vzor": "Masivní výskyt placeholderů '[K DOPLNĚNÍ KLIENTEM]' napříč všemi dokumenty — dokumenty jsou generické šablony bez identity klienta",
+        "pocet_vyskytu": 7,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "Všechny dokumenty (compliance_report, akční_plán, registr, plán_školení, transparentnost, transparenční_stránka, prezentace)",
+        "typicky_nalez": "Dokument obsahuje 10 placeholderů [K DOPLNĚNÍ KLIENTEM], a to včetně tak základních věcí, jako je název mé firmy. Působí to jako nevyplněná šablona."
+      },
+      {
+        "vzor": "Dokumenty generují obsah pro neexistující AI systémy — firma má 0 AI systémů, ale dokumenty obsahují detailní kroky pro logování, kill-switch, GPAI due diligence, transparenční stránku",
+        "pocet_vyskytu": 6,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "akční_plán, plán_školení, transparentnost, registr, prezentace",
+        "typicky_nalez": "Sekce 3.4 (transparenční stránka), sekce 5 (GPAI due diligence), sekce 6.1 (logování) předpokládají existenci konkrétních AI systémů. Firma však deklaruje 0 AI systémů. Dokument tak ukládá klientovi povinnosti, které pro něj v tuto chvíli neexistují."
+      },
+      {
+        "vzor": "Opakovaně chybná citace čl. 26 odst. 1 písm. f) pro povinnost uchovávání logů — správně je čl. 26 odst. 5 (nasazovatel) resp. čl. 19 odst. 1 (poskytovatel)",
+        "pocet_vyskytu": 5,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, akční_plán, registr, plán_školení, prezentace",
+        "typicky_nalez": "Povinnost uchovávat logy po dobu minimálně 6 měsíců vyplývá z 'čl. 26 odst. 1 písm. f)'. Článek 26 odst. 1 AI Act neobsahuje písmeno f) s touto povinností — povinnost nasazovatele uchovávat logy vyplývá z čl. 26 odst. 5 AI Act."
+      },
+      {
+        "vzor": "FRIA (čl. 27) je opakovaně prezentována jako povinná pouze pro veřejný sektor — chybí zmínka o soukromých nasazovatelích high-risk systémů poskytujících veřejné služby nebo zpracovávajících data fyzických osob",
+        "pocet_vyskytu": 5,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční_plán, registr, plán_školení, prezentace",
+        "typicky_nalez": "Čl. 27 odst. 2 AI Act výslovně ukládá povinnost provést FRIA také soukromým nasazovatelům high-risk systémů, pokud tyto systémy jsou určeny k interakci s fyzickými osobami. Prezentace FRIA jako dobrovolné pro soukromé firmy může vést klienta k neplnění zákonné povinnosti."
+      },
+      {
+        "vzor": "Chybějící zákonná lhůta 15 dní pro hlášení incidentů dle čl. 73 a absence identifikace národního dozorového orgánu (ÚOOÚ)",
+        "pocet_vyskytu": 4,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční_plán, transparentnost, transparenční_stránka",
+        "typicky_nalez": "Tabulka povinností uvádí povinnost hlášení incidentů dle čl. 73, ale neuvádí zákonnou lhůtu 15 dní. Dokument nikde neidentifikuje příslušný národní dozorový orgán pro ČR."
+      },
+      {
+        "vzor": "Použití Unicode symbolů (✓, →, ⚠, ✅) v compliance dokumentech navzdory existujícímu pravidlu",
+        "pocet_vyskytu": 5,
+        "zavaznost": "menší",
+        "priklad_dokumentu": "compliance_report, akční_plán, plán_školení, transparentnost, prezentace",
+        "typicky_nalez": "Dokument opakovaně používá symboly '✓' a '→' jako vizuální oddělovače v textu. Toto je v rozporu s požadavky na formální compliance dokumentaci."
+      }
+    ]
+  }
+}

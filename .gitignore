@@ -1,0 +1,54 @@
+# ============================================
+# AIshield.cz — .gitignore
+# ============================================
+
+# ── Environment & Secrets ──
+.env
+.env.local
+.env.production
+.env.*.local
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Node.js / Next.js ──
+node_modules/
+.next/
+out/
+.vercel
+
+# ── IDE ──
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Testing ──
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ── Screenshots & Generated Files ──
+screenshots/
+generated_pdfs/
+*.pdf
+
+# ── Database ──
+*.sqlite3
+*.db

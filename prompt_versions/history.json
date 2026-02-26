@@ -1,0 +1,52 @@
+[
+  {
+    "version": 1,
+    "generation_id": "gen_20260225_194520",
+    "timestamp": "2026-02-25T20:46:38.931037+00:00",
+    "avg_score": 7.62,
+    "eu_avg": 6.8,
+    "client_avg": 8.4,
+    "rules_added": 5,
+    "rules": [
+      "Při citaci povinností vždy rozlišuj roli firmy jako poskytovatele (provider, čl. 16–18) vs. nasazovatele (deployer, čl. 26) a přiřazuj články přesně podle role — zejména pro logování používej čl. 26 odst. 1 písm. f) pro nasazovatele a čl. 12/19 pouze pro poskytovatele. Nikdy necituj článek bez ověření, zda se vztahuje na roli, ve které firma u daného systému vystupuje.",
+      "Pokud firma integruje LLM/GPAI modely (OpenAI, Anthropic, Google Gemini, Mistral) do vlastních produktů nebo zákaznických řešení, vždy zařaď samostatnou sekci o GPAI povinnostech dle čl. 51–54 AI Act s konkrétními kroky pro firmu — v každém dokumentu, kde je to relevantní (registr, akční plán, školení, monitoring, politika, dodavatelský checklist).",
+      "Nikdy neuváděj v dokumentech určených pro zaměstnance nebo v interních směrnicích explicitní konstatování, že firma porušuje zákon, je v prodlení nebo provozuje zakázané systémy — místo toho formuluj jako 'identifikované systémy vyžadující okamžitou revizi klasifikace' nebo 'systémy s prioritní nápravnou akcí' a citlivé detaily ponechej pouze v dokumentech určených výhradně pro vedení/právního poradce.",
+      "Nikdy nepoužívej v textu compliance dokumentů emoji, Unicode symboly (✓, ✅, ⚠, →, 🤖) ani neformální výrazy ('Skvělá práce!', 'drakonické pokuty', 'španělská vesnice') — pro vizuální strukturování používej výhradně HTML třídy definované v šabloně (badge, callout, highlight) a pro seznamy standardní odrážky nebo číslování.",
+      "Při práci s FRIA (čl. 27 AI Act) vždy explicitně uveď, že zákonná povinnost provést FRIA se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby — pro ostatní soukromé firmy FRIA prezentuj jako doporučenou best practice s vysvětlením, proč je i pro ně vhodná, ale nikdy ji neoznačuj jako zákonnou povinnost soukromého subjektu bez dalšího rozlišení."
+    ],
+    "reasons": [
+      "Záměna čl. 19 (poskytovatel) a čl. 26 (nasazovatel) se opakuje v 8 z 12 dokumentů a je nejčastějším kritickým právním nálezem EU inspektora.",
+      "Absence GPAI povinností je nejrozšířenějším kritickým nálezem — chybí v 10 z 12 dokumentů, přestože firma prokazatelně integruje LLM API.",
+      "Klient i EU inspektor identifikovali, že explicitní přiznání non-compliance v interní směrnici a školící prezentaci vytváří závažné právní a PR riziko — dozorový orgán si může tyto dokumenty vyžádat.",
+      "Emoji a neformální fráze se vyskytují v 8 z 12 dokumentů a jsou opakovaně hodnoceny jako nevhodné pro regulatorní dokumentaci určenou k tisku, archivaci a předložení dozorovému orgánu.",
+      "FRIA je v dokumentech buď zcela opomenuta, nebo nesprávně prezentována jako univerzální povinnost pro soukromé firmy — obojí se opakuje v 10 dokumentech a vytváří právní nepřesnost."
+    ],
+    "cost_usd": 0.2416,
+    "converged": false
+  },
+  {
+    "version": 2,
+    "generation_id": "gen_20260226_064455",
+    "timestamp": "2026-02-26T07:31:02.103063+00:00",
+    "avg_score": 6.07,
+    "eu_avg": 5.9,
+    "client_avg": 6.3,
+    "rules_added": 5,
+    "rules": [
+      "Pokud kontext firmy obsahuje údaje jako název, IČO, sídlo, odvětví, jméno jednatele nebo odpovědné osoby, vždy je dosaď přímo do textu dokumentu na všechna relevantní místa; placeholder '[K DOPLNĚNÍ KLIENTEM]' používej VÝHRADNĚ pro informace, které kontext firmy prokazatelně neobsahuje, a v takovém případě ke každému placeholderu přidej konkrétní instrukci, co přesně má klient vyplnit a proč.",
+      "Pokud firma deklaruje 0 AI systémů a celkové riziko minimální, strukturuj každý dokument do dvou jasně oddělených částí: (1) 'AKTUÁLNÍ POVINNOSTI' — pouze povinnosti platné ihned bez ohledu na AI systémy (čl. 4 AI gramotnost, čl. 5 zakázané praktiky, Shadow AI audit) a (2) 'POVINNOSTI PŘI BUDOUCÍM NASAZENÍ AI' — podmíněné kroky aktivované teprve při pořízení konkrétního AI systému, s jasným triggerem pro každý krok.",
+      "Pro povinnost nasazovatele uchovávat logy generované high-risk AI systémy vždy cituj čl. 26 odst. 5 AI Act (nikoli čl. 26 odst. 1 písm. f), který neexistuje v tomto znění); minimální lhůtu 6 měsíců cituj pouze v kontextu povinností poskytovatele dle čl. 19 odst. 1 a u nasazovatele uveď, že lhůta se řídí pokyny poskytovatele, minimálně však 6 měsíců dle čl. 26 odst. 5.",
+      "Při zmínce o FRIA (čl. 27 AI Act) vždy uveď kompletní rozsah povinných subjektů: (a) veřejnoprávní subjekty nasazující high-risk systémy dle Přílohy III, (b) soukromé subjekty poskytující veřejné služby nasazující high-risk systémy dle Přílohy III, a (c) soukromé subjekty nasazující high-risk systémy v oblastech uvedených v čl. 27 odst. 1 písm. b) — zejména HR screening, přístup ke vzdělání, úvěrové hodnocení; nikdy neoznačuj FRIA jako povinnou 'pouze pro veřejný sektor'.",
+      "V každém dokumentu, který zmiňuje hlášení incidentů, vždy uveď konkrétní zákonnou lhůtu (bez zbytečného odkladu pro nasazovatele dle čl. 73 odst. 5, 15 dní pro poskytovatele dle čl. 73 odst. 1) a identifikuj příslušný národní dozorový orgán — pro ČR uveď Úřad pro ochranu osobních údajů (ÚOOÚ) jako koordinační orgán s poznámkou, že sektorové orgány mohou mít dílčí kompetence."
+    ],
+    "reasons": [
+      "Všech 7 dokumentů obsahuje masivní množství placeholderů (5–14 na dokument) i pro údaje, které jsou dostupné v kontextu firmy nebo které by měly být odvozeny. Klienti opakovaně kritizují, že za placenou službu dostávají nevyplněné šablony.",
+      "6 ze 7 dokumentů generuje detailní kroky (logování, kill-switch, GPAI due diligence, transparenční oznámení) pro firmu bez jakýchkoli AI systémů. EU inspektor i klient toto hodnotí jako kritický problém — dokument ukládá neexistující povinnosti a mate klienta.",
+      "Chybná citace 'čl. 26 odst. 1 písm. f)' se opakuje v 5 ze 7 dokumentů a je identifikována jako kritický nález EU inspektorem. Stávající M5 pravidlo v1 tuto chybnou citaci dokonce doporučuje ('používej čl. 26 odst. 1 písm. f) pro nasazovatele'), čímž chybu perpetuuje.",
+      "V 5 dokumentech je FRIA prezentována zúženě jako povinnost 'primárně pro veřejný sektor'. Stávající M5 pravidlo v1 tuto nepřesnost částečně obsahuje ('zákonná povinnost se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby'). Nové pravidlo rozšiřuje a zpřesňuje rozsah dle skutečného znění čl. 27.",
+      "Ve 4 dokumentech chybí zákonná lhůta pro hlášení incidentů a v žádném dokumentu není identifikován národní dozorový orgán. Bez těchto informací klient nemůže nastavit interní incident management proces."
+    ],
+    "cost_usd": 0.1676,
+    "converged": false
+  }
+]

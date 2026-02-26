@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "generation_id": "gen_20260225_194520",
+  "timestamp": "2026-02-25T20:46:38.931037+00:00",
+  "m5_full_response": {
+    "analyza": {
+      "prumerny_eu_score": 6.8,
+      "prumerny_client_score": 8.4,
+      "celkovy_prumer": 7.6,
+      "identifikovane_vzory": [
+        {
+          "vzor": "Systematická absence GPAI povinností (čl. 51–54) napříč všemi dokumenty, přestože firma integruje LLM API do zákaznických produktů a tyto povinnosti platí od 2. 8. 2025",
+          "pocet_vyskytu": 10,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, akční plán, registr AI, interní politika, plán školení, DPIA/FRIA, dodavatelský checklist, monitoring plán, školící prezentace, texty oznámení",
+          "typicky_nalez": "Firma integruje OpenAI GPT-4/4o, Anthropic Claude, Google Gemini přes API do vlastních produktů. Dokument GPAI vůbec nezmiňuje — ani povinnosti transparentnosti, ani požadavky na dokumentaci při integraci GPAI."
+        },
+        {
+          "vzor": "Záměna článků pro poskytovatele vs. nasazovatele — zejména čl. 19 (poskytovatel) místo čl. 26 odst. 1 písm. f) (nasazovatel) pro logování, a čl. 12 vs. čl. 26 pro uchovávání logů",
+          "pocet_vyskytu": 8,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report, akční plán, interní politika, plán řízení incidentů, monitoring plán, transparentnost a lidský dohled, dodavatelský checklist, plán školení",
+          "typicky_nalez": "Čl. 19 odst. 1 AI Act se vztahuje na poskytovatele. Pro nasazovatele platí čl. 26 odst. 1 písm. f) — uchovávání automaticky generovaných protokolů minimálně 6 měsíců. Dokument toto rozlišení nečiní a aplikuje čl. 19 paušálně."
+        },
+        {
+          "vzor": "Chybějící nebo nesprávně aplikovaná FRIA (čl. 27) — buď zcela chybí, nebo je prezentována jako povinnost pro soukromé subjekty bez rozlišení, nebo chybí individuální posouzení pro každý systém",
+          "pocet_vyskytu": 10,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční plán, registr AI, interní politika, DPIA/FRIA, monitoring plán, transparentnost, dodavatelský checklist, školící prezentace, texty oznámení",
+          "typicky_nalez": "Čl. 27 AI Act ukládá povinnost FRIA výhradně veřejnoprávním subjektům a soukromým subjektům poskytujícím veřejné služby. Dokument opakovaně uvádí FRIA jako povinnost pro soukromou firmu bez tohoto rozlišení, nebo ji naopak zcela opomíjí."
+        },
+        {
+          "vzor": "Přítomnost emoji, speciálních symbolů (✓, ✅, →, 🤖, ⚠) a neformálních frází ('Skvělá práce!', 'drakonické pokuty') v compliance dokumentaci",
+          "pocet_vyskytu": 8,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "compliance_report, akční plán, plán školení, texty oznámení, interní politika, plán řízení incidentů, transparentnost, školící prezentace",
+          "typicky_nalez": "Dokument obsahuje emoji symboly (✓, ✅, →, 🤖) v textu. Emoji jsou nevhodné pro právní compliance dokumentaci určenou k tisku a archivaci."
+        },
+        {
+          "vzor": "Zveřejnění citlivých informací o non-compliance (provozování zakázaných systémů, prodlení) v dokumentech určených pro širokou distribuci zaměstnancům nebo v interních směrnicích, které si může vyžádat dozorový orgán",
+          "pocet_vyskytu": 3,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "interní AI politika, školící prezentace (PPTX), compliance_report",
+          "typicky_nalez": "Prezentace pro běžné zaměstnance obsahuje informace o tom, že firma provozuje zakázané systémy a je v prodlení. V interní směrnici je explicitní přiznání 'Společnost se nachází v prodlení'. Tohle je obrovské právní a PR riziko."
+        }
+      ]
+    },
+    "doporuceni": {
+      "nova_pravidla": [
+        {
+          "pravidlo": "Při citaci povinností vždy rozlišuj roli firmy jako poskytovatele (provider, čl. 16–18) vs. nasazovatele (deployer, čl. 26) a přiřazuj články přesně podle role — zejména pro logování používej čl. 26 odst. 1 písm. f) pro nasazovatele a čl. 12/19 pouze pro poskytovatele. Nikdy necituj článek bez ověření, zda se vztahuje na roli, ve které firma u daného systému vystupuje.",
+          "duvod": "Záměna čl. 19 (poskytovatel) a čl. 26 (nasazovatel) se opakuje v 8 z 12 dokumentů a je nejčastějším kritickým právním nálezem EU inspektora.",
+          "ocekavany_efekt": "Eliminace systematické záměny článků provider/deployer, zvýšení EU skóre o 1–2 body."
+        },
+        {
+          "pravidlo": "Pokud firma integruje LLM/GPAI modely (OpenAI, Anthropic, Google Gemini, Mistral) do vlastních produktů nebo zákaznických řešení, vždy zařaď samostatnou sekci o GPAI povinnostech dle čl. 51–54 AI Act s konkrétními kroky pro firmu — v každém dokumentu, kde je to relevantní (registr, akční plán, školení, monitoring, politika, dodavatelský checklist).",
+          "duvod": "Absence GPAI povinností je nejrozšířenějším kritickým nálezem — chybí v 10 z 12 dokumentů, přestože firma prokazatelně integruje LLM API.",
+          "ocekavany_efekt": "Pokrytí zásadní regulatorní oblasti, která je od 2. 8. 2025 v účinnosti a u klienta může znamenat aktuální non-compliance."
+        },
+        {
+          "pravidlo": "Nikdy neuváděj v dokumentech určených pro zaměstnance nebo v interních směrnicích explicitní konstatování, že firma porušuje zákon, je v prodlení nebo provozuje zakázané systémy — místo toho formuluj jako 'identifikované systémy vyžadující okamžitou revizi klasifikace' nebo 'systémy s prioritní nápravnou akcí' a citlivé detaily ponechej pouze v dokumentech určených výhradně pro vedení/právního poradce.",
+          "duvod": "Klient i EU inspektor identifikovali, že explicitní přiznání non-compliance v interní směrnici a školící prezentaci vytváří závažné právní a PR riziko — dozorový orgán si může tyto dokumenty vyžádat.",
+          "ocekavany_efekt": "Eliminace právního rizika sebeobvinění, zvýšení klientské spokojenosti u dokumentů s nejnižším Client skóre (6/10)."
+        },
+        {
+          "pravidlo": "Nikdy nepoužívej v textu compliance dokumentů emoji, Unicode symboly (✓, ✅, ⚠, →, 🤖) ani neformální výrazy ('Skvělá práce!', 'drakonické pokuty', 'španělská vesnice') — pro vizuální strukturování používej výhradně HTML třídy definované v šabloně (badge, callout, highlight) a pro seznamy standardní odrážky nebo číslování.",
+          "duvod": "Emoji a neformální fráze se vyskytují v 8 z 12 dokumentů a jsou opakovaně hodnoceny jako nevhodné pro regulatorní dokumentaci určenou k tisku, archivaci a předložení dozorovému orgánu.",
+          "ocekavany_efekt": "Profesionálnější vzhled dokumentů, eliminace opakujícího se nálezu EU inspektora i klienta."
+        },
+        {
+          "pravidlo": "Při práci s FRIA (čl. 27 AI Act) vždy explicitně uveď, že zákonná povinnost provést FRIA se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby — pro ostatní soukromé firmy FRIA prezentuj jako doporučenou best practice s vysvětlením, proč je i pro ně vhodná, ale nikdy ji neoznačuj jako zákonnou povinnost soukromého subjektu bez dalšího rozlišení.",
+          "duvod": "FRIA je v dokumentech buď zcela opomenuta, nebo nesprávně prezentována jako univerzální povinnost pro soukromé firmy — obojí se opakuje v 10 dokumentech a vytváří právní nepřesnost.",
+          "ocekavany_efekt": "Správná právní klasifikace FRIA zvýší důvěryhodnost dokumentů a eliminuje zavádějící informace o rozsahu povinností klienta."
+        }
+      ],
+      "konvergence": false,
+      "komentar": "Dokumenty mají solidní klientskou spokojenost (8.4), ale EU právní přesnost (6.8) je výrazně pod cílem. Tři systémové problémy dominují: (1) záměna článků provider/deployer, (2) kompletní absence GPAI povinností, (3) nesprávná aplikace FRIA. Navržených 5 pravidel cílí na nejfrekventovanější vzory — po jejich implementaci očekávám posun EU skóre na 7.5–8.0. V další iteraci bude třeba řešit chybějící systémy v registru, neúplné checklisty a absenci post-market monitoringu (čl. 72)."
+    }
+  },
+  "analysis_input": {
+    "prumerny_eu_score": 6.8,
+    "prumerny_client_score": 8.4,
+    "celkovy_prumer": 7.6,
+    "identifikovane_vzory": [
+      {
+        "vzor": "Systematická absence GPAI povinností (čl. 51–54) napříč všemi dokumenty, přestože firma integruje LLM API do zákaznických produktů a tyto povinnosti platí od 2. 8. 2025",
+        "pocet_vyskytu": 10,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, akční plán, registr AI, interní politika, plán školení, DPIA/FRIA, dodavatelský checklist, monitoring plán, školící prezentace, texty oznámení",
+        "typicky_nalez": "Firma integruje OpenAI GPT-4/4o, Anthropic Claude, Google Gemini přes API do vlastních produktů. Dokument GPAI vůbec nezmiňuje — ani povinnosti transparentnosti, ani požadavky na dokumentaci při integraci GPAI."
+      },
+      {
+        "vzor": "Záměna článků pro poskytovatele vs. nasazovatele — zejména čl. 19 (poskytovatel) místo čl. 26 odst. 1 písm. f) (nasazovatel) pro logování, a čl. 12 vs. čl. 26 pro uchovávání logů",
+        "pocet_vyskytu": 8,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report, akční plán, interní politika, plán řízení incidentů, monitoring plán, transparentnost a lidský dohled, dodavatelský checklist, plán školení",
+        "typicky_nalez": "Čl. 19 odst. 1 AI Act se vztahuje na poskytovatele. Pro nasazovatele platí čl. 26 odst. 1 písm. f) — uchovávání automaticky generovaných protokolů minimálně 6 měsíců. Dokument toto rozlišení nečiní a aplikuje čl. 19 paušálně."
+      },
+      {
+        "vzor": "Chybějící nebo nesprávně aplikovaná FRIA (čl. 27) — buď zcela chybí, nebo je prezentována jako povinnost pro soukromé subjekty bez rozlišení, nebo chybí individuální posouzení pro každý systém",
+        "pocet_vyskytu": 10,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční plán, registr AI, interní politika, DPIA/FRIA, monitoring plán, transparentnost, dodavatelský checklist, školící prezentace, texty oznámení",
+        "typicky_nalez": "Čl. 27 AI Act ukládá povinnost FRIA výhradně veřejnoprávním subjektům a soukromým subjektům poskytujícím veřejné služby. Dokument opakovaně uvádí FRIA jako povinnost pro soukromou firmu bez tohoto rozlišení, nebo ji naopak zcela opomíjí."
+      },
+      {
+        "vzor": "Přítomnost emoji, speciálních symbolů (✓, ✅, →, 🤖, ⚠) a neformálních frází ('Skvělá práce!', 'drakonické pokuty') v compliance dokumentaci",
+        "pocet_vyskytu": 8,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "compliance_report, akční plán, plán školení, texty oznámení, interní politika, plán řízení incidentů, transparentnost, školící prezentace",
+        "typicky_nalez": "Dokument obsahuje emoji symboly (✓, ✅, →, 🤖) v textu. Emoji jsou nevhodné pro právní compliance dokumentaci určenou k tisku a archivaci."
+      },
+      {
+        "vzor": "Zveřejnění citlivých informací o non-compliance (provozování zakázaných systémů, prodlení) v dokumentech určených pro širokou distribuci zaměstnancům nebo v interních směrnicích, které si může vyžádat dozorový orgán",
+        "pocet_vyskytu": 3,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "interní AI politika, školící prezentace (PPTX), compliance_report",
+        "typicky_nalez": "Prezentace pro běžné zaměstnance obsahuje informace o tom, že firma provozuje zakázané systémy a je v prodlení. V interní směrnici je explicitní přiznání 'Společnost se nachází v prodlení'. Tohle je obrovské právní a PR riziko."
+      }
+    ]
+  }
+}

@@ -1,0 +1,268 @@
+{
+  "generation": 16,
+  "company_name": "Neznámá firma",
+  "success_count": 8,
+  "error_count": 6,
+  "total_cost_usd": 2.1399,
+  "total_tokens": 340569,
+  "elapsed_s": 2793.8,
+  "documents": [
+    {
+      "template_key": "compliance_report",
+      "template_name": "Compliance Report",
+      "filename": "compliance_report_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/compliance_report_20260226_064455.pdf?",
+      "size_bytes": 64355,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:07.838954+00:00"
+    },
+    {
+      "template_key": "action_plan",
+      "template_name": "Akční plán",
+      "filename": "akcni_plan_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/akcni_plan_20260226_064455.pdf?",
+      "size_bytes": 63196,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:12.811304+00:00"
+    },
+    {
+      "template_key": "ai_register",
+      "template_name": "Registr AI systémů",
+      "filename": "registr_ai_systemu_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/registr_ai_systemu_20260226_064455.pdf?",
+      "size_bytes": 51244,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:16.143539+00:00"
+    },
+    {
+      "template_key": "training_outline",
+      "template_name": "Plán školení",
+      "filename": "skoleni_ai_literacy_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/skoleni_ai_literacy_20260226_064455.pdf?",
+      "size_bytes": 54969,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:19.581105+00:00"
+    },
+    {
+      "template_key": "transparency_human_oversight",
+      "template_name": "Transparentnost a lidský dohled",
+      "filename": "transparentnost_lidsky_dohled_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/transparentnost_lidsky_dohled_20260226_064455.pdf?",
+      "size_bytes": 55271,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:23.096745+00:00"
+    },
+    {
+      "template_key": "transparency_page",
+      "template_name": "Transparenční stránka (HTML)",
+      "filename": "transparencni_stranka_20260226_064455.html",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/transparencni_stranka_20260226_064455.html?",
+      "size_bytes": 22867,
+      "format": "html",
+      "generated_at": "2026-02-26T07:31:23.491146+00:00"
+    },
+    {
+      "template_key": "training_presentation",
+      "template_name": "Školení AI Literacy — Prezentace (PPTX)",
+      "filename": "skoleni_ai_literacy_20260226_064455.pptx",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/skoleni_ai_literacy_20260226_064455.pptx?",
+      "size_bytes": 77242,
+      "format": "pptx",
+      "generated_at": "2026-02-26T07:31:24.596433+00:00"
+    },
+    {
+      "template_key": "vop",
+      "template_name": "Všeobecné obchodní podmínky (VOP)",
+      "filename": "vop_aishield_20260226_064455.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/vop_aishield_20260226_064455.pdf?",
+      "size_bytes": 43739,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:31:26.254446+00:00",
+      "static": true
+    }
+  ],
+  "errors": [
+    "chatbot_notices: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWFxATsbQFy5LS9f8iU6'}",
+    "ai_policy: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWG6dnepBzs7r2JWXe87'}",
+    "incident_response_plan: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGEBQNgBNJ1yN9phWKx'}",
+    "dpia_template: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGKCGMUsjoUc5EXZK33'}",
+    "vendor_checklist: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGRm3jybDBG7pf9itsB'}",
+    "monitoring_plan: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGWnGJTv2gGDmMdsx2t'}"
+  ],
+  "pipeline_log": [
+    {
+      "step": "data_loaded",
+      "company": "Neznámá firma",
+      "findings": 0,
+      "declared_systems": 0,
+      "overall_risk": "minimal",
+      "context_chars": 589
+    },
+    {
+      "doc_key": "compliance_report",
+      "doc_name": "Compliance Report",
+      "doc_index": "1/13",
+      "draft_chars": 18467,
+      "final_chars": 18355,
+      "eu_score": 7,
+      "client_score": 6,
+      "cost_usd": 0.2987,
+      "tokens": 51106,
+      "time_s": 346.5,
+      "m1_time": 98.5,
+      "m2_time": 100.8,
+      "m3_time": 44.2,
+      "m4_time": 103.0
+    },
+    {
+      "doc_key": "action_plan",
+      "doc_name": "Akční plán",
+      "doc_index": "2/13",
+      "draft_chars": 17482,
+      "final_chars": 19808,
+      "eu_score": 5,
+      "client_score": 7,
+      "cost_usd": 0.3023,
+      "tokens": 50772,
+      "time_s": 344.4,
+      "m1_time": 116.7,
+      "m2_time": 100.2,
+      "m3_time": 37.9,
+      "m4_time": 89.6
+    },
+    {
+      "doc_key": "ai_register",
+      "doc_name": "Registr AI systémů",
+      "doc_index": "3/13",
+      "draft_chars": 15934,
+      "final_chars": 11820,
+      "eu_score": 7,
+      "client_score": 5,
+      "cost_usd": 0.257,
+      "tokens": 45061,
+      "time_s": 260.5,
+      "m1_time": 86.6,
+      "m2_time": 90.4,
+      "m3_time": 30.3,
+      "m4_time": 53.2
+    },
+    {
+      "doc_key": "training_outline",
+      "doc_name": "Plán školení",
+      "doc_index": "4/13",
+      "draft_chars": 16937,
+      "final_chars": 16468,
+      "eu_score": 5,
+      "client_score": 5,
+      "cost_usd": 0.2743,
+      "tokens": 47280,
+      "time_s": 324.2,
+      "m1_time": 90.8,
+      "m2_time": 91.4,
+      "m3_time": 35.2,
+      "m4_time": 106.8
+    },
+    {
+      "doc_key": "chatbot_notices",
+      "doc_name": "Texty oznámení",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWFxATsbQFy5LS9f8iU6'}",
+      "time_s": 78.9
+    },
+    {
+      "doc_key": "ai_policy",
+      "doc_name": "Interní AI politika",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWG6dnepBzs7r2JWXe87'}",
+      "time_s": 114.8
+    },
+    {
+      "doc_key": "incident_response_plan",
+      "doc_name": "Plán řízení incidentů",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGEBQNgBNJ1yN9phWKx'}",
+      "time_s": 102.4
+    },
+    {
+      "doc_key": "dpia_template",
+      "doc_name": "Posouzení dopadů (DPIA/FRIA)",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGKCGMUsjoUc5EXZK33'}",
+      "time_s": 68.0
+    },
+    {
+      "doc_key": "vendor_checklist",
+      "doc_name": "Dodavatelský checklist",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGRm3jybDBG7pf9itsB'}",
+      "time_s": 89.1
+    },
+    {
+      "doc_key": "monitoring_plan",
+      "doc_name": "Monitoring plán",
+      "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-03-01 at 00:00 UTC.'}, 'request_id': 'req_011CYWGWnGJTv2gGDmMdsx2t'}",
+      "time_s": 68.1
+    },
+    {
+      "doc_key": "transparency_human_oversight",
+      "doc_name": "Transparentnost a lidský dohled",
+      "doc_index": "11/13",
+      "draft_chars": 14472,
+      "final_chars": 15643,
+      "eu_score": 6,
+      "client_score": 8,
+      "cost_usd": 0.2609,
+      "tokens": 44439,
+      "time_s": 268.4,
+      "m1_time": 59.1,
+      "m2_time": 87.1,
+      "m3_time": 38.8,
+      "m4_time": 83.4
+    },
+    {
+      "doc_key": "transparency_page",
+      "doc_name": "Transparenční stránka (HTML)",
+      "doc_index": "12/13",
+      "draft_chars": 18746,
+      "final_chars": 21979,
+      "eu_score": 5,
+      "client_score": 8,
+      "cost_usd": 0.2903,
+      "tokens": 49559,
+      "time_s": 311.9,
+      "m1_time": 82.9,
+      "m2_time": 86.1,
+      "m3_time": 35.6,
+      "m4_time": 107.4
+    },
+    {
+      "doc_key": "training_presentation",
+      "doc_name": "Školící prezentace (PPTX)",
+      "doc_index": "13/13",
+      "draft_chars": 16946,
+      "final_chars": 14712,
+      "eu_score": 6,
+      "client_score": 5,
+      "cost_usd": 0.2889,
+      "tokens": 52352,
+      "time_s": 321.8,
+      "m1_time": 99.6,
+      "m2_time": 102.1,
+      "m3_time": 39.5,
+      "m4_time": 80.7
+    },
+    {
+      "step": "m5_optimization",
+      "status": "optimized",
+      "version": 2,
+      "rules_added": 5,
+      "avg_score": 6.07,
+      "converged": false,
+      "cost_usd": 0.1676,
+      "time_s": 67.8
+    },
+    {
+      "step": "completed",
+      "total_documents": 8,
+      "total_errors": 6,
+      "total_cost_usd": 2.1399,
+      "total_tokens": 340569,
+      "total_time_s": 2792.8
+    }
+  ]
+}

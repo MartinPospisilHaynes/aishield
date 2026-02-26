@@ -1,0 +1,542 @@
+<h1>Dodavatelský checklist — hodnocení poskytovatelů AI</h1>
+
+<div class='info'>
+  Tento checklist je součástí Compliance Kitu. Použijte ho pro systematické hodnocení KAŽDÉHO dodavatele AI systémů ve vaší firmě. Dokument slouží k prokazatelnému plnění povinností nasazovatele dle Nařízení (EU) 2024/1689 (AI Act).<br><br>
+  <strong>Praktická poznámka:</strong> Údaje označené v tomto dokumentu jako [K DOPLNĚNÍ KLIENTEM] si průběžně doplňujte do přiloženého interaktivního Excel registru AI systémů, který je součástí vašeho Kitu. Toto PDF slouží jako metodika a referenční příručka.
+</div>
+
+<h2>1. Úvod</h2>
+<p>Společnost Martin Haynes vystupuje v kontextu většiny využívaných systémů (např. ChatGPT, LMC, Zendesk) v roli <strong>nasazovatele</strong> (deployer) dle čl. 3 odst. 4 AI Act. V případě vlastního vývoje („vlastní kód“, „vlastní html“) nebo integrace modelů do vlastních produktů však přebíráte roli <strong>poskytovatele</strong> (provider) dle čl. 3 odst. 2 se všemi regulatorními dopady.</p>
+
+<p>Dle čl. 26 AI Act nesou nasazovatelé odpovědnost za to, že systémy používají v souladu s návodem k použití od poskytovatele, a musí zajistit lidský dohled. Aby bylo možné tyto povinnosti plnit, je nezbytné provést důkladné due diligence (prověrku) všech dodavatelů AI technologií. Tento checklist vám poskytuje strukturovaný rámec pro hodnocení dodavatelského řetězce, ověření smluvních podmínek a zajištění souladu s požadavky na transparentnost, bezpečnost a zpracování dat.</p>
+
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>36+</div>
+    <div class='metric-label'>Identifikovaných AI systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>17</div>
+    <div class='metric-label'>Vysoce rizikových systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>3</div>
+    <div class='metric-label'>Zakázané praktiky (Kritické!)</div>
+  </div>
+</div>
+
+<h2>2. Přehled dodavatelů AI</h2>
+<p>Níže je uveden konsolidovaný přehled klíčových dodavatelů a systémů identifikovaných ve vaší infrastruktuře. Tabulka slouží jako výchozí bod pro smluvní revizi.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dodavatel / Systém</th>
+      <th>Kategorie</th>
+      <th>Riziko dle AI Act</th>
+      <th>Smluvní vztah</th>
+      <th>DPA (GDPR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>OpenAI (ChatGPT, DALL-E, Sora)</td>
+      <td>Generativní AI (GPAI)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Anthropic (Claude)</td>
+      <td>Generativní AI (GPAI)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Google (Gemini, VEO3)</td>
+      <td>Generativní AI (GPAI)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Mistral</td>
+      <td>Generativní AI (GPAI)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>AI API Proxy (geminiproxy)</td>
+      <td>GPAI Integrace</td>
+      <td><span class='badge badge-high'>SPECIFICKÉ</span> (čl. 51)</td>
+      <td>Interní / API dodavatel</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>LMC / Jobs.cz / Teamio / Sloneek</td>
+      <td>HR a nábor</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span> (Příloha III)</td>
+      <td>Standardní B2B smlouva</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>CRIF / Bisnode / Scoring Solutions</td>
+      <td>Kreditní scoring</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span> (Příloha III)</td>
+      <td>Standardní B2B smlouva</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Monitorování zaměstnanců (GPS, kamery, obrazovka)</td>
+      <td>Pracoviště</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span> (Příloha III)</td>
+      <td>Různí dodavatelé</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Guidewire / NESS / ČPP</td>
+      <td>Pojišťovnictví</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span> (Příloha III)</td>
+      <td>B2B / Enterprise</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>pospa ing.</td>
+      <td>Kritická infrastruktura</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span> (Příloha III)</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>HeyGen / Synthesia / ElevenLabs</td>
+      <td>Syntetický obsah</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span> (čl. 50)</td>
+      <td>SaaS předplatné</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Zendesk / Freshdesk / Intercom</td>
+      <td>Zákaznická podpora</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>SaaS předplatné</td>
+      <td>[K DOPLNĚNÍ KLIENTEM]</td>
+    </tr>
+    <tr>
+      <td>Vlastní vývoj („vlastní html“)</td>
+      <td>Sociální scoring</td>
+      <td><strong>ZAKÁZÁNO</strong> (čl. 5)</td>
+      <td>Interní vývoj</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Vlastní vývoj („vlastní kód“)</td>
+      <td>Rozpoznávání emocí / Biometrie</td>
+      <td><strong>ZAKÁZÁNO</strong> (čl. 5)</td>
+      <td>Interní vývoj / Subdodávka</td>
+      <td>N/A</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Hodnocení jednotlivých dodavatelů</h2>
+<p>Pro každého klíčového dodavatele nebo kategorii systémů proveďte následující hodnocení.</p>
+
+<h3>3.1 Hodnocení: Dodavatelé HR a náborových systémů (LMC, Teamio, Sloneek, LinkedIn)</h3>
+<p>Tyto systémy spadají pod vysoce rizikovou kategorii (Příloha III, bod 4). Plná účinnost pravidel nastává 2. 8. 2026. <em>Poznámka: Pro systémy dle Přílohy I (bezpečnostní komponenty) platí prodloužená lhůta do 2. 8. 2027 dle čl. 111 odst. 3 AI Act.</em></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Transparentnost</strong></td>
+      <td>Poskytuje dodavatel technickou dokumentaci a návod k použití dle čl. 13 AI Act?</td>
+      <td>Vysoké</td>
+    </tr>
+    <tr>
+      <td><strong>Lidský dohled</strong></td>
+      <td>Umožňuje systém efektivní lidský dohled (čl. 14) a přepsání rozhodnutí AI o kandidátovi?</td>
+      <td>Vysoké</td>
+    </tr>
+    <tr>
+      <td><strong>FRIA (čl. 27)</strong></td>
+      <td>Poskytne dodavatel podklady pro posouzení dopadu na základní práva (FRIA)?</td>
+      <td>Vysoké</td>
+    </tr>
+    <tr>
+      <td><strong>AI Gramotnost</strong></td>
+      <td>Poskytuje dodavatel školení pro operátory systému k naplnění čl. 4 AI Act?</td>
+      <td>Střední</td>
+    </tr>
+    <tr>
+      <td><strong>EU AI Act compliance</strong></td>
+      <td>Zavazuje se dodavatel k provedení posouzení shody (Conformity Assessment) do srpna 2026?</td>
+      <td>Kritické</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Hodnocení: Dodavatelé finančního a kreditního scoringu (CRIF, Bisnode)</h3>
+<p>Systémy pro hodnocení úvěruschopnosti jsou vysoce rizikové (Příloha III, bod 5b). Vyžadují striktní audit trail a možnost vysvětlení rozhodnutí.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Logování</strong></td>
+      <td>Umožňuje systém export logů, abyste jako nasazovatel splnili povinnost uchovávat je 6 měsíců (čl. 19 odst. 1)?</td>
+      <td>Vysoké</td>
+    </tr>
+    <tr>
+      <td><strong>Vysvětlitelnost</strong></td>
+      <td>Poskytuje systém dostatek informací, abyste mohli zákazníkovi vysvětlit důvod zamítnutí?</td>
+      <td>Vysoké</td>
+    </tr>
+    <tr>
+      <td><strong>FRIA (čl. 27)</strong></td>
+      <td>Poskytne dodavatel součinnost pro posouzení dopadu na základní práva?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.3 Hodnocení: Poskytovatelé Generativní AI (OpenAI, Anthropic, Google, Mistral)</h3>
+<p>Ačkoliv jde o systémy s omezeným rizikem, představují masivní riziko pro únik firemního know-how. Mistral jako evropský subjekt navíc podléhá přímé regulaci AI Act.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trénování</strong></td>
+      <td>Trénuje se model na datech naší firmy? Existuje explicitní opt-out ve smlouvě?</td>
+      <td>Kritické</td>
+    </tr>
+    <tr>
+      <td><strong>Data</strong></td>
+      <td>Kde se data fyzicky zpracovávají (EU/USA)? Jsou implementovány Standardní smluvní doložky (SCC)?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.4 Hodnocení: GPAI Integrace (AI API Proxy / geminiproxy)</h3>
+<p>Pokud integrujete LLM API do vlastních produktů, stáváte se tzv. downstream providerem. <strong>Pozor: Povinnosti dle čl. 51-54 AI Act platí již od 2. 8. 2025! Jste v prodlení.</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro interní audit / dodavatele API</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Klasifikace</strong></td>
+      <td>Spadáme při integraci tohoto API do role poskytovatele dle čl. 51 AI Act?</td>
+      <td>Kritické</td>
+    </tr>
+    <tr>
+      <td><strong>Dokumentace</strong></td>
+      <td>Máme od původního poskytovatele modelu dokumentaci vyžadovanou čl. 53?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.5 Hodnocení: Systémy monitorování zaměstnanců</h3>
+<p>Sledování obrazovky, GPS, kamerový dohled s AI a analýza emailů. Tyto systémy jsou vysoce rizikové (Příloha III, bod 4) a mohou obsahovat zakázané prvky.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele / interní audit</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Zakázané funkce</strong></td>
+      <td>Obsahuje systém biometrii v reálném čase nebo rozpoznávání emocí (čl. 5)?</td>
+      <td>Kritické</td>
+    </tr>
+    <tr>
+      <td><strong>DPIA (GDPR)</strong></td>
+      <td>Bylo provedeno posouzení vlivu na ochranu osobních údajů (čl. 35 GDPR)?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.6 Hodnocení: Pojišťovnictví a Kritická infrastruktura (Guidewire, NESS, pospa ing.)</h3>
+<p>Vysoce rizikové systémy s plnou účinností od 2. 8. 2026. Pro kritickou infrastrukturu platí specifická pravidla.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Registrace</strong></td>
+      <td>Je systém připraven na registraci u NÚKIB (čl. 49 odst. 4) namísto EU databáze?</td>
+      <td>Kritické</td>
+    </tr>
+    <tr>
+      <td><strong>Posouzení shody</strong></td>
+      <td>Kdy dodavatel dokončí posouzení shody dle čl. 43 AI Act?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.7 Hodnocení: Tvorba syntetického obsahu (HeyGen, Synthesia, ElevenLabs)</h3>
+<p>Systémy generující deepfakes a syntetický hlas podléhají přísné transparenci.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka pro dodavatele</th>
+      <th>Riziko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Označování</strong></td>
+      <td>Poskytuje systém metadata a technické standardy (watermarking) pro označování obsahu dle čl. 50 odst. 2 a 4?</td>
+      <td>Vysoké</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class='no-break'>
+<h2>4. Vzorové dotazy pro dodavatele</h2>
+<p>Při komunikaci s dodavateli použijte následující sadu otázek. Tyto otázky vám pomohou získat informace nezbytné pro vaši interní dokumentaci.</p>
+
+<ol>
+  <li><strong>Jaká je vaše klasifikace systému dle EU AI Act?</strong><br>
+  <em>Proč se ptát:</em> Potřebujete vědět, zda dodavatel považuje systém za vysoce rizikový (čl. 6). Pokud se vaše názory liší, nesete riziko vy.</li>
+  
+  <li><strong>Kdy plánujete dokončit posouzení shody (Conformity Assessment)?</strong><br>
+  <em>Proč se ptát:</em> U vysoce rizikových systémů to musí dodavatel stihnout do 2. 8. 2026.</li>
+  
+  <li><strong>Jsou data našich zákazníků/zaměstnanců používána k dotrénování vašich modelů?</strong><br>
+  <em>Proč se ptát:</em> Zásadní pro GDPR a ochranu obchodního tajemství. Vyžadujte možnost opt-outu.</li>
+  
+  <li><strong>Poskytnete nám návod k použití dle článku 13 AI Act?</strong><br>
+  <em>Proč se ptát:</em> Jako nasazovatel máte zákonnou povinnost používat systém výhradně v souladu s tímto návodem.</li>
+  
+  <li><strong>Jak je v systému technicky zajištěna možnost lidského dohledu (čl. 14)?</strong><br>
+  <em>Proč se ptát:</em> Musíte mít možnost rozhodnutí AI ignorovat, přepsat nebo systém zcela zastavit.</li>
+  
+  <li><strong>Umožňuje systém export logů pro splnění naší povinnosti dle čl. 19 odst. 1 AI Act?</strong><br>
+  <em>Proč se ptát:</em> Jako nasazovatel musíte uchovávat logy 6 měsíců. Dodavatel má vlastní povinnost logování dle čl. 12, kterou můžete využít jako argument pro zajištění technického řešení.</li>
+  
+  <li><strong>Jaký je proces hlášení závažných incidentů (čl. 73)?</strong><br>
+  <em>Proč se ptát:</em> Pokud AI systém způsobí škodu, musíte to nahlásit do 15 dnů.</li>
+  
+  <li><strong>Kde jsou fyzicky uložena data a probíhá inference modelu?</strong><br>
+  <em>Proč se ptát:</em> Nutné pro posouzení předávání dat do třetích zemí (GDPR).</li>
+  
+  <li><strong>Byl systém testován na bias a diskriminaci? Můžete doložit výsledky?</strong><br>
+  <em>Proč se ptát:</em> Zejména u HR a scoringových systémů nesete odpovědnost za to, že systém nediskriminuje.</li>
+  
+  <li><strong>Jaká je vaše exit strategie? Jak můžeme exportovat naše data?</strong><br>
+  <em>Proč se ptát:</em> Prevence vendor lock-in.</li>
+
+  <li><strong>Jaký je váš postup pro příjem oznámení od nás jako nasazovatelů dle čl. 26 odst. 5 AI Act?</strong><br>
+  <em>Proč se ptát:</em> Máte zákonnou povinnost informovat dodavatele, pokud zjistíte, že systém představuje riziko.</li>
+</ol>
+</div>
+
+<div class='callout'>
+  <strong>Vzorový email dodavateli (k okamžitému použití):</strong><br><br>
+  Vážený poskytovateli,<br><br>
+  v rámci plnění našich zákonných povinností vyplývajících z Nařízení (EU) 2024/1689 (EU AI Act) provádíme audit našich dodavatelů AI technologií.<br><br>
+  Jelikož využíváme váš systém [DOPLŇTE NÁZEV SYSTÉMU], žádáme vás o zodpovězení následujících dotazů:<br>
+  1. Jak klasifikujete váš systém dle AI Act (např. vysoce rizikový dle Přílohy III)?<br>
+  2. Kdy plánujete poskytnout technickou dokumentaci a návod k použití v souladu s čl. 13 AI Act?<br>
+  3. Potvrzujete, že data naší společnosti nejsou využívána k trénování vašich modelů bez našeho explicitního souhlasu?<br>
+  4. Jakým způsobem systém umožňuje efektivní lidský dohled (čl. 14) z naší strany?<br>
+  5. Jaký je váš mechanismus pro příjem našich oznámení o rizicích dle čl. 26 odst. 5 AI Act?<br><br>
+  Prosíme o zaslání odpovědí do 14 dnů. Tyto informace jsou nezbytné pro pokračování naší smluvní spolupráce.<br><br>
+  S pozdravem,<br>
+  Martin Haynes, Jednatel
+  <hr>
+  <strong>English Version (pro zahraniční dodavatele):</strong><br><br>
+  Dear Provider,<br><br>
+  As part of our legal obligations under the Regulation (EU) 2024/1689 (EU AI Act), we are conducting an audit of our AI technology suppliers.<br><br>
+  Since we use your system [INSERT SYSTEM NAME], we kindly request you to answer the following questions:<br>
+  1. How do you classify your system under the AI Act (e.g., high-risk under Annex III)?<br>
+  2. When do you plan to provide the technical documentation and instructions for use in accordance with Art. 13 of the AI Act?<br>
+  3. Can you confirm that our company's data is not used to train your models without our explicit consent?<br>
+  4. How does the system technically enable effective human oversight (Art. 14) on our end?<br>
+  5. What is your mechanism for receiving our risk notifications under Art. 26(5) of the AI Act?<br><br>
+  Please provide your responses within 14 days. This information is essential for the continuation of our contractual relationship.<br><br>
+  Best regards,<br>
+  Martin Haynes, CEO
+</div>
+
+<h3>Plán B: Co dělat, když dodavatel nespolupracuje?</h3>
+<p>Pokud velký hráč (např. Google, LMC) neodpoví nebo vás odkáže na své standardní podmínky, postupujte následovně: <strong>1. Zdokumentujte snahu:</strong> Uložte si odeslaný e-mail a případnou zamítavou odpověď do vašeho registru AI systémů. Prokazujete tím snahu o due diligence. <strong>2. Prostudujte veřejné zdroje:</strong> Většina gigantů publikuje své AI Act compliance plány na webu (tzv. Trust Center). Stáhněte si je. <strong>3. Zhodnoťte riziko:</strong> Pokud dodavatel vysoce rizikového systému (např. HR) nedodá posouzení shody do srpna 2026, <em>musíte</em> dle zákona systém přestat používat. Začněte si proto již nyní mapovat alternativní dodavatele na trhu pro případ, že stávající dodavatel selže.</p>
+
+<h2>5. Smluvní požadavky</h2>
+<p>Při sjednávání nových smluv nebo revizi stávajících musíte zajistit, aby smlouvy obsahovaly následující ustanovení (čl. 25 a 26 AI Act):</p>
+
+<ul>
+  <li><strong>DPA (Data Processing Agreement):</strong> Smlouva o zpracování osobních údajů dle čl. 28 GDPR je absolutní nutností.</li>
+  <li><strong>Zákaz trénování na datech klienta:</strong> Smlouva musí explicitně zakazovat využívat vaše firemní data k trénování modelů dodavatele.</li>
+  <li><strong>FRIA součinnost:</strong> Dodavatel je povinen poskytnout informace nezbytné pro provedení posouzení dopadu na základní práva dle čl. 27 AI Act.</li>
+  <li><strong>Oznamovací povinnost:</strong> Smlouva musí obsahovat mechanismus pro plnění povinnosti nasazovatele dle čl. 26 odst. 5 AI Act (postup pro oznámení neshody dodavateli).</li>
+  <li><strong>AI Gramotnost:</strong> Závazek dodavatele poskytnout školení nebo dokumentaci pro vaše zaměstnance k naplnění čl. 4 AI Act.</li>
+  <li><strong>Odpovědnost za škodu a chyby AI:</strong> Jasné limity odpovědnosti za diskriminaci nebo chybné výstupy.</li>
+</ul>
+
+<h2>6. Akční doporučení a Krizové řízení</h2>
+
+<div class='highlight'>
+  <strong>Kritické varování: Zakázané systémy (čl. 5)</strong><br>
+  Termín pro ukončení zakázaných praktik vypršel dne <strong>2. 2. 2025</strong>. Vaše firma je aktuálně v prodlení a vystavuje se riziku pokuty až 35 mil. EUR nebo 7 % obratu.
+  <ul>
+    <li>→ <strong>Krizový postup (Odpověď na dotaz klienta):</strong> Potichu smazat kód nestačí. Musíte provést prokazatelné a dokumentované odpojení systémů „vlastní html“ (sociální scoring) a „vlastní kód“ (rozpoznávání emocí). Vytvořte interní protokol o trvalém ukončení provozu s datem a podpisem jednatele.</li>
+    <li>→ <strong>Právní kroky:</strong> Okamžitě kontaktujte právního zástupce pro strategii minimalizace dopadů tohoto ročního prodlení. Proaktivní hlášení úřadům bez předchozí právní konzultace nedoporučujeme, ale musíte mít připravenou defenzivní dokumentaci (audit trail o vypnutí).</li>
+  </ul>
+</div>
+
+<div class='warning'>
+  <strong>Varování: Prošlý deadline pro GPAI Integraci</strong><br>
+  Váš systém „AI API Proxy (geminiproxy)“ spadá pod pravidla pro modely pro obecné účely (čl. 51-54). Tento deadline vypršel <strong>2. 8. 2025</strong>. Okamžitě ověřte plnění transparenčních povinností.
+</div>
+
+<h3>Rozpad úkolů dle role:</h3>
+
+<p><strong>Zajištěno v rámci Compliance Kitu (AIshield dodal):</strong></p>
+<ul>
+  <li>✓ Tento hodnotící checklist a metodika.</li>
+  <li>✓ Interaktivní Excel registr AI systémů.</li>
+  <li>✓ Vzorové texty pro transparenční oznámení.</li>
+</ul>
+
+<p><strong>Vyžaduje akci klienta (Martin Haynes / Odpovědná osoba):</strong></p>
+<ul>
+  <li>→ <strong>Odeslat dotazníky dodavatelům:</strong> Použijte vzorový email a rozešlete ho poskytovatelům HR (LMC, Sloneek) a scoringových systémů (CRIF).</li>
+  <li>→ <strong>Revize licencí Generativní AI:</strong> Zakažte používání bezplatných verzí ChatGPT/Claude pro firemní data a přejděte na Enterprise licence, kde je garantován opt-out z trénování.</li>
+  <li>→ <strong>Příprava na srpen 2026:</strong> U systémů kritické infrastruktury (pospa ing.) a pojišťovnictví (Guidewire, NESS) zahajte jednání s dodavateli. Do termínu zbývá cca 5 měsíců. Připravte se na registraci u NÚKIB.</li>
+</ul>
+
+<h2>7. Kontrolní tabulka (Master Checklist)</h2>
+<p>Tuto tabulku průběžně aktualizujte na základě odpovědí od vašich dodavatelů.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dodavatel / Systém</th>
+      <th>Kategorie rizika</th>
+      <th>Všechna kritéria splněna?</th>
+      <th>Akce potřeba?</th>
+      <th>Deadline</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Vlastní html (Sociální scoring)</td>
+      <td>Zakázáno</td>
+      <td>NE</td>
+      <td>Zdokumentovat trvalé vypnutí, kontaktovat právníka</td>
+      <td><strong>Ihned (Vypršelo 2. 2. 2025)</strong></td>
+    </tr>
+    <tr>
+      <td>Vlastní kód (Rozpoznávání emocí)</td>
+      <td>Zakázáno</td>
+      <td>NE</td>
+      <td>Zdokumentovat trvalé vypnutí, kontaktovat právníka</td>
+      <td><strong>Ihned (Vypršelo 2. 2. 2025)</strong></td>
+    </tr>
+    <tr>
+      <td>AI API Proxy (geminiproxy)</td>
+      <td>GPAI Integrace</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Ověřit dokumentaci dle čl. 53</td>
+      <td><strong>Ihned (Vypršelo 2. 8. 2025)</strong></td>
+    </tr>
+    <tr>
+      <td>LMC / Teamio / Sloneek</td>
+      <td>Vysoce rizikové</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Odeslat dotazník, vyžádat DPA a FRIA</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>CRIF / Bisnode</td>
+      <td>Vysoce rizikové</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Ověřit logování a vysvětlitelnost</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>Guidewire / NESS / ČPP</td>
+      <td>Vysoce rizikové</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Vyžádat posouzení shody</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>pospa ing. (Kritická infr.)</td>
+      <td>Vysoce rizikové</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Příprava na registraci u NÚKIB</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>Monitorování zaměstnanců</td>
+      <td>Vysoce rizikové</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Provést DPIA, vyloučit biometrii</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>HeyGen / Synthesia</td>
+      <td>Omezené riziko</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Zajistit označování syntetického obsahu</td>
+      <td>2. 8. 2026</td>
+    </tr>
+    <tr>
+      <td>OpenAI / Anthropic / Mistral</td>
+      <td>Omezené riziko</td>
+      <td>[K DOPLNĚNÍ]</td>
+      <td>Přechod na Enterprise licence (opt-out)</td>
+      <td>Průběžně</td>
+    </tr>
+  </tbody>
+</table>
+
+<br><br>
+<div class='sig-block'>
+  <div class='sig-field'>Za firmu Martin Haynes<br><br>_______________________<br>Martin Haynes, Jednatel</div>
+  <div class='sig-field'>Za AIshield.cz<br><br>_______________________<br>Oddělení AI Compliance</div>
+</div>

@@ -1,0 +1,61 @@
+# ============================================
+# AIshield.cz — Python dependencies
+# ============================================
+
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Database
+supabase==2.10.0
+
+# AI
+anthropic>=0.79.0
+
+# Web scraping
+playwright==1.49.0
+
+# PDF generation
+weasyprint==62.3
+
+# Image processing
+pillow==11.0.0
+
+# Email
+resend==2.5.1
+
+# HTTP client
+httpx>=0.26.0,<0.28
+
+# Payment gateways
+stripe>=8.0.0
+
+# QR code generation (payment QR codes in emails)
+qrcode[pil]==8.0
+
+# Job queue (async background tasks)
+arq==0.26.1
+
+# Scheduling
+apscheduler==3.10.4
+
+# PPTX generation
+python-pptx==1.0.2
+
+# Retry logic
+tenacity==9.0.0
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Data validation
+pydantic==2.10.0
+pydantic-settings==2.6.0
+
+# Security
+python-jose[cryptography]==3.3.0
+cryptography>=42.0.0
+passlib[bcrypt]==1.7.4
+
+# CORS
+python-multipart==0.0.12

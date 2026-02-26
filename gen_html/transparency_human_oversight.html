@@ -1,0 +1,242 @@
+<h1>Transparentnost a lidský dohled nad AI systémy</h1>
+
+<div class='info'>
+  Tento dokument stanovuje závazná pravidla a postupy pro zajištění transparentnosti a lidského dohledu nad systémy umělé inteligence v organizaci Neznámá firma. Dokument je nedílnou součástí interní compliance dokumentace k Nařízení (EU) 2024/1689 (AI Act).
+  <br><br>
+  <strong>Důležité upozornění pro aktuální stav:</strong> Jelikož audit ze dne 26. 02. 2026 neidentifikoval ve vaší organizaci žádné aktivní AI systémy, slouží tento dokument primárně jako závazný rámec pro budoucnost. Sekce vyžadující doplnění konkrétních údajů o systémech ponechte prázdné, dokud nedojde k nákupu a nasazení prvního AI řešení. Nyní dokument pouze schvalte, uložte a zaměřte se na splnění povinnosti proškolit zaměstnance.
+</div>
+
+<h2>1. Právní rámec</h2>
+
+<p>Zajištění transparentnosti a adekvátního lidského dohledu představuje jeden ze základních pilířů Nařízení o umělé inteligenci (AI Act). Pro vaši organizaci, která v dodavatelském řetězci AI vystupuje primárně v roli <strong>nasazovatele</strong> (deployer, dle čl. 3 odst. 4), vyplývají z nařízení specifické povinnosti. Tento rámec je nezbytný pro jakoukoli budoucí implementaci, ke které může dojít v nadcházejících měsících před plnou účinností nařízení (2. 8. 2026).</p>
+
+<p>Klíčové články AI Act upravující tuto oblast:</p>
+
+<ul>
+  <li><strong>Čl. 13 a Čl. 26 odst. 1 (Technická dokumentace):</strong> Čl. 13 ukládá poskytovatelům (vývojářům) povinnost navrhnout vysoce rizikové AI systémy transparentně a zpracovat k nim dokumentaci. Vy jako nasazovatel máte dle čl. 26 odst. 1 povinnost tuto dokumentaci (návod k použití) od dodavatele vyžadovat a striktně se jí řídit.</li>
+  <li><strong>Čl. 14 (Lidský dohled):</strong> Vysoce rizikové systémy musí být navrženy tak, aby na ně mohly dohlížet fyzické osoby. Vaší povinností jako nasazovatele (čl. 26 odst. 2) je zajistit, aby tento dohled vykonávaly osoby s odpovídající kvalifikací. Dohled se dělí do tří režimů: <em>human-in-the-loop</em> (zásah před každým rozhodnutím), <em>human-on-the-loop</em> (monitoring s možností zásahu) a <em>human-in-command</em> (celkový dohled a pravomoc systém odstavit).</li>
+  <li><strong>Čl. 50 (Povinnosti transparentnosti):</strong> Ukládá povinnost informovat fyzické osoby, že komunikují s AI systémem (např. chatboty). Tato povinnost dopadá přímo na vás jako provozovatele daného rozhraní.</li>
+  <li><strong>Čl. 51–56 (Modely s obecným účelem - GPAI):</strong> Pokud do procesů integrujete modely jako ChatGPT nebo Copilot, dodavatelé mají povinnosti dle čl. 53 a 55. Pro vás jako nasazovatele je klíčový <strong>čl. 52</strong>, který vám ukládá povinnost zřetelně označovat AI-generovaný syntetický obsah (např. deepfakes, syntetické texty). Tyto povinnosti jsou účinné již od 2. 8. 2025.</li>
+  <li><strong>Čl. 27 (Posouzení dopadu na základní práva - FRIA):</strong> Pokud jste veřejným subjektem nebo působíte ve specifických sektorech (např. bankovnictví, pojišťovnictví), máte před nasazením vysoce rizikového systému povinnost provést posouzení jeho dopadu na základní práva.</li>
+  <li><strong>Čl. 49 odst. 2 (Registrace v EU databázi):</strong> Podmíněná povinnost pro nasazovatele, kteří jsou veřejnými subjekty, registrovat vysoce rizikové AI systémy v EU databázi před jejich nasazením.</li>
+  <li><strong>Čl. 73 (Hlášení incidentů):</strong> Nasazovatel má povinnost ohlásit závažné incidenty orgánu dozoru nad trhem, a to nejpozději do 15 dnů od zjištění incidentu.</li>
+</ul>
+
+<div class='warning'>
+  Vzhledem k tomu, že aktuálně není určena odpovědná osoba za AI a neexistuje plán řízení incidentů, je nezbytné tyto procesy nastavit před nasazením jakéhokoliv AI systému. Plná účinnost většiny povinností nastává 2. 8. 2026.
+</div>
+
+<h2>2. Přehled požadavků na transparentnost</h2>
+
+<p>Následující tabulka mapuje požadavky na transparentnost a lidský dohled pro systémy v organizaci. Vzhledem k absenci aktivních systémů obsahuje tabulka zástupné pole pro budoucí systémy a jeden hypotetický příklad pro ilustraci metodiky.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Riziková kategorie (dle čl. 6)</th>
+      <th>AI systém</th>
+      <th>Čl. 50 a 52 (Informování uživatele)</th>
+      <th>Dokumentace od dodavatele (čl. 26 odst. 1)</th>
+      <th>Režim lidského dohledu (čl. 14)</th>
+      <th>Požadovaná opatření</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>[DOPLNÍ SE PŘI NASAZENÍ]</td>
+      <td>[DOPLNÍ SE PŘI NASAZENÍ: Název budoucího systému]</td>
+      <td>[ANO/NE]</td>
+      <td>[ANO/NE]</td>
+      <td>[in-the-loop / on-the-loop / in-command]</td>
+      <td>[DOPLNÍ SE PŘI NASAZENÍ: Specifikace opatření]</td>
+    </tr>
+    <tr>
+      <td><em>Minimální riziko</em></td>
+      <td><em>Hypotetický příklad: Zákaznický AI Chatbot na webu</em></td>
+      <td><strong>ANO</strong> (Povinné)</td>
+      <td>NE (Není high-risk)</td>
+      <td>Doporučeno: <em>human-on-the-loop</em></td>
+      <td>Viditelný disclaimer v okně chatu; možnost přepojení na živého operátora.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Transparenční opatření — Šablona pro budoucí systémy</h2>
+
+<div class='info'>
+  Tato sekce definuje konkrétní kroky pro zajištění transparentnosti vůči koncovým uživatelům a zaměstnancům. <strong>Nyní ji nevyplňujte.</strong> Pro každý nově zaváděný systém vytvořte samostatnou podsekce podle níže uvedeného vzoru až v okamžiku jeho nasazení.
+</div>
+
+<h3>3.1 Transparentnost: [DOPLNÍ SE PŘI NASAZENÍ: Název AI systému]</h3>
+
+<p>Při nasazení tohoto systému je nutné zajistit plný soulad s čl. 50 a čl. 52 AI Act. Uživatel musí být prokazatelně a srozumitelně informován, že interaguje s umělou inteligencí nebo konzumuje syntetický obsah.</p>
+
+<ul>
+  <li><strong>Potřebná oznámení:</strong> Použijte standardizované formulace z dokumentu <em>Texty oznámení pro AI systémy</em> (dodáno v Compliance Kitu). Příklad: „Tento text byl vygenerován systémem umělé inteligence a nebyl zkontrolován člověkem.“</li>
+  <li><strong>Implementace oznámení:</strong> Oznámení musí být umístěno v uživatelském rozhraní (UI) tak, aby bylo nepřehlédnutelné. [DOPLNÍ SE PŘI NASAZENÍ: Specifikujte přesné umístění, např. hlavička chatovacího okna].</li>
+  <li><strong>Technická dokumentace:</strong> Vyžádejte si od dodavatele systému dokumentaci vysvětlující logiku fungování systému a jeho omezení. Tato dokumentace musí být uložena na interním sdíleném disku.</li>
+  <li><strong>Srozumitelnost:</strong> Veškerá komunikace směrem k uživateli musí být psána jasným a srozumitelným jazykem.</li>
+</ul>
+
+<div class='callout'>
+  Odkaz na Compliance Kit: Pro detailní znění disclaimerů a oznámení využijte dokument <strong>Texty oznámení pro AI systémy</strong>. Pro vytvoření centrálního informačního bodu na vašem webu použijte dodaný HTML kód <strong>Transparenční stránky</strong>.
+</div>
+
+<h2>4. Lidský dohled — Šablona pro budoucí systémy</h2>
+
+<p>Lidský dohled (čl. 14) je kritickým mechanismem pro prevenci rizik spojených s autonomním rozhodováním AI. Jako nasazovatel musíte zajistit, že nad výstupy systému existuje kontrola a možnost zásahu. <strong>Níže uvedené body doplňte až při zavádění konkrétního AI nástroje.</strong></p>
+
+<h3>4.1 Kill switch — nouzové vypnutí</h3>
+
+<p>Každý AI systém s potenciálním dopadem na práva osob, bezpečnost nebo obchodní kontinuitu musí disponovat mechanismem pro okamžité přerušení provozu (tzv. kill switch) nebo přechod do plně manuálního režimu.</p>
+
+<ul>
+  <li><strong>Dostupnost funkce:</strong> Pro systém musí být technicky zajištěna možnost okamžité deaktivace.
+    <br><em>Příklady z praxe pro běžné nástroje:</em>
+    <ul>
+      <li><em>OpenAI / Claude API:</em> Okamžité smazání nebo rotace API klíče v administraci vývojářské platformy.</li>
+      <li><em>Microsoft 365 Copilot:</em> Odebrání příslušné licence uživateli v Microsoft 365 Admin Center.</li>
+      <li><em>AI plugin na webu (např. WordPress):</em> Deaktivace pluginu v administraci redakčního systému.</li>
+    </ul>
+  </li>
+  <li><strong>Pravomoc k vypnutí:</strong> Pravomoc aktivovat kill switch má [DOPLNÍ SE PŘI NASAZENÍ: Jméno a role odpovědné osoby].</li>
+  <li><strong>Podmínky aktivace:</strong> Systém musí být vypnut v případě detekce halucinací poškozujících dobré jméno firmy, úniku osobních údajů nebo při podezření na kybernetický útok.</li>
+  <li><strong>Hlášení incidentů:</strong> Pokud je kill switch aktivován z důvodu závažného incidentu (např. ohrožení zdraví nebo základních práv), vzniká dle čl. 73 AI Act povinnost ohlásit tento incident orgánu dozoru <strong>do 15 dnů</strong>.</li>
+</ul>
+
+<h3>4.2 Human override — lidský přezkum</h3>
+
+<p>Lidský přezkum znamená, že výstupy AI systému nejsou automaticky aplikovány bez předchozí nebo následné kontroly kvalifikovaným zaměstnancem.</p>
+
+<ul>
+  <li><strong>Režim dohledu:</strong> Systém bude provozován v režimu [DOPLNÍ SE PŘI NASAZENÍ: human-in-the-loop / human-on-the-loop / human-in-command].</li>
+  <li><strong>Předmět kontroly:</strong> Povinnému lidskému přezkumu podléhají [DOPLNÍ SE PŘI NASAZENÍ: Specifikujte výstupy, např. všechny návrhy smluv generované AI].</li>
+  <li><strong>Odpovědná osoba:</strong> Kontrolu provádí [DOPLNÍ SE PŘI NASAZENÍ: Role zaměstnance].</li>
+</ul>
+
+<h3>4.3 Kompetence dohledové osoby</h3>
+
+<p>Osoby pověřené dohledem nad AI systémy musí mít odpovídající úroveň tzv. AI gramotnosti (AI literacy) dle čl. 4 AI Act. Tento článek vyžaduje, aby zaměstnanci rozuměli možnostem a omezením AI systémů, které používají.</p>
+
+<div class='highlight'>
+  Termín pro splnění povinnosti zajištění AI gramotnosti dle čl. 4 uplynul dne 2. 2. 2025. Vzhledem k dnešnímu datu (26. 02. 2026) a faktu, že firma Neznámá firma aktuálně nedisponuje školením AI, je organizace v prodlení s plněním této zákonné povinnosti. Zavedení školení je prioritní nápravnou akcí, a to i před nasazením prvního systému.
+</div>
+
+<ul>
+  <li><strong>Požadavky na kvalifikaci:</strong> Dohledová osoba musí prokazatelně chápat fenomény jako jsou AI halucinace, bias (zkreslení) a rizika spojená se zadáváním citlivých dat do promptů.</li>
+  <li><strong>Školení:</strong> Všichni zaměstnanci interagující s AI musí absolvovat školení. K tomuto účelu využijte dokument <em>Plán školení AI gramotnosti</em> a přiloženou <em>Školící prezentaci (PPTX)</em> z Compliance Kitu.</li>
+</ul>
+
+<h2>5. Čtvrtletní kontrola transparentnosti a dohledu</h2>
+
+<p>Pro zajištění trvalého souladu s AI Act je nutné provádět pravidelné revize zavedených opatření. Níže uvedený kontrolní formulář slouží k systematickému auditu.</p>
+
+<div class='info'>
+  <strong>Odpověď na častý dotaz:</strong> Dokud organizace neprovozuje žádné AI systémy, toto čtvrtletní hodnocení se neprovádí. První kontrolu proveďte až na konci čtvrtletí, ve kterém byl nasazen váš první AI systém.
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kontrolní bod</th>
+      <th>Otázka</th>
+      <th>ANO/NE</th>
+      <th>Poznámka / Nápravné opatření</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Oznámení aktivní</td>
+      <td>Jsou všechna AI oznámení na webu a v aplikacích viditelná a aktuální dle čl. 50 a 52?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Transparenční stránka</td>
+      <td>Je centrální transparenční stránka na webu aktuální a snadno přístupná?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Kill switch funkční</td>
+      <td>Byl v uplynulém čtvrtletí teoreticky nebo prakticky otestován postup nouzového vypnutí?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Registr aktuální</td>
+      <td>Jsou všechny nově nasazené AI systémy zapsány v Registru AI systémů?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Logy uchovávány</td>
+      <td>Jsou systémové logy za posledních 6 měsíců bezpečně uloženy a dostupné?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Monitoring aktivní</td>
+      <td>Probíhá lidský přezkum (human override) přesně dle schváleného Monitoring plánu?</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Stížnosti řešeny</td>
+      <td>Byly evidovány a vyřešeny případné stížnosti uživatelů na interakci s AI?</td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>6. Archivace a evidence</h2>
+
+<p>Dle AI Act je nezbytné zajistit striktní evidenci a archivaci dokumentace spojené s provozem AI systémů. Pravidla se liší pro poskytovatele a nasazovatele.</p>
+
+<ul>
+  <li><strong>Uchovávání logů (Povinnost nasazovatele):</strong> Automaticky generované protokoly (logy) o činnosti AI systému musí být uchovávány po dobu minimálně <strong>6 měsíců</strong> (čl. 26 odst. 6), pokud jiný právní předpis nevyžaduje dobu delší. Aktuální stav ukazuje, že firma nedisponuje AI loggingem, což je nutné před nasazením systémů technicky zajistit.</li>
+  <li><strong>Technická dokumentace:</strong> Dokumentaci získanou od dodavatele (čl. 26 odst. 1) a interní záznamy o provedeném lidském dohledu uchovávejte po celou dobu aktivního používání systému a následně ji archivujte v souladu s vašimi interními archivačními řády nebo smluvními ujednáními s dodavatelem. <em>(Poznámka: Striktní 10letá archivační lhůta dle čl. 18 AI Act dopadá primárně na poskytovatele systémů, nikoliv na nasazovatele).</em></li>
+  <li><strong>Způsob archivace:</strong> Záznamy (včetně čtvrtletních kontrolních listů z kapitoly 5) musí být ukládány v zabezpečeném digitálním archivu s řízeným přístupem.</li>
+</ul>
+
+<h2>7. Doporučení pro firmu</h2>
+
+<p>Pro dosažení plného souladu v oblasti transparentnosti a lidského dohledu je nutné realizovat následující kroky. Jasně rozlišujeme materiály, které již máte k dispozici, a akce, které musíte interně provést.</p>
+
+<div class='highlight'>
+  <strong>A. Zajištěno v rámci Compliance Kitu (Máte k dispozici):</strong>
+  <ul>
+    <li>Šablony textů oznámení pro AI systémy (pro splnění čl. 50 a 52).</li>
+    <li>HTML kód Transparenční stránky pro váš web.</li>
+    <li>Plán školení AI gramotnosti a PowerPointová prezentace.</li>
+    <li>Plán řízení incidentů a Monitoring plán.</li>
+    <li>Tento dokument obsahující metodiku a čtvrtletní kontrolní checklist.</li>
+  </ul>
+</div>
+
+<div class='warning'>
+  <strong>B. Vyžaduje akci klienta (Musíte implementovat):</strong>
+  <ul>
+    <li><strong>Co dělat TEĎ (bez aktivních AI systémů):</strong>
+      <ul>
+        <li><strong>Realizace školení:</strong> Okamžitě naplánujte a proveďte školení AI gramotnosti pro zaměstnance pomocí dodané PPTX prezentace (náprava prodlení vůči čl. 4).</li>
+        <li><strong>Jmenování odpovědné osoby:</strong> Interně určete zaměstnance, který bude mít AI agendu na starosti, jakmile se systémy začnou pořizovat.</li>
+        <li>Tento dokument schvalte a uložte jako závaznou směrnici pro budoucí nákupy.</li>
+      </ul>
+    </li>
+    <li><strong>Co dělat POZDĚJI (při nákupu prvního AI systému):</strong>
+      <ul>
+        <li><strong>Doplnění šablon:</strong> Projděte tento dokument a doplňte specifické údaje do sekcí 3 a 4 (místa označená [DOPLNÍ SE PŘI NASAZENÍ]).</li>
+        <li><strong>Implementace kill switche:</strong> U nového systému technicky zajistěte a zdokumentujte proces jeho okamžitého vypnutí (např. smazání API klíče).</li>
+        <li><strong>Zavedení logování:</strong> Nastavte IT systémy tak, aby uchovávaly logy o využití AI po dobu minimálně 6 měsíců.</li>
+        <li><strong>Zahájení kontrol:</strong> Začněte vyplňovat čtvrtletní kontrolní tabulku ze sekce 5.</li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<div class='sig-block'>
+  <div class='sig-field'>Za firmu Neznámá firma</div>
+  <div class='sig-field'>Za AIshield.cz</div>
+</div>
