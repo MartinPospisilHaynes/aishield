@@ -249,21 +249,34 @@ NEMĚŇ formát — pouze vylepši OBSAH slidů.
 
     html = extract_html_content(text)
 
-    # G: Kontrola kvality — délka + sekce
+    # G: Kontrola kvality — délka + sekce (smart retry)
     h2_draft = len(re.findall(r'<h2[^>]*>', draft_html))
     h2_final = len(re.findall(r'<h2[^>]*>', html)) if html else 0
-    length_ok = html and len(html) >= len(draft_html) * 0.4
-    sections_ok = h2_final >= h2_draft * 0.7  # max 30% ztráta sekcí
+    length_ratio = len(html) / len(draft_html) if html and len(draft_html) > 0 else 0
+    section_ratio = h2_final / h2_draft if h2_draft > 0 else 1.0
 
-    if html and (not length_ok or not sections_ok):
-        logger.warning(f"[M4 Refiner] {doc_key}: finální HTML je výrazně kratší než draft "
-                      f"({len(html)} vs {len(draft_html)}), zkouším znovu")
+    # Log quality metrics always
+    logger.info(f"[M4 Refiner] {doc_key}: kvalita — "
+                f"délka {len(html)}/{len(draft_html)} ({length_ratio:.0%}), "
+                f"sekce {h2_final}/{h2_draft} ({section_ratio:.0%})")
+
+    # Smart retry: only if CATASTROPHIC degradation (both dimensions bad)
+    # - Length under 60% AND sections under 50% = something went very wrong
+    # - Small trims (>80% length) are NEVER retried — Opus may have improved
+    catastrophic_length = length_ratio < 0.6
+    catastrophic_sections = section_ratio < 0.5
+    needs_retry = html and catastrophic_length and catastrophic_sections
+
+    if needs_retry:
+        logger.warning(f"[M4 Refiner] {doc_key}: KATASTROFÁLNÍ ztráta obsahu "
+                       f"(délka {length_ratio:.0%}, sekce {section_ratio:.0%}) → retry")
         text2, meta2 = await call_claude(
             system=SYSTEM_PROMPT_M4,
             prompt=prompt + f"""
 
-DŮLEŽITÉ: Tvá předchozí odpověď měla pouze {len(html)} znaků, zatímco draft má {len(draft_html)} znaků.
-To je příliš málo — pravděpodobně jsi vynechal celé sekce. Zachovej VŠECHNY povinné sekce a tabulky.
+DŮLEŽITÉ: Tvá předchozí odpověď měla pouze {len(html)} znaků a {h2_final} sekcí,
+zatímco draft má {len(draft_html)} znaků a {h2_draft} sekcí.
+Ztratil jsi příliš mnoho obsahu. Zachovej VŠECHNY povinné sekce a tabulky.
 Můžeš zkrátit redundance, ale nemaž celé bloky.
 """,
             label=f"{label}_retry",
@@ -275,6 +288,11 @@ Můžeš zkrátit redundance, ale nemaž celé bloky.
         if html2 and len(html2) > len(html):
             html = html2
             meta = meta2
+            meta["retry_used"] = True
+    elif html and (length_ratio < 0.8 or section_ratio < 0.7):
+        # Mild degradation — log warning but DON'T retry (Opus decision respected)
+        logger.info(f"[M4 Refiner] {doc_key}: mírné zkrácení ({length_ratio:.0%} délka, "
+                    f"{section_ratio:.0%} sekce) — Opus rozhodnutí respektováno, BEZ retry")
 
     # Fallback: pokud refine kompletně selže, vrátit draft
     if not html or len(html) < 200:
