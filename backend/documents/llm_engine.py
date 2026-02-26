@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ── Model konfigurace ──
 GEMINI_MODEL = "gemini-3.1-pro-preview"
-GEMINI_FLASH_MODEL = "gemini-2.0-flash"
+GEMINI_FLASH_MODEL = "gemini-2.5-flash"
 CLAUDE_MODEL = "claude-sonnet-4-6"
 CLAUDE_FALLBACK_MODEL = "claude-opus-4-6"
 
@@ -30,8 +30,8 @@ VERTEX_SA_KEY_PATH = "/opt/aishield/vertex-sa-key.json"
 
 GEMINI_COST_INPUT = 2.0 / 1_000_000
 GEMINI_COST_OUTPUT = 12.0 / 1_000_000
-GEMINI_FLASH_COST_INPUT = 0.075 / 1_000_000
-GEMINI_FLASH_COST_OUTPUT = 0.30 / 1_000_000
+GEMINI_FLASH_COST_INPUT = 0.15 / 1_000_000   # Gemini 2.5 Flash
+GEMINI_FLASH_COST_OUTPUT = 0.60 / 1_000_000   # Gemini 2.5 Flash
 CLAUDE_COST_INPUT = 3.0 / 1_000_000
 CLAUDE_COST_OUTPUT = 15.0 / 1_000_000
 CLAUDE_FALLBACK_COST_INPUT = 5.0 / 1_000_000

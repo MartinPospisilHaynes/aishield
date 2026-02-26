@@ -74,6 +74,13 @@ SECTION_SLUG = {
 
 
 # ══════════════════════════════════════════════════════════════════════
+# SAFETY — BUDGET CAP (ochrana proti runaway nákladům)
+# ══════════════════════════════════════════════════════════════════════
+MAX_GENERATION_COST_USD = 25.0   # Hard limit na celou generaci ($)
+MAX_SINGLE_DOC_COST_USD = 4.0    # Hard limit na jeden dokument ($)
+
+
+# ══════════════════════════════════════════════════════════════════════
 # RESULT DATACLASS
 # ══════════════════════════════════════════════════════════════════════
 
@@ -1013,6 +1020,32 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
 
             result.total_cost_usd += doc_cost
             result.total_tokens += doc_tokens
+
+            # ── BUDGET CAP CHECK ──
+            if doc_cost > MAX_SINGLE_DOC_COST_USD:
+                logger.error(
+                    "[Pipeline v3] BUDGET WARN: dokument %s stál $%.2f (limit $%.1f)",
+                    doc_key, doc_cost, MAX_SINGLE_DOC_COST_USD
+                )
+                result.errors.append(
+                    f"BUDGET_WARN: {doc_key} cost ${doc_cost:.2f} > ${MAX_SINGLE_DOC_COST_USD}"
+                )
+            if result.total_cost_usd > MAX_GENERATION_COST_USD:
+                logger.error(
+                    "[Pipeline v3] BUDGET CAP DOSAZENA: $%.2f > $%.0f — ZASTAVUJI!",
+                    result.total_cost_usd, MAX_GENERATION_COST_USD
+                )
+                result.errors.append(
+                    f"BUDGET_CAP: Generace zastavena po {doc_idx} doc, "
+                    f"cost=${result.total_cost_usd:.2f} > limit=${MAX_GENERATION_COST_USD}"
+                )
+                result.pipeline_log.append({
+                    "step": "budget_cap_reached",
+                    "total_cost": result.total_cost_usd,
+                    "limit": MAX_GENERATION_COST_USD,
+                    "docs_completed": doc_idx,
+                })
+                break
 
             # Save intermediate HTML to disk for per-doc monitoring
             try:
