@@ -10,6 +10,7 @@ s AIshield branding (fuchsia/cyan gradient, tmavé pozadí).
 """
 
 import io
+import math
 import logging
 from datetime import datetime, timezone
 
@@ -219,11 +220,44 @@ def _create_title_slide(prs, company_name, subtitle="", client_info=None):
     _add_client_footer(slide, client_info)
 
 
+def _estimate_bullet_lines(bullet_text: str, chars_per_line: int = 110) -> int:
+    """Estimate how many visual lines a single bullet will occupy."""
+    text = "\u2022 " + bullet_text
+    return max(1, math.ceil(len(text) / chars_per_line))
+
+
+def _split_bullets_for_slides(bullets: list, font_size: int) -> list:
+    """
+    Split bullet list into chunks that fit on one slide.
+    Available height ~4.5in = 324pt. Line height = font_size + 8pt.
+    """
+    line_height_pt = font_size + 8
+    max_lines = int(324 / line_height_pt)
+    cpl_map = {12: 110, 13: 102, 14: 95, 15: 88, 16: 82, 17: 77, 18: 73}
+    chars_per_line = cpl_map.get(font_size, 110)
+
+    chunks = []
+    current_chunk = []
+    current_lines = 0
+
+    for bullet in bullets:
+        lines_needed = _estimate_bullet_lines(bullet, chars_per_line)
+        if current_chunk and (current_lines + lines_needed) > max_lines:
+            chunks.append(current_chunk)
+            current_chunk = [bullet]
+            current_lines = lines_needed
+        else:
+            current_chunk.append(bullet)
+            current_lines += lines_needed
+
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks if chunks else [[]]
+
+
 def _create_content_slide(prs, title, bullets, client_info=None, speaker_notes=""):
-    """Standardní obsahový slide s nadpisem a odrážkami + volitelné speaker notes."""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank
-    _set_slide_bg(slide)
-    _add_branded_header(slide, title, client_info=client_info)
+    """Standardní obsahový slide s nadpisem a odrážkami + speaker notes.
+    Automaticky rozloží obsah na více slidů, když se nevejde."""
     # Auto-scale font based on content volume
     total_chars = sum(len(b) for b in bullets)
     num_bullets = len(bullets)
@@ -236,27 +270,40 @@ def _create_content_slide(prs, title, bullets, client_info=None, speaker_notes="
     else:
         font_size = 18
 
-    _add_bullet_list(
-        slide,
-        left=Inches(0.8), top=Inches(2.2),
-        width=Inches(11), height=Inches(4.5),
-        items=bullets,
-        font_size=font_size,
-    )
-    _add_client_footer(slide, client_info)
+    # Split into page-sized chunks
+    chunks = _split_bullets_for_slides(bullets, font_size)
+    n_pages = len(chunks)
 
-    # Speaker notes pro přednášejícího
-    if speaker_notes:
-        notes_slide = slide.notes_slide
-        notes_tf = notes_slide.notes_text_frame
-        notes_tf.text = speaker_notes
+    for page_idx, chunk in enumerate(chunks):
+        slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank
+        _set_slide_bg(slide)
+        slide_title = title if n_pages == 1 else title + " ({}/{})".format(page_idx + 1, n_pages)
+        _add_branded_header(slide, slide_title, client_info=client_info)
+
+        _add_bullet_list(
+            slide,
+            left=Inches(0.8), top=Inches(2.2),
+            width=Inches(11), height=Inches(4.5),
+            items=chunk,
+            font_size=font_size,
+        )
+        _add_client_footer(slide, client_info)
+
+        # Speaker notes only on the first page
+        if page_idx == 0 and speaker_notes:
+            notes_slide = slide.notes_slide
+            notes_tf = notes_slide.notes_text_frame
+            notes_tf.text = speaker_notes
 
 
 def _create_risk_slide(prs, findings, client_info=None):
     """Slide s přehledem rizik — barevně kódované."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide)
-    _add_branded_header(slide, "AI systémy v naší firmě — přehled rizik", client_info=client_info)
+    risk_page_title = "AI systémy v naší firmě — přehled rizik"
+    if len(findings) > 8:
+        risk_page_title += " (1/{})".format((len(findings) + 7) // 8)
+    _add_branded_header(slide, risk_page_title, client_info=client_info)
 
     if not findings:
         _add_text_box(
@@ -268,38 +315,51 @@ def _create_risk_slide(prs, findings, client_info=None):
         )
         return
 
-    y_pos = Inches(2.2)
-    for i, f in enumerate(findings[:8]):  # Max 8 per slide
-        name = f.get("name", "AI systém")
-        risk = f.get("risk_level", "minimal")
-        article = f.get("ai_act_article", "")
+    # Auto-split: max 8 findings per slide page
+    page_size = 8
+    pages = [findings[j:j+page_size] for j in range(0, len(findings), page_size)]
+    n_risk_pages = len(pages)
 
-        color_map = {"high": COLOR_HIGH, "limited": COLOR_LIMITED, "minimal": COLOR_MINIMAL}
-        risk_color = color_map.get(risk, COLOR_MUTED)
+    for page_idx, page_findings in enumerate(pages):
+        if page_idx > 0:
+            # Additional slides for overflow findings
+            slide = prs.slides.add_slide(prs.slide_layouts[6])
+            _set_slide_bg(slide)
+            page_title = "AI systémy v naší firmě — přehled rizik ({}/{})".format(page_idx + 1, n_risk_pages)
+            _add_branded_header(slide, page_title, client_info=client_info)
 
-        # Risk dot
-        dot = slide.shapes.add_shape(
-            MSO_SHAPE.OVAL,
-            Inches(0.8), y_pos + Pt(4),
-            Inches(0.15), Inches(0.15),
-        )
-        dot.fill.solid()
-        dot.fill.fore_color.rgb = risk_color
-        dot.line.fill.background()
+        y_pos = Inches(2.2)
+        for i, f in enumerate(page_findings):
+            name = f.get("name", "AI systém")
+            risk = f.get("risk_level", "minimal")
+            article = f.get("ai_act_article", "")
 
-        # Finding text
-        risk_cs = {"high": "VYSOKÉ", "limited": "OMEZENÉ", "minimal": "MINIMÁLNÍ", "none": "Mimo klasifikaci"}.get(risk, risk)
-        _add_text_box(
-            slide,
-            left=Inches(1.1), top=y_pos,
-            width=Inches(11), height=Inches(0.4),
-            text=f"{name}  —  {risk_cs} riziko  •  {article}",
-            font_size=16, color=COLOR_TEXT,
-        )
+            color_map = {"high": COLOR_HIGH, "limited": COLOR_LIMITED, "minimal": COLOR_MINIMAL}
+            risk_color = color_map.get(risk, COLOR_MUTED)
 
-        y_pos += Inches(0.55)
+            # Risk dot
+            dot = slide.shapes.add_shape(
+                MSO_SHAPE.OVAL,
+                Inches(0.8), y_pos + Pt(4),
+                Inches(0.15), Inches(0.15),
+            )
+            dot.fill.solid()
+            dot.fill.fore_color.rgb = risk_color
+            dot.line.fill.background()
 
-    _add_client_footer(slide, client_info)
+            # Finding text
+            risk_cs = {"high": "VYSOKÉ", "limited": "OMEZENÉ", "minimal": "MINIMÁLNÍ", "none": "Mimo klasifikaci"}.get(risk, risk)
+            _add_text_box(
+                slide,
+                left=Inches(1.1), top=y_pos,
+                width=Inches(11), height=Inches(0.4),
+                text=f"{name}  —  {risk_cs} riziko  •  {article}",
+                font_size=16, color=COLOR_TEXT,
+            )
+
+            y_pos += Inches(0.55)
+
+        _add_client_footer(slide, client_info)
 
 
 def _create_disclaimer_slide(prs):
