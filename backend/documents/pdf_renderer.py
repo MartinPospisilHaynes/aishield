@@ -26,7 +26,7 @@ UNIFIED_CSS = """
 /* ── Stránka ── */
 @page {
     size: A4;
-    margin: 25mm 20mm 30mm 20mm;
+    margin: 22mm 18mm 25mm 18mm;
     @top-center {
         content: "AIshield.cz | AI Act Compliance Kit";
         font-family: 'Inter', sans-serif;
@@ -50,8 +50,8 @@ UNIFIED_CSS = """
 /* ── Základ ── */
 body {
     font-family: 'Inter', sans-serif;
-    font-size: 10.5pt;
-    line-height: 1.6;
+    font-size: 10pt;
+    line-height: 1.5;
     color: #1e293b;
     max-width: 170mm;
     margin: 0 auto;
@@ -59,35 +59,35 @@ body {
 
 /* ── Nadpisy ── */
 h1 {
-    font-size: 22pt;
+    font-size: 20pt;
     font-weight: 700;
     color: #0f172a;
     margin-top: 0;
-    margin-bottom: 12pt;
-    padding-bottom: 6pt;
+    margin-bottom: 10pt;
+    padding-bottom: 5pt;
     border-bottom: 3pt solid #7c3aed;
     page-break-after: avoid;
 }
 h2 {
-    font-size: 15pt;
+    font-size: 13pt;
     font-weight: 600;
     color: #1e293b;
-    margin-top: 20pt;
-    margin-bottom: 8pt;
-    padding-bottom: 4pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    padding-bottom: 3pt;
     border-bottom: 1pt solid #e2e8f0;
     page-break-after: avoid;
 }
 h3 {
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: 600;
     color: #334155;
-    margin-top: 14pt;
-    margin-bottom: 6pt;
+    margin-top: 12pt;
+    margin-bottom: 5pt;
     page-break-after: avoid;
 }
 h4 {
-    font-size: 10.5pt;
+    font-size: 10pt;
     font-weight: 600;
     color: #475569;
     margin-top: 10pt;
@@ -96,8 +96,8 @@ h4 {
 
 /* ── Odstavce ── */
 p {
-    margin-top: 4pt;
-    margin-bottom: 8pt;
+    margin-top: 3pt;
+    margin-bottom: 6pt;
     text-align: justify;
     orphans: 3;
     widows: 3;
@@ -105,11 +105,11 @@ p {
 
 /* ── Seznamy ── */
 ul, ol {
-    margin: 6pt 0;
-    padding-left: 20pt;
+    margin: 4pt 0;
+    padding-left: 18pt;
 }
 li {
-    margin-bottom: 4pt;
+    margin-bottom: 3pt;
 }
 ul li {
     list-style-type: none;
@@ -128,8 +128,8 @@ ul li::before {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin: 10pt 0;
-    font-size: 9.5pt;
+    margin: 8pt 0;
+    font-size: 9pt;
     page-break-inside: avoid;
 }
 th {
