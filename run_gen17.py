@@ -5,11 +5,14 @@ import sys
 import time
 import json
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s %(message)s",
-    stream=sys.stdout,
-)
+class FlushHandler(logging.StreamHandler):
+    def emit(self, record):
+        super().emit(record)
+        self.flush()
+
+handler = FlushHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(levelname)s %(message)s"))
+logging.basicConfig(level=logging.INFO, handlers=[handler])
 logger = logging.getLogger("gen17")
 
 async def main():

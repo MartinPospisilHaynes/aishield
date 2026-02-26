@@ -224,12 +224,24 @@ def _create_content_slide(prs, title, bullets, client_info=None, speaker_notes="
     slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank
     _set_slide_bg(slide)
     _add_branded_header(slide, title, client_info=client_info)
+    # Auto-scale font based on content volume
+    total_chars = sum(len(b) for b in bullets)
+    num_bullets = len(bullets)
+    if total_chars > 1500 or num_bullets > 10:
+        font_size = 12
+    elif total_chars > 1000 or num_bullets > 7:
+        font_size = 14
+    elif total_chars > 600 or num_bullets > 5:
+        font_size = 16
+    else:
+        font_size = 18
+
     _add_bullet_list(
         slide,
         left=Inches(0.8), top=Inches(2.2),
         width=Inches(11), height=Inches(4.5),
         items=bullets,
-        font_size=18,
+        font_size=font_size,
     )
     _add_client_footer(slide, client_info)
 
@@ -605,6 +617,10 @@ class _SlideExtractor(HTMLParser):
         self._in_h2 = False
         self._in_li = False
         self._in_p = False
+        self._in_td = False
+        self._in_th = False
+        self._in_tr = False
+        self._row_cells: list[str] = []
         self._in_speaker_notes = False
         self._speaker_notes_depth = 0
         self._text_buf: list[str] = []
@@ -644,6 +660,12 @@ class _SlideExtractor(HTMLParser):
         elif tag == "li":
             self._in_li = True
             self._text_buf = []
+        elif tag == "tr":
+            self._in_tr = True
+            self._row_cells = []
+        elif tag in ("td", "th"):
+            self._in_td = True
+            self._text_buf = []
         elif tag == "p" and self._current_slide is not None:
             self._in_p = True
             self._text_buf = []
@@ -677,6 +699,17 @@ class _SlideExtractor(HTMLParser):
             text = "".join(self._text_buf).strip()
             if text and self._current_slide:
                 self._current_slide["bullets"].append(text)
+        elif tag in ("td", "th") and self._in_td:
+            self._in_td = False
+            cell_text = "".join(self._text_buf).strip()
+            if cell_text:
+                self._row_cells.append(cell_text)
+        elif tag == "tr" and self._in_tr:
+            self._in_tr = False
+            if self._row_cells and self._current_slide:
+                row_text = " | ".join(self._row_cells)
+                self._current_slide["bullets"].append(row_text)
+            self._row_cells = []
         elif tag == "p" and self._in_p:
             self._in_p = False
             text = "".join(self._text_buf).strip()
@@ -687,7 +720,7 @@ class _SlideExtractor(HTMLParser):
     def handle_data(self, data):
         if self._in_speaker_notes:
             self._notes_buf.append(data)
-        elif self._in_h1 or self._in_h2 or self._in_li or self._in_p:
+        elif self._in_h1 or self._in_h2 or self._in_li or self._in_p or self._in_td:
             self._text_buf.append(data)
 
     def finalize(self):

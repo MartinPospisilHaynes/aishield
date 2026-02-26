@@ -1,0 +1,122 @@
+{
+  "version": 3,
+  "generation_id": "gen_20260226_112920",
+  "timestamp": "2026-02-26T14:05:46.254563+00:00",
+  "m5_full_response": {
+    "analyza": {
+      "prumerny_eu_score": 6.9,
+      "prumerny_client_score": 7.8,
+      "celkovy_prumer": 7.4,
+      "identifikovane_vzory": [
+        {
+          "vzor": "Dokumenty jsou neúplné — useknuté uprostřed věty/sekce, chybějící podpisové bloky, nedokončené tabulky",
+          "pocet_vyskytu": 5,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "Transparentnost a lidský dohled, Registr AI systémů, Interní AI politika, Dodavatelský checklist, Transparenční stránka (HTML)",
+          "typicky_nalez": "Sekce 6.3 je fyzicky useknutá uprostřed věty ('Silné'). Dokument je neúplný — chybí praktické pokyny k archivaci. / Dokument končí v polovině věty u systému č. 20. V tabulce jich mám 36."
+        },
+        {
+          "vzor": "Chybějící konkrétní termíny a deadliny v akčních tabulkách — dokumenty obsahují kroky bez dat realizace a bez vazby na zákonné milníky (2.8.2026)",
+          "pocet_vyskytu": 6,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "Akční plán, Plán školení, Posouzení dopadů (DPIA/FRIA), Dodavatelský checklist, Monitoring plán, Compliance Report",
+          "typicky_nalez": "Tabulka opatření v sekci 5 obsahuje sloupec 'Stav' ale neobsahuje žádné konkrétní termíny implementace. / Tabulka harmonogramu v sekci 7.1 definuje fáze 1–6 ale neobsahuje žádná konkrétní data ani lhůty pro realizaci."
+        },
+        {
+          "vzor": "Chybějící povinnost registrace high-risk AI systémů v EU databázi dle čl. 49 pro nasazovatele",
+          "pocet_vyskytu": 5,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "Posouzení dopadů (DPIA/FRIA), Transparentnost a lidský dohled, Monitoring plán, Akční plán, Školící prezentace",
+          "typicky_nalez": "Dokument neuvádí povinnost nasazovatele registrovat vysoce rizikové AI systémy v EU databázi dle čl. 49 odst. 2 AI Act."
+        },
+        {
+          "vzor": "Chybějící odkaz na čl. 86 AI Act (právo dotčené osoby na vysvětlení rozhodnutí high-risk AI systému) — dokumenty zmiňují právo na vysvětlení bez správné právní reference nebo pouze s odkazem na GDPR čl. 22",
+          "pocet_vyskytu": 5,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "Transparentnost a lidský dohled, Školící prezentace, Interní AI politika, Transparenční stránka, Posouzení dopadů",
+          "typicky_nalez": "Dokument opakovaně zmiňuje 'právo na vysvětlení rozhodnutí' bez odkazu na čl. 86 AI Act, který zavádí právo fyzické osoby na vysvětlení rozhodnutí přijatého na základě výstupu vysoce rizikového AI systému."
+        },
+        {
+          "vzor": "Transparenční stránka (HTML) je generická šablona bez skutečného HTML kódu, bez výčtu konkrétních AI systémů firmy, bez FAQ, bez kontaktních údajů a bez personalizace",
+          "pocet_vyskytu": 3,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "Transparenční stránka (HTML)",
+          "typicky_nalez": "Dokument má být 'Transparenční stránka (HTML)', ale neobsahuje absolutně žádný HTML kód, který bych mohl zkopírovat a vložit na svůj web. / V auditu jsme identifikovali desítky AI systémů, ale na stránce není uveden ani jeden."
+        }
+      ]
+    },
+    "doporuceni": {
+      "nova_pravidla": [
+        {
+          "pravidlo": "Každý generovaný dokument musí být kompletní — vždy dokonči všechny sekce, tabulky, podpisové bloky a závěrečné části dokumentu; pokud hrozí překročení délky výstupu, raději zkrať střední sekce (méně příkladů, stručnější komentáře), ale NIKDY neořezávej konec dokumentu ani nevynechávej podpisový blok, závěrečná ustanovení nebo poslední řádky tabulek.",
+          "duvod": "5 dokumentů bylo useknutých uprostřed věty/sekce — chybějící podpisy, nedokončené tabulky, oříznuté HTML. Klient nemůže dokument použít a při kontrole dozorového orgánu je neplatný.",
+          "ocekavany_efekt": "Eliminace kritických nálezů o neúplnosti dokumentů, zvýšení klientské spokojenosti i EU skóre."
+        },
+        {
+          "pravidlo": "V každé akční tabulce, harmonogramu nebo kontrolním checklistu vždy uveď sloupec 'Termín splnění' s konkrétními daty odvozenými od zákonných milníků AI Act (2.2.2025 pro čl. 4 a čl. 5, 2.8.2025 pro GPAI čl. 51–54, 2.8.2026 pro high-risk systémy) a od data vyhotovení dokumentu; u každé akce vypočítej zbývající čas do příslušného deadline a u již uplynulých deadlinů označ akci jako 'OKAMŽITÁ PRIORITA'.",
+          "duvod": "6 dokumentů obsahovalo akční kroky bez jakýchkoli termínů realizace, což je činí nevymahatelnými a nepoužitelnými pro řízení implementace.",
+          "ocekavany_efekt": "Dokumenty budou prakticky použitelné jako projektové plány, klient bude vědět co kdy musí splnit."
+        },
+        {
+          "pravidlo": "V každém dokumentu, kde se zmiňují povinnosti nasazovatele high-risk AI systémů dle Přílohy III, vždy uveď povinnost registrace nasazení v EU databázi dle čl. 49 odst. 2 AI Act a právo dotčených fyzických osob na vysvětlení rozhodnutí dle čl. 86 AI Act — tyto dvě povinnosti nikdy nevynechávej, i když nejsou hlavním tématem dokumentu.",
+          "duvod": "Povinnost registrace v EU databázi chyběla v 5 dokumentech a právo na vysvětlení dle čl. 86 chybělo rovněž v 5 dokumentech — přitom jde o klíčové povinnosti pro firmy s high-risk systémy.",
+          "ocekavany_efekt": "Kompletní pokrytí povinností nasazovatele, eliminace opakujících se nálezů o chybějícím čl. 49 a čl. 86."
+        },
+        {
+          "pravidlo": "Transparenční stránku (HTML dokument) generuj vždy jako plně funkční HTML kód připravený ke zkopírování na web klienta — musí obsahovat: kompletní HTML strukturu (head s meta tagy včetně Open Graph, body), výčet VŠECH identifikovaných AI systémů firmy seskupených podle rizikové kategorie, FAQ sekci s min. 5 otázkami a odpověďmi, kontaktní údaje odpovědné osoby, datum poslední aktualizace a JSON-LD strukturovaná data.",
+          "duvod": "Transparenční stránka byla kriticky hodnocena klientem (chybějící HTML kód, žádné AI systémy, žádné FAQ) i EU inspektorem (generičnost, chybějící personalizace, chybějící kontakty). Klient nemohl dokument vůbec použít.",
+          "ocekavany_efekt": "Klient dostane hotový HTML soubor k nasazení, EU inspektor uvidí konkrétní personalizovaný obsah splňující čl. 50."
+        },
+        {
+          "pravidlo": "Pokud webový sken nebo dotazník identifikuje systém s nejasnými názvy (např. 'vlastní html', 'vlastní kód', 'pospa ing.'), vždy v dokumentu explicitně uveď, že název pochází z automatického skenu/dotazníku, vysvětli možné interpretace klasifikace, a přidej klientovi jasnou výzvu s placeholderem '[UPŘESNĚTE: skutečný název a účel systému]' — nikdy neprezentuj nejasný název jako definitivní klasifikaci zakázaného nebo high-risk systému bez výhrady.",
+          "duvod": "Klient označil za falešně pozitivní klasifikaci 'vlastní html' jako zakázaný sociální scoring. EU inspektor opakovaně kritizoval, že systémy s nejasnými názvy jsou klasifikovány bez kontextu. Dokumenty vyvolávají zbytečný poplach.",
+          "ocekavany_efekt": "Eliminace falešně pozitivních klasifikací, zvýšení důvěryhodnosti dokumentů, klient nebude zmaten zavádějícími závěry."
+        }
+      ],
+      "konvergence": false,
+      "komentar": "Kvalita dokumentů je nerovnoměrná — většina dosahuje solidního skóre 7–8, ale Doc 12 (transparenční stránka) s EU=3 a Client=1 dramaticky stahuje průměr. Hlavní systémové problémy jsou: (1) neúplné/useknuté dokumenty, (2) absence konkrétních termínů v akčních plánech, (3) opakovaně chybějící čl. 49 a čl. 86, (4) nefunkční transparenční stránka a (5) falešně pozitivní klasifikace z nejasných názvů systémů. Po implementaci těchto 5 pravidel očekávám posun průměru na 8.0–8.5."
+    }
+  },
+  "analysis_input": {
+    "prumerny_eu_score": 6.9,
+    "prumerny_client_score": 7.8,
+    "celkovy_prumer": 7.4,
+    "identifikovane_vzory": [
+      {
+        "vzor": "Dokumenty jsou neúplné — useknuté uprostřed věty/sekce, chybějící podpisové bloky, nedokončené tabulky",
+        "pocet_vyskytu": 5,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "Transparentnost a lidský dohled, Registr AI systémů, Interní AI politika, Dodavatelský checklist, Transparenční stránka (HTML)",
+        "typicky_nalez": "Sekce 6.3 je fyzicky useknutá uprostřed věty ('Silné'). Dokument je neúplný — chybí praktické pokyny k archivaci. / Dokument končí v polovině věty u systému č. 20. V tabulce jich mám 36."
+      },
+      {
+        "vzor": "Chybějící konkrétní termíny a deadliny v akčních tabulkách — dokumenty obsahují kroky bez dat realizace a bez vazby na zákonné milníky (2.8.2026)",
+        "pocet_vyskytu": 6,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "Akční plán, Plán školení, Posouzení dopadů (DPIA/FRIA), Dodavatelský checklist, Monitoring plán, Compliance Report",
+        "typicky_nalez": "Tabulka opatření v sekci 5 obsahuje sloupec 'Stav' ale neobsahuje žádné konkrétní termíny implementace. / Tabulka harmonogramu v sekci 7.1 definuje fáze 1–6 ale neobsahuje žádná konkrétní data ani lhůty pro realizaci."
+      },
+      {
+        "vzor": "Chybějící povinnost registrace high-risk AI systémů v EU databázi dle čl. 49 pro nasazovatele",
+        "pocet_vyskytu": 5,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "Posouzení dopadů (DPIA/FRIA), Transparentnost a lidský dohled, Monitoring plán, Akční plán, Školící prezentace",
+        "typicky_nalez": "Dokument neuvádí povinnost nasazovatele registrovat vysoce rizikové AI systémy v EU databázi dle čl. 49 odst. 2 AI Act."
+      },
+      {
+        "vzor": "Chybějící odkaz na čl. 86 AI Act (právo dotčené osoby na vysvětlení rozhodnutí high-risk AI systému) — dokumenty zmiňují právo na vysvětlení bez správné právní reference nebo pouze s odkazem na GDPR čl. 22",
+        "pocet_vyskytu": 5,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "Transparentnost a lidský dohled, Školící prezentace, Interní AI politika, Transparenční stránka, Posouzení dopadů",
+        "typicky_nalez": "Dokument opakovaně zmiňuje 'právo na vysvětlení rozhodnutí' bez odkazu na čl. 86 AI Act, který zavádí právo fyzické osoby na vysvětlení rozhodnutí přijatého na základě výstupu vysoce rizikového AI systému."
+      },
+      {
+        "vzor": "Transparenční stránka (HTML) je generická šablona bez skutečného HTML kódu, bez výčtu konkrétních AI systémů firmy, bez FAQ, bez kontaktních údajů a bez personalizace",
+        "pocet_vyskytu": 3,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "Transparenční stránka (HTML)",
+        "typicky_nalez": "Dokument má být 'Transparenční stránka (HTML)', ale neobsahuje absolutně žádný HTML kód, který bych mohl zkopírovat a vložit na svůj web. / V auditu jsme identifikovali desítky AI systémů, ale na stránce není uveden ani jeden."
+      }
+    ]
+  }
+}

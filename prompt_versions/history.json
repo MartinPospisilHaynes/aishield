@@ -48,5 +48,30 @@
     ],
     "cost_usd": 0.1676,
     "converged": false
+  },
+  {
+    "version": 3,
+    "generation_id": "gen_20260226_112920",
+    "timestamp": "2026-02-26T14:05:46.254563+00:00",
+    "avg_score": 7.38,
+    "eu_avg": 6.9,
+    "client_avg": 7.8,
+    "rules_added": 5,
+    "rules": [
+      "Každý generovaný dokument musí být kompletní — vždy dokonči všechny sekce, tabulky, podpisové bloky a závěrečné části dokumentu; pokud hrozí překročení délky výstupu, raději zkrať střední sekce (méně příkladů, stručnější komentáře), ale NIKDY neořezávej konec dokumentu ani nevynechávej podpisový blok, závěrečná ustanovení nebo poslední řádky tabulek.",
+      "V každé akční tabulce, harmonogramu nebo kontrolním checklistu vždy uveď sloupec 'Termín splnění' s konkrétními daty odvozenými od zákonných milníků AI Act (2.2.2025 pro čl. 4 a čl. 5, 2.8.2025 pro GPAI čl. 51–54, 2.8.2026 pro high-risk systémy) a od data vyhotovení dokumentu; u každé akce vypočítej zbývající čas do příslušného deadline a u již uplynulých deadlinů označ akci jako 'OKAMŽITÁ PRIORITA'.",
+      "V každém dokumentu, kde se zmiňují povinnosti nasazovatele high-risk AI systémů dle Přílohy III, vždy uveď povinnost registrace nasazení v EU databázi dle čl. 49 odst. 2 AI Act a právo dotčených fyzických osob na vysvětlení rozhodnutí dle čl. 86 AI Act — tyto dvě povinnosti nikdy nevynechávej, i když nejsou hlavním tématem dokumentu.",
+      "Transparenční stránku (HTML dokument) generuj vždy jako plně funkční HTML kód připravený ke zkopírování na web klienta — musí obsahovat: kompletní HTML strukturu (head s meta tagy včetně Open Graph, body), výčet VŠECH identifikovaných AI systémů firmy seskupených podle rizikové kategorie, FAQ sekci s min. 5 otázkami a odpověďmi, kontaktní údaje odpovědné osoby, datum poslední aktualizace a JSON-LD strukturovaná data.",
+      "Pokud webový sken nebo dotazník identifikuje systém s nejasnými názvy (např. 'vlastní html', 'vlastní kód', 'pospa ing.'), vždy v dokumentu explicitně uveď, že název pochází z automatického skenu/dotazníku, vysvětli možné interpretace klasifikace, a přidej klientovi jasnou výzvu s placeholderem '[UPŘESNĚTE: skutečný název a účel systému]' — nikdy neprezentuj nejasný název jako definitivní klasifikaci zakázaného nebo high-risk systému bez výhrady."
+    ],
+    "reasons": [
+      "5 dokumentů bylo useknutých uprostřed věty/sekce — chybějící podpisy, nedokončené tabulky, oříznuté HTML. Klient nemůže dokument použít a při kontrole dozorového orgánu je neplatný.",
+      "6 dokumentů obsahovalo akční kroky bez jakýchkoli termínů realizace, což je činí nevymahatelnými a nepoužitelnými pro řízení implementace.",
+      "Povinnost registrace v EU databázi chyběla v 5 dokumentech a právo na vysvětlení dle čl. 86 chybělo rovněž v 5 dokumentech — přitom jde o klíčové povinnosti pro firmy s high-risk systémy.",
+      "Transparenční stránka byla kriticky hodnocena klientem (chybějící HTML kód, žádné AI systémy, žádné FAQ) i EU inspektorem (generičnost, chybějící personalizace, chybějící kontakty). Klient nemohl dokument vůbec použít.",
+      "Klient označil za falešně pozitivní klasifikaci 'vlastní html' jako zakázaný sociální scoring. EU inspektor opakovaně kritizoval, že systémy s nejasnými názvy jsou klasifikovány bez kontextu. Dokumenty vyvolávají zbytečný poplach."
+    ],
+    "cost_usd": 0.2396,
+    "converged": false
   }
 ]

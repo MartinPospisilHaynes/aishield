@@ -502,6 +502,25 @@ DŮLEŽITÉ:
 - NEPIŠ o testech, certifikacích, kvízech — neposkytujeme je
 - Zdůrazni PowerPointovou prezentaci z Compliance Kitu na KAŽDÉM vhodném místě
 - Odvětvově specifické příklady automation bias
+
+<h2>10. Prezenční listina školení</h2>
+- Na konci dokumentu POVINNĚ přidej prezenční listinu pro evidenci účasti.
+- Zjisti počet zaměstnanců z kontextu firmy (hledej velikost firmy / company size).
+- Vytvoř HTML <table> s PŘESNĚ tolika řádky, kolik má firma zaměstnanců.
+  Pokud je uvedeno „250+" nebo rozsah, použij horní hranici (např. 250 pro „250+", 100 pro „51-100").
+  Pokud počet zaměstnanců nelze zjistit, vytvoř 30 řádků.
+- Sloupce tabulky:
+  | č. | Jméno | Příjmení | Podpis |
+- Každý řádek očísluj (1, 2, 3, ...).
+- Sloupce Jméno, Příjmení a Podpis nech PRÁZDNÉ (klient si je vyplní ručně).
+- Buňky pro podpis udělej široké (min 150px) — lidé tam budou podepisovat.
+- Nad tabulku přidej hlavičku:
+  Název školení: Školení AI gramotnosti dle čl. 4 AI Act
+  Datum konání: _______________
+  Školitel: _______________
+  Místo konání: _______________
+- Pod tabulku přidej řádek pro podpis školitele:
+  Podpis školitele: _______________  Datum: _______________
 """
 
 

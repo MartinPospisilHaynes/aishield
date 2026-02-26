@@ -1,386 +1,537 @@
 <h1>Plán řízení incidentů s AI systémy</h1>
 
-<div class='info'>
-  <strong>[ZAJIŠTĚNO] V rámci Compliance Kitu:</strong> Tento dokument představuje kompletní metodiku a šablonu pro řízení incidentů s umělou inteligencí, kterou pro vás připravila společnost AIshield.cz. <br><br>
-  <strong>[VYŽADUJE AKCI] Úkoly pro klienta:</strong> Vaším úkolem je doplnit konkrétní kontaktní údaje do sekcí 5 a 8, seznámit s tímto plánem klíčové zaměstnance a v případě incidentu postupovat striktně podle zde definovaných kroků.
+<p><strong>Firma:</strong> Martin Haynes | <strong>IČO:</strong> 17889251 | <strong>Odpovědná osoba za AI:</strong> Martin Haynes, jednatel</p>
+<p><strong>Verze dokumentu:</strong> 1.0 | <strong>Datum vydání:</strong> 26. února 2026 | <strong>Klasifikace:</strong> Interní dokument -- určeno pro vedení a odpovědné osoby</p>
+<p><strong>Celkový rizikový profil:</strong> <span class='badge badge-high'>VYSOKÉ</span> -- 17 vysoce rizikových systémů, 18 systémů s omezeným rizikem, 1 systém s minimálním rizikem</p>
+
+<div class='highlight'>
+<p><strong>Tento dokument je součástí AI Act Compliance Kitu</strong> dodaného společností AIshield.cz. Plán řízení incidentů je připraven k implementaci do interních procesů firmy Martin Haynes. Firma tento plán přizpůsobí své organizační struktuře, doplní kontaktní údaje odpovědných osob a zajistí jeho distribuci všem relevantním zaměstnancům.</p>
 </div>
 
 <h2>1. Účel a rozsah</h2>
 
-<p>Tento Plán řízení incidentů s AI systémy (dále jen „Plán“) stanovuje závazné interní postupy společnosti Martin Haynes (IČO: 17889251) pro detekci, klasifikaci, řešení a hlášení bezpečnostních, provozních a právních incidentů způsobených systémy umělé inteligence. Cílem tohoto dokumentu je minimalizovat negativní dopady selhání AI na zákazníky, zaměstnance a dobré jméno společnosti, a zároveň zajistit plný soulad s Nařízením (EU) 2024/1689 (AI Act).</p>
+<h3>1.1 Účel dokumentu</h3>
 
-<p>Plán je nezbytný zejména z důvodu plnění povinností dle <strong>čl. 73 AI Act</strong>, který nasazovatelům (deployerům) i poskytovatelům (providerům) vysoce rizikových AI systémů ukládá striktní povinnost hlásit závažné incidenty. Vzhledem k tomu, že dnešní datum je 25. 02. 2026, nacházíme se necelého půl roku před plnou účinností nařízení (2. 8. 2026) pro většinu vysoce rizikových systémů. Zavedení a testování tohoto plánu je proto kriticky naléhavé.</p>
+<p>Tento plán stanovuje závazné postupy pro identifikaci, klasifikaci, řešení a dokumentaci incidentů souvisejících s provozem AI systémů ve firmě Martin Haynes. Plán je zpracován v souladu s požadavky Nařízení Evropského parlamentu a Rady (EU) 2024/1689 (AI Act), zejména s <strong>čl. 73</strong>, který ukládá nasazovatelům (deployers) i poskytovatelům (providers) povinnost hlásit závažné incidenty příslušnému dozorovému orgánu.</p>
 
-<p>Tento Plán se vztahuje na <strong>všechny AI systémy</strong> provozované, vyvíjené nebo nasazené ve společnosti, bez ohledu na jejich rizikovou klasifikaci. Zahrnuje mimo jiné:</p>
+<p>Firma Martin Haynes vystupuje ve dvojí roli: jako <strong>nasazovatel</strong> (deployer, čl. 3 odst. 4) u většiny komerčně dostupných AI systémů (ChatGPT, Claude, Gemini, GitHub Copilot, Freshdesk AI, LinkedIn Recruiter, Prisync a dalších) a současně jako <strong>poskytovatel</strong> (provider, čl. 3 odst. 2) u vlastních AI řešení vyvíjených interně. Tato dvojí role má přímý dopad na rozsah povinností při řízení incidentů -- poskytovatel má širší oznamovací povinnosti dle čl. 73 odst. 1, zatímco nasazovatel hlásí incidenty dle čl. 73 odst. 5.</p>
+
+<div class='warning'>
+<p><strong>Zákonné lhůty pro hlášení závažných incidentů:</strong></p>
 <ul>
-  <li><strong>Komunikační a generativní AI:</strong> Google Gemini Chatbot, ChatGPT, Claude, Copilot, Freshdesk AI, Zendesk AI.</li>
-  <li><strong>HR a náborové systémy <span class='badge badge-high'>VYSOKÉ</span>:</strong> LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Sloneek.</li>
-  <li><strong>Finanční a scoringové systémy <span class='badge badge-high'>VYSOKÉ</span>:</strong> CRIF, Bisnode, Scoring Solutions, Fakturoid.</li>
-  <li><strong>Monitorovací systémy <span class='badge badge-high'>VYSOKÉ</span>:</strong> Sledování obrazovky, měření produktivity, kamerový dohled s AI.</li>
-  <li><strong>E-commerce a cenotvorba <span class='badge badge-limited'>OMEZENÉ</span>:</strong> Prisync, Competera, Dynamic Yield.</li>
-  <li><strong>Vlastní vývoj a kritická infrastruktura <span class='badge badge-high'>VYSOKÉ</span>:</strong> Systém „pospa ing.“ (interní systém pro řízení průmyslových strojů spadající pod kritickou infrastrukturu), vlastní kód a interní modely.</li>
+<li><strong>Poskytovatel (čl. 73 odst. 1):</strong> Nahlášení orgánu dozoru nad trhem do <strong>15 dnů</strong> od okamžiku, kdy se o incidentu dozvěděl.</li>
+<li><strong>Poskytovatel -- bezprostřední ohrožení života nebo zdraví (čl. 73 odst. 3):</strong> Zkrácená lhůta <strong>2 dnů</strong> od zjištění incidentu. Tato lhůta se vztahuje zejména na incidenty se zdravotnickými AI přístroji a bezpečnostními komponentami průmyslových strojů a dopravních prostředků.</li>
+<li><strong>Nasazovatel (čl. 73 odst. 5):</strong> Informování poskytovatele AI systému <strong>bez zbytečného odkladu</strong> po zjištění závažného incidentu. Současně je nasazovatel povinen informovat dotčené fyzické osoby, pokud je to nezbytné k ochraně jejich zájmů.</li>
+</ul>
+</div>
+
+<h3>1.2 Rozsah platnosti</h3>
+
+<p>Plán se vztahuje na <strong>všechny AI systémy</strong> provozované, vyvíjené nebo integrované firmou Martin Haynes napříč všemi odvětvími její činnosti. Vzhledem k rozsahu portfolia firmy -- e-commerce, účetnictví a finance, zdravotnictví, vzdělávání, výroba, IT, stavebnictví, doprava a logistika, gastronomie, kosmetické služby, právní služby, nemovitosti a zemědělství -- je rozsah tohoto plánu mimořádně široký a zahrnuje:</p>
+
+<ul>
+<li><strong>Chatboty a konverzační AI:</strong> Google Gemini Chatbot, Freshdesk AI, Zendesk AI, Intercom, ChatGPT, Claude</li>
+<li><strong>Generativní AI nástroje:</strong> ChatGPT/GPT-4o, Claude, Gemini, DALL-E, Midjourney, Copilot, Perplexity</li>
+<li><strong>AI pro tvorbu syntetických médií:</strong> ChatGPT (Sora), Gemini/VEO3, HeyGen, Synthesia, ElevenLabs</li>
+<li><strong>HR a recruitment AI:</strong> LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Prace.cz AI, Sloneek</li>
+<li><strong>Monitorovací systémy zaměstnanců:</strong> sledování obrazovky, měření produktivity, GPS sledování, kamerový dohled s AI, analýza emailů</li>
+<li><strong>Finanční a kreditní AI:</strong> CRIF Czech Credit Bureau, Bisnode/Dun and Bradstreet, Scoring Solutions</li>
+<li><strong>Pojišťovnické AI:</strong> Guidewire, NESS/Allianz AI, ČPP/ČSOB interní AI</li>
+<li><strong>Cenové a obchodní AI:</strong> Prisync, Competera, Dynamic Yield</li>
+<li><strong>Účetní software s AI:</strong> Fakturoid, Money S5, ABRA, Pohoda, iDoklad</li>
+<li><strong>Vývojářské AI nástroje:</strong> GitHub Copilot, Cursor</li>
+<li><strong>Vlastní AI řešení:</strong> vlastní vývoj AI, vlastní kód (systémy vyžadující okamžitou revizi klasifikace -- biometrie, rozpoznávání emocí), vlastní HTML systémy</li>
+<li><strong>AI jako bezpečnostní komponenta:</strong> zdravotnické přístroje, průmyslové stroje, automobily/dopravní prostředky, bezpečnostní systémy</li>
+<li><strong>AI v rozhodování o právech zákazníků:</strong> reklamace, slevy/ceny, schvalování žádostí, přístup ke službám</li>
+<li><strong>AI ve vzdělávání a obsahu:</strong> e-learning, doporučování obsahu, filtrování/moderování obsahu, mobilní aplikace</li>
+<li><strong>AI v kritické infrastruktuře:</strong> systém identifikovaný jako „pospa ing."</li>
+</ul>
+
+<h3>1.3 Vazba na další dokumenty Compliance Kitu</h3>
+
+<p>Tento plán je provázán s dalšími dokumenty dodanými v rámci AI Act Compliance Kitu:</p>
+<ul>
+<li><strong>Registr AI systémů</strong> poskytuje aktuální přehled všech provozovaných systémů a jejich rizikové klasifikace.</li>
+<li><strong>Interní AI politika</strong> stanovuje pravidla pro používání AI, na která tento plán navazuje eskalačními postupy.</li>
+<li><strong>Monitoring plán</strong> definuje průběžné kontroly, jejichž výstupy mohou být zdrojem detekce incidentů.</li>
+<li><strong>Posouzení dopadů (DPIA/FRIA)</strong> identifikuje rizikové scénáře, které jsou v tomto plánu rozpracovány do konkrétních reakčních postupů. Pokud incident odhalí dopad na základní práva, který nebyl v FRIA identifikován, je odpovědná osoba za AI povinna iniciovat aktualizaci nebo nové provedení FRIA pro dotčený systém (viz kapitola 7.1).</li>
+<li><strong>Dodavatelský checklist</strong> obsahuje požadavky na smluvní ošetření oznamování incidentů s dodavateli AI systémů.</li>
 </ul>
 
 <h2>2. Definice závažného incidentu</h2>
 
-<p>Pro účely tohoto Plánu a v souladu s evropskou legislativou je nutné striktně odlišovat běžné provozní chyby (např. překlep chatbota) od závažných incidentů, které podléhají oznamovací povinnosti.</p>
+<h3>2.1 Zákonná definice dle AI Act</h3>
 
 <div class='callout'>
-  <strong>Definice dle čl. 3 bod 49 a čl. 73 AI Act:</strong><br>
-  „Závažným incidentem“ se rozumí jakýkoli incident nebo selhání AI systému, které přímo či nepřímo vedlo, mohlo vést nebo může vést k některému z následujících následků:
-  <ul>
-    <li>úmrtí osoby nebo vážná újma na zdraví;</li>
-    <li>závažné narušení správy a provozu kritické infrastruktury;</li>
-    <li>porušení povinností podle práva Unie určených k ochraně základních práv;</li>
-    <li>vážná škoda na majetku nebo životním prostředí.</li>
-  </ul>
+<p><strong>Čl. 3 odst. 49 AI Act -- Závažný incident:</strong> „Závažným incidentem se rozumí incident nebo chybné fungování AI systému, které přímo nebo nepřímo vedou k jakémukoliv z následujících důsledků: (a) smrt osoby nebo závažné poškození zdraví osoby; (b) závažné a nevratné narušení správy a provozu kritické infrastruktury; (c) porušení povinností vyplývajících z práva Unie, které jsou určeny k ochraně základních práv; (d) závažné škody na majetku nebo životním prostředí."</p>
 </div>
 
-<p>Aby byla definice aplikovatelná na specifické odvětvové zaměření vaší společnosti, uvádíme <strong>konkrétní příklady závažných incidentů (L3)</strong>, které vyžadují okamžitou aktivaci tohoto Plánu:</p>
+<p>Pro účely tohoto plánu se za incident považuje jakákoliv událost, při které AI systém provozovaný firmou Martin Haynes produkuje neočekávaný, chybný nebo potenciálně škodlivý výstup, případně dojde k selhání systému, úniku dat nebo jinému nežádoucímu jevu. Ne každý incident je „závažný" ve smyslu čl. 73 -- klasifikace je popsána v kapitole 3.</p>
 
-<ul>
-  <li><strong>Příklad 1 (HR a nábor):</strong> AI systém pro filtraci životopisů (např. integrace Teamio/Sloneek) v důsledku skrytého biasu systematicky a prokazatelně vyřazuje uchazeče určitého pohlaví nebo etnika. Jedná se o porušení základních práv (diskriminace) a závažný incident dle čl. 73.</li>
-  <li><strong>Příklad 2 (Finance a scoring):</strong> Úvěrový scoringový model (např. napojení na CRIF/Bisnode) v důsledku chyby v algoritmu neoprávněně zamítne poskytnutí služeb velké skupině klientů.</li>
-  <li><strong>Příklad 3 (Kritická infrastruktura / Výroba):</strong> Selhání vámi vyvíjeného AI systému „pospa ing.“ nasazeného v průmyslovém stroji vede k havárii, která ohrozí zdraví pracovníků nebo způsobí rozsáhlou škodu na majetku.</li>
-  <li><strong>Příklad 4 (Monitorování zaměstnanců):</strong> AI systém pro analýzu e-mailů a měření produktivity (vlastní kód) začne plošně extrahovat a zpřístupňovat citlivé osobní údaje a zdravotní informace zaměstnanců neoprávněným osobám.</li>
-  <li><strong>Příklad 5 (E-commerce):</strong> Nástroj pro dynamickou cenotvorbu (Dynamic Yield / Prisync) začne na základě profilování algoritmicky účtovat výrazně vyšší ceny zranitelným skupinám zákazníků (např. seniorům), což naplňuje znaky diskriminace.</li>
-</ul>
+<h3>2.2 Příklady incidentů relevantních pro firmu Martin Haynes</h3>
+
+<p>Vzhledem k tomu, že firma působí napříč více než deseti odvětvími a provozuje rozsáhlé portfolio AI systémů včetně vysoce rizikových, je spektrum potenciálních incidentů mimořádně široké. Následující příklady ilustrují typické scénáře seřazené od nejzávažnějších:</p>
+
+<ol>
+<li><strong>Zdravotnictví -- chybná AI diagnostika:</strong> AI systém integrovaný ve zdravotnickém přístroji poskytne chybnou analýzu, na jejímž základě lékař stanoví nesprávnou diagnózu nebo léčebný postup. Pacient utrpí poškození zdraví. Jedná se o závažný incident dle čl. 73 vyžadující nahlášení ve zkrácené lhůtě <strong>2 dnů</strong> dle čl. 73 odst. 3 (bezprostřední ohrožení života nebo zdraví).</li>
+<li><strong>Kreditní scoring -- diskriminační rozhodnutí:</strong> Systém CRIF nebo Scoring Solutions systematicky zamítá úvěrové žádosti osob určité národnosti nebo věkové skupiny. Dochází k porušení základních práv (zákaz diskriminace) a narušení přístupu ke službám -- závažný incident dle čl. 73 odst. 1 písm. c).</li>
+<li><strong>Monitorování zaměstnanců -- únik citlivých dat:</strong> AI systém pro analýzu emailů nebo sledování obrazovky zaměstnanců zpřístupní shromážděná data neoprávněné osobě. Dochází k masivnímu úniku osobních údajů a porušení práva na soukromí.</li>
+<li><strong>HR recruitment -- systematický bias:</strong> LinkedIn Recruiter nebo Teamio systematicky vyřazuje kandidáty na základě pohlaví, věku nebo etnicity. Firma zjistí, že za posledních 6 měsíců nebyla na pohovor pozvána žádná žena nad 45 let -- porušení zákazu diskriminace v přístupu k zaměstnání (Příloha III bod 4).</li>
+<li><strong>E-commerce chatbot -- zavádějící informace:</strong> Google Gemini Chatbot na e-shopu informuje zákazníka o neexistující slevové akci „vše za 1 Kč" nebo poskytne chybné informace o bezpečnosti výrobku. Zákazník utrpí finanční škodu nebo je vystaven bezpečnostnímu riziku.</li>
+<li><strong>Dynamické ceny -- predátorské cílení:</strong> Systém Prisync nebo Competera nastaví výrazně vyšší ceny pro zákazníky identifikované jako zranitelní (senioři, osoby v tísni). Jedná se o potenciální porušení čl. 5 AI Act (zneužití zranitelnosti).</li>
+<li><strong>Doprava a logistika -- selhání bezpečnostní komponenty:</strong> AI systém řídící bezpečnostní funkce dopravního prostředku nebo průmyslového stroje selže, což vede k nehodě nebo ohrožení osob. Hlášení ve zkrácené lhůtě <strong>2 dnů</strong> dle čl. 73 odst. 3.</li>
+<li><strong>Generativní AI -- deepfake a dezinformace:</strong> Systémy Sora, HeyGen nebo Synthesia jsou zneužity k vytvoření syntetického obsahu, který poškozuje pověst třetí osoby nebo šíří dezinformace pod hlavičkou firmy.</li>
+<li><strong>Kritická infrastruktura:</strong> AI systém „pospa ing." provozovaný v kritické infrastruktuře selže a způsobí narušení provozu -- závažný incident dle čl. 73 odst. 1 písm. b) s povinností hlášení NÚKIB.</li>
+<li><strong>Vzdělávání -- AI interagující s dětmi:</strong> AI chatbot nebo e-learningový systém poskytne nezletilému uživateli nevhodný, škodlivý nebo manipulativní obsah. Vzhledem k vysoce rizikovému statusu AI interagující s dětmi (Příloha III) jde o závažný incident.</li>
+</ol>
 
 <h2>3. Klasifikace incidentů</h2>
 
-<p>Každé nestandardní chování AI systému musí být neprodleně klasifikováno do jedné z následujících úrovní závažnosti. Tato klasifikace určuje rychlost reakce, eskalační řetězec a případnou oznamovací povinnost.</p>
+<p>Každý identifikovaný incident je klasifikován do jedné ze tří úrovní závažnosti. Klasifikace určuje reakční dobu, eskalační cestu a rozsah dokumentace. V případě pochybností o správné klasifikaci se vždy postupuje podle vyšší úrovně.</p>
 
 <table>
-  <thead>
-    <tr>
-      <th>Úroveň</th>
-      <th>Závažnost a dopad</th>
-      <th>Příklad z praxe firmy</th>
-      <th>Reakční doba</th>
-      <th>Eskalace a hlášení</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>L1 — Nízká</strong></td>
-      <td>Operativní chyba. Nemá dopad na práva, zdraví ani majetek. Lze vyřešit lokálně.</td>
-      <td>Google Gemini Chatbot na e-shopu odpoví zákazníkovi nesmyslně nebo halucinuje o parametrech produktu.</td>
-      <td>Do 24 hodin</td>
-      <td>Řeší operátor / IT podpora. Nehlásí se ven.</td>
-    </tr>
-    <tr>
-      <td><strong>L2 — Střední</strong></td>
-      <td>Opakované chyby, stížnosti zákazníků, menší únik dat, podezření na bias. Potenciální riziko reputační škody.</td>
-      <td>Zákazník si stěžuje, že mu AI systém (Zendesk AI) poskytl data jiného uživatele, nebo dynamická cenotvorba generuje nesmyslné slevy.</td>
-      <td>Do 4 hodin</td>
-      <td>Eskalace na Odpovědnou osobu za AI (Martin Haynes). Interní vyšetřování.</td>
-    </tr>
-    <tr>
-      <td><strong>L3 — Vysoká</strong></td>
-      <td><strong>Závažný incident dle čl. 73 AI Act.</strong> Dopad na zdraví, základní práva (diskriminace), velká škoda, selhání kritické infrastruktury.</td>
-      <td>AI kamerový dohled způsobí neoprávněné propuštění zaměstnance, nebo AI ve zdravotnickém přístroji chybně vyhodnotí data pacienta.</td>
-      <td><strong>Ihned</strong> (max. 1 hodina)</td>
-      <td>Vedení firmy + <strong>Dozorový orgán / Poskytovatel</strong>. Krizová komunikace.</td>
-    </tr>
-    <tr>
-      <td><strong>L3 — ZAKÁZÁNO</strong></td>
-      <td><strong>Odhalení zakázaného systému dle čl. 5 AI Act.</strong> (Např. sociální scoring, biometrická identifikace v reálném čase, podprahová manipulace).</td>
-      <td>Interní audit zjistí, že systém „vlastní html“ provádí nepovolený sociální scoring zaměstnanců nebo zákazníků.</td>
-      <td><strong>Ihned</strong></td>
-      <td>Okamžité absolutní odstavení. Právní poradenství. Proaktivní hlášení dozorovému orgánu.</td>
-    </tr>
-  </tbody>
+<thead>
+<tr>
+<th>Úroveň</th>
+<th>Závažnost</th>
+<th>Popis</th>
+<th>Příklady z praxe firmy</th>
+<th>Reakční doba</th>
+<th>Eskalace na</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class='badge badge-minimal'>L1</span></td>
+<td>Nízká -- operativní chyba</td>
+<td>Izolovaná chyba AI systému bez dopadu na zdraví, práva nebo majetek. Systém funguje, ale výstup je nepřesný nebo neočekávaný.</td>
+<td>Google Gemini Chatbot odpovídá nepřesně na dotaz o dostupnosti zboží. GitHub Copilot vygeneruje nefunkční kód, který je zachycen při code review. Fakturoid AI špatně kategorizuje jednu fakturu.</td>
+<td>Do 24 hodin</td>
+<td>Operátor / přímý uživatel systému</td>
+</tr>
+<tr>
+<td><span class='badge badge-limited'>L2</span></td>
+<td>Střední -- opakované chyby nebo stížnosti</td>
+<td>Opakující se chyby, systematický bias, únik menšího rozsahu dat, stížnosti zákazníků nebo zaměstnanců na AI systém. Potenciální dopad na práva nebo majetek.</td>
+<td>Freshdesk AI opakovaně poskytuje chybné informace o reklamačním řádu. LinkedIn Recruiter vykazuje vzorec vyřazování kandidátů určitého profilu. Dynamic Yield nastavuje podezřele odlišné ceny pro různé segmenty zákazníků. Systém sledování obrazovky zaznamenává data mimo pracovní dobu.</td>
+<td>Do 4 hodin</td>
+<td>Odpovědná osoba za AI (Martin Haynes) + IT oddělení</td>
+</tr>
+<tr>
+<td><span class='badge badge-high'>L3</span></td>
+<td>Vysoká -- závažný incident dle čl. 73</td>
+<td>Smrt nebo vážné poškození zdraví. Závažné porušení základních práv. Narušení kritické infrastruktury. Významné škody na majetku nebo životním prostředí.</td>
+<td>Zdravotnický AI přístroj poskytne chybnou diagnostiku vedoucí k poškození pacienta. Kreditní scoring systematicky diskriminuje chráněnou skupinu. AI bezpečnostní komponenta průmyslového stroje selže a způsobí úraz. AI systém v kritické infrastruktuře („pospa ing.") způsobí výpadek provozu.</td>
+<td>Ihned (bez zbytečného odkladu)</td>
+<td>Vedení firmy + právní poradce + dozorový orgán</td>
+</tr>
+</tbody>
 </table>
+
+<div class='info'>
+<p><strong>Pravidlo eskalace nahoru:</strong> Pokud operátor nebo přímý uživatel systému není schopen incident vyřešit do stanovené reakční doby, nebo pokud se incident opakuje, automaticky se eskaluje na vyšší úroveň. Dva a více incidentů L1 u stejného systému v průběhu jednoho týdne se automaticky klasifikují jako L2.</p>
+</div>
 
 <h2>4. Reakční postupy</h2>
 
-<p>Následující postupy definují závazné kroky pro řešení incidentů v závislosti na jejich klasifikaci. Odpovědná osoba za AI (Martin Haynes) má pravomoc kdykoli překlasifikovat incident na vyšší úroveň, pokud zjistí nové skutečnosti.</p>
+<h3>4.1 L1 -- Operativní incident</h3>
 
-<h3>4.1 L1 — Operativní incident</h3>
+<p>Operativní incidenty jsou nejčastější kategorií a zahrnují izolované chyby AI systémů, které nemají přímý dopad na zdraví, práva nebo majetek osob. Cílem je rychlá náprava a prevence opakování.</p>
 
-<p>Operativní incidenty jsou běžnou součástí provozu AI systémů (zejména LLM modelů jako ChatGPT nebo Claude). Cílem je rychlá náprava a minimalizace zmatení uživatele.</p>
-
-<ol>
-  <li><strong>Detekce a příjem:</strong> Zaměstnanec nebo automatický monitoring zaznamená anomálii.</li>
-  <li><strong>Izolace problému:</strong> Pracovník ověří, zda jde o ojedinělou chybu (halucinaci) nebo systémový problém. Pokud chatbot pokračuje v chybných odpovědích, pracovník dočasně přepne komunikaci na lidského operátora (uplatnění práva na lidský zásah).</li>
-  <li><strong>Oprava:</strong> IT oddělení upraví prompt (systémové instrukce) pro Google Gemini / Zendesk AI, případně vymaže kontext chybné konverzace.</li>
-  <li><strong>Dokumentace:</strong> Incident je zaznamenán do interního logu chyb (postačuje zjednodušený záznam v helpdeskovém systému).</li>
-</ol>
-
-<h3>4.2 L2 — Střední incident</h3>
-
-<p>Střední incidenty představují systémové selhání, které může mít dopad na více uživatelů, způsobit finanční ztrátu firmě nebo představuje hraniční porušení interních směrnic. Vyžadují zásah odpovědné osoby.</p>
+<p><strong>Postup řešení:</strong></p>
 
 <ol>
-  <li><strong>Detekce a okamžitá eskalace:</strong> Jakmile je detekován incident úrovně L2, zaměstnanec okamžitě kontaktuje Odpovědnou osobu za AI (Martin Haynes).</li>
-  <li><strong>Aktivace „Kill Switch“ (Lidský dohled dle čl. 14 AI Act):</strong> Odpovědná osoba rozhodne o okamžitém pozastavení AI systému. Dle čl. 14 odst. 4 písm. d) AI Act musí mít nasazovatel možnost systém přerušit (tzv. tlačítko stop). Systém je přepnut do plně manuálního režimu.</li>
-  <li><strong>Analýza a forenzní šetření:</strong> IT oddělení ve spolupráci s dodavatelem analyzuje logy. Zjišťuje se příčina.</li>
-  <li><strong>Náprava a obnova provozu:</strong> Systém je opraven, otestován na historických datech a po schválení Odpovědnou osobou znovu spuštěn do provozu.</li>
-  <li><strong>Follow-up a dokumentace:</strong> Incident je detailně popsán v Registru incidentů.</li>
+<li><strong>Detekce a záznam:</strong> Zaměstnanec, který chybu AI systému zjistí, ji zaznamená do interního systému evidence incidentů (viz kapitola 6). Záznam obsahuje minimálně: název AI systému, datum a čas, popis chyby, snímek obrazovky nebo kopii výstupu.</li>
+<li><strong>Posouzení dopadu:</strong> Operátor ověří, zda chybný výstup AI systému byl předán zákazníkovi, zaměstnanci nebo třetí osobě. Pokud ano, posoudí, zda mohla vzniknout škoda nebo nedorozumění.</li>
+<li><strong>Izolace chyby:</strong> Pokud AI systém produkuje chybné výstupy opakovaně, operátor přepne na manuální režim nebo dočasně omezí funkci AI systému. Například: pokud Google Gemini Chatbot opakovaně uvádí chybné ceny, operátor dočasně deaktivuje automatické odpovědi o cenách.</li>
+<li><strong>Oprava a ověření:</strong> Operátor provede opravu (aktualizace znalostní báze chatbotu, korekce vstupních dat, restart systému) a ověří, že systém funguje správně.</li>
+<li><strong>Dokumentace a uzavření:</strong> Operátor doplní záznam o provedená opatření a výsledek. Incident je uzavřen.</li>
 </ol>
 
-<h3>4.3 L3 — Závažný incident <span class='badge badge-high'>VYSOKÉ RIZIKO</span></h3>
+<p><strong>Zodpovědnost:</strong> Přímý uživatel AI systému nebo určený operátor daného oddělení.</p>
 
-<p>Závažný incident je krizová situace s přímým právním dopadem dle AI Act. Postup musí být rychlý, precizně dokumentovaný a plně v souladu se zákonnými lhůtami.</p>
+<p><strong>Příklad scénáře:</strong> Zaměstnanec účetního oddělení zjistí, že Fakturoid AI automaticky přiřadil fakturu za nákup stavebního materiálu do kategorie „kancelářské potřeby". Zaměstnanec opravu provede manuálně, zaznamená incident a ověří, zda se chyba netýká dalších faktur. Pokud se stejná chyba opakuje u více než tří faktur, eskaluje na L2.</p>
 
-<div class='highlight'>
-  <strong>Příklad scénáře L3 pro vaši firmu:</strong> Váš interní AI systém pro hodnocení zaměstnanců (kombinace sledování obrazovky a analýzy e-mailů) chybně vyhodnotí skupinu zaměstnanců jako „bezpečnostní riziko“ a automaticky jim zablokuje přístup do systémů, což vede k jejich neoprávněné penalizaci. Jedná se o zásah do základních práv (čl. 73).
+<h3>4.2 L2 -- Střední incident</h3>
+
+<p>Střední incidenty vyžadují zapojení odpovědné osoby za AI a systematickou analýzu příčin. Typicky se jedná o opakující se chyby, vzorce biasu, stížnosti zákazníků nebo zaměstnanců, nebo menší úniky dat.</p>
+
+<p><strong>Postup řešení:</strong></p>
+
+<ol>
+<li><strong>Detekce a okamžitá eskalace:</strong> Zaměstnanec, který incident identifikuje, neprodleně informuje odpovědnou osobu za AI (Martin Haynes) a IT oddělení. Eskalace probíhá telefonicky nebo prostřednictvím interního komunikačního kanálu s prioritou „urgentní".</li>
+<li><strong>Předběžné posouzení:</strong> Odpovědná osoba za AI do 1 hodiny od nahlášení posoudí, zda incident nemá být překlasifikován na L3. Klíčové otázky: Došlo k poškození zdraví? Jsou dotčena základní práva? Jaký je rozsah dotčených osob?</li>
+<li><strong>Izolace a omezení škod:</strong> IT oddělení zajistí izolaci problému. Podle povahy incidentu to může znamenat: dočasné vypnutí AI funkce (kill switch), přepnutí na manuální režim, omezení přístupu k systému, nebo pozastavení automatizovaného rozhodování.</li>
+<li><strong>Analýza příčin (root cause analysis):</strong> Odpovědná osoba za AI ve spolupráci s IT oddělením provede analýzu příčin incidentu. Zkoumá se: vstupní data, konfigurace systému, změny provedené dodavatelem, interakce s jinými systémy, lidský faktor.</li>
+<li><strong>Nápravná opatření:</strong> Na základě analýzy příčin jsou definována konkrétní nápravná opatření. Příklady: úprava promptů chatbotu, rekonfigurace parametrů AI systému, aktualizace trénovacích dat, změna procesu lidského dohledu.</li>
+<li><strong>Komunikace s dotčenými osobami:</strong> Pokud byli incidentem dotčeni zákazníci nebo zaměstnanci, odpovědná osoba rozhodne o formě a rozsahu komunikace. Například: informování zákazníků o chybné ceně, oprava chybně zamítnuté reklamace.</li>
+<li><strong>Kontaktování dodavatele AI:</strong> Pokud je příčinou incidentu chyba na straně dodavatele AI systému (OpenAI, Google, Anthropic, LinkedIn apod.), odpovědná osoba kontaktuje dodavatele prostřednictvím smluvně dohodnutého kanálu a požaduje vysvětlení a nápravu.</li>
+<li><strong>Follow-up a prevence:</strong> Do stanoveného termínu po uzavření incidentu odpovědná osoba ověří účinnost nápravných opatření a rozhodne o případné úpravě interních procesů.</li>
+</ol>
+
+<div class='warning'>
+<p><strong>Rozhodnutí o vypnutí AI systému (kill switch):</strong> Odpovědná osoba za AI má pravomoc rozhodnout o okamžitém vypnutí jakéhokoliv AI systému, pokud: (a) systém opakovaně produkuje chybné výstupy s dopadem na zákazníky nebo zaměstnance, (b) existuje podezření na únik osobních údajů, (c) systém vykazuje známky biasu nebo diskriminace, (d) není možné zajistit lidský dohled dle čl. 14 AI Act. Toto rozhodnutí nevyžaduje předchozí souhlas vedení -- odpovědná osoba informuje vedení dodatečně.</p>
 </div>
 
-<ol>
-  <li><strong>Okamžité opatření a izolace (Ihned):</strong>
-    <ul>
-      <li>Absolutní odstavení dotčeného AI systému z provozu.</li>
-      <li>Zajištění fyzické a kybernetické bezpečnosti (pokud má incident fyzický přesah, např. u průmyslového stroje „pospa ing.“).</li>
-      <li>Svolání krizového štábu (Jednatel, IT ředitel, Právní zástupce).</li>
-    </ul>
-  </li>
-  <li><strong>Zajištění důkazů a logů (Do 2 hodin):</strong>
-    <ul>
-      <li><strong>Pokud jste poskytovatel (vlastní kód, pospa ing.):</strong> Dle <strong>čl. 19 odst. 1 AI Act</strong> zajistěte a bezpečně uložte všechny automaticky generované protokoly.</li>
-      <li><strong>Pokud jste nasazovatel (SaaS, Teamio, LinkedIn, Zendesk):</strong> Dle <strong>čl. 26 odst. 5 AI Act</strong> zajistěte logy, ke kterým máte přístup. <em>Odpověď na dotaz klienta: U systémů třetích stran, kde nemáte přístup k backendu, okamžitě kontaktujte technickou podporu dodavatele s formální žádostí o zmrazení a uchování logů k danému incidentu.</em></li>
-      <li>Logy musí být uchovány po dobu <strong>minimálně 6 měsíců</strong>.</li>
-    </ul>
-  </li>
-  <li><strong>Koordinace s GDPR (Souběžné hlášení):</strong>
-    <ul>
-      <li>Posuďte, zda incident zároveň představuje porušení zabezpečení osobních údajů dle čl. 4 bod 12 GDPR (např. únik dat z HR systému).</li>
-      <li>Pokud ano, aktivujte souběžně GDPR incident response plán a zajistěte hlášení ÚOOÚ <strong>do 72 hodin</strong> (čl. 33 GDPR). Tato lhůta je výrazně kratší než lhůty dle AI Act!</li>
-    </ul>
-  </li>
-  <li><strong>Rozhodovací strom pro hlášení dle AI Act (ZÁKONNÉ LHŮTY):</strong>
-    <p><em>Odpověď na dotaz klienta: Lhůty se počítají na kalendářní dny, nikoliv pracovní. Pokud se incident stane v pátek večer, lhůta již běží.</em></p>
-    <ul>
-      <li><strong>Scénář A: Jste POSKYTOVATEL systému (např. vlastní kód, pospa ing.):</strong>
-        <ul>
-          <li>Pokud incident způsobil <strong>smrt nebo vážnou újmu na zdraví</strong>: Hlášení dozorovému orgánu <strong>do 2 dnů</strong> (čl. 73 odst. 4).</li>
-          <li>Ostatní závažné incidenty: Hlášení dozorovému orgánu bez zbytečného odkladu, nejpozději <strong>do 15 dnů</strong> (čl. 73 odst. 2).</li>
-        </ul>
-      </li>
-      <li><strong>Scénář B: Jste NASAZOVATEL systému třetí strany (např. Teamio, CRIF, Sloneek):</strong>
-        <ul>
-          <li>Máte povinnost informovat poskytovatele systému (dodavatele) <strong>bez zbytečného odkladu</strong> (čl. 73 odst. 6). Poskytovatel následně nese odpovědnost za nahlášení dozorovému orgánu do 15 dnů.</li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li><strong>Komunikační plán:</strong>
-    <ul>
-      <li><strong>Interní:</strong> Informování zaměstnanců o výpadku systému a přechodu na manuální procesy.</li>
-      <li><strong>Externí (Notifikace subjektů údajů):</strong> Transparentní komunikace vůči poškozeným fyzickým osobám (zákazníci, uchazeči o zaměstnání). Vysvětlení, že došlo k chybě AI, a garance lidského přezkumu.</li>
-    </ul>
-  </li>
-</ol>
+<p><strong>Příklad scénáře:</strong> Personalista zjistí, že LinkedIn Recruiter za poslední měsíc automaticky vyřadil 95 % kandidátek nad 40 let na pozici projektového manažera ve stavebnictví. Personalista eskaluje na odpovědnou osobu za AI. Martin Haynes pozastaví automatické filtrování kandidátů v LinkedIn Recruiter, nařídí manuální přezkum všech vyřazených kandidátů za poslední měsíc, kontaktuje LinkedIn ohledně vysvětlení algoritmu a zajistí, aby do obnovení automatického filtrování probíhal výběr s lidským dohledem v každém kroku.</p>
 
-<h3>4.4 Specifický postup pro incidenty GPAI (Generativní AI modely)</h3>
+<h3>4.3 L3 -- Závažný incident</h3>
 
-<p>Vzhledem k tomu, že integrujete LLM API (OpenAI GPT-4o, Anthropic Claude, Google Gemini) do vlastních produktů, vztahují se na vás od 2. 8. 2025 pravidla pro modely s obecným účelem (GPAI).</p>
+<p>Závažné incidenty vyžadují okamžitou reakci, zapojení vedení firmy, právního poradce a v zákonem stanovených případech nahlášení dozorovému orgánu. Jedná se o incidenty s dopadem na zdraví, základní práva, kritickou infrastrukturu nebo majetek.</p>
+
+<p><strong>Postup řešení:</strong></p>
 
 <ol>
-  <li>Pokud dojde k závažnému incidentu v zákaznickém produktu poháněném GPAI, IT oddělení musí primárně identifikovat, zda selhání pochází z vaší integrační vrstvy (např. chybný prompt, špatné předání dat), nebo přímo ze základního modelu (např. těžká halucinace GPT-4o).</li>
-  <li>Pokud je chyba na straně modelu, máte povinnost dle <strong>čl. 73 odst. 8 AI Act</strong> neprodleně notifikovat poskytovatele GPAI modelu (OpenAI, Anthropic, Google) dle podmínek jejich API smlouvy, aby mohl poskytovatel splnit svou vlastní oznamovací povinnost vůči Evropskému úřadu pro AI.</li>
+<li><strong>Okamžité opatření (0-1 hodina):</strong> Kdokoliv, kdo závažný incident zjistí, okamžitě kontaktuje odpovědnou osobu za AI (Martin Haynes) a vedení firmy. AI systém, který incident způsobil, je <strong>okamžitě odstaven z provozu</strong>. Jsou zajištěna první opatření na ochranu dotčených osob (první pomoc, evakuace, zabezpečení dat).</li>
+
+<li><strong>Izolace a zajištění důkazů (1-4 hodiny):</strong> IT oddělení zajistí kompletní logy AI systému, vstupní data, výstupy a konfiguraci v okamžiku incidentu. Veškeré záznamy jsou zabezpečeny proti smazání nebo úpravě. Logy musí být uchovány v souladu s lhůtami uvedenými v kapitole 6.3.</li>
+
+<li><strong>Sestavení krizového týmu (do 4 hodin):</strong> Martin Haynes jako odpovědná osoba za AI svolá krizový tým ve složení: vedení firmy, IT oddělení, právní poradce, odpovědný manažer dotčeného odvětví, případně DPO (pověřenec pro ochranu osobních údajů). Krizový tým řídí veškeré další kroky.</li>
+
+<li><strong>Právní posouzení (do 24 hodin):</strong> Právní poradce posoudí, zda incident splňuje definici závažného incidentu dle čl. 3 odst. 49 AI Act a zda vzniká oznamovací povinnost dle čl. 73. Současně posoudí povinnosti dle GDPR (hlášení ÚOOÚ do 72 hodin při porušení zabezpečení osobních údajů dle čl. 33 GDPR). Právní poradce rovněž posoudí, zda incident představuje bezprostřední ohrožení života nebo zdraví, což by aktivovalo zkrácenou 2denní lhůtu dle čl. 73 odst. 3.</li>
+
+<li><strong>Nahlášení dozorovému orgánu a dotčeným osobám:</strong>
+<ul>
+<li><strong>Firma jako poskytovatel (čl. 73 odst. 1):</strong> Nahlášení orgánu dozoru nad trhem do <strong>15 dnů</strong> od okamžiku, kdy se firma o incidentu dozvěděla. Hlášení obsahuje: identifikaci AI systému, popis incidentu, přijatá opatření, odhad dopadu.</li>
+<li><strong>Firma jako poskytovatel -- bezprostřední ohrožení života (čl. 73 odst. 3):</strong> Pokud incident představuje bezprostřední ohrožení života nebo zdraví, platí zkrácená lhůta <strong>2 dnů</strong> od zjištění. Tato lhůta se vztahuje zejména na incidenty se zdravotnickými AI přístroji, bezpečnostními komponentami průmyslových strojů a dopravních prostředků.</li>
+<li><strong>Firma jako nasazovatel (čl. 73 odst. 5):</strong> Informování poskytovatele AI systému <strong>bez zbytečného odkladu</strong> po zjištění závažného incidentu. Současně je nasazovatel dle čl. 73 odst. 5 povinen informovat <strong>dotčené fyzické osoby</strong>, pokud je to nezbytné k ochraně jejich zájmů -- tato povinnost je nezávislá na informování poskytovatele a musí být splněna bez zbytečného odkladu.</li>
+<li><strong>Kritická infrastruktura:</strong> Pro systém „pospa ing." a další systémy v kritické infrastruktuře je příslušným orgánem <strong>NÚKIB</strong> (Národní úřad pro kybernetickou a informační bezpečnost).</li>
+<li><strong>Koordinační orgán v ČR:</strong> Úřad pro ochranu osobních údajů (ÚOOÚ) je dle dostupných informací k datu vydání tohoto dokumentu koordinačním orgánem pro AI Act v ČR dle čl. 70 AI Act. Firma Martin Haynes ověří aktuální stav jmenování národního příslušného orgánu na webových stránkách ÚOOÚ nebo Ministerstva průmyslu a obchodu. Sektorové orgány (ČNB pro finanční sektor, SÚKL pro zdravotnické prostředky, ČTÚ pro telekomunikace, NÚKIB pro kritickou infrastrukturu) mohou mít dílčí kompetence v příslušných odvětvích.</li>
+</ul>
+</li>
+
+<li><strong>Průběžné hlášení dozorovému orgánu (čl. 73 odst. 6):</strong> Po prvotním nahlášení je firma povinna dle čl. 73 odst. 6 AI Act na žádost orgánu dozoru nad trhem poskytovat doplňující informace o průběhu vyšetřování, identifikovaných příčinách a nápravných opatřeních. Krizový tým zajistí, aby byl k dispozici aktuální přehled o stavu vyšetřování pro případnou žádost dozorového orgánu.</li>
+
+<li><strong>Vyšetřování (průběžně):</strong> Krizový tým provede důkladné vyšetřování příčin incidentu. Vyšetřování zahrnuje: analýzu logů, rekonstrukci událostí, identifikaci selhání (technické, procesní, lidské), posouzení, zda incident mohl být předvídán a předejit mu.</li>
+
+<li><strong>Nápravná opatření:</strong> Na základě vyšetřování krizový tým definuje okamžitá a dlouhodobá nápravná opatření. AI systém nesmí být znovu uveden do provozu, dokud nejsou implementována opatření zajišťující, že se incident nebude opakovat. Pokud incident odhalil dopad na základní práva, který nebyl identifikován v FRIA dle čl. 27 AI Act, odpovědná osoba za AI iniciuje aktualizaci nebo nové provedení FRIA pro dotčený systém.</li>
+
+<li><strong>Komunikační plán:</strong>
+<ul>
+<li><strong>Interní komunikace:</strong> Informování všech dotčených zaměstnanců o incidentu, přijatých opatřeních a změnách v procesech.</li>
+<li><strong>Zákonná povinnost informovat dotčené osoby (čl. 73 odst. 5):</strong> Nasazovatel je povinen informovat dotčené fyzické osoby, pokud je to nezbytné k ochraně jejich zájmů. Forma a rozsah komunikace se řídí povahou incidentu -- přímé informování pacientů, zákazníků, zaměstnanců nebo kandidátů, jejichž práva nebo zájmy byly incidentem dotčeny.</li>
+<li><strong>Externí komunikace -- veřejnost a média:</strong> V případě incidentu s širším dopadem připraví vedení firmy ve spolupráci s právním poradcem oficiální stanovisko. Veškerá komunikace s médii probíhá výhradně prostřednictvím jedné určené osoby.</li>
+</ul>
+</li>
 </ol>
+
+<p><strong>Příklad scénáře:</strong> AI systém integrovaný ve zdravotnickém přístroji provozovaném firmou Martin Haynes ve zdravotnickém segmentu poskytne chybnou analýzu obrazových dat, na jejímž základě lékař nezachytí závažný nález. Pacient je poškozen opožděnou diagnózou. Odpovědná osoba okamžitě odstaví přístroj z provozu, zajistí veškeré logy a záznamy, svolá krizový tým. Právní poradce posoudí oznamovací povinnosti -- hlášení SÚKL (jako orgánu dozoru nad zdravotnickými prostředky) ve zkrácené lhůtě <strong>2 dnů</strong> dle čl. 73 odst. 3 (bezprostřední ohrožení zdraví), ÚOOÚ (pokud došlo k porušení zabezpečení osobních údajů), a poskytovateli zdravotnického přístroje (dle čl. 73 odst. 5). Současně je firma povinna informovat dotčeného pacienta dle čl. 73 odst. 5. Je kontaktován pojistitel profesní odpovědnosti.</p>
 
 <h2>5. Eskalační matice</h2>
 
-<p>Tato matice definuje, koho kontaktovat v případě incidentu. Buňky označené žlutým podbarvením musí být doplněny konkrétními jmény vašich pracovníků.</p>
+<p>Eskalační matice definuje kontaktní osoby pro jednotlivé úrovně incidentů a typy AI systémů. Firma Martin Haynes doplní konkrétní kontaktní údaje dle své organizační struktury (viz kapitola 8).</p>
 
 <table>
-  <thead>
-    <tr>
-      <th>Typ incidentu</th>
-      <th>L1 Kontakt (Operativa)</th>
-      <th>L2 Kontakt (Management)</th>
-      <th>L3 Kontakt (Krizové řízení)</th>
-      <th>Externí hlášení</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Chyba Chatbota / LLM</strong><br>(Gemini, ChatGPT, Zendesk)</td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno IT podpory]</em></td>
-      <td>Martin Haynes<br>(Odpovědná osoba za AI)</td>
-      <td>Martin Haynes + Právní zástupce</td>
-      <td>Poskytovatel API (Google/OpenAI)</td>
-    </tr>
-    <tr>
-      <td><strong>HR a Náborové AI</strong><br>(Teamio, Sloneek, LinkedIn)</td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno HR specialisty]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno HR ředitele]</em> / Martin Haynes</td>
-      <td>Martin Haynes + Právní zástupce</td>
-      <td>ÚOOÚ (při úniku dat do 72h) + Poskytovatel AI</td>
-    </tr>
-    <tr>
-      <td><strong>Finanční / Scoring AI</strong><br>(CRIF, Bisnode, Fakturoid)</td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno z financí]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno Finančního ředitele]</em> / Martin Haynes</td>
-      <td>Martin Haynes + Právní zástupce</td>
-      <td>Poskytovatel AI (nasazovatel hlásí jemu)</td>
-    </tr>
-    <tr>
-      <td><strong>Vlastní vývoj / Kritické</strong><br>(pospa ing., vlastní kód)</td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno CTO]</em></td>
-      <td>Martin Haynes</td>
-      <td>Martin Haynes + Krizový štáb</td>
-      <td>NÚKIB + Dozorový orgán AI (do 2/15 dnů)</td>
-    </tr>
-  </tbody>
+<thead>
+<tr>
+<th>Typ AI systému / oblast</th>
+<th>L1 -- první kontakt</th>
+<th>L2 -- eskalace</th>
+<th>L3 -- krizový tým</th>
+<th>Externí kontakt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chatboty (Gemini, Freshdesk, Zendesk, Intercom)</td>
+<td>Operátor zákaznické podpory</td>
+<td>Martin Haynes + IT</td>
+<td>Vedení + právní poradce</td>
+<td>Dodavatel AI (Google, Freshworks, Zendesk)</td>
+</tr>
+<tr>
+<td>Generativní AI (ChatGPT, Claude, DALL-E, Midjourney)</td>
+<td>Přímý uživatel</td>
+<td>Martin Haynes + IT</td>
+<td>Vedení + právní poradce</td>
+<td>OpenAI, Anthropic, Google</td>
+</tr>
+<tr>
+<td>Syntetická média (Sora, HeyGen, Synthesia, ElevenLabs)</td>
+<td>Tvůrce obsahu</td>
+<td>Martin Haynes + marketing</td>
+<td>Vedení + právní poradce</td>
+<td>Dodavatel platformy</td>
+</tr>
+<tr>
+<td>HR a recruitment (LinkedIn Recruiter, Teamio, Sloneek)</td>
+<td>Personalista</td>
+<td>Martin Haynes + HR vedoucí</td>
+<td>Vedení + právní poradce + DPO</td>
+<td>LinkedIn, Teamio, inspektorát práce</td>
+</tr>
+<tr>
+<td>Monitorování zaměstnanců</td>
+<td>IT administrátor</td>
+<td>Martin Haynes + DPO</td>
+<td>Vedení + právní poradce + DPO</td>
+<td>ÚOOÚ, inspektorát práce</td>
+</tr>
+<tr>
+<td>Kreditní scoring (CRIF, Bisnode, Scoring Solutions)</td>
+<td>Finanční analytik</td>
+<td>Martin Haynes + finanční ředitel</td>
+<td>Vedení + právní poradce</td>
+<td>CRIF, ČNB, ÚOOÚ</td>
+</tr>
+<tr>
+<td>Pojišťovnické AI (Guidewire, NESS/Allianz)</td>
+<td>Pojistný matematik / underwriter</td>
+<td>Martin Haynes + vedoucí pojištění</td>
+<td>Vedení + právní poradce</td>
+<td>Dodavatel, ČNB</td>
+</tr>
+<tr>
+<td>Cenové AI (Prisync, Competera, Dynamic Yield)</td>
+<td>E-commerce manažer</td>
+<td>Martin Haynes + obchodní ředitel</td>
+<td>Vedení + právní poradce</td>
+<td>ČOI, dodavatel platformy</td>
+</tr>
+<tr>
+<td>Zdravotnické AI přístroje</td>
+<td>Zdravotnický personál</td>
+<td>Martin Haynes + vedoucí lékař</td>
+<td>Vedení + právní poradce + SÚKL</td>
+<td>SÚKL, výrobce přístroje, ÚOOÚ</td>
+</tr>
+<tr>
+<td>Bezpečnostní komponenty (průmysl, doprava)</td>
+<td>Technik / operátor</td>
+<td>Martin Haynes + vedoucí výroby/dopravy</td>
+<td>Vedení + právní poradce + BOZP</td>
+<td>ČOI, NÚKIB, výrobce</td>
+</tr>
+<tr>
+<td>Kritická infrastruktura („pospa ing.")</td>
+<td>Operátor systému</td>
+<td>Martin Haynes + IT bezpečnost</td>
+<td>Vedení + právní poradce + NÚKIB</td>
+<td>NÚKIB, sektorový regulátor</td>
+</tr>
+<tr>
+<td>Vlastní AI vývoj</td>
+<td>Vývojář</td>
+<td>Martin Haynes + vedoucí vývoje</td>
+<td>Vedení + právní poradce</td>
+<td>ÚOOÚ, notifikovaný subjekt (pokud relevantní)</td>
+</tr>
+<tr>
+<td>Vzdělávání a obsah (e-learning, děti)</td>
+<td>Pedagog / content manažer</td>
+<td>Martin Haynes + vedoucí vzdělávání</td>
+<td>Vedení + právní poradce + OSPOD</td>
+<td>MŠMT, ÚOOÚ</td>
+</tr>
+</tbody>
 </table>
 
 <div class='warning'>
-  <strong>KRITICKÉ UPOZORNĚNÍ: SANKCE ZA PORUŠENÍ POVINNOSTÍ</strong><br>
-  Porušení povinností hlášení incidentů dle čl. 73 AI Act může být sankcionováno pokutou až 15 mil. EUR nebo 3 % celosvětového ročního obratu (čl. 99 odst. 4 AI Act). Pokud by incident odhalil provozování zakázaného systému dle čl. 5 AI Act (např. sociální scoring), hrozí pokuta až 35 mil. EUR nebo 7 % obratu (čl. 99 odst. 3 AI Act).
+<p><strong>NAHLÁŠENÍ ZÁVAŽNÉHO INCIDENTU DOZOROVÉMU ORGÁNU -- PŘEHLED LHŮT:</strong></p>
+<ul>
+<li><strong>Poskytovatel -- standardní lhůta:</strong> 15 dnů dle čl. 73 odst. 1 AI Act.</li>
+<li><strong>Poskytovatel -- bezprostřední ohrožení života/zdraví:</strong> <strong>2 dny</strong> dle čl. 73 odst. 3 AI Act. Vztahuje se zejména na zdravotnické AI přístroje a bezpečnostní komponenty průmyslových strojů a dopravních prostředků.</li>
+<li><strong>Nasazovatel:</strong> Bez zbytečného odkladu informovat poskytovatele a dotčené fyzické osoby dle čl. 73 odst. 5.</li>
+<li><strong>Průběžné hlášení:</strong> Na žádost dozorového orgánu poskytovat doplňující informace dle čl. 73 odst. 6.</li>
+<li><strong>GDPR (souběžná povinnost):</strong> 72 hodin pro hlášení ÚOOÚ dle čl. 33 GDPR při porušení zabezpečení osobních údajů.</li>
+</ul>
+<p>Koordinačním orgánem pro AI Act v ČR je dle dostupných informací <strong>ÚOOÚ</strong> (čl. 70 AI Act). Sektorové orgány (ČNB, SÚKL, NÚKIB, ČTÚ) mohou mít dílčí kompetence v příslušných odvětvích.</p>
 </div>
 
 <h2>6. Dokumentace incidentů</h2>
 
-<p>Každý incident úrovně L2 a L3 musí být formálně zaznamenán. Dle <strong>čl. 19 odst. 1</strong> (pro poskytovatele) a <strong>čl. 26 odst. 5</strong> (pro nasazovatele) musí být veškeré logy a záznamy o fungování vysoce rizikových AI systémů uchovávány po dobu <strong>minimálně 6 měsíců</strong>.</p>
+<h3>6.1 Povinný rozsah záznamu</h3>
 
-<p>Záznamy se uchovávají v centrálním zabezpečeném úložišti společnosti. Níže je uvedena šablona záznamu, kterou je nutné při každém incidentu vyplnit.</p>
+<p>Každý incident, bez ohledu na úroveň závažnosti, musí být zdokumentován. Dokumentace slouží jako důkaz plnění povinností dle AI Act, jako podklad pro analýzu trendů a prevenci, a jako důkazní materiál v případě kontroly dozorovým orgánem nebo soudního řízení.</p>
 
-<h3>Šablona záznamu o AI incidentu (Formulář)</h3>
+<h3>6.2 Šablona záznamu incidentu</h3>
 
 <table>
-  <tbody>
-    <tr>
-      <td style="width: 30%;"><strong>ID Incidentu:</strong></td>
-      <td><em>[Generováno automaticky, např. INC-AI-2026-001]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Datum a čas detekce:</strong></td>
-      <td><em>[DD.MM.RRRR HH:MM]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Zasažený AI systém:</strong></td>
-      <td><em>[Např. Sloneek AI screening, Google Gemini Chatbot]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Role společnosti:</strong></td>
-      <td>[ ] Poskytovatel (vlastní vývoj) &nbsp;&nbsp; [ ] Nasazovatel (systém třetí strany)</td>
-    </tr>
-    <tr>
-      <td><strong>Klasifikace:</strong></td>
-      <td>[ ] L1 - Nízká &nbsp;&nbsp; [ ] L2 - Střední &nbsp;&nbsp; [ ] L3 - Vysoká &nbsp;&nbsp; [ ] L3 - Zakázáno</td>
-    </tr>
-    <tr>
-      <td><strong>Popis incidentu:</strong></td>
-      <td><em>[Detailní popis toho, co se stalo. Jak se AI systém zachoval nestandardně?]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Dopad:</strong></td>
-      <td><em>[Kolik uživatelů bylo zasaženo? Došlo k finanční škodě? Byla porušena práva?]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Zajištění logů (čl. 19/26):</strong></td>
-      <td>[ ] ANO, logy uloženy / [ ] Vyžádáno od dodavatele. Cesta: <em>[Odkaz]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Hlášení AI Act (čl. 73):</strong></td>
-      <td>[ ] Není nutné &nbsp;&nbsp; [ ] Nahlášeno dodavateli &nbsp;&nbsp; [ ] Nahlášeno úřadu dne: <em>[Datum]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Hlášení GDPR (čl. 33):</strong></td>
-      <td>[ ] Není nutné (bez osobních údajů) &nbsp;&nbsp; [ ] Nahlášeno ÚOOÚ do 72h</td>
-    </tr>
-    <tr>
-      <td><strong>Odpovědná osoba:</strong></td>
-      <td><em>[Jméno a podpis osoby, která záznam pořídila]</em></td>
-    </tr>
-  </tbody>
+<thead>
+<tr>
+<th>Položka</th>
+<th>Obsah</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID incidentu</strong></td>
+<td>Jedinečný identifikátor (formát: AI-INC-RRRR-NNN, např. AI-INC-2026-001)</td>
+</tr>
+<tr>
+<td><strong>Datum a čas detekce</strong></td>
+<td>Přesný datum a čas, kdy byl incident zjištěn</td>
+</tr>
+<tr>
+<td><strong>Datum a čas vzniku</strong></td>
+<td>Odhadovaný datum a čas, kdy incident skutečně nastal (pokud se liší od detekce)</td>
+</tr>
+<tr>
+<td><strong>Nahlásil</strong></td>
+<td>Jméno a pozice osoby, která incident nahlásila</td>
+</tr>
+<tr>
+<td><strong>AI systém</strong></td>
+<td>Název a verze AI systému (dle Registru AI systémů)</td>
+</tr>
+<tr>
+<td><strong>Kategorie systému</strong></td>
+<td>Riziková kategorie: vysoce rizikový / omezené riziko / minimální riziko</td>
+</tr>
+<tr>
+<td><strong>Role firmy</strong></td>
+<td>Poskytovatel (provider) / Nasazovatel (deployer)</td>
+</tr>
+<tr>
+<td><strong>Klasifikace incidentu</strong></td>
+<td>L1 / L2 / L3</td>
+</tr>
+<tr>
+<td><strong>Popis incidentu</strong></td>
+<td>Podrobný popis toho, co se stalo, včetně vstupů, výstupů a kontextu</td>
+</tr>
+<tr>
+<td><strong>Dopad</strong></td>
+<td>Popis dopadu na osoby, majetek, práva, provoz (počet dotčených osob, rozsah škody)</td>
+</tr>
+<tr>
+<td><strong>Dotčené osoby</strong></td>
+<td>Kategorie dotčených osob (zákazníci, zaměstnanci, pacienti, kandidáti, děti)</td>
+</tr>
+<tr>
+<td><strong>Okamžitá opatření</strong></td>
+<td>Popis opatření přijatých bezprostředně po zjištění incidentu</td>
+</tr>
+<tr>
+<td><strong>Analýza příčin</strong></td>
+<td>Výsledek root cause analysis (technická chyba, chyba dat, lidský faktor, chyba dodavatele)</td>
+</tr>
+<tr>
+<td><strong>Nápravná opatření</strong></td>
+<td>Popis dlouhodobých nápravných opatření a termín jejich implementace</td>
+</tr>
+<tr>
+<td><strong>Nahlášení regulátorovi</strong></td>
+<td>Ano/Ne. Pokud ano: kterému orgánu, datum nahlášení, číslo jednací</td>
+</tr>
+<tr>
+<td><strong>Průběžná hlášení regulátorovi</strong></td>
+<td>Datum a obsah každé doplňující informace poskytnuté na žádost dozorového orgánu dle čl. 73 odst. 6</td>
+</tr>
+<tr>
+<td><strong>Nahlášení poskytovateli</strong></td>
+<td>Ano/Ne. Pokud ano: datum, forma, odpověď poskytovatele</td>
+</tr>
+<tr>
+<td><strong>Informování dotčených osob</strong></td>
+<td>Ano/Ne. Pokud ano: datum, forma, obsah sdělení, kategorie dotčených osob (zákonná povinnost dle čl. 73 odst. 5 pro nasazovatele)</td>
+</tr>
+<tr>
+<td><strong>Logy a důkazy</strong></td>
+<td>Odkaz na uložené logy, snímky obrazovky, exporty dat</td>
+</tr>
+<tr>
+<td><strong>Datum uzavření</strong></td>
+<td>Datum, kdy byl incident uzavřen</td>
+</tr>
+<tr>
+<td><strong>Uzavřel</strong></td>
+<td>Jméno a pozice osoby, která incident uzavřela</td>
+</tr>
+<tr>
+<td><strong>Aktualizace FRIA</strong></td>
+<td>Ano/Ne. Pokud incident odhalil dopad na základní práva neidentifikovaný v FRIA, uvést datum iniciace aktualizace</td>
+</tr>
+<tr>
+<td><strong>Poučení (lessons learned)</strong></td>
+<td>Shrnutí poznatků a doporučení pro prevenci</td>
+</tr>
+</tbody>
 </table>
+
+<h3>6.3 Uchovávání záznamů</h3>
+
+<p>Záznamy o incidentech jsou uchovávány v zabezpečeném interním systému s omezeným přístupem. Přístup k záznamům mají: odpovědná osoba za AI (Martin Haynes), IT oddělení, právní poradce a vedení firmy. Záznamy o incidentech L3 jsou uchovávány odděleně s nejvyšší úrovní zabezpečení.</p>
+
+<p><strong>Zákonné lhůty uchovávání (AI Act):</strong></p>
+<ul>
+<li><strong>Logy AI systémů -- firma jako poskytovatel:</strong> Minimálně 6 měsíců dle čl. 19 odst. 1 AI Act.</li>
+<li><strong>Logy AI systémů -- firma jako nasazovatel vysoce rizikového systému:</strong> Dle čl. 26 odst. 1 písm. f) AI Act je nasazovatel povinen uchovávat automaticky generované logy. Lhůta se řídí pokyny poskytovatele, minimálně však 6 měsíců dle čl. 26 odst. 5 AI Act.</li>
+<li><strong>Technická dokumentace -- firma jako poskytovatel:</strong> 10 let dle čl. 18 odst. 1 AI Act.</li>
+</ul>
+
+<p><strong>Interní doporučené lhůty uchovávání (best practice bez přímého zákonného základu v AI Act):</strong></p>
+<ul>
+<li><strong>Záznamy o incidentech L1 a L2:</strong> Minimálně 3 roky od uzavření incidentu. Tato lhůta je interním doporučením firmy Martin Haynes pro případnou kontrolu dozorovým orgánem a analýzu trendů.</li>
+<li><strong>Záznamy o incidentech L3:</strong> Minimálně 10 let od uzavření incidentu. Tato lhůta je interním doporučením s ohledem na promlčecí lhůty a možné soudní řízení.</li>
+<li><strong>Komunikace s dozorovým orgánem:</strong> Trvale.</li>
+</ul>
+
+<div class='info'>
+<p><strong>Poznámka k sektorovým lhůtám:</strong> Pro zdravotnické prostředky s AI komponentou mohou platit delší lhůty uchovávání dle nařízení MDR/IVDR. Pro finanční sektor mohou platit specifické lhůty dle regulace ČNB. Firma Martin Haynes ověří sektorové požadavky pro každé odvětví, v němž provozuje AI systémy.</p>
+</div>
+
+<h3>6.4 Specifika pro GPAI modely</h3>
+
+<p>Firma Martin Haynes integruje do svých produktů a procesů modely obecné umělé inteligence (GPAI) od poskytovatelů OpenAI (GPT-4/4o), Anthropic (Claude), Google (Gemini) a Mistral. Dle čl. 51-54 AI Act, které nabyly účinnosti <strong>2. srpna 2025</strong> (tato povinnost je tedy k dnešnímu datu 26. 2. 2026 již platná), mají poskytovatelé GPAI modelů povinnosti dle čl. 53 -- zejména poskytovat dostatečnou technickou dokumentaci a informace pro downstream poskytovatele a nasazovatele.</p>
+
+<p>Při incidentu souvisejícím s GPAI modelem firma Martin Haynes:</p>
+<ul>
+<li>Zaznamená, který GPAI model byl zapojen a jaká byla jeho role v incidentu.</li>
+<li>Kontaktuje poskytovatele GPAI modelu (OpenAI, Anthropic, Google, Mistral) a požádá o vysvětlení a technickou analýzu.</li>
+<li>Ověří, zda poskytovatel GPAI modelu plní své povinnosti dle čl. 53 AI Act, zejména poskytování informací o známých omezeních a rizicích modelu.</li>
+<li>Dokumentuje odpověď poskytovatele GPAI modelu jako součást záznamu o incidentu.</li>
+<li>Pokud firma integruje GPAI model do vlastního produktu (downstream provider), posoudí, zda incident vyžaduje aktualizaci vlastní technické dokumentace a posouzení shody.</li>
+</ul>
 
 <h2>7. Prevence a poučení</h2>
 
-<p>Řízení incidentů nekončí jejich vyřešením. Dle <strong>čl. 9 AI Act (Systém řízení rizik)</strong> je nutné rizika spojená s AI systémy řídit iterativně a průběžně po celou dobu jejich životního cyklu.</p>
+<h3>7.1 After-action review</h3>
 
+<p>Po uzavření každého incidentu úrovně L2 a L3 provede odpovědná osoba za AI strukturovaný přezkum (after-action review). Přezkum se koná za účasti všech osob, které se na řešení incidentu podílely, a jeho cílem je identifikovat systémové příčiny a navrhnout preventivní opatření.</p>
+
+<p><strong>Struktura after-action review:</strong></p>
+<ol>
+<li><strong>Rekonstrukce události:</strong> Chronologický popis incidentu od vzniku po uzavření.</li>
+<li><strong>Co fungovalo dobře:</strong> Identifikace postupů, které se osvědčily.</li>
+<li><strong>Co je třeba zlepšit:</strong> Identifikace slabin v detekci, eskalaci, komunikaci nebo nápravě.</li>
+<li><strong>Kořenová příčina:</strong> Potvrzení nebo revize root cause analysis z průběhu řešení.</li>
+<li><strong>Preventivní opatření:</strong> Konkrétní kroky k zabránění opakování -- úprava procesů, konfigurace systémů, školení zaměstnanců, změna dodavatelských smluv.</li>
+<li><strong>Posouzení dopadů na základní práva:</strong> Pokud incident odhalil dopad na základní práva, který nebyl identifikován v FRIA dle čl. 27 AI Act, je odpovědná osoba za AI povinna iniciovat aktualizaci nebo nové provedení FRIA pro dotčený systém. Povinnost provést FRIA se vztahuje na veřejnoprávní subjekty a soukromé subjekty poskytující veřejné služby nasazující vysoce rizikové systémy dle Přílohy III, a dále na soukromé subjekty nasazující vysoce rizikové systémy v oblastech uvedených v čl. 27 odst. 1 písm. b) -- zejména HR screening, přístup ke vzdělání, úvěrové hodnocení. Pro ostatní soukromé subjekty je FRIA doporučenou best practice.</li>
+<li><strong>Aktualizace dokumentace:</strong> Rozhodnutí o aktualizaci tohoto plánu, Registru AI systémů, Interní AI politiky nebo Monitoring plánu.</li>
+</ol>
+
+<h3>7.2 Pravidelná aktualizace plánu a testování</h3>
+
+<p>Tento plán řízení incidentů je živý dokument, který musí být pravidelně aktualizován. Aktualizace se provádí:</p>
 <ul>
-  <li><strong>After-action review (AAR):</strong> Do 14 dnů po vyřešení každého incidentu úrovně L2 a L3 svolá Odpovědná osoba za AI (Martin Haynes) schůzku dotčených oddělení k analýze kořenové příčiny.</li>
-  <li><strong>Přezkum FRIA (čl. 27 AI Act):</strong> Po každém L3 incidentu u vysoce rizikového systému musí být neprodleně přezkoumáno a aktualizováno Posouzení dopadu na základní práva (FRIA). Pokud FRIA dosud nebyla provedena, incident ji automaticky spouští jako povinný výstup nápravných opatření.</li>
-  <li><strong>Pravidelné testování plánu (Tabletop exercise):</strong> Minimálně jednou ročně proběhne stolní cvičení simulující L3 scénář (např. selhání HR AI systému s diskriminačním dopadem) pro ověření funkčnosti eskalačního řetězce. Výsledek se zaznamená do Registru incidentů.</li>
-  <li><strong>Úprava trénovacích dat a promptů:</strong> Pokud AI systém generoval bias nebo halucinace, musí být upraveny jeho vstupní parametry nebo kontaktován dodavatel s požadavkem na nápravu.</li>
-  <li><strong>Sdílení poznatků:</strong> Zjištění z incidentů musí být zahrnuta do pravidelného školení AI gramotnosti (čl. 4 AI Act) pro zaměstnance.</li>
+<li>Po každém incidentu úrovně L3.</li>
+<li>Po každém after-action review, který identifikuje potřebu změny postupů.</li>
+<li>Při nasazení nového AI systému nebo významné změně existujícího systému.</li>
+<li>Při změně legislativy nebo vydání nových pokynů dozorovým orgánem.</li>
+<li>Minimálně jednou ročně v rámci pravidelného přezkumu AI compliance.</li>
 </ul>
 
-<h2>8. Kontaktní seznam a Mapování dozorových orgánů</h2>
-
-<div class='info'>
-  <strong>[UPOZORNĚNÍ] Národní dozorový orgán ČR:</strong> K datu vydání tohoto dokumentu (únor 2026) probíhá finální ustavení národních orgánů dohledu nad AI Act. Aktuální informace a formuláře pro hlášení naleznete na oficiálních stránkách Ministerstva průmyslu a obchodu ČR (MPO). Níže uvedená tabulka mapuje vaše systémy na pravděpodobné příslušné úřady.
+<div class='highlight'>
+<p><strong>Simulované cvičení (tabletop exercise):</strong> Minimálně jednou ročně provede firma Martin Haynes simulované cvičení pro scénář L3 incidentu. Cvičení zahrnuje krizový tým, ověřuje funkčnost eskalačních postupů, dostupnost kontaktů a znalost zaměstnanců. Výsledky cvičení jsou zdokumentovány a slouží jako podklad pro aktualizaci plánu. Doporučené scénáře pro první cvičení: (a) chybná diagnostika zdravotnického AI přístroje, (b) systematická diskriminace v HR recruitment AI, (c) selhání AI systému v kritické infrastruktuře. Toto opatření je best practice v souladu s principy průběžného řízení rizik dle čl. 9 AI Act.</p>
 </div>
 
-<h3>Mapování systémů na dozorové orgány (Odpověď na dotaz klienta)</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Oblast AI systému</th>
-      <th>Příklady vašich systémů</th>
-      <th>Příslušný dozorový orgán v ČR (Předpoklad)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>HR a zaměstnanci</strong></td>
-      <td>Teamio, Sloneek, Sledování obrazovky</td>
-      <td><strong>ÚOOÚ</strong> (Úřad pro ochranu osobních údajů) / Inspekce práce</td>
-    </tr>
-    <tr>
-      <td><strong>Kritická infrastruktura</strong></td>
-      <td>pospa ing., průmyslové stroje</td>
-      <td><strong>NÚKIB</strong> (Národní úřad pro kybernetickou a informační bezpečnost)</td>
-    </tr>
-    <tr>
-      <td><strong>E-commerce a cenotvorba</strong></td>
-      <td>Dynamic Yield, Prisync, Chatboti</td>
-      <td><strong>ČOI</strong> (Česká obchodní inspekce) / ČTÚ</td>
-    </tr>
-    <tr>
-      <td><strong>Finance a scoring</strong></td>
-      <td>CRIF, Bisnode</td>
-      <td><strong>ČNB</strong> (Česká národní banka) / ÚOOÚ</td>
-    </tr>
-  </tbody>
-</table>
+<h3>7.3 Sdílení poznatků</h3>
 
-<h3>Interní kontaktní osoby</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Role v rámci AI Act</th>
-      <th>Jméno a Příjmení</th>
-      <th>Telefon</th>
-      <th>E-mail</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Odpovědná osoba za AI (čl. 14)</strong></td>
-      <td>Martin Haynes (Jednatel)</td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Telefon]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: E-mail]</em></td>
-    </tr>
-    <tr>
-      <td><strong>IT Ředitel / CTO</strong></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Telefon]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: E-mail]</em></td>
-    </tr>
-    <tr>
-      <td><strong>HR Ředitel (pro HR AI systémy)</strong></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Telefon]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: E-mail]</em></td>
-    </tr>
-    <tr>
-      <td><strong>Právní zástupce / DPO</strong></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Jméno]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: Telefon]</em></td>
-      <td style="background-color: #fffbcc;"><em>[DOPLNÍ KLIENT: E-mail]</em></td>
-    </tr>
-  </tbody>
-</table>
+<p>Poznatky z řešení incidentů jsou sdíleny v rámci firmy prostřednictvím:</p>
+<ul>
+<li><strong>Anonymizovaných případových studií:</strong> Zpracování incidentů do formátu, který lze použít při školení AI gramotnosti zaměstnanců (prezentace dodána v Compliance Kitu).</li>
+<li><strong>Aktualizace interních pravidel:</strong> Zapracování poučení do Interní AI politiky (dodána v Compliance Kitu).</li>
+<li><strong>Briefingů pro vedení:</strong> Pravidelné informování vedení firmy o trendech v AI incidentech, identifikovaných rizicích a účinnosti preventivních opatření.</li>
+</ul>
 
-<div class='no-break'>
-  <div class='sig-block'>
-    <div class='sig-field'>Za firmu Martin Haynes<br><br>_______________________<br>Martin Haynes, Jednatel</div>
-    <div class='sig-field'>Za AIshield.cz<br><br>_______________________<br>Oddělení AI Compliance</div>
-  </div>
-</div>
+<h3>7.4 Preventivní opatření specifická pro firmu Martin Haynes</h3>
+
+<p>Vzhledem k rozsahu a rizikovému profilu AI portfolia firmy (17 vysoce rizikových systémů) jsou klíčová následující preventivní opatření:</p>
+
+<ul>
+<li><strong>Průběžný monitoring výstupů AI:</strong> Zavedení pravidelných kontrol kvality výstupů AI systémů dle Monitoring plánu (dodán v Compliance Kitu). Zvláštní pozornost věnovat vysoce rizikovým systémům -- HR recruitment, kreditní scoring, monitorování zaměstnanců, zdravotnické AI, pojišťovnické AI a AI v kritické infrastruktuře.</li>
+<li><strong>Testování na bias a diskriminaci:</strong> Pravidelné testování AI systémů rozhodujících o právech osob (reklamace, slevy, schvalování žádostí, přístup ke službám) na férovost a nediskriminaci dle čl. 9-10 AI Act.</li>
+<li><strong>Školení zaměstnanců:</strong> Zajištění, aby všichni zaměstnanci pracující s AI systémy znali tento plán řízení incidentů a věděli, jak incident nahlásit. Školící prezentace AI gramotnosti je dodána v Compliance Kitu -- firma zajistí její realizaci.</li>
+<li><strong>Smluvní ošetření s dodavateli:</strong> Ověření, že smlouvy s dodavateli AI systémů (OpenAI, Anthropic, Google, LinkedIn, Freshworks, CRIF a dalšími) obsahují ustanovení o oznamování incidentů, poskytování logů a technické podpory při vyšetřování. Dodavatelský checklist je dodán v Compliance Kitu.</li>
+<li><strong>Audit vlastních AI systémů:</strong> Vzhledem

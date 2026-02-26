@@ -401,6 +401,18 @@ def extract_html_content(text: str) -> str:
     if not text:
         return ""
 
+    # Detekce kompletni HTML stranky — bypass JSON parsovani
+    # (Transparency page obsahuje JSON-LD <script> bloky, ktere
+    #  parse_json() mylne interpretuje jako JSON odpoved LLM)
+    _stripped = text.strip()
+    _stripped = re.sub(r"^```(?:html)?\s*\n?", "", _stripped)
+    if (_stripped.startswith("<!--") or
+        _stripped.lower().startswith("<!doctype") or
+        _stripped.lower().startswith("<html")):
+        logger.info("[extract_html] Detekovana kompletni HTML stranka — bypass JSON parsing")
+        _stripped = re.sub(r"\n?```\s*$", "", _stripped)
+        return _stripped.strip()
+
     # Zkus JSON
     parsed = parse_json(text)
     if parsed:
