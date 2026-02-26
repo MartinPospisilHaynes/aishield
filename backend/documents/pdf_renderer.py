@@ -50,8 +50,8 @@ UNIFIED_CSS = """
 /* ── Základ ── */
 body {
     font-family: 'Inter', sans-serif;
-    font-size: 10pt;
-    line-height: 1.5;
+    font-size: 9pt;
+    line-height: 1.45;
     color: #1e293b;
     max-width: 170mm;
     margin: 0 auto;
@@ -59,7 +59,7 @@ body {
 
 /* ── Nadpisy ── */
 h1 {
-    font-size: 20pt;
+    font-size: 18pt;
     font-weight: 700;
     color: #0f172a;
     margin-top: 0;
@@ -70,7 +70,7 @@ h1 {
     break-after: avoid;
 }
 h2 {
-    font-size: 13pt;
+    font-size: 12pt;
     font-weight: 600;
     color: #1e293b;
     margin-top: 16pt;
@@ -81,7 +81,7 @@ h2 {
     break-after: avoid;
 }
 h3 {
-    font-size: 11pt;
+    font-size: 10pt;
     font-weight: 600;
     color: #334155;
     margin-top: 12pt;
@@ -90,7 +90,7 @@ h3 {
     break-after: avoid;
 }
 h4 {
-    font-size: 10pt;
+    font-size: 9pt;
     font-weight: 600;
     color: #475569;
     margin-top: 10pt;
@@ -132,7 +132,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 8pt 0;
-    font-size: 9pt;
+    font-size: 8pt;
     /* page-break-inside: auto — allow large tables to break across pages */
 }
 thead {
@@ -163,7 +163,7 @@ tr:nth-child(even) td {
     display: inline-block;
     padding: 1pt 8pt;
     border-radius: 3pt;
-    font-size: 8.5pt;
+    font-size: 7.5pt;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3pt;
@@ -218,7 +218,7 @@ tr:nth-child(even) td {
     flex: 1;
     border-top: 1pt solid #94a3b8;
     padding-top: 6pt;
-    font-size: 9pt;
+    font-size: 8pt;
     color: #64748b;
     text-align: center;
 }
@@ -251,12 +251,12 @@ tr:nth-child(even) td {
     border: 1pt solid #e2e8f0;
 }
 .metric-value {
-    font-size: 24pt;
+    font-size: 22pt;
     font-weight: 700;
     color: #7c3aed;
 }
 .metric-label {
-    font-size: 8pt;
+    font-size: 7pt;
     color: #64748b;
     text-transform: uppercase;
 }
@@ -287,7 +287,7 @@ h3 + table, h3 + p, h3 + ul, h3 + ol, h3 + div, h3 + dl {
     margin-top: 30pt;
     padding-top: 10pt;
     border-top: 1pt solid #e2e8f0;
-    font-size: 8pt;
+    font-size: 7pt;
     color: #94a3b8;
     text-align: center;
 }
@@ -386,17 +386,17 @@ def render_full_document(
     # Titulní strana
     title_html = f"""
     <div style="text-align:center; padding-top:120pt;">
-        <p style="font-size:11pt; color:#7c3aed; text-transform:uppercase; letter-spacing:2pt; font-weight:600;">
+        <p style="font-size:10pt; color:#7c3aed; text-transform:uppercase; letter-spacing:2pt; font-weight:600;">
             AIshield.cz
         </p>
-        <h1 style="font-size:28pt; border:none; margin-top:20pt; padding-bottom:0;">
+        <h1 style="font-size:26pt; border:none; margin-top:20pt; padding-bottom:0;">
             AI Act Compliance Kit
         </h1>
-        <p style="font-size:14pt; color:#475569; margin-top:10pt;">
+        <p style="font-size:13pt; color:#475569; margin-top:10pt;">
             Kompletní dokumentace pro soulad s Nařízením (EU) 2024/1689
         </p>
         <div style="margin-top:40pt; padding:16pt; background:#f8fafc; border-radius:6pt; display:inline-block; text-align:left;">
-            <table style="border:none; font-size:11pt;">
+            <table style="border:none; font-size:10pt;">
                 <tr><td style="border:none; color:#64748b; padding:3pt 12pt 3pt 0;">Firma:</td>
                     <td style="border:none; font-weight:600; padding:3pt 0;">{company_name}</td></tr>
                 <tr><td style="border:none; color:#64748b; padding:3pt 12pt 3pt 0;">IČO:</td>
@@ -435,7 +435,7 @@ def render_full_document(
     toc_html = f"""
     <div class="page-break"></div>
     <h1>Obsah</h1>
-    <ol style="font-size:11pt; line-height:2.2;">
+    <ol style="font-size:10pt; line-height:2.2;">
         {''.join(toc_items)}
         <li>{len(toc_items) + 1}. Všeobecné obchodní podmínky</li>
     </ol>
