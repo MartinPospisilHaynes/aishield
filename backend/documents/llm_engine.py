@@ -240,6 +240,7 @@ async def call_claude(
     temperature: float = 0.1,
     max_tokens: int = 16000,
     retries: int = 6,
+    model: str = None,
 ) -> Tuple[str, dict]:
     """
     Zavolá Claude (Anthropic) API. Vrací (text, metadata).
@@ -255,11 +256,20 @@ async def call_claude(
 
     client = anthropic.AsyncAnthropic(api_key=api_key)
 
-    # Try primary model (Sonnet 4.6), then fallback (Opus 4.6)
-    models_to_try = [
-        (CLAUDE_MODEL, CLAUDE_COST_INPUT, CLAUDE_COST_OUTPUT, 3),
-        (CLAUDE_FALLBACK_MODEL, CLAUDE_FALLBACK_COST_INPUT, CLAUDE_FALLBACK_COST_OUTPUT, 3),
-    ]
+    # If explicit model requested, use only that; otherwise Sonnet -> Opus fallback
+    if model == "claude-opus-4-6":
+        models_to_try = [
+            (CLAUDE_FALLBACK_MODEL, CLAUDE_FALLBACK_COST_INPUT, CLAUDE_FALLBACK_COST_OUTPUT, retries),
+        ]
+    elif model:
+        models_to_try = [
+            (model, CLAUDE_COST_INPUT, CLAUDE_COST_OUTPUT, retries),
+        ]
+    else:
+        models_to_try = [
+            (CLAUDE_MODEL, CLAUDE_COST_INPUT, CLAUDE_COST_OUTPUT, 3),
+            (CLAUDE_FALLBACK_MODEL, CLAUDE_FALLBACK_COST_INPUT, CLAUDE_FALLBACK_COST_OUTPUT, 3),
+        ]
 
     last_error = None
     for model, cost_in, cost_out, model_retries in models_to_try:

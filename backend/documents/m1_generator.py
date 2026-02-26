@@ -13,7 +13,7 @@ Model: Gemini 3.1 Pro — nejlepší pro dlouhé, strukturované dokumenty.
 import logging
 from typing import Tuple
 
-from backend.documents.llm_engine import call_gemini, extract_html_content
+from backend.documents.llm_engine import call_claude, extract_html_content
 from backend.documents.m5_prompt_optimizer import get_enhanced_system_prompt_m1
 
 logger = logging.getLogger(__name__)
@@ -1460,12 +1460,13 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
     logger.info(f"[M1 Generator] Generuji draft: {DOCUMENT_NAMES.get(doc_key, doc_key)} "
                 f"(prompt: {len(prompt)} znaků)")
 
-    text, meta = await call_gemini(
+    text, meta = await call_claude(
         system=enhanced_prompt,
         prompt=prompt,
         label=label,
-        temperature=0.3,   # slightly creative but focused
-        max_tokens=16000,   # enough for 5000+ word documents
+        temperature=0.3,
+        max_tokens=16000,
+        model="claude-opus-4-6",
     )
 
     html = extract_html_content(text)
@@ -1473,12 +1474,13 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
     if not html or len(html) < 500:
         logger.warning(f"[M1 Generator] {doc_key}: krátký výstup ({len(html)} znaků), "
                       f"zkouším znovu s vyšší temperature...")
-        text2, meta2 = await call_gemini(
+        text2, meta2 = await call_claude(
             system=enhanced_prompt,
             prompt=prompt + "\n\nPIŠ OBSÁHLE A PODROBNĚ. Minimum 3000 slov.",
             label=f"{label}_retry",
             temperature=0.4,
             max_tokens=16000,
+            model="claude-opus-4-6",
         )
         html2 = extract_html_content(text2)
         if len(html2) > len(html):
@@ -1666,12 +1668,13 @@ Pouze vylepši OBSAH slidů, neměň formát.
         f"(draft: {len(draft_html)} znaků, EU: {eu_score}/10, Klient: {client_score}/10)"
     )
 
-    text, meta = await call_gemini(
+    text, meta = await call_claude(
         system=enhanced_prompt,
         prompt=prompt,
         label=label,
         temperature=0.15,
         max_tokens=16000,
+        model="claude-opus-4-6",
     )
 
     html = extract_html_content(text)
@@ -1682,7 +1685,7 @@ Pouze vylepši OBSAH slidů, neměň formát.
             f"[M1 Refine] {doc_key}: výrazně kratší ({len(html)} vs {len(draft_html)}), "
             f"zkouším znovu"
         )
-        text2, meta2 = await call_gemini(
+        text2, meta2 = await call_claude(
             system=enhanced_prompt,
             prompt=prompt + f"""
 
@@ -1692,6 +1695,7 @@ Zachovej VŠECHNY povinné sekce a tabulky. Zkrať redundance, ale nemaž celé 
             label=f"{label}_retry",
             temperature=0.2,
             max_tokens=16000,
+            model="claude-opus-4-6",
         )
         html2 = extract_html_content(text2)
         if html2 and len(html2) > len(html):
