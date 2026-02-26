@@ -1,5 +1,5 @@
 """
-AIshield.cz — Modul 4: REFINER (Claude Sonnet 4)
+AIshield.cz — Modul 4: REFINER (Claude Opus 4.6)
 
 Přebírá draft z M1 + kritiky z M2 (EU) a M3 (klient),
 produkuje FINÁLNÍ verzi HTML dokumentu.
@@ -7,14 +7,14 @@ produkuje FINÁLNÍ verzi HTML dokumentu.
 Vstup:  draft_html + eu_critique + client_critique + company_context + doc_key
 Výstup: (final_html, metadata)
 
-Model: Claude Sonnet 4 — nejlepší pro precizní editaci a syntézu.
+Model: Claude Opus 4.6 — nejlepší pro koherentní finální dokument (cross-chunk drift prevention).
 """
 
 import logging
 import re
 from typing import Tuple
 
-from backend.documents.llm_engine import call_gemini, extract_html_content
+from backend.documents.llm_engine import call_claude, extract_html_content
 
 logger = logging.getLogger(__name__)
 
@@ -238,12 +238,13 @@ NEMĚŇ formát — pouze vylepši OBSAH slidů.
     logger.info(f"[M4 Refiner] Finalizuji: {doc_name} "
                 f"(draft: {len(draft_html)} znaků, EU: {eu_score}/10, Klient: {client_score}/10)")
 
-    text, meta = await call_gemini(
+    text, meta = await call_claude(
         system=SYSTEM_PROMPT_M4,
         prompt=prompt,
         label=label,
         temperature=0.15,   # very focused, minimal creativity
         max_tokens=16000,   # must be >= M1 output
+        model="claude-opus-4-6",
     )
 
     html = extract_html_content(text)
@@ -257,7 +258,7 @@ NEMĚŇ formát — pouze vylepši OBSAH slidů.
     if html and (not length_ok or not sections_ok):
         logger.warning(f"[M4 Refiner] {doc_key}: finální HTML je výrazně kratší než draft "
                       f"({len(html)} vs {len(draft_html)}), zkouším znovu")
-        text2, meta2 = await call_gemini(
+        text2, meta2 = await call_claude(
             system=SYSTEM_PROMPT_M4,
             prompt=prompt + f"""
 
@@ -268,6 +269,7 @@ Můžeš zkrátit redundance, ale nemaž celé bloky.
             label=f"{label}_retry",
             temperature=0.2,
             max_tokens=16000,
+            model="claude-opus-4-6",
         )
         html2 = extract_html_content(text2)
         if html2 and len(html2) > len(html):

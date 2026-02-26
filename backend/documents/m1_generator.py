@@ -1495,7 +1495,7 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
         label=label,
         temperature=0.3,
         max_tokens=16000,
-        model="claude-opus-4-6",
+        model="claude-sonnet-4-6",
     )
 
     html = extract_html_content(text)
@@ -1514,7 +1514,7 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
             label=f"{label}_retry",
             temperature=0.4,
             max_tokens=16000,
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)
         if len(html2) > len(html):
@@ -1708,7 +1708,7 @@ Pouze vylepši OBSAH slidů, neměň formát.
         label=label,
         temperature=0.15,
         max_tokens=16000,
-        model="claude-opus-4-6",
+        model="claude-sonnet-4-6",
     )
 
     html = extract_html_content(text)
@@ -1729,7 +1729,7 @@ Zachovej VŠECHNY povinné sekce a tabulky. Zkrať redundance, ale nemaž celé 
             label=f"{label}_retry",
             temperature=0.2,
             max_tokens=16000,
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)
         if html2 and len(html2) > len(html):

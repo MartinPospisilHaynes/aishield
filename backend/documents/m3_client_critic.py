@@ -1,5 +1,5 @@
 """
-AIshield.cz — Modul 3: CLIENT CRITIC (Gemini 3.1 Pro)
+AIshield.cz — Modul 3: CLIENT CRITIC (Gemini 2.0 Flash)
 
 Kontroluje draft dokumentu z pohledu českého podnikatele / klienta.
 Zaměřuje se na srozumitelnost, praktičnost a užitečnost dokumentu.
@@ -8,13 +8,13 @@ Chain-of-thought reasoning, structured JSON output.
 Vstup:  draft_html (str) + company_context (str) + doc_key (str)
 Výstup: (critique_dict, metadata)
 
-Model: Gemini 3.1 Pro — cross-model validace (jiný model než M2).
+Model: Gemini 2.0 Flash — cross-model validace (jiný model než M2). Levný pro soft task.
 """
 
 import logging
 from typing import Tuple
 
-from backend.documents.llm_engine import call_gemini, parse_json
+from backend.documents.llm_engine import call_gemini, parse_json, GEMINI_FLASH_MODEL, GEMINI_FLASH_COST_INPUT, GEMINI_FLASH_COST_OUTPUT
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +287,9 @@ async def review_client(
         label=label,
         temperature=0.35,   # more diverse client perspectives
         max_tokens=8000,
+        model=GEMINI_FLASH_MODEL,
+        cost_input=GEMINI_FLASH_COST_INPUT,
+        cost_output=GEMINI_FLASH_COST_OUTPUT,
     )
 
     # Parse JSON

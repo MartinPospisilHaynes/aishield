@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ── Model konfigurace ──
 GEMINI_MODEL = "gemini-3.1-pro-preview"
+GEMINI_FLASH_MODEL = "gemini-2.0-flash"
 CLAUDE_MODEL = "claude-sonnet-4-6"
 CLAUDE_FALLBACK_MODEL = "claude-opus-4-6"
 
@@ -29,6 +30,8 @@ VERTEX_SA_KEY_PATH = "/opt/aishield/vertex-sa-key.json"
 
 GEMINI_COST_INPUT = 2.0 / 1_000_000
 GEMINI_COST_OUTPUT = 12.0 / 1_000_000
+GEMINI_FLASH_COST_INPUT = 0.075 / 1_000_000
+GEMINI_FLASH_COST_OUTPUT = 0.30 / 1_000_000
 CLAUDE_COST_INPUT = 3.0 / 1_000_000
 CLAUDE_COST_OUTPUT = 15.0 / 1_000_000
 CLAUDE_FALLBACK_COST_INPUT = 5.0 / 1_000_000
@@ -113,7 +116,7 @@ def _try_context_cache(client, system: str, context_prefix: str = "") -> Optiona
 
     try:
         cached = client.caches.create(
-            model=GEMINI_MODEL,
+            model=model or GEMINI_MODEL,
             config=types.CreateCachedContentConfig(
                 system_instruction=system,
                 contents=[types.Content(
@@ -144,6 +147,9 @@ async def call_gemini(
     temperature: float = 0.1,
     max_tokens: int = 16000,
     retries: int = 4,
+    model: str = None,
+    cost_input: float = None,
+    cost_output: float = None,
 ) -> Tuple[str, dict]:
     """
     Zavolá Gemini API. Vrací (text, metadata).
@@ -169,7 +175,7 @@ async def call_gemini(
                 config_kwargs["system_instruction"] = system
 
             response = await client.aio.models.generate_content(
-                model=GEMINI_MODEL,
+                model=model or GEMINI_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(**config_kwargs),
             )
@@ -178,7 +184,7 @@ async def call_gemini(
             usage = response.usage_metadata
             in_tok = getattr(usage, "prompt_token_count", 0) or 0
             out_tok = getattr(usage, "candidates_token_count", 0) or 0
-            cost = (in_tok * GEMINI_COST_INPUT) + (out_tok * GEMINI_COST_OUTPUT)
+            cost = (in_tok * (cost_input or GEMINI_COST_INPUT)) + (out_tok * (cost_output or GEMINI_COST_OUTPUT))
 
             logger.info(
                 "[LLM Engine] %s Gemini: tokens=%d+%d, cost=$%.4f, len=%d",
@@ -186,7 +192,7 @@ async def call_gemini(
             )
 
             meta = {
-                "provider": "gemini", "model": GEMINI_MODEL,
+                "provider": "gemini", "model": model or GEMINI_MODEL,
                 "backend": backend,
                 "input_tokens": in_tok, "output_tokens": out_tok,
                 "cost_usd": cost,
@@ -219,7 +225,7 @@ async def call_gemini(
             max_tokens=max_tokens,
         )
         meta["fallback_from"] = "gemini"
-        meta["original_model"] = GEMINI_MODEL
+        meta["original_model"] = model or GEMINI_MODEL
         logger.info("[LLM Engine] %s: Gemini→Claude fallback úspěšný (%d znaků)", label, len(text))
         return text, meta
     except Exception as fallback_err:
