@@ -8,7 +8,7 @@ Model přiřazení:
   M1: Gemini 3.1 Pro (generátor)
   M2: Claude Sonnet 4 (EU inspektor)
   M3: Gemini 3.1 Pro (klientský kritik)
-  M4: Claude Sonnet 4 (refiner)
+  M4: Claude Opus 4.6 (refiner - final coherence pass)
 """
 
 import asyncio
@@ -27,7 +27,7 @@ from backend.documents.pdf_renderer import render_section_html
 from backend.documents.m1_generator import generate_draft, DOCUMENT_NAMES, PROMPT_BUILDERS
 from backend.documents.m2_eu_critic import review_eu
 from backend.documents.m3_client_critic import review_client
-from backend.documents.m1_generator import refine_draft
+from backend.documents.m4_refiner import refine as m4_refine
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
 from backend.documents.generation_report import send_generation_report
 
@@ -776,14 +776,14 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
 
             # -- M1 Pass 2: Refine (two-pass) --
             m4_start = time.time()
-            logger.info(f"[Pipeline v3]   M1 Pass 2 Refine → {doc_name}...")
-            final_html, m4_meta = await refine_draft(
+            logger.info(f"[Pipeline v3]   M4 Refiner (Opus) → {doc_name}...")
+            final_html, m4_meta = await m4_refine(
                 draft_html, eu_critique, client_critique, company_context, doc_key
             )
             m4_time = time.time() - m4_start
             m4_cost = m4_meta.get("cost_usd", 0)
             m4_tokens = m4_meta.get("input_tokens", 0) + m4_meta.get("output_tokens", 0)
-            logger.info(f"[Pipeline v3]   M1p2 hotov: {len(final_html)} znaků, "
+            logger.info(f"[Pipeline v3]   M4 hotov: {len(final_html)} znaků, "
                        f"${m4_cost:.4f}, {m4_tokens} tokens, {m4_time:.1f}s")
 
             # Celkové metriky dokumentu
