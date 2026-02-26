@@ -211,6 +211,19 @@ const DELIVERABLES = [
             "Záznamový list pro archivaci — důkaz pravidelného monitoringu při kontrole",
         ],
     },
+    {
+        icon: "🔍",
+        name: "Transparentnost a lidský dohled",
+        desc: "Záznamy dle čl. 13, 14 a 50 AI Actu",
+        detail: null,
+        bullets: [
+            "Povinné dle článků 13 (transparentnost), 14 (lidský dohled) a 50 (označování AI)",
+            "Přehled: kdo může AI systém zastavit / přepsat, jak se logují rozhodnutí",
+            "Čtvrtletní auditní list — předvyplněný formulář pro pravidelnou kontrolu",
+            "Status indikátory: override, logging, monitoring pro každý AI systém",
+            "Personalizovaný — obsahuje konkrétní AI nástroje nalezené na vašem webu",
+        ],
+    },
 ];
 
 /* ─── FAQ data ─── */

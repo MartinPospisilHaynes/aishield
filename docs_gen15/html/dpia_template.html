@@ -1,0 +1,296 @@
+<h1>Posouzení dopadů na základní práva — DPIA/FRIA</h1>
+
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>36</div>
+    <div class='metric-label'>Identifikovaných AI systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>17</div>
+    <div class='metric-label'>Vysoce rizikových / Zakázaných</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>250+</div>
+    <div class='metric-label'>Dotčených zaměstnanců</div>
+  </div>
+</div>
+
+<h2>1. Úvod a právní základ</h2>
+
+<p>Tento dokument představuje komplexní posouzení dopadů na základní práva (Fundamental Rights Impact Assessment, dále jen „FRIA“) a posouzení vlivu na ochranu osobních údajů (Data Protection Impact Assessment, dále jen „DPIA“) pro společnost Martin Haynes (IČO: 17889251). Vzhledem k datu vypracování tohoto dokumentu, kterým je 25. 02. 2026, se společnost nachází v kritické fázi implementace Nařízení (EU) 2024/1689 (AI Act). Lhůta pro zákaz nepřijatelných praktik uplynula dne 2. 2. 2025 a společnost je v případě některých systémů v prodlení. Lhůta pro plnění povinností u vysoce rizikových systémů dle Přílohy III vyprší za necelých 6 měsíců, dne 2. 8. 2026.</p>
+
+<p>Právní základ tohoto posouzení tvoří článek 27 AI Act, který nasazovatelům (deployerům) vysoce rizikových systémů ukládá povinnost provést posouzení dopadů na základní práva před jejich nasazením. Současně dokument naplňuje požadavky článku 35 Nařízení (EU) 2016/679 (GDPR), neboť identifikované AI systémy systematicky a rozsáhle zpracovávají osobní údaje zaměstnanců a zákazníků, včetně profilování a automatizovaného rozhodování.</p>
+
+<div class='info'>
+  <strong>Praktická poznámka pro klienta:</strong> Tento dokument obdržíte i v plně editovatelném formátu DOCX. Je to nezbytné proto, abyste mohli do vyznačených polí (označených jako [K DOPLNĚNÍ KLIENTEM]) dopsat specifické technické detaily vašich vlastních systémů. Bez těchto detailů by dokument nebyl při případné kontrole ze strany dozorových orgánů považován za úplný.
+</div>
+
+<h2>2. Popis AI systémů firmy</h2>
+
+<p>Společnost provozuje rozsáhlý ekosystém umělé inteligence napříč odděleními. Pro účely tohoto posouzení jsou systémy rozděleny do kategorií podle míry rizika a účelu zpracování.</p>
+
+<h3>2.1 Zakázané systémy (Nepřijatelné riziko dle čl. 5 AI Act)</h3>
+<div class='warning'>Upozornění: Provoz těchto systémů je od 2. 2. 2025 nelegální. Společnost se vystavuje riziku pokuty až 35 mil. EUR nebo 7 % celosvětového obratu dle čl. 99 odst. 3 AI Act.</div>
+
+<ul>
+  <li><strong>Systém „vlastní html“ (Sociální scoring):</strong> Systém hodnotící důvěryhodnost nebo chování fyzických osob na základě jejich sociálního chování. 
+  <em>Účel:</em> [K DOPLNĚNÍ KLIENTEM: Popište přesnou funkci systému, jeho vstupy a výstupy]. 
+  <em>Data:</em> Osobní údaje, behaviorální data. 
+  <em>Dotčené osoby:</em> Zákazníci / Zaměstnanci.</li>
+  <li><strong>Systém „vlastní kód“ (Rozpoznávání emocí a biometrie):</strong> Systém nasazený na pracovišti nebo ve vzdělávání k detekci emocí, případně k biometrické identifikaci v reálném čase.
+  <em>Účel:</em> [K DOPLNĚNÍ KLIENTEM: Popište přesnou funkci systému, jeho vstupy a výstupy].
+  <em>Data:</em> Biometrické údaje (zvláštní kategorie dat dle čl. 9 GDPR), videozáznamy.
+  <em>Dotčené osoby:</em> Zaměstnanci (250+ osob).</li>
+</ul>
+
+<h3>2.2 Vysoce rizikové systémy (Příloha III a čl. 6 AI Act)</h3>
+<p>Tyto systémy podléhají přísným požadavkům na řízení rizik, transparentnost a lidský dohled. Plná účinnost pravidel nastává 2. 8. 2026.</p>
+
+<ul>
+  <li><strong>HR a náborové systémy (LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Sloneek):</strong> Třídění životopisů, hodnocení kandidátů, predikce úspěšnosti.</li>
+  <li><strong>Monitorování zaměstnanců (Sledování obrazovky, Měření produktivity, GPS, Kamerový dohled s AI):</strong> Hodnocení výkonnosti, bezpečnost práce, logistika.</li>
+  <li><strong>Kreditní scoring a finance (CRIF, Bisnode, Scoring Solutions):</strong> Vyhodnocování úvěruschopnosti a finanční spolehlivosti zákazníků.</li>
+  <li><strong>Pojišťovnictví a hodnocení rizik (Guidewire, NESS, ČPP/ČSOB interní AI):</strong> Stanovení pojistného, posuzování pojistných událostí.</li>
+  <li><strong>Kritická infrastruktura („pospa ing.“):</strong> 
+  <em>Účel:</em> [K DOPLNĚNÍ KLIENTEM: Popište přesnou funkci systému, jaké bezpečnostní nebo průmyslové komponenty řídí].</li>
+</ul>
+
+<h3>2.3 Systémy s omezeným rizikem a GPAI modely</h3>
+<p>Zde platí primárně povinnost transparentnosti (čl. 50 AI Act). Uživatel musí vědět, že interaguje s AI nebo konzumuje AI generovaný obsah.</p>
+
+<ul>
+  <li><strong>Chatboty a virtuální asistenti (Google Gemini, ChatGPT, Claude, Freshdesk AI, Zendesk AI):</strong> Zákaznická podpora, interní asistence.</li>
+  <li><strong>Generování obsahu (DALL-E, Midjourney, HeyGen, Synthesia):</strong> Tvorba marketingových materiálů, videí, syntetických hlasů.</li>
+  <li><strong>Dynamická cenotvorba (Prisync, Competera, Dynamic Yield):</strong> Optimalizace cen v reálném čase.</li>
+  <li><strong>Integrace GPAI modelů (OpenAI GPT-4o, Anthropic Claude, Google Gemini):</strong> Společnost integruje tato LLM API do vlastních zákaznických produktů.</li>
+</ul>
+
+<h2>3. Posouzení nutnosti a přiměřenosti</h2>
+
+<p>V této sekci hodnotíme, zda je nasazení výše uvedených AI systémů nezbytné pro dosažení obchodních cílů společnosti a zda je rozsah zpracování dat přiměřený (zásada minimalizace dle čl. 5 odst. 1 písm. c) GDPR).</p>
+
+<h3>Hodnocení zakázaných systémů</h3>
+<p>Provoz systémů pro sociální scoring („vlastní html“) a rozpoznávání emocí na pracovišti („vlastní kód“) <strong>není a nemůže být považován za nutný ani přiměřený</strong>. Tyto praktiky hrubě zasahují do lidské důstojnosti a soukromí. Neexistuje žádný legitimní obchodní zájem, který by převážil nad absolutním zákazem stanoveným v čl. 5 AI Act. Tyto systémy musí být okamžitě demontovány.</p>
+
+<h3>Hodnocení HR a monitorovacích systémů</h3>
+<p>Použití AI pro filtraci životopisů je z hlediska nutnosti obhajitelné vzhledem k velikosti firmy (250+ zaměstnanců). Přiměřenost je však podmíněna tím, že AI nesmí činit finální rozhodnutí. Rozsáhlé monitorování zaměstnanců (sledování obrazovky, analýza e-mailů) je z hlediska přiměřenosti vysoce problematické. Plošné sledování porušuje čl. 7 a čl. 8 Listiny základních práv Evropské unie (2000/C 364/01), které chrání soukromý život a osobní údaje.</p>
+
+<h3>Hodnocení finančních a pojišťovacích systémů</h3>
+<p>Kreditní scoring a pojišťovací AI jsou nezbytné pro přesné řízení rizik. Rozsah zpracování je přiměřený, pokud systémy využívají pouze data striktně související s finanční historií a vylučují proxy proměnné vedoucí k diskriminaci.</p>
+
+<h2>4. Identifikace rizik a individuální FRIA karty (čl. 27 AI Act)</h2>
+
+<p>Dle čl. 27 AI Act je nutné provést posouzení dopadů na základní práva pro každý konkrétní vysoce rizikový systém samostatně. Níže jsou uvedeny individuální FRIA karty pro klíčové systémy.</p>
+
+<div class='callout'>
+  <strong>FRIA Karta 1: HR a náborové systémy (Sloneek, Teamio, LMC AI)</strong><br>
+  <em>Účel:</em> Filtrace kandidátů a hodnocení zaměstnanců.<br>
+  <em>Dotčená základní práva:</em> Právo na nediskriminaci (čl. 21 Listiny EU), Právo na spravedlivé pracovní podmínky (čl. 31 Listiny EU).<br>
+  <em>Riziko:</em> Algoritmický bias. Model může systematicky vyřazovat určité demografické skupiny na základě historických dat.<br>
+  <em>Opatření:</em> Zavedení prokazatelného lidského dohledu (čl. 26 odst. 1 písm. c) AI Act).
+</div>
+
+<div class='callout'>
+  <strong>FRIA Karta 2: Finanční a pojišťovací systémy (CRIF, Guidewire)</strong><br>
+  <em>Účel:</em> Kreditní scoring a výpočet pojistného.<br>
+  <em>Dotčená základní práva:</em> Právo na ochranu osobních údajů (čl. 8 Listiny EU), Právo na účinnou právní ochranu (čl. 47 Listiny EU).<br>
+  <em>Riziko:</em> Fenomén „black box“ – nemožnost vysvětlit, proč byl úvěr nebo pojistka zamítnuta.<br>
+  <em>Opatření:</em> Zajištění transparentnosti (čl. 13 AI Act) a práva na lidský přezkum automatizovaného rozhodování (čl. 22 GDPR).
+</div>
+
+<div class='callout'>
+  <strong>FRIA Karta 3: Kritická infrastruktura („pospa ing.“)</strong><br>
+  <em>Účel:</em> Řízení bezpečnostních/průmyslových komponent (Příloha III bod 2 AI Act).<br>
+  <em>Dotčená základní práva:</em> Právo na život a fyzickou integritu (čl. 2 a 3 Listiny EU).<br>
+  <em>Riziko:</em> Selhání systému může vést k ohrožení veřejné bezpečnosti, havárii nebo zranění pracovníků v provozu.<br>
+  <em>Opatření:</em> Striktní systém řízení rizik, registrace u NÚKIB (čl. 49 odst. 4 AI Act), post-market monitoring.
+</div>
+
+<div class='callout'>
+  <strong>FRIA Karta 4: Dynamická cenotvorba (Dynamic Yield, Prisync)</strong><br>
+  <em>Účel:</em> Optimalizace cen v reálném čase.<br>
+  <em>Dotčená základní práva:</em> Ochrana spotřebitele (čl. 38 Listiny EU).<br>
+  <em>Riziko:</em> Manipulace a zneužití zranitelnosti. Pokud algoritmus cílí na zranitelné skupiny (např. osoby v tísni) a uměle jim navyšuje ceny, může jít o zakázanou praktiku dle čl. 5 odst. 1 písm. b) AI Act.<br>
+  <em>Opatření:</em> Audit cenotvorby a vyloučení behaviorálního profilování zranitelných skupin.
+</div>
+
+<h3>Matice hodnocení rizik</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Identifikované riziko</th>
+      <th>Dotčený systém</th>
+      <th>Pravděpodobnost</th>
+      <th>Závažnost dopadu</th>
+      <th>Celkové skóre</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Zásah do lidské důstojnosti a soukromí</td>
+      <td>vlastní html (Sociální scoring), vlastní kód (Emoce)</td>
+      <td>Vysoká</td>
+      <td>Kritická</td>
+      <td><span class='badge badge-high'>NEPŘIJATELNÉ</span></td>
+    </tr>
+    <tr>
+      <td>Ohrožení fyzické bezpečnosti / havárie</td>
+      <td>pospa ing. (Kritická infrastruktura)</td>
+      <td>Nízká</td>
+      <td>Kritická</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+    </tr>
+    <tr>
+      <td>Diskriminace uchazečů o zaměstnání</td>
+      <td>Teamio, Sloneek, LMC AI</td>
+      <td>Střední</td>
+      <td>Vysoká</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+    </tr>
+    <tr>
+      <td>Nemožnost vysvětlit zamítnutí úvěru/pojistky</td>
+      <td>CRIF, Guidewire, NESS</td>
+      <td>Vysoká</td>
+      <td>Vysoká</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+    </tr>
+    <tr>
+      <td>Neoprávněné sledování zaměstnanců</td>
+      <td>AI kamerový dohled, Sledování obrazovky</td>
+      <td>Vysoká</td>
+      <td>Vysoká</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+    </tr>
+    <tr>
+      <td>Klamání spotřebitele (záměna AI za člověka)</td>
+      <td>Gemini Chatbot, Freshdesk AI, HeyGen</td>
+      <td>Střední</td>
+      <td>Nízká</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5. Opatření ke zmírnění rizik a akční plán</h2>
+
+<p>Pro snížení identifikovaných rizik na přijatelnou úroveň je nutné implementovat kombinaci technických, organizačních a právních opatření. Níže uvedená opatření striktně rozlišují mezi nástroji, které již máte k dispozici, a kroky, které musíte fyzicky vykonat.</p>
+
+<div class='info'>
+  <strong>Odpovědi na dotazy klienta:</strong><br>
+  <em>1. Musím vypnutí zakázaných systémů někam hlásit?</em> Ne, aktivní hlášení úřadům není vyžadováno. Musíte však sepsat interní „Protokol o demontáži AI systému“ (šablona je v Kitu), abyste při případné kontrole prokazatelně doložili, že systém po 2. 2. 2025 neběžel.<br>
+  <em>2. Jak vypadá lidský dohled v HR?</em> Nestačí pouze odkliknout tlačítko „Schvaluji“. Personalista musí mít k dispozici stručný checklist nebo textové pole, kam napíše krátké zdůvodnění (např. „Souhlasím s doporučením AI, kandidát splňuje praxi“), čímž prokáže, že výstup AI skutečně kriticky zhodnotil.
+</div>
+
+<h3>Přehled nápravných opatření</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Riziko / Systém</th>
+      <th>Navrhované opatření</th>
+      <th>Zodpovědnost</th>
+      <th>Stav implementace</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Zakázané systémy (Sociální scoring, Emoce)</td>
+      <td><strong>Okamžité technické vypnutí systémů.</strong> Smazání dat a sepsání interního Protokolu o demontáži.</td>
+      <td>Martin Haynes / IT</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+    <tr>
+      <td>Kritická infrastruktura (pospa ing.)</td>
+      <td><strong>Registrace u NÚKIB (čl. 49 odst. 4).</strong> Systém musí být registrován u národního orgánu do 2. 8. 2026. (Kontakt: podatelna@nukib.cz, formuláře dodá AIshield).</td>
+      <td>Martin Haynes / IT</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+    <tr>
+      <td>Vysoce rizikové systémy (HR, Finance)</td>
+      <td><strong>Registrace v EU databázi (čl. 49 odst. 2).</strong> Povinnost registrovat systémy ve veřejné EU databázi před jejich nasazením (nejpozději do 2. 8. 2026).</td>
+      <td>Právní / DPO</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+    <tr>
+      <td>Diskriminace v HR (Sloneek, Teamio)</td>
+      <td><strong>Zavedení prokazatelného lidského dohledu (čl. 26 odst. 1 písm. c).</strong> AI smí pouze doporučovat, personalista musí rozhodnutí písemně zdůvodnit.</td>
+      <td>HR oddělení</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+    <tr>
+      <td>Black-box ve financích (CRIF, Guidewire)</td>
+      <td><strong>Zajištění transparentnosti a přezkumu (čl. 13 AI Act, čl. 22 GDPR).</strong> Nastavení procesu pro odvolání zákazníka a vysvětlení logiky rozhodnutí.</td>
+      <td>Finanční ředitel</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+    <tr>
+      <td>Ztráta kontroly nad AI</td>
+      <td><strong>Post-market monitoring (čl. 72) a Plán incidentů (čl. 73).</strong> Čtvrtletní přezkum KPI systémů. Hlášení závažných incidentů do 15 dnů.</td>
+      <td>AIshield.cz (šablona) / IT</td>
+      <td>✓ Zajištěno v Kitu / → Akce</td>
+    </tr>
+    <tr>
+      <td>Klamání spotřebitele (Chatboty, Deepfakes)</td>
+      <td><strong>Nasazení transparenční stránky a štítků.</strong> Přidání textu „Komunikujete s AI“ do rozhraní chatbota.</td>
+      <td>Marketing / IT</td>
+      <td>→ Vyžaduje akci klienta</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>6. Specifické povinnosti (Poskytovatel, GPAI, Logování)</h2>
+
+<h3>6.1 Povinnosti poskytovatele AI (čl. 16 a čl. 25 AI Act)</h3>
+<p>Společnost deklaruje „Vlastní vývoj AI“ a „Změnu účelu AI systému“. Dle článku 25 AI Act se tímto krokem společnost stává <strong>poskytovatelem (providerem)</strong> a přebírá plnou odpovědnost za daný systém. Pro tyto systémy musíte splnit povinnosti dle čl. 16 AI Act, což zahrnuje: vypracování technické dokumentace (Příloha IV), provedení posouzení shody (čl. 43), vydání EU prohlášení o shodě (čl. 47) a připojení označení CE (čl. 48).</p>
+
+<h3>6.2 Integrace GPAI modelů (čl. 51–54 AI Act)</h3>
+<p>Společnost integruje modely s obecným účelem (GPAI), jako jsou OpenAI GPT-4o, Anthropic Claude a Google Gemini, do svých zákaznických produktů. V této roli vystupujete jako integrátor/nasazovatel. Od 2. 8. 2025 pro vás platí povinnost zajistit transparentnost vůči koncovým uživatelům a uchovávat dokumentaci od původních poskytovatelů (OpenAI, Google) prokazující, že modely samotné splňují požadavky AI Act.</p>
+
+<h3>6.3 Uchovávání logů (čl. 26 odst. 1 písm. f) AI Act)</h3>
+<p>Společnost správně deklaruje, že má zaveden systém pro logování AI operací. Dle AI Act je nasazovatel vysoce rizikových systémů povinen uchovávat automaticky generované protokoly (logy) po dobu <strong>minimálně 6 měsíců</strong>. Odpovědná osoba (Martin Haynes) musí u IT oddělení ověřit, že retenční doba logů u systémů jako CRIF, Guidewire či HR systémů je nastavena minimálně na tuto zákonnou lhůtu.</p>
+
+<h2>7. Zpracování osobních údajů přes AI (GDPR)</h2>
+
+<p>Z dotazníkového šetření vyplývá, že společnost zpracovává osobní údaje prostřednictvím AI systémů a má uzavřeny zpracovatelské smlouvy (DPA) s dodavateli. Z hlediska souladu s GDPR je nutné udržovat následující standardy:</p>
+<ol>
+  <li><strong>Právní základ (čl. 6 GDPR):</strong> Pro zpracování životopisů přes AI je právním základem oprávněný zájem nebo předsmluvní opatření. Pro kamerový dohled s AI je nutný striktní test proporcionality.</li>
+  <li><strong>Informační povinnost (čl. 13/14 GDPR):</strong> Zásady ochrany osobních údajů na webu společnosti musí být aktualizovány. <em>Příklad z praxe: Do sekce o zpracování dat musíte přidat odstavec: „Pro vyhodnocování úvěrového rizika využíváme automatizované systémy umělé inteligence poskytované společností CRIF. Máte právo požádat o lidský přezkum tohoto rozhodnutí.“</em></li>
+  <li><strong>Smlouvy s dodavateli (čl. 28 GDPR):</strong> Ověřte, zda DPA s poskytovateli jako OpenAI nebo Anthropic výslovně zakazují využití vašich firemních dat pro trénink jejich budoucích modelů (tzv. zero-data retention policy). K ověření využijte <em>Dodavatelský checklist</em> z Compliance Kitu.</li>
+</ol>
+
+<h2>8. Konzultace s dotčenými subjekty</h2>
+
+<p>Vzhledem k velikosti společnosti (250+ zaměstnanců) a nasazení vysoce rizikových systémů na pracovišti doporučujeme provést konzultace s dotčenými subjekty.</p>
+
+<ul>
+  <li><strong>Zaměstnanci:</strong> Informujte zaměstnance o nasazení AI systémů, které hodnotí jejich výkon. Pokud ve firmě působí odborová organizace, projednejte s nimi nasazení nástrojů pro měření produktivity.</li>
+  <li><strong>Zákazníci:</strong> Nasazením <em>Transparenční stránky</em> (✓ Zajištěno v Compliance Kitu) na váš web dáváte zákazníkům možnost seznámit se s tím, jaké AI systémy e-shop a finanční divize využívají.</li>
+</ul>
+
+<h2>9. Závěr a doporučení</h2>
+
+<p>Společnost Martin Haynes provozuje vysoce komplexní a rizikové portfolio AI systémů. Celkové riziko je hodnoceno jako <strong>VYSOKÉ</strong>. Zásadním zjištěním tohoto posouzení je přítomnost systémů, které spadají do kategorie zakázaných praktik (čl. 5 AI Act).</p>
+
+<div class='warning'>
+  <strong>KRITICKÉ PRODLENÍ:</strong> Lhůta pro ukončení zakázaných praktik (sociální scoring, rozpoznávání emocí na pracovišti) vypršela 2. 2. 2025. Společnost je v přímém porušení nařízení a hrozí jí likvidační pokuty. Tyto systémy musí být vypnuty do 24 hodin od přečtení tohoto dokumentu.
+</div>
+
+<p>Pro zbývající vysoce rizikové systémy (HR, finance, pojišťovnictví, kritická infrastruktura) zbývá do plné účinnosti povinností (2. 8. 2026) <strong>pouhých 5 měsíců</strong>. Během této doby musí odpovědná osoba (Martin Haynes) zajistit implementaci všech opatření uvedených v sekci 5.</p>
+
+<p><strong>Podmínky pro pokračování v provozu:</strong></p>
+<ol>
+  <li>Okamžitá demontáž systémů „vlastní html“ a „vlastní kód“ (v částech porušujících čl. 5) a sepsání protokolu o demontáži.</li>
+  <li>Zavedení prokazatelného lidského dohledu nad rozhodnutími HR a finančních AI systémů.</li>
+  <li>Ověření a zdokumentování provedeného školení AI gramotnosti (prezenční listiny, datum, obsah dle čl. 4 AI Act). Společnost deklaruje, že školení proběhlo. Pokud však neproběhlo pro <em>všechny</em> relevantní zaměstnance, jste v prodlení od 2. 2. 2025.</li>
+  <li>Registrace vysoce rizikových systémů v EU databázi a systému kritické infrastruktury u NÚKIB.</li>
+</ol>
+
+<p>Při dodržení výše uvedených kroků a využití dokumentace z Compliance Kitu lze zbytková rizika snížit na akceptovatelnou úroveň. Další řádný přezkum tohoto DPIA/FRIA dokumentu je stanoven na 25. 02. 2027. <strong>Mimořádný přezkum</strong> musí být proveden okamžitě při nastání jednoho z následujících triggerů: (1) nasazení nového vysoce rizikového systému, (2) podstatná změna stávajícího systému (čl. 25 AI Act), (3) závažný incident hlášený dozorovému orgánu (čl. 73 AI Act), nebo (4) změna regulatorního rámce.</p>
+
+<div class='no-break'>
+  <div class='sig-block'>
+    <div class='sig-field'>Za firmu Martin Haynes<br><br>.......................................................<br>Martin Haynes, Jednatel</div>
+    <div class='sig-field'>Za AIshield.cz<br><br>.......................................................<br>Expert na AI Compliance</div>
+  </div>
+</div>

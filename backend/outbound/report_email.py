@@ -413,9 +413,8 @@ def generate_report_email_html(
                 </div>
                 <div style="font-size:13px;color:{D['text_secondary']};line-height:2;">
                     &#10003; Implementace na klíč — instalace widgetu, transparenční stránky i chatbot oznámení přímo na váš web<br>
-                    &#10003; 10 hodin konzultací s compliance specialistou<br>
+                    &#10003; 10 hodin on-line konzultací s compliance specialistou<br>
                     &#10003; Metodická kontrola veškeré dokumentace<br>
-                    &#10003; Rozšířený audit interních AI systémů<br>
                     &#10003; 2 roky měsíčního monitoringu — automatický sken, aktualizace dokumentů<br>
                     &#10003; Dedikovaný specialista + SLA s dobou odezvy 4 hodiny
                 </div>
@@ -476,9 +475,8 @@ def generate_report_email_html(
                 <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
                 <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                     ✓ Vše z PRO &nbsp;&nbsp;
-                    ✓ 10h konzultací se specialistou &nbsp;&nbsp;
+                    ✓ 10h on-line konzultací se specialistou &nbsp;&nbsp;
                     ✓ Metodická kontrola dokumentace &nbsp;&nbsp;
-                    ✓ Rozšířený audit interních AI &nbsp;&nbsp;
                     ✓ 2 roky měsíčního monitoringu &nbsp;&nbsp;
                     ✓ Dedikovaný specialista &nbsp;&nbsp;
                     ✓ SLA 4h odezva
@@ -785,9 +783,8 @@ def generate_zero_findings_email_html(
                 <div style="font-size:11px;color:{D["text_muted"]};">jednorázově</div>
                 <div style="margin-top:12px;font-size:13px;color:{D["text_secondary"]};line-height:1.8;">
                     ✓ Vše z PRO &nbsp;&nbsp;
-                    ✓ 10h konzultací se specialistou &nbsp;&nbsp;
+                    ✓ 10h on-line konzultací se specialistou &nbsp;&nbsp;
                     ✓ Metodická kontrola dokumentace &nbsp;&nbsp;
-                    ✓ Rozšířený audit interních AI &nbsp;&nbsp;
                     ✓ 2 roky měsíčního monitoringu &nbsp;&nbsp;
                     ✓ Dedikovaný specialista &nbsp;&nbsp;
                     ✓ SLA 4h odezva

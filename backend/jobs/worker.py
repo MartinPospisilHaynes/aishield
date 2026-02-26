@@ -366,6 +366,13 @@ class WorkerSettings:
 
     @staticmethod
     async def on_startup(ctx: dict):
+        # Configure Python logging for the ARQ worker process
+        import logging as _logging
+        _logging.basicConfig(
+            level=_logging.INFO,
+            format="%(levelname)s %(name)s: %(message)s",
+            force=True,
+        )
         logger.info("🚀 AIshield ARQ Worker starting...")
 
     @staticmethod

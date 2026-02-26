@@ -1105,8 +1105,9 @@ async def crm_client_management(
                 except Exception as e:
                     logger.warning(f"[ClientMgmt] Docs fetch error for {email}: {e}")
 
-            # Questionnaire completed?
+            # Questionnaire completed? (any response = started, >50% = done)
             questionnaire_done = False
+            questionnaire_answered = 0
             if company_id:
                 try:
                     qr_res = (
@@ -1115,10 +1116,9 @@ async def crm_client_management(
                         .eq("company_id", company_id)
                         .execute()
                     )
-                    answered = qr_res.count or len(qr_res.data or [])
-                    from backend.api.questionnaire import QUESTIONNAIRE_SECTIONS
-                    all_qkeys = {q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]}
-                    questionnaire_done = answered >= len(all_qkeys)
+                    questionnaire_answered = qr_res.count or len(qr_res.data or [])
+                    # Lenient check: any responses = done (client may not fill all 47 Qs)
+                    questionnaire_done = questionnaire_answered > 0
                 except Exception:
                     pass
 
@@ -1856,20 +1856,35 @@ async def crm_business_overview(
 
     # Recent activity (last 20 orders + subscriptions merged, sorted by date)
     recent_events = []
+    _status_cz = {
+        "AWAITING_PAYMENT": "Čeká na platbu",
+        "PAID": "Zaplaceno",
+        "paid": "Zaplaceno",
+        "CANCELLED": "Zrušeno",
+        "REFUNDED": "Vráceno",
+        "EXPIRED": "Expirováno",
+        "active": "Aktivní",
+        "cancelled": "Zrušeno",
+        "past_due": "Po splatnosti",
+    }
     for o in orders[:20]:
+        raw_status = o.get("status", "?")
+        cz_status = _status_cz.get(raw_status, raw_status)
         recent_events.append({
             "type": "order",
             "date": o.get("created_at"),
             "email": o.get("email") or o.get("user_email"),
-            "detail": f"{o.get('plan', '?')} — {o.get('status', '?')} — {fmtAmount(o.get('amount', 0))}",
+            "detail": f"{o.get('plan', '?')} — {cz_status} — {fmtAmount(o.get('amount', 0))}",
             "status": o.get("status"),
         })
     for s in subscriptions[:10]:
+        raw_status = s.get("status", "?")
+        cz_status = _status_cz.get(raw_status, raw_status)
         recent_events.append({
             "type": "subscription",
             "date": s.get("created_at"),
             "email": s.get("email"),
-            "detail": f"{s.get('plan', '?')} — {s.get('status', '?')} — {s.get('amount', 0)} Kč/měsíc",
+            "detail": f"{s.get('plan', '?')} — {cz_status} — {s.get('amount', 0)} Kč/měsíc",
             "status": s.get("status"),
         })
     recent_events.sort(key=lambda x: x.get("date") or "", reverse=True)

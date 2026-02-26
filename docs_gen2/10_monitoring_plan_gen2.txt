@@ -1,0 +1,135 @@
+AIshield.cz
+Monitoring plán AI
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:38 UTC 
+Monitoring plán AI
+Plán monitoringu AI výstupů dle čl. 9, 12 a 72 AI Act
+Firma: Martin Haynes
+Odpovědná osoba:  Martin Haynes
+Platnost od:  24. 02. 2026, 20:38 UTC
+čl. 12 AI Act — Uchovávání záznamů:
+Logy (záznamy) z provozu AI systémů musí být uchovávány po dobu minimálně 6 měsíců  (pokud jiný právní předpis nestanoví delší
+dobu). Pro vysoce rizikové systémy platí přísnější požadavky na automatické logování. 
+Monitorované AI systémy
+AI SYSTÉM RIZIKO FREKVENCE KONTROLY
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+vlastní kódMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+vlastní html Minimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+AI SYSTÉM RIZIKO FREKVENCE KONTROLY
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+pospa ing. Minimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+NoneMinimální rizikoMěsíčně / čtvrtletně
+Google Gemini ChatbotOmezené rizikoTýdně / měsíčně
+AI služba: AI ChatbotOmezené rizikoTýdně / měsíčně
+AI Transparency NoticeOmezené rizikoTýdně / měsíčně
+Google Analytics 4Mimo klasifikaciMěsíčně
+Meta PixelMimo klasifikaciMěsíčně
+AI API Proxy (geminiproxy)Mimo klasifikaciMěsíčně
+Google Tag ManagerMimo klasifikaciMěsíčně
+HeurekaMimo klasifikaciMěsíčně
+Google Gemini ChatbotOmezené rizikoTýdně / měsíčně
+AI API Proxy (geminiproxy)Omezené rizikoTýdně / měsíčně
+AI služba: AI ChatbotOmezené rizikoTýdně / měsíčně
+AI Transparency NoticeOmezené rizikoTýdně / měsíčně
+Meta PixelMinimální rizikoMěsíčně / čtvrtletněAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 5 Bc. Martin Haynes | ICO: 17889251
+CO monitorovat — KPI metriky
+A. Přesnost a kvalita výstupů
+Míra chybných / nesprávných odpovědí (error rate)
+AI halucinace — vymýšlení neexistujících faktů (hallucination rate)
+Relevance a konzistence odpovědí v čase
+Spokojenost uživatelů / zákazníků (feedback score)
+B. Férovost a bias
+Genderový bias — liší se odpovědi dle pohlaví?
+Etnický / věkový bias — diskriminace na základě chráněných charakteristik
+Jazykový bias — kvalita pro češtinu vs. angličtinu
+Socioekonomický bias — zvýhodňování/znevýhodňování skupin
+C. Bezpečnost
+Prompt injection — manipulace AI přes vstupy (red teaming)
+Data leakage — nevypisuje AI citlivé informace?
+Dostupnost — uptime AI systému (SLA monitoring)
+Neautorizovaný přístup — kdo a jak přistupuje k AI
+D. Compliance
+Transparenční oznámení — jsou viditelná a aktuální?
+Registr AI systémů — je aktuální?
+Školení absolvováno — všemi zaměstnanci?
+Logy uchovávány min. 6 měsíců (čl. 12)
+Specifická doporučení pro monitoring
+Jakožto jednatel a osoba odpovědná za AI ve vaší společnosti (Martin Haynes) nesete finální odpovědnost za průběžný
+monitoring nasazených i vyvíjených AI systémů. Vzhledem k tomu, že vaše společnost vystupuje v roli poskytovatele
+(provider, čl. 3(2)) u vlastních řešení a nasazovatele (deployer, čl. 3(4)) u externích nástrojů, je nezbytné zavést systematický
+dohled nad jejich fungováním. Váš rizikový profil zahrnuje 17 vysoce rizikových systémů, což vyžaduje přísný a proaktivní
+přístup k monitoringu.
+Pro vysoce rizikové systémy (high-risk) nařízení vyžaduje implementaci automatického zaznamenávání událostí (logging) dle
+čl. 12 AI Act. Tyto logy musí být uchovávány po dobu minimálně 6 měsíců v souladu s čl. 19 odst. 1. Zajištění této technické
+vrstvy vyžaduje vaši interní akci, jelikož AIshield nemá a nesmí mít přístup do vašich produkčních systémů a databází.
+Zajistěte logování dle čl. 12 a uchovávání dle čl. 19 odst. 1 — konkrétně:
+Nastavte vaše servery tak, aby ukládaly každý vstup a výstup z vašich high-risk AI systémů (např. řešení „pospa ing.“ nebo
+vlastní kód) do zabezpečené interní databáze.
+Zaveďte automatické promazávání logů starších než 6 měsíců, abyste splnili požadavky AI Act a zároveň dodrželi princip
+minimalizace dat dle GDPR.• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 5 Bc. Martin Haynes | ICO: 17889251
+U externích nástrojů (např. Google Gemini) aktivujte v administrátorské konzoli ukládání historie konverzací a auditních logů.
+Monitoring plán jste obdrželi v Compliance Kitu. Implementujte ho do svých IT procesů — např. přidejte kontrolu AI výstupů do
+týdenního IT review meetingu. Tento dokument obsahuje kompletní metodiku, ale samotný sběr dat, provádění
+bezpečnostních auditů a vyhodnocování musíte provádět interně v rámci vašeho IT oddělení.
+Pro efektivní dohled sledujte následující klíčové ukazatele výkonnosti (KPI): přesnost AI výstupů, bias skóre (míra
+algoritmického zkreslení), latenci systému, počet eskalací na lidského operátora a false positive/negative rate (poměr falešně
+pozitivních a negativních výsledků). Součástí monitoringu musí být i pravidelné bezpečnostní audity a manuální revize výstupů
+AI (tzv. human-in-the-loop), zejména u systémů rozhodujících o právech zákazníků nebo zaměstnanců.
+Zaveďte pravidelné vyhodnocování KPI — konkrétně:
+Jednou týdně zkontrolujte 10 náhodných odpovědí chatbotu — kolik z nich bylo fakticky správných? Pokud <80 %, eskalujte na
+dodavatele.
+U systémů s omezeným rizikem (limited) provádějte kontrolu metrik a logů jednou měsíčně.
+U systémů s minimálním rizikem (minimal) postačuje kvartální revize přístupových práv a základní funkčnosti.
+Upozorňujeme, že veškeré údaje o externích dodavatelích AI systémů uvedené v této dokumentaci jsou platné ke dni
+2026-02-24. Při jakékoliv změně dodavatele nebo aktualizaci modelu (např. přechod na novější verzi LLM) je nutné monitoring
+plán revidovat a ověřit, zda nedošlo ke změně rizikové klasifikace systému.
+Měsíční plán kontrol
+TÝDEN AKTIVITA ODPOVĚDNOST SPLNĚNO
+1. Review přesnosti AI výstupů (vzorek 20 odpovědí) Odpovědná osoba ☐
+1. Kontrola transparenčních oznámení na webu Marketing / IT ☐
+2. Bias test — 10 testovacích dotazů z různých skupin Odpovědná osoba ☐
+2. Bezpečnostní test — 5 prompt injection pokusů IT / Security ☐
+3. Aktualizace registru AI systémů Odpovědná osoba ☐
+3. Review zpětné vazby od uživatelů / zákazníků Customer support ☐
+4. Kontrola uchovávání logů (min. 6 měsíců) IT ☐
+4. Souhrnný report vedení Odpovědná osoba ☐
+Čtvrtletní monitoring report — šablona
+Období Q__ / 20__
+Počet AI incidentů Vyplňte
+Error rate (chybovost) ____ %
+Počet bias testů Vyplňte
+Výsledek bias testů ☐ OK ☐ Zjištěn bias — popis:
+Bezpečnostních testů Vyplňte
+Změny v AI systémech Vyplňte
+Doporučení pro příští Q Vyplňte
+Podpis odpovědné osoby Vyplňte
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. • 
+• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 5 Bc. Martin Haynes | ICO: 17889251
+Monitoring plán AI · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:38 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 5 z 5 Bc. Martin Haynes | ICO: 17889251

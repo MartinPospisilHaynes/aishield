@@ -220,7 +220,7 @@ class AIClassifier:
         result = await llm_complete(
             system=enriched_system_prompt,
             user=user_message,
-            max_tokens=2048,
+            max_tokens=4096,
             model=self.model,
         )
 
@@ -313,7 +313,26 @@ class AIClassifier:
             except json.JSONDecodeError:
                 pass
 
-        # 4. Nic nefungovalo → raise
+        # 4. Truncated JSON recovery — response was cut off mid-array
+        #    Try to find complete JSON objects within the truncated array
+        if text.lstrip().startswith('['):
+            # Find all complete {...} objects via greedy matching
+            obj_pattern = re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text)
+            recovered = []
+            for m in obj_pattern:
+                try:
+                    obj = json.loads(m.group())
+                    if isinstance(obj, dict) and 'name' in obj:
+                        recovered.append(obj)
+                except json.JSONDecodeError:
+                    continue
+            if recovered:
+                logger.warning(
+                    f"[Classifier] Recovered {len(recovered)} objects from truncated JSON response"
+                )
+                return recovered
+
+        # 5. Nic nefungovalo → raise
         raise json.JSONDecodeError(
             f"Cannot parse Claude response as JSON. Raw text: {raw_text[:200]}...",
             raw_text, 0
@@ -346,6 +365,24 @@ class AIClassifier:
             else:
                 fp_count += 1
 
+            # Sanitize reason — zákazník nesmí vidět raw error messages
+            if is_deployed:
+                customer_reason = (
+                    "Systém detekován na základě signatur a heuristické analýzy. "
+                    "Doporučujeme ověřit klasifikaci."
+                )
+            else:
+                customer_reason = (
+                    f"Nízká míra jistoty detekce ({f.confidence:.0%}) — "
+                    "pravděpodobně se nejedná o AI systém."
+                )
+
+            # Interní technický důvod — pouze do logů, NE do dokumentů
+            logger.info(
+                f"[Classifier] Fallback reason (internal): {reason}, "
+                f"confidence={f.confidence:.2f}, deployed={is_deployed}"
+            )
+
             results.append(ClassifiedFinding(
                 name=f.name,
                 deployed=is_deployed,
@@ -356,10 +393,7 @@ class AIClassifier:
                     f"Nízká confidence ({f.confidence:.0%}) — pravděpodobně false positive.",
                 description_cs=f.description_cs,
                 confidence=f.confidence,
-                reason=f"⚠️ AI klasifikace selhala ({reason}). "
-                       f"{'Ponecháno' if is_deployed else 'Vyřazeno'} "
-                       f"na základě confidence={f.confidence:.2f} "
-                       f"(threshold={FALLBACK_CONFIDENCE_THRESHOLD}).",
+                reason=customer_reason,
                 matched_signatures=f.matched_signatures,
                 evidence=f.evidence,
             ))

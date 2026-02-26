@@ -1,0 +1,693 @@
+"""
+AIshield.cz — Modul 5: PROMPT OPTIMIZER (Self-Improving System)
+
+Analyzuje agregovaná data z M2 (EU Critic) + M3 (Client Critic) po celé generaci,
+identifikuje opakující se vzory a navrhuje konkrétní patche do SYSTEM_PROMPT_M1.
+
+Architekttura:
+  1. Shromáždí všechny nálezy M2+M3 z 11 dokumentů
+  2. Identifikuje opakující se problémy (≥3 výskyty)
+  3. Navrhne patch do SYSTEM_PROMPT_M1 (max 5 pravidel za iteraci)
+  4. Uloží patch jako verzi s metadaty
+  5. Automaticky se deaktivuje po dosažení konvergence
+
+Bezpečnostní záruky:
+  - Immutable core: jádro promptu (právní fakta, formát) nelze měnit
+  - Max 5 pravidel za iteraci (prevence rozpliznutí)
+  - Konvergence check: vypne se při avg skóre ≥ 8.5
+  - Verzování: každý patch je uložen, možnost rollbacku
+  - Degradation guard: pokud nový prompt zhorší skóre → automatický revert
+
+Model: Claude Opus 4.6 — nejsilnější model pro meta-analýzu a syntézu.
+"""
+
+import json
+import logging
+import os
+import time
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Tuple
+
+from backend.documents.llm_engine import extract_html_content
+
+logger = logging.getLogger(__name__)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# KONFIGURACE
+# ══════════════════════════════════════════════════════════════════════
+
+# Cesta pro ukládání verzí promptů
+PROMPT_VERSIONS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "prompt_versions"
+)
+
+# Konvergence — M5 se automaticky vypne pokud:
+CONVERGENCE_THRESHOLD = 8.5     # průměrné skóre M2+M3 >= 8.5
+CONVERGENCE_GENERATIONS = 3     # po 3 generace za sebou
+MAX_ITERATIONS = 20             # nebo po 20 iteracích celkem
+
+# Bezpečnost
+MAX_RULES_PER_ITERATION = 5    # max pravidel přidaných za 1 iteraci
+MIN_PATTERN_OCCURRENCES = 3     # problém musí být v ≥3 dokumentech
+
+# Model pro M5 — Opus pro maximální kvalitu meta-analýzy
+M5_MODEL = "claude-opus-4-6"
+M5_COST_INPUT = 5.0 / 1_000_000
+M5_COST_OUTPUT = 25.0 / 1_000_000
+
+
+# ══════════════════════════════════════════════════════════════════════
+# IMMUTABLE CORE — tyto sekce SYSTEM_PROMPT_M1 se NESMÍ měnit
+# ══════════════════════════════════════════════════════════════════════
+
+IMMUTABLE_SECTIONS = [
+    "VÝSTUPNÍ FORMÁT — HTML",       # Formátovací pravidla
+    "PRÁVNÍ FAKTA — PŘESNĚ DODRŽUJ", # Zákonné údaje
+    "KLÍČOVÉ ROZLIŠENÍ — AISHIELD vs. KLIENT",  # Business logika
+    "DOKUMENTY V COMPLIANCE KITU",   # Seznam dokumentů
+    "CHYBĚJÍCÍ DATA — FALLBACK PRAVIDLO",  # Fallback
+    "DYNAMICKÉ DATUM",               # Dynamické datum
+]
+
+
+# ══════════════════════════════════════════════════════════════════════
+# SYSTEM PROMPT PRO M5 — Meta-Analyzer
+# ══════════════════════════════════════════════════════════════════════
+
+SYSTEM_PROMPT_M5 = """Jsi expert na prompt engineering a meta-analýzu kvality AI výstupů.
+Tvým úkolem je analyzovat zpětnou vazbu z kontrolních modulů (M2 — EU inspektor, M3 — klient)
+a navrhnout KONKRÉTNÍ vylepšení generovacího promptu (SYSTEM_PROMPT_M1).
+
+KONTEXT CELÉHO KITU:
+Compliance Kit má 3 typy výstupů:
+A) 11 LLM-generovaných dokumentů (M1→M2→M3→M4) — tvoje hlavní oblast optimalizace
+B) Transparenční stránka (HTML šablona pro web klienta) — template-based, ale musí být
+   konzistentní s dokumenty, správně odkazovat na AI systémy a povinnosti z reportu
+C) PPTX prezentace pro školení AI gramotnosti — template-based, obsahuje slidy z dat firmy
+
+Klient dostává VŠECHNY výstupy jako celek. Pokud v LLM dokumentech (A) jsou zmíněny
+transparenční stránka nebo prezentace, musí být KONZISTENTNÍ s tím, co klient skutečně obdrží.
+
+TVŮJ PROCES:
+1. Analyzuj agregované nálezy z M2 (právní přesnost) a M3 (klientská spokojenost)
+2. Identifikuj OPAKUJÍCÍ se vzory — problémy, které se objevují ve ≥3 dokumentech
+3. Navrhni KONKRÉTNÍ nová pravidla/instrukce pro SYSTEM_PROMPT_M1
+4. Každé pravidlo musí být actionable — "Při psaní X vždy Y"
+5. Zvaž konzistenci mezi LLM dokumenty a template-based výstupy (transparency page, PPTX)
+
+PRAVIDLA PRO PATCHE:
+- Navrhuješ NOVÁ pravidla, která se PŘIDAJÍ do sekce "═══ VYLEPŠENÍ Z M5 ═══" v promptu.
+- NEMODIFIKUJ existující sekce promptu — pouze přidáváš nová pravidla.
+- MAX 5 pravidel za iteraci — kvalita nad kvantitu.
+- Každé pravidlo max 2 věty — stručné, jasné, actionable.
+- Pravidla píš česky v imperativu: "Vždy uveď...", "Nikdy nepoužívej..."
+- Pokud je kvalita již vysoká a nemáš co zásadního navrhnout, navrhni MÉNĚ pravidel nebo žádné.
+- Pravidlo, které již v promptu existuje (byť jinak formulované), NEOPAKUJ.
+
+BEZPEČNOSTNÍ PRVKY — NIKDY:
+- Nenavrhuj změny právních faktů (data, pokuty, články zákona)
+- Nenavrhuj změny formátovacích pravidel (HTML, CSS třídy)
+- Nenavrhuj obecné/vágní rady ("piš lépe", "buď konkrétnější")
+- Nenavrhuj pravidla, která by zkrátila nebo zjednodušila dokumenty pod profesionální úroveň
+
+VÝSTUPNÍ FORMÁT:
+Odpověz VÝHRADNĚ platným JSON objektem.
+
+{
+  "analyza": {
+    "prumerny_eu_score": 7.2,
+    "prumerny_client_score": 8.1,
+    "celkovy_prumer": 7.65,
+    "identifikovane_vzory": [
+      {
+        "vzor": "Popis opakujícího se problému",
+        "pocet_vyskytu": 5,
+        "zavaznost": "kritické|důležité|menší",
+        "priklad_dokumentu": "compliance_report",
+        "typicky_nalez": "Citace konkrétního nálezu z M2/M3"
+      }
+    ]
+  },
+  "doporuceni": {
+    "nova_pravidla": [
+      {
+        "pravidlo": "Text nového pravidla pro SYSTEM_PROMPT_M1 (max 2 věty)",
+        "duvod": "Proč toto pravidlo navrhuju — jaký vzor řeší",
+        "ocekavany_efekt": "Co se zlepší"
+      }
+    ],
+    "konvergence": false,
+    "komentar": "Celkové hodnocení a další doporučení — 2-3 věty."
+  }
+}
+
+Pokud jsou dokumenty již kvalitní (průměr ≥ 8.5), nastav "konvergence": true
+a "nova_pravidla" nechej prázdné nebo minimální.
+"""
+
+
+# ══════════════════════════════════════════════════════════════════════
+# PROMPT VERSION MANAGER
+# ══════════════════════════════════════════════════════════════════════
+
+class PromptVersionManager:
+    """Spravuje verze SYSTEM_PROMPT_M1 s kompletní historií."""
+
+    def __init__(self, versions_dir: str = PROMPT_VERSIONS_DIR):
+        self.versions_dir = versions_dir
+        os.makedirs(versions_dir, exist_ok=True)
+        self.history_file = os.path.join(versions_dir, "history.json")
+        self.m5_rules_file = os.path.join(versions_dir, "m5_rules.txt")
+        self._history = self._load_history()
+
+    def _load_history(self) -> List[dict]:
+        """Načte historii verzí."""
+        if os.path.exists(self.history_file):
+            try:
+                with open(self.history_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                return []
+        return []
+
+    def _save_history(self):
+        """Uloží historii."""
+        with open(self.history_file, "w", encoding="utf-8") as f:
+            json.dump(self._history, f, ensure_ascii=False, indent=2, default=str)
+
+    def get_current_version(self) -> int:
+        """Vrátí číslo aktuální verze."""
+        return len(self._history)
+
+    def get_current_m5_rules(self) -> str:
+        """Vrátí aktuální M5 pravidla jako text pro vložení do promptu."""
+        if os.path.exists(self.m5_rules_file):
+            with open(self.m5_rules_file, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        return ""
+
+    def get_convergence_status(self) -> dict:
+        """Zkontroluje, zda bylo dosaženo konvergence."""
+        version = self.get_current_version()
+
+        if version >= MAX_ITERATIONS:
+            return {
+                "converged": True,
+                "reason": f"Dosažen maximální počet iterací ({MAX_ITERATIONS})",
+                "version": version,
+            }
+
+        # Kontrola posledních N generací
+        if len(self._history) >= CONVERGENCE_GENERATIONS:
+            recent = self._history[-CONVERGENCE_GENERATIONS:]
+            avg_scores = [h.get("avg_score", 0) for h in recent]
+            if all(s >= CONVERGENCE_THRESHOLD for s in avg_scores):
+                return {
+                    "converged": True,
+                    "reason": f"Průměrné skóre ≥ {CONVERGENCE_THRESHOLD} po {CONVERGENCE_GENERATIONS} generace",
+                    "scores": avg_scores,
+                    "version": version,
+                }
+
+        return {
+            "converged": False,
+            "version": version,
+            "iterations_remaining": MAX_ITERATIONS - version,
+        }
+
+    def add_version(
+        self,
+        generation_id: str,
+        new_rules: List[dict],
+        analysis: dict,
+        avg_score: float,
+        cost_usd: float,
+        m5_response: dict,
+    ) -> dict:
+        """Přidá novou verzi pravidel."""
+        version = self.get_current_version() + 1
+        timestamp = datetime.now(timezone.utc).isoformat()
+
+        # Uložit verzi do historie
+        version_entry = {
+            "version": version,
+            "generation_id": generation_id,
+            "timestamp": timestamp,
+            "avg_score": round(avg_score, 2),
+            "eu_avg": round(analysis.get("prumerny_eu_score", 0), 2),
+            "client_avg": round(analysis.get("prumerny_client_score", 0), 2),
+            "rules_added": len(new_rules),
+            "rules": [r.get("pravidlo", "") for r in new_rules],
+            "reasons": [r.get("duvod", "") for r in new_rules],
+            "cost_usd": round(cost_usd, 4),
+            "converged": m5_response.get("doporuceni", {}).get("konvergence", False),
+        }
+        self._history.append(version_entry)
+        self._save_history()
+
+        # Aktualizovat soubor s pravidly
+        self._update_rules_file(new_rules)
+
+        # Uložit kompletní M5 response pro audit
+        audit_file = os.path.join(self.versions_dir, f"v{version}_audit.json")
+        with open(audit_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "version": version,
+                "generation_id": generation_id,
+                "timestamp": timestamp,
+                "m5_full_response": m5_response,
+                "analysis_input": analysis,
+            }, f, ensure_ascii=False, indent=2, default=str)
+
+        logger.info(f"[M5 PromptOptimizer] Verze v{version} uložena: "
+                    f"{len(new_rules)} nových pravidel, avg={avg_score:.2f}")
+
+        return version_entry
+
+    def _update_rules_file(self, new_rules: List[dict]):
+        """Přidá nová pravidla do souboru m5_rules.txt."""
+        existing = self.get_current_m5_rules()
+        version = self.get_current_version()
+
+        new_section = f"\n# --- M5 v{version} ({datetime.now().strftime('%Y-%m-%d')}) ---\n"
+        for rule in new_rules:
+            text = rule.get("pravidlo", "").strip()
+            if text:
+                new_section += f"- {text}\n"
+
+        updated = existing + new_section
+        with open(self.m5_rules_file, "w", encoding="utf-8") as f:
+            f.write(updated)
+
+    def rollback(self, to_version: int) -> bool:
+        """Vrátí pravidla na starší verzi."""
+        if to_version < 0 or to_version > len(self._history):
+            return False
+
+        # Přebudovat rules soubor ze starších verzí
+        rules_text = ""
+        for entry in self._history[:to_version]:
+            v = entry["version"]
+            ts = entry["timestamp"][:10]
+            rules_text += f"\n# --- M5 v{v} ({ts}) ---\n"
+            for rule in entry.get("rules", []):
+                rules_text += f"- {rule}\n"
+
+        with open(self.m5_rules_file, "w", encoding="utf-8") as f:
+            f.write(rules_text)
+
+        # Zalogovat rollback
+        logger.warning(f"[M5 PromptOptimizer] ROLLBACK na verzi v{to_version}")
+        return True
+
+    def get_summary(self) -> str:
+        """Vrátí čitelný přehled historie."""
+        if not self._history:
+            return "Žádné verze — M5 ještě neběžel."
+
+        lines = [f"M5 Prompt Optimizer — {len(self._history)} verzí\n"]
+        for entry in self._history:
+            v = entry["version"]
+            score = entry["avg_score"]
+            rules = entry["rules_added"]
+            conv = " [KONVERGENCE]" if entry.get("converged") else ""
+            lines.append(f"  v{v}: avg={score:.1f}, +{rules} pravidel, ${entry['cost_usd']:.4f}{conv}")
+
+        return "\n".join(lines)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# HLAVNÍ FUNKCE — analyze_and_optimize
+# ══════════════════════════════════════════════════════════════════════
+
+async def analyze_and_optimize(
+    pipeline_log: List[dict],
+    all_critiques: Dict[str, dict],
+    generation_id: str = "unknown",
+    template_outputs: Optional[Dict[str, str]] = None,
+) -> dict:
+    """
+    Hlavní vstupní bod M5 — analyzuje generaci a navrhne vylepšení promptu.
+
+    Args:
+        pipeline_log: pipeline_log z ComplianceKitResult — seznam dict per doc
+        all_critiques: dict {doc_key: {"eu": eu_critique, "client": client_critique}}
+        generation_id: identifikátor generace (gen12, gen13, ...)
+        template_outputs: dict {"transparency_page": html_str, "pptx_slides": summary_str}
+                         — šablonové výstupy pro kontext M5
+
+    Returns:
+        dict s výsledky M5 analýzy
+    """
+    m5_start = time.time()
+    logger.info(f"")
+    logger.info(f"[M5 PromptOptimizer] {'═'*55}")
+    logger.info(f"[M5 PromptOptimizer] MODUL 5: Prompt Self-Optimization")
+    logger.info(f"[M5 PromptOptimizer] Generace: {generation_id}")
+    logger.info(f"[M5 PromptOptimizer] {'═'*55}")
+
+    manager = PromptVersionManager()
+
+    # ── 1. Konvergence check ──
+    conv_status = manager.get_convergence_status()
+    if conv_status["converged"]:
+        logger.info(f"[M5 PromptOptimizer] KONVERGENCE DOSAŽENA: {conv_status['reason']}")
+        logger.info(f"[M5 PromptOptimizer] M5 je deaktivován — žádné další změny.")
+        return {
+            "status": "converged",
+            "reason": conv_status["reason"],
+            "version": conv_status["version"],
+            "cost_usd": 0,
+        }
+
+    logger.info(f"[M5 PromptOptimizer] Aktuální verze: v{conv_status['version']}")
+    logger.info(f"[M5 PromptOptimizer] Zbývá iterací: {conv_status['iterations_remaining']}")
+
+    # ── 2. Agregace dat z M2+M3 ──
+    aggregated = _aggregate_critiques(pipeline_log, all_critiques)
+    logger.info(f"[M5 PromptOptimizer] Agregace: {aggregated['doc_count']} dokumentů, "
+                f"EU avg={aggregated['eu_avg']:.1f}, Client avg={aggregated['client_avg']:.1f}")
+
+    # ── 3. Přečíst aktuální M5 pravidla ──
+    current_rules = manager.get_current_m5_rules()
+    if current_rules:
+        logger.info(f"[M5 PromptOptimizer] Existující M5 pravidla: {len(current_rules)} znaků")
+    else:
+        logger.info(f"[M5 PromptOptimizer] Žádná existující M5 pravidla (první iterace)")
+
+    # ── 4. Zavolat Claude Opus pro analýzu ──
+    prompt = _build_m5_prompt(aggregated, current_rules, conv_status["version"], template_outputs)
+
+    logger.info(f"[M5 PromptOptimizer] Volám Claude Opus 4.6 pro meta-analýzu...")
+    m5_response, meta = await _call_m5(prompt)
+
+    cost = meta.get("cost_usd", 0)
+    logger.info(f"[M5 PromptOptimizer] Odpověď: ${cost:.4f}, "
+                f"{meta.get('input_tokens', 0)}+{meta.get('output_tokens', 0)} tokens")
+
+    # ── 5. Zpracovat odpověď ──
+    if not m5_response:
+        logger.error(f"[M5 PromptOptimizer] M5 nevrátil platnou odpověď!")
+        return {"status": "error", "error": "Invalid M5 response", "cost_usd": cost}
+
+    analysis = m5_response.get("analyza", {})
+    recommendations = m5_response.get("doporuceni", {})
+    new_rules = recommendations.get("nova_pravidla", [])
+    is_converged = recommendations.get("konvergence", False)
+
+    # ── 6. Bezpečnostní kontroly ──
+    new_rules = _safety_check_rules(new_rules)
+
+    if len(new_rules) > MAX_RULES_PER_ITERATION:
+        logger.warning(f"[M5 PromptOptimizer] Příliš mnoho pravidel ({len(new_rules)}), "
+                      f"ořezávám na {MAX_RULES_PER_ITERATION}")
+        new_rules = new_rules[:MAX_RULES_PER_ITERATION]
+
+    # ── 7. Uložit verzi ──
+    avg_score = (aggregated["eu_avg"] + aggregated["client_avg"]) / 2
+
+    if new_rules:
+        version_entry = manager.add_version(
+            generation_id=generation_id,
+            new_rules=new_rules,
+            analysis=analysis,
+            avg_score=avg_score,
+            cost_usd=cost,
+            m5_response=m5_response,
+        )
+        logger.info(f"[M5 PromptOptimizer] Uloženo: v{version_entry['version']}")
+    else:
+        logger.info(f"[M5 PromptOptimizer] Žádná nová pravidla — bez změny.")
+        version_entry = {"version": conv_status["version"], "rules_added": 0}
+
+    # ── 8. Logování výsledků ──
+    m5_time = time.time() - m5_start
+
+    for i, rule in enumerate(new_rules, 1):
+        logger.info(f"[M5 PromptOptimizer]   Pravidlo #{i}: {rule.get('pravidlo', '?')}")
+        logger.info(f"[M5 PromptOptimizer]     Důvod: {rule.get('duvod', '?')}")
+
+    if is_converged:
+        logger.info(f"[M5 PromptOptimizer] M5 navrhuje KONVERGENCI — příští generace bez M5.")
+
+    logger.info(f"[M5 PromptOptimizer] Komentář: {recommendations.get('komentar', 'N/A')}")
+    logger.info(f"[M5 PromptOptimizer] Čas: {m5_time:.1f}s, Cost: ${cost:.4f}")
+    logger.info(f"[M5 PromptOptimizer] {'═'*55}")
+
+    return {
+        "status": "optimized" if new_rules else "no_change",
+        "version": version_entry.get("version", conv_status["version"]),
+        "rules_added": len(new_rules),
+        "rules": [r.get("pravidlo", "") for r in new_rules],
+        "avg_score": round(avg_score, 2),
+        "eu_avg": round(aggregated["eu_avg"], 2),
+        "client_avg": round(aggregated["client_avg"], 2),
+        "converged": is_converged,
+        "cost_usd": round(cost, 4),
+        "time_s": round(m5_time, 1),
+        "comment": recommendations.get("komentar", ""),
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════
+# HELPER FUNKCE
+# ══════════════════════════════════════════════════════════════════════
+
+def _aggregate_critiques(
+    pipeline_log: List[dict],
+    all_critiques: Dict[str, dict],
+) -> dict:
+    """Agreguje nálezy M2+M3 přes všechny dokumenty."""
+    eu_scores = []
+    client_scores = []
+    all_eu_findings = []
+    all_client_findings = []
+    doc_count = 0
+
+    for entry in pipeline_log:
+        doc_key = entry.get("doc_key")
+        if not doc_key or entry.get("error"):
+            continue
+
+        doc_count += 1
+        eu_score = entry.get("eu_score", 0)
+        client_score = entry.get("client_score", 0)
+
+        if isinstance(eu_score, (int, float)):
+            eu_scores.append(eu_score)
+        if isinstance(client_score, (int, float)):
+            client_scores.append(client_score)
+
+        # Detailní nálezy
+        critiques = all_critiques.get(doc_key, {})
+        eu_data = critiques.get("eu", {})
+        client_data = critiques.get("client", {})
+
+        for finding in eu_data.get("nalezy", []):
+            all_eu_findings.append({
+                "doc_key": doc_key,
+                "doc_name": entry.get("doc_name", doc_key),
+                **finding,
+            })
+
+        for finding in client_data.get("nalezy", []):
+            all_client_findings.append({
+                "doc_key": doc_key,
+                "doc_name": entry.get("doc_name", doc_key),
+                **finding,
+            })
+
+    return {
+        "doc_count": doc_count,
+        "eu_avg": sum(eu_scores) / len(eu_scores) if eu_scores else 0,
+        "client_avg": sum(client_scores) / len(client_scores) if client_scores else 0,
+        "eu_scores": eu_scores,
+        "client_scores": client_scores,
+        "eu_findings": all_eu_findings,
+        "client_findings": all_client_findings,
+        "eu_findings_count": len(all_eu_findings),
+        "client_findings_count": len(all_client_findings),
+    }
+
+
+def _build_m5_prompt(aggregated: dict, current_rules: str, version: int,
+                     template_outputs: Optional[Dict[str, str]] = None) -> str:
+    """Sestaví prompt pro M5."""
+
+    # Formátování nálezů
+    eu_text = _format_findings(aggregated["eu_findings"], "EU Inspector (M2)")
+    client_text = _format_findings(aggregated["client_findings"], "Client (M3)")
+
+    # Skóre přehled
+    scores_text = "SKÓRE PO DOKUMENTECH:\n"
+    for i, (eu, cl) in enumerate(zip(aggregated["eu_scores"], aggregated["client_scores"]), 1):
+        scores_text += f"  Doc {i}: EU={eu}/10, Client={cl}/10\n"
+
+    rules_section = ""
+    if current_rules:
+        rules_section = f"""
+═══ AKTUÁLNÍ M5 PRAVIDLA (verze v{version}) ═══
+{current_rules}
+
+UPOZORNĚNÍ: Nenavrhuj pravidla, která již existují (byť jinak formulovaná).
+"""
+
+    return f"""ANALYZUJ výsledky generace compliance dokumentů a navrhni vylepšení promptu.
+
+═══ PŘEHLED GENERACE ═══
+Dokumentů: {aggregated['doc_count']}
+Průměrné skóre EU (M2): {aggregated['eu_avg']:.1f}/10
+Průměrné skóre Client (M3): {aggregated['client_avg']:.1f}/10
+Celkový průměr: {(aggregated['eu_avg'] + aggregated['client_avg']) / 2:.1f}/10
+Počet EU nálezů: {aggregated['eu_findings_count']}
+Počet Client nálezů: {aggregated['client_findings_count']}
+
+{scores_text}
+
+═══ NÁLEZY EU INSPEKTORA (M2) — {aggregated['eu_findings_count']} celkem ═══
+{eu_text}
+
+═══ NÁLEZY KLIENTA (M3) — {aggregated['client_findings_count']} celkem ═══
+{client_text}
+{rules_section}
+═══ TVŮJ ÚKOL ═══
+1. Identifikuj opakující se VZORY — problémy, které se objevují ve ≥{MIN_PATTERN_OCCURRENCES} dokumentech.
+2. Navrhni max {MAX_RULES_PER_ITERATION} KONKRÉTNÍCH pravidel pro zlepšení generovacího promptu.
+3. Pokud je průměrné skóre ≥ {CONVERGENCE_THRESHOLD}, nastav konvergence=true.
+4. Odpověz JSON dle specifikace.
+"""
+
+
+def _format_findings(findings: list, source: str) -> str:
+    """Formátuje nálezy pro M5 prompt."""
+    if not findings:
+        return f"Žádné nálezy z {source}."
+
+    lines = []
+    for f in findings:
+        severity = f.get("zavaznost", "?")
+        area = f.get("oblast", "?")
+        desc = f.get("popis", "?")
+        doc = f.get("doc_name", f.get("doc_key", "?"))
+        lines.append(f"  [{severity}] {doc} — {area}: {desc}")
+
+    return "\n".join(lines)
+
+
+def _safety_check_rules(rules: List[dict]) -> List[dict]:
+    """Bezpečnostní kontrola — odfiltruje nebezpečná pravidla."""
+    safe_rules = []
+    blocked_keywords = [
+        "datum", "platnost", "pokut", "článek", "článk", "čl.",   # právní fakta
+        "html", "css", "class=", "<h1>", "<div>",                  # formátovací
+        "emoji",                                                    # již existuje
+    ]
+
+    for rule in rules:
+        text = rule.get("pravidlo", "").lower()
+
+        # Kontrola na immutable obsah
+        is_blocked = False
+        for keyword in blocked_keywords:
+            if keyword in text and any(
+                s.lower() in text for s in ["změň", "uprav", "smaž", "odstraň", "přepiš"]
+            ):
+                logger.warning(f"[M5 Safety] BLOKOVÁNO pravidlo (immutable): {rule.get('pravidlo', '')}")
+                is_blocked = True
+                break
+
+        if not is_blocked and text.strip():
+            safe_rules.append(rule)
+
+    return safe_rules
+
+
+async def _call_m5(prompt: str) -> Tuple[Optional[dict], dict]:
+    """Zavolá Claude Opus 4.6 pro M5 analýzu."""
+    import anthropic
+    import os
+    from backend.config import get_settings
+
+    settings = get_settings()
+    api_key = settings.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY není nastavený")
+
+    client = anthropic.AsyncAnthropic(api_key=api_key)
+
+    try:
+        response = await client.messages.create(
+            model=M5_MODEL,
+            max_tokens=4000,    # M5 nepotřebuje dlouhý output
+            temperature=0.2,    # lehce kreativní pro meta-analýzu
+            system=SYSTEM_PROMPT_M5,
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        text = response.content[0].text if response.content else ""
+        in_tok = response.usage.input_tokens if response.usage else 0
+        out_tok = response.usage.output_tokens if response.usage else 0
+        cost = (in_tok * M5_COST_INPUT) + (out_tok * M5_COST_OUTPUT)
+
+        logger.info(f"[M5 PromptOptimizer] Claude Opus 4.6: "
+                    f"tokens={in_tok}+{out_tok}, cost=${cost:.4f}")
+
+        meta = {
+            "provider": "claude",
+            "model": M5_MODEL,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
+            "cost_usd": cost,
+        }
+
+        # Parse JSON
+        from backend.documents.llm_engine import parse_json
+        parsed = parse_json(text)
+        return parsed, meta
+
+    except Exception as e:
+        logger.error(f"[M5 PromptOptimizer] Chyba volání: {e}", exc_info=True)
+        return None, {"cost_usd": 0, "error": str(e)}
+
+
+# ══════════════════════════════════════════════════════════════════════
+# INTEGRACE S M1 — inject pravidla do SYSTEM_PROMPT_M1
+# ══════════════════════════════════════════════════════════════════════
+
+def get_enhanced_system_prompt_m1(base_prompt: str) -> str:
+    """
+    Vrátí SYSTEM_PROMPT_M1 obohacený o M5 pravidla.
+    Volá se z M1 generátoru na začátku každé generace.
+
+    Args:
+        base_prompt: původní SYSTEM_PROMPT_M1
+
+    Returns:
+        Prompt doplněný o M5 pravidla (nebo nezměněný, pokud žádná nejsou)
+    """
+    manager = PromptVersionManager()
+    rules = manager.get_current_m5_rules()
+
+    if not rules:
+        return base_prompt
+
+    # Přidej M5 sekci před koncovou část promptu
+    m5_section = f"""
+
+═══ VYLEPŠENÍ Z M5 — AUTOMATICKÁ OPTIMALIZACE (v{manager.get_current_version()}) ═══
+
+Následující pravidla byla automaticky identifikována analýzou zpětné vazby
+z předchozích generací. DODRŽUJ je stejně přísně jako ostatní pravidla.
+
+{rules}
+"""
+
+    # Vložit před poslední sekci (PRÁVNÍ FAKTA)
+    marker = "═══ PRÁVNÍ FAKTA"
+    if marker in base_prompt:
+        idx = base_prompt.index(marker)
+        return base_prompt[:idx] + m5_section + "\n" + base_prompt[idx:]
+    else:
+        return base_prompt + m5_section

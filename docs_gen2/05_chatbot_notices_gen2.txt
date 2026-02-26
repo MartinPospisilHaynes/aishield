@@ -1,0 +1,131 @@
+AIshield.cz
+Texty AI oznámení
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:37 UTC 
+Texty AI oznámení
+Připravené oznámení dle čl. 50 Nařízení (EU) 2024/1689
+čl. 50 AI Act — Povinnost informovat:
+Provozovatelé AI systémů, které přímo interagují s fyzickými osobami, musí zajistit, aby tyto osoby byly informovány, že komunikují
+se systémem AI , a to jasným a srozumitelným způsobem , nejpozději v okamžiku první interakce. U syntetického obsahu (deep
+fakes, AI obrázky) musí být obsah strojově čitelně označen . 
+Přehled povinností
+TYP AI SYSTÉMU POVINNOST ČLÁNEK
+Chatbot, voicebot Informovat uživatele, že komunikuje s AI čl. 50 odst. 1
+Rozpoznávání emocí Informovat o zpracování + získat souhlas čl. 50 odst. 3
+Deep fakes (AI obrázky, video) Označit obsah jako AI-generovaný čl. 50 odst. 4
+AI-generovaný text (články, reklamy) Označit jako AI-generovaný (pokud veřejný zájem) čl. 50 odst. 4
+Biometrická kategorizace Informovat dotčené osoby čl. 50 odst. 2
+Doporučení pro vaši firmu
+Vaše společnost s více než 250 zaměstnanci a širokým oborovým záběrem vystupuje v kontextu Nařízení (EU) 2024/1689 (AI
+Act) ve dvou rolích: jako nasazovatel (deployer) nástrojů třetích stran a potenciálně jako poskytovatel (provider) vlastních
+řešení. Sken vašeho webu potvrdil, že již máte aktivní základní transparenční oznámení, což je vynikající výchozí bod. Vaše
+infrastruktura však zahrnuje další systémy, jako je Google Gemini Chatbot, AI API Proxy a specifická vlastní řešení, na které se
+vztahují přísné požadavky na transparentnost dle článku 50 AI Act. Tyto povinnosti nabývají plné účinnosti 2. srpna 2026 a
+vyžadují přesnou technickou implementaci do vašich uživatelských rozhraní.
+Povinnosti dle článku 50 se dělí do několika kategorií na základě typu nasazeného systému. Jako nasazovatel AI chatbotů
+musíte bezpodmínečně splnit povinnost dle čl. 50 odst. 1, tedy zajistit, aby fyzické osoby byly včas a jasně informovány, že
+komunikují s umělou inteligencí. Pokud vaše interní systémy (identifikované jako „vlastní kód“) využívají po provedení auditu
+povolené formy rozpoznávání emocí nebo biometrické kategorizace, dopadá na vás čl. 50 odst. 2, který vyžaduje specifické
+upozornění před samotnou expozicí uživatele tomuto systému. Dále, pokud vaše systémy generují syntetický obsah (čl. 50
+odst. 4), musíte tento obsah zřetelně označit jako uměle vytvořený, aby nedošlo k uvedení spotřebitele v omyl.
+Veškeré vzorové texty těchto oznámení, návrhy bannerů a kompletní HTML kód transparenční stránky jste obdrželi jako
+součást Compliance Kitu od AIshield. Vaším úkolem je nyní tyto připravené prvky technicky implementovat do vašich systémů,
+e-shopu a interních portálů. Rozhodnutí o přesném umístění těchto prvků závisí na architektuře vašeho webu, avšak musí být
+vždy snadno viditelné a srozumitelné pro koncového uživatele.
+Zde jsou konkrétní kroky, které vyžadují vaši interní akci a technickou implementaci:
+Označení interakce s chatbotem (čl. 50 odst. 1):  Implementujte do uživatelského rozhraní Google Gemini Chatbotu a vašeho AI
+API Proxy jasné upozornění, že na druhé straně není člověk.
+Konkrétní příklad: Při otevření okna chatu na vašem e-shopu zobrazte fixní text: „Tento chat je provozován umělou inteligencí.
+Odpovědi mohou obsahovat nepřesnosti. Pro závazné informace kontaktujte naši živou podporu.“• 
+◦ 
+Upozornění na biometrickou kategorizaci a analýzu (čl. 50 odst. 2):  Pokud po právním auditu vašeho vlastního kódu zjistíte, že
+systém není zakázán dle čl. 5, musíte uživatele informovat před zahájením zpracování.
+Konkrétní příklad: Před spuštěním kamerového záznamu nebo analýzy v interním systému vložte potvrzovací dialog: „Tento
+systém využívá umělou inteligenci k analýze biometrických dat pro účely ověření identity. Pokračováním potvrzujete, že jste
+byli informováni o tomto zpracování.“
+Označení AI generovaného obsahu (čl. 50 odst. 4):  Zajistěte strojově čitelné označení (metadata) a vizuální upozornění u všech
+syntetických médií a textů publikovaných vaší firmou.
+Konkrétní příklad: Do patičky každého AI generovaného marketingového článku vložte text: „Tento text byl vygenerován
+umělou inteligencí a zkontrolován redaktorem.“ a do metadat vygenerovaných obrázků přidejte standardizovaný IPTC tag
+označující AI původ.
+Propojení na transparenční stránku:  Umístěte odkaz na detailní informace o využití AI ve vaší firmě napříč všemi digitálními
+kanály.
+Konkrétní příklad: Do globální patičky vašeho webu, vedle odkazu na ochranu osobních údajů, přidejte odkaz: „Informace o
+používání AI (AI Act)“, který povede na vaši dedikovanou transparenční stránku (tento dokument jste obdrželi jako součást
+Compliance Kitu od AIshield).
+Připravené texty k použití
+Níže najdete připravené texty oznámení — stačí zkopírovat a vložit. Texty jsou naformátovány pro přímé nasazení.
+1. Krátké oznámení — chatbot (doporučeno)
+🤖 Komunikujete s umělou inteligencí. Pokud chcete hovořit s člověkem, napište nám na
+info@desperados-design.cz.
+Kde použít:  Zobrazit v chatovacím okně před prvním automatickým pozdravem.
+Právní základ:  Povinné dle čl. 50 odst. 1 AI Act
+2. Rozšířené oznámení — chatbot
+Tento chat využívá systém umělé inteligence pro asistenci zákazníkům. Odpovědi jsou
+generovány automaticky a mohou obsahovat nepřesnosti. Společnost Martin Haynes zajišťuje
+lidský dohled nad AI systémem. Pro komunikaci s člověkem napište 'operátor' nebo nás
+kontaktujte na info@desperados-design.cz.
+Kde použít:  Zobrazit v patičce chatovacího okna nebo jako úvodní zprávu.
+Právní základ:  Povinné dle čl. 50 odst. 1 AI Act
+3. Banner na webu — obecný
+Na tomto webu využíváme systémy umělé inteligence. Podrobnosti o používaných AI systémech,
+jejich účelu a vašich právech najdete na naší stránce AI transparence.
+Kde použít:  Zobrazit jako lištu na stránce nebo v patičce webu.
+Právní základ:  Doporučeno dle čl. 50 AI Act
+4. Kontaktní formulář s AI zpracováním
+Váš dotaz bude nejprve zpracován systémem umělé inteligence pro rychlejší odpověď. Každou
+odpověď následně kontroluje náš tým. Máte právo požádat o přezkoumání AI odpovědi
+člověkem.• 
+◦ 
+• 
+◦ 
+• 
+◦ AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 4 Bc. Martin Haynes | ICO: 17889251
+Kde použít:  Zobrazit u kontaktního formuláře, pokud AI třídí nebo odpovídá na dotazy.
+Právní základ:  Povinné dle čl. 50 + čl. 86 AI Act
+5. E-mailová automatická odpověď
+Děkujeme za Váš e-mail. Pro rychlejší vyřízení byl Váš dotaz předběžně zpracován systémem
+umělé inteligence. Výslednou odpověď vždy kontroluje člen týmu Martin Haynes. Pokud si
+přejete komunikovat výhradně s člověkem, sdělte nám to v odpovědi na tento e-mail.
+Kde použít:  Vložit do automatické odpovědi e-mailového systému, pokud AI třídí/navrhuje odpovědi.
+Právní základ:  Doporučeno dle čl. 50 AI Act
+6. Telefonní IVR / voicebot
+Dobrý den, vítá vás Martin Haynes. Tento hovor je obsluhován systémem umělé inteligence.
+Pro spojení s operátorem řekněte 'operátor' nebo stiskněte nulu.
+Kde použít:  Přehrát na začátku hovoru při použití AI voicebotu / hlasového asistenta.
+Právní základ:  Povinné dle čl. 50 odst. 1 AI Act
+7. AI-generovaný obsah (obrázky, texty, videa)
+Tento obsah byl vytvořen nebo upraven pomocí umělé inteligence. © Martin Haynes
+Kde použít:  Označit AI-generovaný marketingový obsah, obrázky, texty, videa.
+Právní základ:  Povinné dle čl. 50 odst. 4 AI Act — deep fakes a syntetický obsah
+8. Interní AI nástroje (pro zaměstnance)
+Tento nástroj využívá umělou inteligenci. Výstupy AI nelze považovat za konečné — vždy
+ověřte správnost. Nevkládejte osobní údaje zákazníků ani důvěrné firemní informace.
+Kde použít:  Zobrazit při spuštění interního AI nástroje / pluginu.
+Právní základ:  Doporučeno dle čl. 4 AI Act (AI literacy)
+Požadavky na přístupnost (čl. 50 + směrnice 2019/882)
+Oznámení musí být přístupná i osobám se zdravotním postižením:
+Textové oznámení — čitelné pro screen reader (alt text, ARIA labels)
+Dostatečný kontrast textu (min. 4.5:1 dle WCAG 2.1 AA)
+Velikost písma min. 14px, možnost zvětšení
+Hlasová oznámení — srozumitelná, pomalá, s možností opakování
+Možnost odmítnutí AI a přepnutí na lidského operátoraAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 4 Bc. Martin Haynes | ICO: 17889251
+Checklist nasazení oznámení
+KANÁL OZNÁMENÍ NASAZENO ODPOVĚDNÁ OSOBA DATUM
+Webový chatbot ☐
+E-mail (auto-reply) ☐
+Telefon / IVR ☐
+Kontaktní formulář ☐
+Banner na webu ☐
+Interní nástroje ☐
+Marketingový obsah ☐
+Stránka AI transparence ☐
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Texty AI oznámení · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:37 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 4 Bc. Martin Haynes | ICO: 17889251

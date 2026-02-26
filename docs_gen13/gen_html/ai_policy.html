@@ -1,0 +1,231 @@
+<h1>Interní AI politika</h1>
+<p><em>Vnitřní směrnice č. 01/2026</em></p>
+
+<div class='info'>
+  <strong>Informace k dokumentu:</strong> Tento dokument je součástí AI Act Compliance Kitu dodaného společností AIshield.cz. Klient (společnost Martin Haynes) jej přebírá jako hotovou, na míru připravenou šablonu, kterou po seznámení s obsahem schválí, podepíše a zavede do své interní firemní praxe.
+</div>
+
+<h2>Preambule</h2>
+<p>Vedení společnosti Martin Haynes (IČO: 17889251) vydává tuto závaznou interní AI politiku za účelem nastavení jasných, bezpečných a zákonných pravidel pro vývoj, nasazování a využívání systémů umělé inteligence (AI) v rámci celé organizace. Vzhledem k tomu, že naše společnost působí v širokém spektru odvětví (od e-commerce a financí přes zdravotnictví až po vývoj vlastního softwaru) a zaměstnává více než 250 pracovníků, je standardizace práce s AI kritickým prvkem našeho řízení rizik.</p>
+
+<p>Tato směrnice je vydána v přímé návaznosti na <strong>Nařízení Evropského parlamentu a Rady (EU) 2024/1689 (Akt o umělé inteligenci – AI Act)</strong>. K dnešnímu dni, 25. 02. 2026, upozorňujeme, že lhůty pro zákaz nepřijatelných praktik (čl. 5) a povinnost zajištění AI gramotnosti (čl. 4) již uplynuly (dne 2. 2. 2025) a firma je povinna tyto požadavky bezpodmínečně a plně dodržovat. <strong>Důrazně upozorňujeme, že pro vysoce rizikové systémy dle Přílohy III AI Act (HR systémy, kreditní scoring, pojišťovnictví) platí plná účinnost povinností již od 2. 8. 2026.</strong> Společnost Martin Haynes musí zajistit plný soulad těchto systémů do tohoto data. Zároveň se připravujeme na plnou účinnost pravidel pro vysoce rizikové systémy z Přílohy I, která nastane 2. 8. 2027.</p>
+
+<p>Společnost Martin Haynes v současnosti využívá široké portfolio AI nástrojů, od generativní AI (ChatGPT, Claude, Gemini), přes HR a náborové systémy (Teamio, Sloneek), finanční a skórovací nástroje (CRIF), až po vlastní vývoj AI řešení. Tato politika definuje mantinely, ve kterých se naši zaměstnanci a dodavatelé musí pohybovat, aby chránili práva dotčených osob, know-how společnosti a zamezili drakonickým finančním sankcím.</p>
+
+<h2>1. Účel a rozsah</h2>
+<p>Účelem této směrnice je zajistit, aby veškeré využívání umělé inteligence ve společnosti Martin Haynes bylo v souladu s platnou legislativou (zejména AI Act a GDPR), etickými standardy a interními bezpečnostními pravidly. Směrnice chrání společnost před právními, finančními a reputačními riziky spojenými s nesprávným použitím AI.</p>
+
+<p><strong>Osobní rozsah:</strong> Tato směrnice je závazná pro všechny zaměstnance společnosti Martin Haynes (na hlavní pracovní poměr i dohody), členy statutárních orgánů, externí spolupracovníky, kontraktory (tzv. IČaře) a subdodavatele, kteří v rámci své činnosti pro společnost přicházejí do styku s AI systémy nebo je pro společnost vyvíjejí. Externí dodavatelé stvrzují platnost této směrnice podpisem přílohy ke své dodavatelské smlouvě.</p>
+
+<p><strong>Věcný rozsah:</strong> Směrnice pokrývá veškeré AI systémy dle definice čl. 3 odst. 1 AI Act, a to bez ohledu na to, zda je společnost Martin Haynes v roli nasazovatele (uživatele cizího řešení) nebo poskytovatele (vývojáře vlastního řešení). Zahrnuje systémy zakoupené (SaaS), open-source modely i interně vyvinutý kód.</p>
+
+<p>Tato směrnice nabývá účinnosti dnem jejího podpisu jednatelem společnosti.</p>
+
+<h2>2. Definice</h2>
+<p>Pro účely této směrnice a v souladu s Nařízením (EU) 2024/1689 se stanovují následující definice, které musí každý zaměstnanec znát a respektovat:</p>
+
+<ul>
+  <li><strong>Systém umělé inteligence (AI systém):</strong> Strojově založený systém navržený tak, aby fungoval s různou mírou autonomie, a který může po svém nasazení vykazovat adaptabilitu a který pro explicitní nebo implicitní cíle vyvozuje ze vstupů, které obdrží, jak generovat výstupy, jako jsou predikce, obsah, doporučení nebo rozhodnutí, jež mohou ovlivnit fyzické nebo virtuální prostředí (čl. 3 odst. 1 AI Act).</li>
+  <li><strong>Poskytovatel (Provider):</strong> Fyzická nebo právnická osoba, která vyvíjí AI systém nebo jej dává vyvinout a uvádí jej na trh pod vlastním jménem nebo ochrannou známkou (čl. 3 odst. 2). <em>Příklad: Společnost Martin Haynes je poskytovatelem u systémů označených jako „Vlastní vývoj AI“ nebo „vlastní kód“.</em></li>
+  <li><strong>Nasazovatel (Deployer):</strong> Fyzická nebo právnická osoba, která používá AI systém v rámci své profesní činnosti (čl. 3 odst. 4). <em>Příklad: Společnost Martin Haynes je nasazovatelem při používání systémů jako Fakturoid, Sloneek nebo ChatGPT.</em></li>
+  <li><strong>Vysoce rizikový AI systém (High-Risk):</strong> Systém, který představuje významné riziko pro zdraví, bezpečnost nebo základní práva fyzických osob (např. biometrie, kritická infrastruktura, HR systémy, hodnocení úvěruschopnosti). Tyto systémy podléhají přísným pravidlům dle hlavy III AI Act.</li>
+  <li><strong>Systém s omezeným rizikem (Limited Risk):</strong> Systémy určené k přímé interakci s lidmi (chatboti) nebo generující obsah (deepfakes), u kterých je hlavní povinností transparentnost (čl. 50).</li>
+  <li><strong>Dotčená osoba:</strong> Jakákoliv fyzická osoba (zákazník, zaměstnanec, uchazeč o zaměstnání), jejíž data jsou zpracovávána AI systémem nebo na kterou má výstup AI systému dopad.</li>
+</ul>
+
+<h2>3. Základní principy</h2>
+<p>Při jakémkoliv nasazení, vývoji nebo používání AI systémů ve společnosti Martin Haynes musí být bezpodmínečně dodržovány následující principy:</p>
+
+<h3>3.1 Transparentnost a informovanost</h3>
+<p>Dle čl. 50 AI Act musí být každá fyzická osoba informována, pokud komunikuje s AI systémem nebo pokud je obsah, který konzumuje, generován umělou inteligencí. Společnost nesmí vydávat výstupy AI za lidskou práci.</p>
+<div class='callout'>
+  <strong>Příklad z praxe firmy:</strong> Náš „Google Gemini Chatbot“ nasazený na webových stránkách musí obsahovat jasně viditelnou textovou doložku: „Tento chat je obsluhován umělou inteligencí.“ Zákazník nesmí být uveden v omyl, že komunikuje s živým operátorem.
+</div>
+
+<h3>3.2 Lidský dohled (Human Oversight)</h3>
+<p>V souladu s čl. 14 AI Act nesmí žádný vysoce rizikový AI systém činit plně autonomní rozhodnutí s právními nebo obdobně závažnými důsledky bez možnosti lidského zásahu. Zaměstnanci musí mít vždy technickou a procesní možnost rozhodnutí AI ignorovat, přepsat (override) nebo systém zcela zastavit.</p>
+<div class='callout'>
+  <strong>Příklad z praxe firmy:</strong> Při využívání systému „Scoring Solutions“ nebo „CRIF“ pro hodnocení úvěruschopnosti klientů slouží výstup AI pouze jako podklad. Konečné rozhodnutí o schválení či zamítnutí žádosti musí vždy učinit a v systému potvrdit pověřený zaměstnanec finančního oddělení.
+</div>
+
+<h3>3.3 Ochrana osobních údajů a důvěrnost (GDPR Compliance)</h3>
+<p>AI systémy nesmí být využívány způsobem, který by porušoval Nařízení GDPR. Je přísně zakázáno vkládat neanonymizované osobní údaje klientů, pacientů nebo zaměstnanců do veřejných (neuzavřených) AI modelů, které tato data mohou využít pro svůj další trénink.</p>
+
+<h3>3.4 Nediskriminace a férovost</h3>
+<p>Výstupy AI systémů, zejména v oblastech HR (nábor, hodnocení) a cenotvorby (dynamické ceny), musí být pravidelně monitorovány z hlediska možného zkreslení (biasu). Systémy nesmí diskriminovat na základě pohlaví, rasy, věku, zdravotního stavu či jiných chráněných charakteristik.</p>
+
+<h3>3.5 Odpovědnost a dohledatelnost</h3>
+<p>Za každý AI systém provozovaný společností musí být určena konkrétní odpovědná osoba (vlastník systému). Veškerá závažná rozhodnutí podpořená AI musí být logována a zpětně dohledatelná.</p>
+
+<h2>4. Pravidla pro používání AI</h2>
+
+<h3>4.1 Povolené použití <span class='badge badge-minimal'>MINIMÁLNÍ RIZIKO</span></h3>
+<p>Zaměstnanci jsou oprávněni využívat schválené AI nástroje pro běžnou administrativní podporu, tvorbu textů, překlady, analýzu anonymizovaných dat a generování kódu, pokud dodrží zásady bezpečnosti informací. <strong>Aktuální seznam schválených nástrojů najdete v Registru AI systémů na firemním intranetu v sekci IT/Compliance.</strong></p>
+<ul>
+  <li><strong>Příklady povolených systémů:</strong> Fakturoid, Money S5 (pro běžné účetní operace bez prediktivního profilování), ChatGPT / Claude / Gemini (pouze pro obecné dotazy, tvorbu marketingových textů, sumarizaci veřejných dokumentů).</li>
+  <li><strong>Podmínky:</strong> Do těchto systémů nesmí být vkládána žádná osobní data klientů, rodná čísla, zdravotní dokumentace, zdrojové kódy podléhající NDA ani citlivé finanční výkazy společnosti. Každý výstup (např. vygenerovaný kód z GitHub Copilot) musí projít lidskou kontrolou (code review) před nasazením do produkce.</li>
+  <li><strong>Kontrola podmínek:</strong> Odpovědná osoba za AI pravidelně (čtvrtletně) kontroluje obchodní podmínky schválených nástrojů (např. ChatGPT), zda nedošlo ke změně pravidel pro trénování na uživatelských datech.</li>
+</ul>
+
+<h3>4.2 Podmíněně povolené použití <span class='badge badge-high'>VYSOKÉ RIZIKO</span> <span class='badge badge-limited'>OMEZENÉ RIZIKO</span></h3>
+<p>Použití AI systémů, které zasahují do práv osob, rozhodují o zaměstnancích, hodnotí rizika nebo interagují se zranitelnými skupinami, je podmíněno předchozím schválením vedením společnosti a provedením příslušných posouzení.</p>
+<ul>
+  <li><strong>HR a nábor (Teamio, Sloneek, LinkedIn Recruiter):</strong> Tyto systémy spadají pod Přílohu III AI Act (Vysoce rizikové). Zaměstnanci HR oddělení je smí používat pouze za předpokladu, že kandidáti jsou o zapojení AI transparentně informováni a konečný výběr kandidáta provádí vždy člověk.</li>
+  <li><strong>Kreditní skórování a pojišťovnictví (CRIF, Guidewire, Allianz AI):</strong> Použití je povoleno pouze s nastaveným procesem lidského dohledu.</li>
+  <li><strong>Monitorování zaměstnanců (Sledování obrazovky, Měření produktivity, Kamerový dohled s AI):</strong> Extrémně riziková oblast. Před nasazením těchto systémů je <strong>povinné provést DPIA</strong> (posouzení vlivu na ochranu osobních údajů) dle čl. 35 GDPR. Upozorňujeme, že souhlas zaměstnance není v pracovněprávním vztahu platným právním základem. Zpracování musí být založeno na oprávněném zájmu s provedeným testem proporcionality a zaměstnanci musí být předem transparentně informováni.</li>
+</ul>
+
+<h3>4.3 Zakázané použití <span class='badge badge-high'>ZAKÁZANÉ PRAKTIKY</span></h3>
+<p>Nařízení AI Act v článku 5 explicitně zakazuje určité praktiky umělé inteligence. Porušení tohoto zákazu je sankcionováno pokutou až do výše 35 000 000 EUR nebo 7 % celkového ročního celosvětového obratu. <strong>Následující praktiky jsou ve společnosti Martin Haynes absolutně a bez výjimky zakázány:</strong></p>
+
+<div class='warning'>
+  <strong>VAROVÁNÍ - OKAMŽITÁ AKCE:</strong> Na základě interního auditu byly identifikovány systémy, které vykazují znaky zakázaných praktik. <strong>IT oddělení pod vedením Odpovědné osoby za AI musí tyto systémy s okamžitou platností fyzicky deaktivovat.</strong>
+  <br><br>
+  <strong>1. Sociální skórování (identifikováno v systému „vlastní html“):</strong> Je přísně zakázáno vyvíjet nebo používat AI systémy, které hodnotí nebo klasifikují fyzické osoby na základě jejich sociálního chování nebo osobnostních rysů, pokud to vede k diskriminačnímu zacházení. Provoz systému „vlastní html“ s těmito funkcemi musí být okamžitě ukončen.
+  <br><br>
+  <strong>2. Rozpoznávání emocí na pracovišti (identifikováno v systému „vlastní kód“):</strong> Dle čl. 5 odst. 1 písm. f) AI Act je zakázáno používat AI systémy k odvozování emocí fyzických osob na pracovišti nebo ve vzdělávacích institucích (s výjimkou zdravotních/bezpečnostních důvodů). Jakýkoliv vlastní kód analyzující emoce zaměstnanců musí být s okamžitou platností deaktivován.
+</div>
+
+<ul>
+  <li><strong>Podprahová manipulace:</strong> Je zakázáno používat AI (např. v rámci systémů Dynamic Yield nebo doporučování obsahu) k nasazování podprahových technik, které mění chování osob způsobem, jenž jim může způsobit fyzickou nebo psychickou újmu.</li>
+  <li><strong>Biometrická identifikace v reálném čase:</strong> Je zakázáno používat AI kamerové systémy k plošné biometrické identifikaci osob ve veřejně přístupných prostorech (např. prodejny, restaurace) bez splnění přísných zákonných výjimek.</li>
+</ul>
+
+<h2>5. Vlastní vývoj AI a integrace modelů (Role Poskytovatele)</h2>
+<p>Společnost Martin Haynes vystupuje u systémů označených jako „Vlastní vývoj AI“ a „vlastní kód“ v roli Poskytovatele (Provider). Z této role plynou zásadní regulatorní povinnosti, které musí vývojové týmy bezpodmínečně dodržet před uvedením systému do provozu nebo na trh.</p>
+
+<h3>5.1 Povinnosti při vývoji vysoce rizikových systémů</h3>
+<p>Pro každý interně vyvíjený systém klasifikovaný jako vysoce rizikový musí vývojový tým zajistit:</p>
+<ul>
+  <li><strong>Technickou dokumentaci (Příloha IV AI Act):</strong> Detailní popis architektury, trénovacích dat a fungování systému.</li>
+  <li><strong>Posouzení shody (čl. 43 AI Act):</strong> Interní proces ověření, že systém splňuje požadavky nařízení.</li>
+  <li><strong>EU prohlášení o shodě a CE označení (čl. 47 a 48 AI Act):</strong> Vydání formálního prohlášení a umístění označení CE.</li>
+  <li><strong>Registraci v databázi (čl. 49 AI Act):</strong> Systém musí být před uvedením na trh registrován v EU databázi. <em>Výjimka:</em> Systémy spadající pod kritickou infrastrukturu (např. projekt „pospa ing.“) se dle čl. 49 odst. 4 registrují u národního orgánu (NÚKIB), nikoliv ve veřejné EU databázi.</li>
+  <li><strong>Post-market monitoring (čl. 72 AI Act):</strong> Zavedení systému pro průběžné sledování výkonnosti AI po jejím nasazení.</li>
+</ul>
+
+<h3>5.2 Integrace modelů s obecným účelem (GPAI)</h3>
+<p>Firma integruje LLM API (OpenAI GPT-4/4o, Anthropic Claude, Google Gemini) do vlastních produktů. Od 2. 8. 2025 nabývají účinnosti pravidla pro modely s obecným účelem (GPAI) dle čl. 51-54 AI Act. Při integraci těchto modelů musí vývojový tým zajistit transparentnost vůči koncovým uživatelům, vést příslušnou dokumentaci a striktně dodržovat licenční podmínky poskytovatele původního GPAI modelu.</p>
+
+<h2>6. Zavedení nového AI systému a řízení změn</h2>
+<p>Pořízení, vývoj nebo nasazení jakéhokoliv nového AI systému (včetně přidání AI funkcí do stávajícího softwaru) podléhá schvalovacímu procesu. Zaměstnanci nesmí svévolně integrovat nezávislé AI nástroje (tzv. Shadow AI) do firemních procesů.</p>
+
+<p><strong>Postup zavedení nového AI systému:</strong></p>
+<ol>
+  <li><strong>Identifikace potřeby a klasifikace:</strong> Navrhovatel specifikuje účel systému a provede předběžnou klasifikaci rizika.</li>
+  <li><strong>Bezpečnostní a právní posouzení:</strong> Odpovědná osoba za AI posoudí rizika. U vysoce rizikových systémů je povinné zpracovat DPIA.</li>
+  <li><strong>Posouzení vlivu na základní práva (FRIA):</strong> Dle čl. 27 AI Act je <strong>povinné</strong> provést FRIA před nasazením jakéhokoliv vysoce rizikového systému z Přílohy III (např. systémy CRIF, Teamio, Guidewire). FRIA provádí Odpovědná osoba za AI ve spolupráci s právním oddělením a výsledek se archivuje v interní dokumentaci.</li>
+  <li><strong>Smluvní zajištění:</strong> Uzavření zpracovatelské smlouvy (DPA) dle čl. 28 GDPR u SaaS řešení.</li>
+  <li><strong>Zápis do registru:</strong> Systém musí být zapsán do centrálního Registru AI systémů (dostupný na firemním intranetu).
+    <br><em>Splněno: Šablona a předvyplněný Registr AI systémů byl dodán v rámci Compliance Kitu.</em>
+    <br><em>Akce klienta: Odpovědná osoba musí registr průběžně aktualizovat.</em>
+  </li>
+  <li><strong>Podstatná změna AI systému (čl. 25 AI Act):</strong> Pokud dojde k podstatné změně stávajícího vysoce rizikového AI systému (změna účelu, výrazná změna výkonu, nová trénovací data), přebírá společnost Martin Haynes povinnosti poskytovatele. Každá plánovaná změna musí být před implementací posouzena Odpovědnou osobou za AI.</li>
+</ol>
+
+<h2>7. Práva dotčených osob</h2>
+<p>V souladu s čl. 86 AI Act mají fyzické osoby (zákazníci, zaměstnanci, uchazeči), které jsou dotčeny rozhodnutím učiněným na základě výstupu vysoce rizikového AI systému (např. zamítnutí úvěru, vyřazení z výběrového řízení), <strong>právo na srozumitelné vysvětlení</strong> role AI v tomto rozhodování.</p>
+<ul>
+  <li>Žádosti o vysvětlení přijímá Odpovědná osoba za AI.</li>
+  <li>Společnost je povinna poskytnout srozumitelné vysvětlení (bez nadměrného technického žargonu) nejpozději do 30 dnů od obdržení žádosti.</li>
+</ul>
+
+<h2>8. Odpovědnosti</h2>
+
+<h3>8.1 Vedení společnosti</h3>
+<p>Vedení společnosti nese celkovou odpovědnost za soulad s AI Act. Zajišťuje dostatečné finanční a personální zdroje pro implementaci této politiky a schvaluje nasazení vysoce rizikových AI systémů.</p>
+
+<h3>8.2 Odpovědná osoba za AI (AI Officer)</h3>
+<p>Dle čl. 26 odst. 1 písm. a) a b) AI Act je nasazovatel povinen určit odpovědnou osobu a přidělit zdroje pro zajištění dohledu nad AI systémy. Ve společnosti Martin Haynes je touto osobou jmenován: <strong>Martin Haynes (Jednatel / majitel)</strong>.</p>
+<p>Povinnosti odpovědné osoby:</p>
+<ul>
+  <li>Udržuje a aktualizuje Registr AI systémů.</li>
+  <li>Provádí pravidelný monitoring výstupů AI systémů a kontroluje případný bias.</li>
+  <li>Zajišťuje, že mechanismus lidského dohledu (čl. 14 AI Act) je funkční a zaměstnanci mají technickou možnost provést „override“ (přepsání) rozhodnutí AI.</li>
+  <li>Slouží jako hlavní kontaktní bod pro hlášení AI incidentů.</li>
+</ul>
+
+<h3>8.3 Vedoucí oddělení a detekce Shadow AI</h3>
+<p>Vedoucí oddělení odpovídají za to, že podřízení zaměstnanci znají a dodržují tuto směrnici. Zajišťují, že v jejich odděleních nedochází k využívání neschválených AI nástrojů (Shadow AI).</p>
+<p><strong>Postup detekce Shadow AI:</strong> Vedoucí oddělení ve spolupráci s IT oddělením (analýza síťového provozu) provádí čtvrtletní inventuru AI nástrojů používaných v týmu. Při odhalení neschváleného nástroje následuje: (1) okamžité zastavení používání, (2) hlášení Odpovědné osobě za AI, (3) posouzení, zda nedošlo k úniku dat, (4) disciplinární řešení.</p>
+
+<h3>8.4 Zaměstnanci</h3>
+<p>Každý zaměstnanec je povinen používat AI systémy výhradně k pracovním účelům, v souladu s touto směrnicí a příslušnými manuály. Jakékoliv podezření na chybné fungování AI (halucinace, diskriminace, únik dat) musí zaměstnanec neprodleně nahlásit svému nadřízenému.</p>
+
+<h2>9. Školení a vzdělávání (AI Gramotnost)</h2>
+<p>Článek 4 AI Act ukládá poskytovatelům i nasazovatelům povinnost zajistit dostatečnou úroveň „AI gramotnosti“ (AI literacy) u všech zaměstnanců, kteří s AI systémy pracují. <strong>Tato povinnost je plně účinná již od 2. 2. 2025.</strong></p>
+
+<p>Společnost Martin Haynes proto zavádí povinný vzdělávací program:</p>
+<ul>
+  <li><strong>Vstupní školení:</strong> Každý nový zaměstnanec musí projít školením AI gramotnosti v rámci onboardingu.</li>
+  <li><strong>Pravidelné školení:</strong> Všichni stávající zaměstnanci absolvují opakovací školení minimálně 1x ročně nebo při zavedení nového vysoce rizikového systému.</li>
+</ul>
+
+<div class='info'>
+  <strong>Splněno:</strong> Plán školení AI gramotnosti a kompletní PowerPointová prezentační šablona pro provedení školení jsou součástí Compliance Kitu.<br>
+  <strong>Akce klienta:</strong> Vedoucí oddělení nebo Odpovědná osoba za AI musí provést toto školení pro zaměstnance pomocí dodané prezentace a zajistit prezenční listinu jako důkaz o splnění čl. 4 AI Act.
+</div>
+
+<h2>10. Řízení incidentů</h2>
+<p>V případě, že AI systém selže, vygeneruje toxický/diskriminační obsah, způsobí únik osobních údajů, nebo dojde k bezpečnostnímu narušení, postupuje se dle interního Plánu řízení incidentů (dostupného na firemním intranetu).</p>
+
+<p>Dle čl. 73 AI Act je společnost povinna hlásit závažné incidenty dozorovému orgánu v následujících lhůtách:</p>
+<ul>
+  <li><strong>Do 3 dnů:</strong> Závažné incidenty, které představují bezprostřední hrozbu nebo způsobily smrt či vážné poškození zdraví (čl. 73 odst. 6). <em>Příklad: Selhání AI ve zdravotnickém přístroji s dopadem na pacienta.</em></li>
+  <li><strong>Do 15 dnů:</strong> Ostatní závažné incidenty nebo hrozby závažných incidentů (čl. 73 odst. 3).</li>
+</ul>
+
+<div class='info'>
+  <strong>Splněno:</strong> Detailní Plán řízení incidentů včetně eskalační matice a vzorů pro hlášení dozorovému orgánu je součástí Compliance Kitu.<br>
+  <strong>Akce klienta:</strong> Zaměstnanci musí být s tímto plánem seznámeni a v případě incidentu musí postupovat přesně podle definovaných kroků.
+</div>
+
+<h2>11. Monitoring a audit</h2>
+<p>Nasazením AI systému povinnosti společnosti nekončí. Článek 9 AI Act vyžaduje průběžné řízení rizik a nařízení stanovuje přísná pravidla pro uchovávání automaticky generovaných protokolů (logů):</p>
+
+<ul>
+  <li><strong>Logování pro nasazovatele (čl. 19 odst. 1 AI Act):</strong> U vysoce rizikových systémů, které společnost pouze využívá (např. HR systémy), musí být logy uchovávány po dobu <strong>minimálně 6 měsíců</strong>.</li>
+  <li><strong>Logování pro poskytovatele (čl. 18 AI Act):</strong> U systémů vlastního vývoje musí být technická dokumentace a logy uchovávány po dobu <strong>10 let</strong> od uvedení systému na trh.</li>
+  <li><strong>Pravidelný audit:</strong> Odpovědná osoba za AI provádí čtvrtletní kontrolu kvality (review) výstupů vysoce rizikových systémů. Sleduje se přesnost, chybovost a případný bias.</li>
+</ul>
+
+<div class='info'>
+  <strong>Splněno:</strong> Monitoring plán obsahující definice KPI, metrik a měsíční checklist pro kontrolu AI systémů je součástí Compliance Kitu.<br>
+  <strong>Akce klienta:</strong> Odpovědná osoba za AI (Martin Haynes) musí tento checklist reálně každý měsíc vyplňovat a archivovat výsledky.
+</div>
+
+<h2>12. Sankce za porušení</h2>
+<p>Nedodržení této interní AI politiky představuje závažné porušení pracovních povinností. Společnost Martin Haynes bude vůči porušením postupovat nekompromisně, neboť rizika plynoucí z AI Act jsou pro firmu existenční.</p>
+
+<h3>12.1 Interní sankce</h3>
+<p>V závislosti na závažnosti porušení (např. svévolné vložení klientské databáze do veřejného ChatGPT) může být zaměstnanci uděleno:</p>
+<ul>
+  <li>Písemné napomenutí (vytýkací dopis).</li>
+  <li>Odebrání přístupu k firemním IT systémům.</li>
+  <li>Okamžité zrušení pracovního poměru (v případě hrubého porušení ohrožujícího bezpečnost dat nebo dobré jméno společnosti).</li>
+  <li>Vymáhání náhrady škody, pokud společnosti vznikne finanční újma.</li>
+</ul>
+
+<h3>12.2 Regulatorní sankce (AI Act čl. 99)</h3>
+<p>Zaměstnanci si musí být vědomi, že jejich pochybení může vést k uložení likvidačních pokut společnosti ze strany orgánů dozoru:</p>
+<ul>
+  <li><strong>Až 35 000 000 EUR nebo 7 % celosvětového obratu</strong> za porušení zakázaných praktik (čl. 5) – např. provozování sociálního skórování nebo rozpoznávání emocí.</li>
+  <li><strong>Až 15 000 000 EUR nebo 3 % celosvětového obratu</strong> za porušení povinností u vysoce rizikových systémů nebo nedodržení transparentnosti.</li>
+</ul>
+
+<h2>13. Závěrečná ustanovení</h2>
+<p>Tato směrnice je závazná pro všechny osoby uvedené v bodě 1. Odpovědnost za pravidelnou revizi a aktualizaci této směrnice (minimálně 1x ročně nebo při významné změně legislativy) nese Odpovědná osoba za AI ve spolupráci s vedením společnosti.</p>
+
+<p>Všichni zaměstnanci potvrdí seznámení s touto směrnicí v rámci interního HR systému nebo podpisem prezenční listiny při školení. Externí dodavatelé (IČaři) stvrzují platnost této směrnice podpisem přílohy ke své dodavatelské smlouvě.</p>
+
+<div class='no-break'>
+  <div class='sig-block'>
+    <div class='sig-field'>
+      V Praze, dne 25. 02. 2026<br><br><br>
+      .......................................................<br>
+      <strong>Martin Haynes</strong><br>
+      Jednatel / majitel<br>
+      Za společnost Martin Haynes
+    </div>
+  </div>
+</div>

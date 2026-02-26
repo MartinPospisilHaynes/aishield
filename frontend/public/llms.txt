@@ -1,0 +1,73 @@
+# AIshield.cz
+
+> AI Act compliance platform for Czech businesses. Automated scanning, risk assessment, document generation, and ongoing monitoring for EU Regulation 2024/1689 (Artificial Intelligence Act).
+
+AIshield.cz is a Czech SaaS platform that helps businesses comply with the European Union's AI Act (Regulation 2024/1689). The platform provides automated website scanning to detect AI systems, risk classification according to Article 6 of the AI Act, generation of required compliance documents (transparency pages, technical documentation, risk assessments), and a customer dashboard for ongoing compliance monitoring.
+
+## Key Services
+
+- **AI System Detection**: Automated scanning of websites and web applications to identify AI systems, machine learning models, chatbots, recommendation engines, and other AI-powered tools subject to the AI Act.
+- **Risk Classification**: Automatic classification of detected AI systems into risk categories (Unacceptable, High, Limited, Minimal) per Article 6 and Annexes I-III of the AI Act.
+- **Transparency Page Generation**: Generation of HTML transparency pages that businesses can embed on their websites to fulfil transparency obligations under Articles 50 and 52 of the AI Act.
+- **Document Generation**: Automated generation of compliance documentation including technical documentation, risk assessments, unified compliance reports (PDF), and presentation materials (PPTX).
+- **Compliance Dashboard**: Customer portal for tracking compliance status, managing action plans, downloading documents, and monitoring ongoing compliance.
+- **AI Act Knowledge Base**: Comprehensive knowledge base with 59 specialized compliance tools covering all aspects of the AI Act.
+- **Compliance Questionnaire**: Detailed questionnaire for assessing organizational AI governance, data management, human oversight, and technical robustness.
+
+## Target Audience
+
+Czech businesses of all sizes that use AI systems and need to comply with EU AI Act requirements. This includes companies using chatbots (e.g., Tidio, Intercom, Drift), recommendation engines, automated decision-making systems, AI-powered analytics, machine learning models, and other AI technologies.
+
+## Technology
+
+- Frontend: Next.js (React), TypeScript, Tailwind CSS, deployed on Vercel
+- Backend: Python (FastAPI), deployed on dedicated VPS
+- Database: Supabase (PostgreSQL)
+- AI: OpenAI GPT-4o for document generation and analysis
+- Scanning: Playwright-based automated browser scanning
+
+## Company
+
+- **Name**: AIshield.cz
+- **Operated by**: VISUAL AGENCY s.r.o.
+- **Location**: Czech Republic
+- **Website**: https://www.aishield.cz
+- **Contact**: info@aishield.cz
+
+## Relevant Legislation
+
+- EU AI Act: Regulation (EU) 2024/1689 — https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+- Effective: August 1, 2024
+- Full enforcement: August 2, 2026
+- High-risk system obligations: August 2, 2027
+
+## Pages
+
+- [Homepage](https://aishield.cz/): Main landing page with value proposition and free scan CTA
+- [Free AI Scan](https://aishield.cz/scan): Free automated scan of any website for AI systems
+- [Pricing](https://aishield.cz/pricing): Subscription plans and pricing
+- [About](https://aishield.cz/about): Company information and mission
+- [Compliance Questionnaire](https://aishield.cz/dotaznik): Detailed AI Act compliance questionnaire
+- [Enterprise](https://aishield.cz/enterprise): Enterprise and custom solutions
+- [Privacy Policy](https://aishield.cz/privacy): GDPR-compliant privacy policy
+- [Terms of Service](https://aishield.cz/terms): Terms and conditions
+
+## FAQ
+
+### What is the AI Act?
+The AI Act (Regulation EU 2024/1689) is the world's first comprehensive legal framework for artificial intelligence, adopted by the European Union. It establishes rules for AI system providers and deployers based on risk levels, with requirements ranging from transparency obligations for limited-risk systems to strict compliance requirements for high-risk AI systems. Violations can result in fines up to €35 million or 7% of global annual turnover.
+
+### Who needs to comply with the AI Act?
+Any business operating in the EU or offering AI-powered services to EU citizens must comply. This includes companies using chatbots, recommendation engines, automated decision-making, AI analytics, facial recognition, and any other AI-based technology. Both AI providers (who develop AI systems) and deployers (who use AI systems) have obligations.
+
+### What does AIshield.cz do?
+AIshield.cz automates AI Act compliance for Czech businesses. It scans websites to detect AI systems, classifies their risk level, generates required documentation (transparency pages, technical docs, risk assessments), and provides a dashboard for ongoing compliance monitoring. The platform covers the entire compliance lifecycle from initial assessment to continuous monitoring.
+
+### When must businesses be compliant?
+The AI Act entered into force on August 1, 2024. Prohibited AI practices must be ceased by February 2, 2025. GPAI model obligations apply from August 2, 2025. Full enforcement for high-risk systems begins August 2, 2026, with additional obligations for certain Annex I systems from August 2, 2027.
+
+### How much does AIshield.cz cost?
+AIshield.cz offers a free initial website scan. Paid plans start with a basic compliance package and scale to enterprise solutions. Visit https://aishield.cz/pricing for current pricing details.
+
+### What is a transparency page?
+A transparency page is an HTML document that businesses embed on their website to inform users about their use of AI systems. It is required under Articles 50 and 52 of the AI Act for limited-risk AI systems (such as chatbots). AIshield.cz generates these pages automatically with all required disclosures.

@@ -1,0 +1,396 @@
+AIshield.cz
+Registr AI systémů
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:37 UTC 
+Registr AI systémů
+Interní evidence dle čl. 49 a přílohy VIII Nařízení (EU) 2024/1689
+Firma: Martin Haynes
+IČO: 17889251
+Poslední aktualizace:  24. 02. 2026, 20:37 UTC
+Tento registr je živý dokument. Aktualizujte jej při každé změně v AI systémech (nasazení, vyřazení, změna verze,
+změna účelu).
+Příloha VIII AI Act  — Pro vysoce rizikové systémy musí registr obsahovat: jméno poskytovatele, popis zamýšleného účelu, stav
+systému, datum a důvod stažení/odvolání, členské státy použití a dotčené osoby. 
+Přehled AI krajiny firmy
+Základním pilířem prokazatelného souladu s Nařízením (EU) 2024/1689 (AI Act) je udržování přesné a aktuální evidence všech
+využívaných systémů umělé inteligence. Podle čl. 49 a Přílohy VIII AI Act je nezbytné vést detailní dokumentaci o nasazených
+systémech. Na základě provedeného auditu, který zahrnoval sken vašeho webu a dotazníkové šetření, jsme ve vaší
+společnosti identifikovali celkem 36 AI systémů. Rizikový rozpad je následující: 17 vysoce rizikových (high-risk), 18 s
+omezeným rizikem (limited risk) a 1 s minimálním rizikem. Vzhledem k identifikaci vlastního vývoje (např. „vlastní kód“ a
+„vlastní html“) vystupujete v určitých případech jako poskytovatel (provider, čl. 3 odst. 2) a v jiných jako nasazovatel (deployer,
+čl. 3 odst. 4). Upozorňujeme, že veškeré údaje o dodavatelích a systémech v tomto dokumentu jsou platné ke dni
+2026-02-24.
+Tento registr AI systémů jste obdrželi jako součást Compliance Kitu od AIshield. Dokument je již předvyplněný na základě
+našich zjištění a představuje hotový základ pro vaši interní evidenci. Nejedná se však o statický výstup. Registr je nutné vnímat
+jako živý nástroj, jehož průběžná aktualizace vyžaduje akci klienta. Při jakékoli změně ve vašem technologickém portfoliu
+musíte registr neprodleně upravit. Zvláštní pozornost vyžadují vysoce rizikové systémy, u kterých registr musí obligatorně
+obsahovat identifikaci poskytovatele, přesný účel použití, aktuální stav nasazení a datum implementace. Tyto vysoce rizikové
+systémy navíc podléhají povinnosti formální registrace v celoevropské databázi EU dle čl. 71 AI Act. Doporučujeme provádět
+komplexní interní revizi tohoto registru minimálně jednou za šest měsíců.
+Udržování aktuálnosti registru závisí na vašich vnitřních procesech a vyžaduje akci klienta. Níže uvádíme konkrétní příklady,
+kdy a jak musíte do registru zasáhnout:
+Nasazení nového AI nástroje:  Přidáte na web nový AI chatbot pro zákaznickou podporu → do registru zapíšete: název systému,
+poskytovatele, účel použití (odpovídání na dotazy zákazníků), rizikovou kategorii (omezené riziko dle čl. 50) a datum nasazení.
+Změna účelu stávajícího systému:  Nástroj původně zakoupený pro generování marketingových textů začnete využívat k
+automatickému třídění životopisů uchazečů o zaměstnání → v registru musíte změnit účel použití a překlasifikovat systém na
+vysoce rizikový (Příloha III), což aktivuje dodatečné povinnosti.
+Ukončení provozu:  Přestanete používat interní systém pro analýzu dat („vlastní kód“) → v registru u dané položky změníte stav
+na „vyřazeno“ a doplníte datum ukončení provozu, přičemž záznam v evidenci ponecháte pro účely případné zpětné kontroly ze
+strany dozorového orgánu.• 
+• 
+• 
+Souhrnný přehled
+A. AI systémy na webových stránkách
+#SYSTÉM KATEGORIE RIZIKO ČLÁNEK NASAZENÍ
+1Google Gemini
+Chatbotchatbot Omezené
+rizikočl. 50 odst. 1 Web
+2AI služba: AI Chatbot chatbot Omezené
+rizikočl. 50 odst. 1 Web
+3AI Transparency
+Noticecontent_gen Omezené
+rizikočl. 50 odst. 2 — transparenční
+povinnost (SPLNĚNA)Web
+4Google Analytics 4 analytics Mimo
+klasifikaciWeb
+5Meta Pixel analytics Mimo
+klasifikaciWeb
+6AI API Proxy
+(geminiproxy)chatbot Mimo
+klasifikaciWeb
+7Google Tag Manager analytics Mimo
+klasifikaciWeb
+8Heureka analytics Mimo
+klasifikaciWeb
+9Google Gemini
+Chatbotchatbot Omezené
+rizikočl. 50 odst. 1 Web
+10AI API Proxy
+(geminiproxy)chatbot Omezené
+rizikočl. 50 odst. 1 Web
+11AI služba: AI Chatbot chatbot Omezené
+rizikočl. 50 odst. 1 Web
+12AI Transparency
+Noticecontent_gen Omezené
+rizikočl. 50 odst. 2 — transparenční
+povinnost (SPLNĚNA)Web
+13Meta Pixel analytics Minimální
+rizikominimální riziko — Meta Pixel není AI
+systém dle AI ActWeb
+B. Interní AI systémy
+# SYSTÉM KATEGORIE RIZIKO ČLÁNEK NASAZENÍ
+14None ChatgptOmezené riziko— Interní
+15None CopilotOmezené riziko— InterníAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 13 Bc. Martin Haynes | ICO: 17889251
+# SYSTÉM KATEGORIE RIZIKO ČLÁNEK NASAZENÍ
+16None Ai ContentOmezené riziko— Interní
+17None DeepfakeOmezené riziko— Interní
+18None Ai RecruitmentVYSOKÉ RIZIKO— Interní
+19None Ai Employee MonitoringVYSOKÉ RIZIKO— Interní
+20vlastní kód Emotion RecognitionVYSOKÉ RIZIKO— Interní
+21None Ai AccountingMinimální riziko— Interní
+22None Ai CreditscoringVYSOKÉ RIZIKO— Interní
+23None Ai InsuranceMinimální riziko— Interní
+24vlastní html Ai ChatbotOmezené riziko— Interní
+25None Ai Email AutoOmezené riziko— Interní
+26None Ai DecisionMinimální riziko— Interní
+27None Dynamic PricingMinimální riziko— Interní
+28None Ai For ChildrenMinimální riziko— Interní
+29pospa ing. Ai Critical InfraMinimální riziko— Interní
+30None Ai Safety ComponentMinimální riziko— Interní
+31None Develops Own AiMinimální riziko— Interní
+32None Modifies Ai PurposeMinimální riziko— Interní
+33None Gpai ApiMinimální riziko— Interní
+Detailní karty AI systémů (formát dle přílohy VIII)
+Systém č. 1: Google Gemini Chatbot
+Název systému Google Gemini Chatbot
+Kategorie chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 1AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 13 Bc. Martin Haynes | ICO: 17889251
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 2: AI služba: AI Chatbot
+Název systému AI služba: AI Chatbot
+Kategorie chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 1
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 3: AI Transparency Notice
+Název systému AI Transparency Notice
+Kategorie content_gen
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 2 — transparenční povinnost (SPLNĚNA)
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 4: Google Analytics 4
+Název systému Google Analytics 4
+Kategorie analytics
+Riziková kategorieMimo klasifikaci
+Relevantní článek AI Act N/A
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 5: Meta Pixel
+Název systému Meta Pixel
+Kategorie analytics
+Riziková kategorieAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 13 Bc. Martin Haynes | ICO: 17889251
+Mimo klasifikaci
+Relevantní článek AI Act N/A
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 6: AI API Proxy (geminiproxy)
+Název systému AI API Proxy (geminiproxy)
+Kategorie chatbot
+Riziková kategorieMimo klasifikaci
+Relevantní článek AI Act N/A
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 7: Google Tag Manager
+Název systému Google Tag Manager
+Kategorie analytics
+Riziková kategorieMimo klasifikaci
+Relevantní článek AI Act N/A
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 8: Heureka
+Název systému Heureka
+Kategorie analytics
+Riziková kategorieMimo klasifikaci
+Relevantní článek AI Act N/A
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití VyplňteAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 5 z 13 Bc. Martin Haynes | ICO: 17889251
+Systém č. 9: Google Gemini Chatbot
+Název systému Google Gemini Chatbot
+Kategorie chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 1
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 10: AI API Proxy (geminiproxy)
+Název systému AI API Proxy (geminiproxy)
+Kategorie chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 1
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 11: AI služba: AI Chatbot
+Název systému AI služba: AI Chatbot
+Kategorie chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 1
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 12: AI Transparency Notice
+Název systému AI Transparency Notice
+Kategorie content_gen
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act čl. 50 odst. 2 — transparenční povinnost (SPLNĚNA)
+Zdroj detekce Web sken
+Poskytovatel VyplňteAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 6 z 13 Bc. Martin Haynes | ICO: 17889251
+Účel použití Vyplňte
+Systém č. 13: Meta Pixel
+Název systému Meta Pixel
+Kategorie analytics
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act minimální riziko — Meta Pixel není AI systém dle AI Act
+Zdroj detekce Web sken
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 14: None
+Název systému None
+Kategorie Chatgpt
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 15: None
+Název systému None
+Kategorie Copilot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 16: None
+Název systému None
+Kategorie Ai Content
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/AAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 7 z 13 Bc. Martin Haynes | ICO: 17889251
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 17: None
+Název systému None
+Kategorie Deepfake
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 18: None
+Název systému None
+Kategorie Ai Recruitment
+Riziková kategorieVYSOKÉ RIZIKO
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 19: None
+Název systému None
+Kategorie Ai Employee Monitoring
+Riziková kategorieVYSOKÉ RIZIKO
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 20: vlastní kód
+Název systému vlastní kód
+Kategorie Emotion Recognition
+Riziková kategorieAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 8 z 13 Bc. Martin Haynes | ICO: 17889251
+VYSOKÉ RIZIKO
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 21: None
+Název systému None
+Kategorie Ai Accounting
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 22: None
+Název systému None
+Kategorie Ai Creditscoring
+Riziková kategorieVYSOKÉ RIZIKO
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 23: None
+Název systému None
+Kategorie Ai Insurance
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití VyplňteAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 9 z 13 Bc. Martin Haynes | ICO: 17889251
+Systém č. 24: vlastní html 
+Název systému vlastní html 
+Kategorie Ai Chatbot
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 25: None
+Název systému None
+Kategorie Ai Email Auto
+Riziková kategorieOmezené riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 26: None
+Název systému None
+Kategorie Ai Decision
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 27: None
+Název systému None
+Kategorie Dynamic Pricing
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel VyplňteAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 10 z 13 Bc. Martin Haynes | ICO: 17889251
+Účel použití Vyplňte
+Systém č. 28: None
+Název systému None
+Kategorie Ai For Children
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 29: pospa ing. 
+Název systému pospa ing. 
+Kategorie Ai Critical Infra
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 30: None
+Název systému None
+Kategorie Ai Safety Component
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 31: None
+Název systému None
+Kategorie Develops Own Ai
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/AAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 11 z 13 Bc. Martin Haynes | ICO: 17889251
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 32: None
+Název systému None
+Kategorie Modifies Ai Purpose
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Systém č. 33: None
+Název systému None
+Kategorie Gpai Api
+Riziková kategorieMinimální riziko
+Relevantní článek AI Act N/A
+Zdroj detekce Dotazník
+Poskytovatel Vyplňte
+Účel použití Vyplňte
+Odpovědná osoba za registr
+Jméno a příjmení Martin Haynes
+Funkce Jednatel / majitel (dohlížím osobně)
+Email info@desperados-design.cz
+Telefon 7327161
+Datum jmenování Vyplňte
+Historie změn registru
+DATUM ZMĚNA PROVEDL PODPIS
+24. 02. 2026, 20:37 UTC Vytvoření registru (automaticky) AIshield.cz —AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 12 z 13 Bc. Martin Haynes | ICO: 17889251
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Registr AI systémů · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:37 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 13 z 13 Bc. Martin Haynes | ICO: 17889251

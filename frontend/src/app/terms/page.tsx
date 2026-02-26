@@ -225,7 +225,7 @@ export default function TermsPage() {
                                 <p className="text-sm">
                                     <strong className="text-white">Platební údaje pro bankovní převod:</strong>
                                 </p>
-                                <p className="text-sm">Číslo účtu: 2610538018/3030</p>
+                                <p className="text-sm">Číslo účtu: 2503446206/2010 (Fio banka)</p>
                                 <p className="text-sm">Zodpovědná osoba: Martin Haynes</p>
                                 <p className="text-sm mt-1">
                                     Do poznámky pro příjemce uveďte:{" "}
@@ -530,8 +530,9 @@ export default function TermsPage() {
                                 prezentace v PowerPointu, Záznamový list o proškolení,
                                 Plán řízení AI incidentů, DPIA šablona (posouzení vlivu
                                 na ochranu osobních údajů), Dodavatelský checklist (kontrolní
-                                seznam pro smlouvy s dodavateli AI) a Monitoring plán AI
-                                (plán monitoringu výstupů včetně testování férovosti).
+                                seznam pro smlouvy s dodavateli AI), Monitoring plán AI
+                                (plán monitoringu výstupů včetně testování férovosti)
+                                a Transparentnost a lidský dohled (záznamy dle čl. 13, 14 a 50 AI Actu).
                                 Rozsah se automaticky přizpůsobí na základě výsledků analýzy rizik.
                                 Bez implementační podpory.
                             </p>
@@ -547,9 +548,9 @@ export default function TermsPage() {
                             <p>
                                 13.3.{" "}
                                 <strong className="text-white">ENTERPRISE (39 999 Kč)</strong> —
-                                vše z PRO a navíc: 10 hodin konzultací s compliance specialistou
+                                vše z PRO a navíc: 10 hodin on-line konzultací s compliance specialistou
                                 (neprávní povahy), metodická kontrola veškeré dokumentace,
-                                rozšířený audit interních AI systémů, multi-domain podpora
+                                multi-domain podpora
                                 (více webů / e-shopů), 2 roky měsíčního monitoringu v ceně
                                 balíčku (po uplynutí možnost prodloužení za příplatek),
                                 dedikovaný specialista a SLA 4h odezva v pracovní době.

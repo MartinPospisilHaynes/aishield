@@ -1,0 +1,143 @@
+AIshield.cz
+Akční plán
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:37 UTC 
+Akční plán
+Konkrétní kroky ke splnění EU AI Act do 2. 8. 2026
+Firma: Martin Haynes
+Deadline:  2. srpna 2026 (zbývá 158 dní)
+Celkový počet úkolů:  32
+🔴 Vysoká priorita — vysoce rizikové systémy (do 30 dní)
+1. Provést posouzení shody pro vysoce rizikové systémy (čl. 43)
+2. Zavést systém řízení rizik dle čl. 9 AI Act
+3. Zajistit lidský dohled dle čl. 14 AI Act
+4. Registrovat vysoce rizikové systémy v EU databázi (čl. 49)
+5. Dokumentovat kvalitu dat dle čl. 10 — data governance
+6. Zajistit technickou dokumentaci dle přílohy IV
+🟡 Střední priorita — transparentnost (do 90 dní)
+1. Přidat transparenční oznámení na web (čl. 50)
+2. Vytvořit transparenční stránku /ai-transparence
+3. Označit AI-generovaný obsah dle čl. 50 odst. 4
+4. Přidat oznámení ke každému chatbotu: 'Komunikujete s umělou inteligencí'
+5. Zajistit přístupnost oznámení pro osoby se zdravotním postižením
+6. Google Gemini Chatbot: AI chatbot poháněný Google Gemini musí být transparentně označen. Uživatel musí vědět, že
+komunikuje s AI.
+7. AI služba: AI Chatbot: Web v structured data deklaruje AI službu. Dle čl. 50 AI Act musí být AI systém transparentně
+oznámen uživatelům.
+8. AI Transparency Notice: ✅ Váš web již splňuje čl. 50 AI Act — transparenční oznámení o používání AI je aktivně
+nasazeno a informuje návštěvníky. Žádná další akce není potřeba.
+9. Google Gemini Chatbot: AI chatbot poháněný Google Gemini musí být transparentně označen. Uživatel musí vědět, že
+komunikuje s AI.
+10. AI API Proxy (geminiproxy): Detekován AI proxy endpoint — web pravděpodobně používá AI chatbot přes vlastní
+backend. AI systém musí být transparentně označen uživatelům.
+11. AI služba: AI Chatbot: Web v structured data deklaruje AI službu. Dle čl. 50 AI Act musí být AI systém transparentně
+oznámen uživatelům.
+12. AI Transparency Notice: ✅ Váš web již splňuje čl. 50 AI Act — transparenční oznámení o používání AI je aktivně
+nasazeno a informuje návštěvníky. Žádná další akce není potřeba.
+🟢 Obecné kroky — organizační opatření (do 6 měsíců)
+1. Jmenovat odpovědnou osobu za AI compliance (čl. 14 — lidský dohled)
+2. Vytvořit interní registr AI systémů (čl. 49 — evidence)
+3. Proškolit zaměstnance — AI literacy dle čl. 4 AI Act
+4. Zavést proces pro zavedení nového AI nástroje (schvalovací workflow)
+5. Naplánovat pravidelný re-sken webu (měsíční monitoring)
+6. Připravit DPIA pro AI systémy zpracovávající osobní údaje
+7. Zkontrolovat smlouvy s dodavateli AI (DPA, opt-out trénování)
+8. Nastavit logování AI výstupů s retencí min. 6 měsíců (čl. 12)
+9. Google Analytics 4: Automaticky vyřazeno: Google Analytics 4 není AI systém.
+10. Meta Pixel: Automaticky vyřazeno: Meta Pixel není AI systém.
+11. AI API Proxy (geminiproxy): ⚠️ AI klasifikace selhala (LLM failed: Cannot parse Claude response as JSON. Raw text: [ {
+"name": "Google Gemini Chatbot", "deployed": true, "category": "chatbot", "risk_level": "limited", "ai_act_article": "čl. 50
+odst. 1", "action_required": "Zajistěte, aby ...: line 1 column 1 (char 0)). Vyřazeno na základě confidence=0.50
+(threshold=0.8).
+12. Google Tag Manager: Automaticky vyřazeno: Google Tag Manager není AI systém.
+13. Heureka: Automaticky vyřazeno: Heureka není AI systém.
+Harmonogram implementace
+Již zajištěno v rámci Compliance Kitu
+Společnost AIshield.cz pro vás připravila kompletní sadu dokumentace a nástrojů pro dosažení souladu s nařízením (EU)
+2024/1689 (AI Act). Následující položky jsou již vyřešeny a tyto dokumenty jste obdrželi jako součást Compliance Kitu od
+AIshield:
+Registr AI systémů:  Kompletní evidence vašich nasazených i vyvíjených systémů (včetně Google Gemini a vlastních řešení)
+vyžadovaná dle čl. 26. Tento dokument jste obdrželi jako součást Compliance Kitu od AIshield.
+Interní AI politika:  Závazná směrnice upravující pravidla pro bezpečné využívání umělé inteligence vašimi zaměstnanci. Tento
+dokument jste obdrželi jako součást Compliance Kitu od AIshield.
+Školící prezentace:  Odborné podklady pro zajištění dostatečné úrovně AI gramotnosti dle čl. 4. Tento dokument jste obdrželi jako
+součást Compliance Kitu od AIshield.
+Transparenční stránka a texty oznámení:  Šablony pro splnění informační povinnosti vůči koncovým uživatelům dle čl. 50. Tento
+dokument jste obdrželi jako součást Compliance Kitu od AIshield.
+Plán řízení incidentů a Monitoring plán:  Standardizované postupy pro hlášení a řešení problémů s AI systémy dle čl. 73. Tento
+dokument jste obdrželi jako součást Compliance Kitu od AIshield.
+DPIA posouzení a Dodavatelský checklist:  Nástroje pro hodnocení rizik a kontrolu subdodavatelů. Tento dokument jste obdrželi
+jako součást Compliance Kitu od AIshield.• 
+• 
+• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 4 Bc. Martin Haynes | ICO: 17889251
+Kroky vyžadující akci klienta
+Následující kroky závisí na vašich vnitřních procesech, technické infrastruktuře a manažerských rozhodnutích. Z tohoto
+důvodu je nemůže společnost AIshield provést za vás. Plná účinnost většiny povinností dle AI Act nastává 2. 8. 2026, avšak
+pravidla pro zakázané praktiky a AI gramotnost jsou účinná již od 2. 2. 2025.
+Okamžité ukončení zakázaných praktik (čl. 5):  Vaše společnost vyvíjí systémy pro rozpoznávání emocí na pracovišti a sociální
+skórování („vlastní kód“, „vlastní html“). Jako poskytovatel (provider) nesete plnou právní odpovědnost. AIshield nemůže
+zasahovat do vašeho zdrojového kódu ani firemních serverů.
+Konkrétní příklad:
+Smažte z vašich produkčních serverů a repozitářů kód modulu provádějícího sociální skórování uživatelů.
+Zastavte běh aplikace analyzující emoce zaměstnanců z kamerových záznamů na pracovišti.
+Rozešlete interní e-mail vývojovému týmu s pokynem, že tyto funkce nesmí být nadále vyvíjeny.
+Zajištění AI gramotnosti zaměstnanců (čl. 4):  Ačkoliv odpovědná osoba (pan Martin Haynes) má školení za sebou, musíte
+prokazatelně proškolit všechny zaměstnance, kteří s AI pracují. AIshield nemůže organizovat vaše interní porady. K provedení
+školení využijte PowerPointovou prezentaci, kterou jste obdrželi jako součást tohoto Compliance Kitu.
+Konkrétní příklad:
+Svolejte schůzku pro všechny zaměstnance využívající Google Gemini a odprezentujte dodané snímky.
+Zdůrazněte zákaz vkládání citlivých osobních údajů zákazníků do veřejných AI modelů.
+Nechte účastníky podepsat prezenční listinu, kterou následně uložíte do personální složky.
+Nasazení transparentnosti na web (čl. 50):  Jako nasazovatel (deployer) chatbotu musíte informovat uživatele, že komunikují se
+strojem. AIshield nemá administrátorský přístup k vašemu webu. HTML kód transparenční stránky jste obdrželi v Compliance Kitu
+— stačí ho nasadit na váš web.
+Konkrétní příklad:
+V administraci vašeho webu vytvořte novou podstránku s názvem „Informace o AI“ a vložte do ní dodaný HTML kód.
+Do patičky webu přidejte hypertextový odkaz směřující na tuto novou stránku.
+Do uvítací zprávy vašeho Google Gemini chatbotu přidejte text: „Dobrý den, jsem virtuální asistent poháněný umělou
+inteligencí.“
+Implementace logování a uzavření smluv (čl. 12 a čl. 19 odst. 1):  Pro vysoce rizikové systémy (např. systém „pospa ing.“ v
+kritické infrastruktuře) musíte uchovávat logy minimálně 6 měsíců. Smlouvy s dodavateli musíte podepsat vy jako oprávněný
+zástupce firmy.
+Konkrétní příklad:
+Zadejte vašemu IT oddělení úkol nastavit automatické ukládání systémových logů z AI aplikací na zabezpečený server s
+retencí přesně 6 měsíců.
+Přihlaste se do administrace Google Cloud, stáhněte si Data Processing Agreement (DPA) pro službu Gemini a elektronicky jej
+podepište.
+Časová osa — klíčové milníky
+TERMÍN MILNÍK SPLNĚNO
+Ihned Jmenovat odpovědnou osobu za AI compliance ☐
+Do 30 dní Dokončit registr AI systémů ☐
+Do 60 dní Odstavit / upravit vysoce rizikové systémy ☐
+Do 90 dní Proškolit všechny zaměstnance (AI literacy) ☐
+Do 6 měsíců Plně implementovat AI politiku a monitoring ☐
+Do 12 měsíců První interní audit AI compliance ☐
+2. 8. 2026 DEADLINE — plná účinnost AI Act ☐
+Tip: Odškrtávejte splněné body. Při auditu tento dokument poslouží jako důkaz vaší snahy o compliance ( documented effort ).
+Uchovávejte jej minimálně 5 let. 
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. • 
+◦ 
+◦ 
+◦ 
+• 
+◦ 
+◦ 
+◦ 
+• 
+◦ 
+◦ 
+◦ 
+• 
+◦ 
+◦ AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 4 Bc. Martin Haynes | ICO: 17889251
+Akční plán · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:37 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 4 Bc. Martin Haynes | ICO: 17889251

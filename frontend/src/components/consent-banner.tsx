@@ -15,33 +15,45 @@ export default function ConsentBanner() {
     const [showDetails, setShowDetails] = useState(false);
 
     useEffect(() => {
-        // Check if user has already consented
-        const stored = localStorage.getItem(CONSENT_KEY);
-        if (!stored) {
-            // Small delay so it doesn't flash on page load
-            const timer = setTimeout(() => setVisible(true), 800);
-            return () => clearTimeout(timer);
-        }
+        // Check if user has already consented — check both localStorage and cookie
+        try {
+            const stored = localStorage.getItem(CONSENT_KEY);
+            if (stored) return; // Already consented
+        } catch { /* SSR or private browsing */ }
+
+        // Also set a cookie so it survives across subdomains / incognito
+        if (typeof document !== 'undefined' && document.cookie.includes(CONSENT_KEY)) return;
+
+        // Small delay so it doesn't flash on page load
+        const timer = setTimeout(() => setVisible(true), 800);
+        return () => clearTimeout(timer);
     }, []);
 
-    function handleAcceptAll() {
-        const consent: ConsentState = {
-            cookies: true,
-            aiAct: true,
-            timestamp: new Date().toISOString(),
-        };
-        localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    function saveConsent(consent: ConsentState) {
+        try {
+            localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+        } catch { /* quota exceeded */ }
+        // Also set a regular cookie (365 days) as fallback
+        if (typeof document !== 'undefined') {
+            document.cookie = `${CONSENT_KEY}=1; path=/; max-age=${365 * 86400}; SameSite=Lax`;
+        }
         setVisible(false);
     }
 
+    function handleAcceptAll() {
+        saveConsent({
+            cookies: true,
+            aiAct: true,
+            timestamp: new Date().toISOString(),
+        });
+    }
+
     function handleAcceptNecessary() {
-        const consent: ConsentState = {
+        saveConsent({
             cookies: false,
             aiAct: true,
             timestamp: new Date().toISOString(),
-        };
-        localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
-        setVisible(false);
+        });
     }
 
     if (!visible) return null;

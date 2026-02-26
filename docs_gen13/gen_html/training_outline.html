@@ -1,0 +1,240 @@
+<h1>Plán školení AI gramotnosti</h1>
+
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>250+</div>
+    <div class='metric-label'>Zaměstnanců k proškolení</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>3</div>
+    <div class='metric-label'>Cílové skupiny</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>až 35 mil. €</div>
+    <div class='metric-label'>Maximální možná sankce</div>
+  </div>
+</div>
+
+<h2>1. Právní základ a urgence</h2>
+
+<p>Tento dokument definuje komplexní strategii pro zajištění a udržení takzvané „AI gramotnosti“ (AI literacy) v rámci vaší společnosti. Nařízení Evropského parlamentu a Rady (EU) 2024/1689 (dále jen „AI Act“) zavádí v článku 4 zcela novou, plošnou povinnost pro všechny subjekty, které nasazují nebo vyvíjejí systémy umělé inteligence.</p>
+
+<div class='warning'>
+  <strong>Kritické upozornění na prodlení:</strong> Dnešní datum je 25. 02. 2026. Povinnost zajistit dostatečnou úroveň AI gramotnosti dle čl. 4 AI Act vstoupila v platnost již <strong>2. února 2025</strong>. Ačkoliv z úvodní analýzy vyplývá, že vaše společnost již určitou formou školení disponuje, je nezbytné okamžitě auditovat, zda toto existující školení plně pokrývá zákonné požadavky AI Act, zejména s ohledem na vaše vysoce rizikové a zakázané systémy. V případě formálního nedostatku se firma nachází v trvajícím nesouladu s nařízením.
+</div>
+
+<p>Dle článku 4 AI Act musí poskytovatelé (providers) i nasazovatelé (deployers) systémů umělé inteligence přijmout opatření k zajištění dostatečné úrovně gramotnosti v oblasti umělé inteligence u svých zaměstnanců a dalších osob, které se na provozu a používání AI podílejí. Tato gramotnost musí odpovídat technickým znalostem, zkušenostem, vzdělání a odborné přípravě daných osob a kontextu, v němž se systémy AI mají používat.</p>
+
+<p>Vzhledem k tomu, že vaše společnost provozuje široké spektrum AI systémů – od systémů s minimálním rizikem (GitHub Copilot) přes systémy s omezeným rizikem (Zendesk AI, ChatGPT) až po vysoce rizikové systémy (CRIF, Teamio, biometrická identifikace) a dokonce systémy spadající pod zakázané praktiky (rozpoznávání emocí na pracovišti, sociální scoring) – je požadavek na hloubku a kvalitu školení extrémně vysoký.</p>
+
+<div class='callout'>
+  <strong>Sankce za nesplnění:</strong> Dle čl. 99 odst. 4 AI Act může být nedodržení povinností (včetně čl. 4 o AI gramotnosti) sankcionováno pokutou až do výše 15 000 000 EUR nebo 3 % celkového celosvětového ročního obratu. Pozor však na to, že provozování zakázaných systémů (které byly u vás identifikovány) podléhá dle čl. 99 odst. 3 sankci až 35 000 000 EUR nebo 7 % obratu.
+</div>
+
+<h2>2. Cílové skupiny školení</h2>
+
+<p>Vzhledem k velikosti vaší společnosti (250+ zaměstnanců) a komplexitě nasazených systémů nelze aplikovat jednotné plošné školení. Článek 4 explicitně vyžaduje přizpůsobení školení kontextu a roli uživatele. Rozdělili jsme proto vaše zaměstnance do tří klíčových skupin.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Skupina</th>
+      <th>Odhadovaný počet</th>
+      <th>Hloubka školení</th>
+      <th>Frekvence</th>
+      <th>Klíčové téma</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A. Vedení firmy a management</strong></td>
+      <td>cca 12–25 osob (5–10 %)</td>
+      <td>Strategická a právní</td>
+      <td>Ročně + při změně legislativy</td>
+      <td>Odpovědnost, risk management, FRIA, zakázané praktiky</td>
+    </tr>
+    <tr>
+      <td><strong>B. IT a technický personál</strong></td>
+      <td>IT tým (dle interní evidence)</td>
+      <td>Technická a procesní</td>
+      <td>Pololetně</td>
+      <td>Logging, incident management, zakázaný kód, post-market monitoring</td>
+    </tr>
+    <tr>
+      <td><strong>C. Běžní uživatelé AI</strong></td>
+      <td>Zbývajících cca 200+ osob</td>
+      <td>Praktická a aplikační</td>
+      <td>Při nástupu + ročně</td>
+      <td>Automation bias, lidský dohled, ochrana dat, transparentnost</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><em>Poznámka: Za celkovou realizaci a evidenci školení zodpovídá určená odpovědná osoba za AI, kterou je ve vaší společnosti Martin Haynes (Jednatel / majitel). Samotnou exekuci odborných částí lze delegovat.</em></p>
+
+<h2>3. Obsah školení — vedení firmy (Skupina A)</h2>
+
+<p>Školení pro management se nesmí soustředit na to, jak psát prompty do ChatGPT. Musí se zaměřit na strategické řízení rizik, alokaci zdrojů a právní odpovědnost plynoucí z AI Act. Vedení firmy činí rozhodnutí o nákupu a nasazení nových systémů, čímž přímo ovlivňuje míru compliance celé organizace.</p>
+
+<h3>Klíčové moduly pro vedení:</h3>
+<ul>
+  <li><strong>Klasifikace rizik dle AI Act:</strong> Pochopení rozdílu mezi zakázanými praktikami (čl. 5), vysoce rizikovými systémy (čl. 6 a Příloha III) a systémy s omezeným rizikem (čl. 50).</li>
+  <li><strong>Identifikace zakázaných systémů:</strong> Vedení musí být seznámeno s tím, že systémy pro rozpoznávání emocí na pracovišti a sociální scoring (které byly identifikovány ve vašem vlastním kódu/HTML) jsou dle čl. 5 absolutně zakázány a musí být okamžitě vyřazeny z provozu pod hrozbou maximálních pokut.</li>
+  <li><strong>Posouzení dopadu na základní práva (FRIA):</strong> Dle čl. 27 AI Act mají nasazovatelé vysoce rizikových systémů (např. HR systémy Teamio, finanční scoring CRIF) povinnost provést před jejich nasazením tzv. FRIA. Management musí vědět, že bez tohoto posouzení nelze systém uvést do provozu.</li>
+  <li><strong>Odpovědnost nasazovatele (Deployer) vs. Poskytovatele (Provider):</strong> Vysvětlení článku 25 AI Act. Pokud vaše firma podstatně upraví AI systém třetí strany nebo jej nasadí pod vlastním jménem, stává se z pohledu zákona poskytovatelem a přebírá veškeré povinnosti včetně posuzování shody (Conformity Assessment).</li>
+  <li><strong>Lidský dohled (Human Oversight):</strong> Dle čl. 14 AI Act musí vedení zajistit, aby vysoce rizikové systémy podléhaly efektivnímu lidskému dohledu. Vedení musí alokovat personální kapacity pro tento dohled.</li>
+</ul>
+
+<div class='highlight'>
+  <strong>Příklad z praxe pro vedení:</strong> Před nasazením nového AI nástroje pro hodnocení kandidátů (HR) musí HR ředitel ve spolupráci s DPO provést FRIA dle čl. 27 AI Act. Při rozhodování o nákupu nového kamerového systému pro sklady musí management před podpisem smlouvy vyžadovat od dodavatele Prohlášení o shodě (CE) a technickou dokumentaci.
+</div>
+
+<h2>4. Obsah školení — IT a technický personál (Skupina B)</h2>
+
+<p>Vaše společnost vyvíjí vlastní kód, využívá AI API Proxy a integruje LLM modely. IT oddělení proto nese kritickou zátěž při implementaci technických požadavků AI Act. Školení této skupiny musí být vysoce odborné.</p>
+
+<h3>Klíčové moduly pro IT:</h3>
+<ul>
+  <li><strong>Zakázané praktiky v kódu (čl. 5):</strong> Vývojáři musí znát hranice toho, co nesmí implementovat. Vývoj systémů pro podprahovou manipulaci, rozpoznávání emocí na pracovišti nebo biometrickou identifikaci v reálném čase je zakázán. Vývojář má povinnost odmítnout implementaci takových funkcí i na pokyn nadřízeného a znát postup eskalace.</li>
+  <li><strong>Vývoj vlastních modelů a GPAI:</strong> Pravidla pro modely s obecným účelem (GPAI, čl. 51–54) jsou účinná již od 2. 8. 2025. Vaše firma je v prodlení, pokud dosud nezajistila transparentnost a dokumentaci pro integrované LLM API. Zajištění ochrany dat při volání externích API (OpenAI, Anthropic) je okamžitou prioritou.</li>
+  <li><strong>Automatické zaznamenávání událostí (Logging):</strong> Dle čl. 12 a čl. 26 odst. 1 písm. f) AI Act musí IT zajistit, že vysoce rizikové systémy generují logy. Tyto logy musí být uchovávány po dobu minimálně 6 měsíců.</li>
+  <li><strong>Post-market monitoring (čl. 72):</strong> Jelikož vyvíjíte vlastní AI systémy, jste v roli poskytovatele. IT musí implementovat systém sledování výkonnosti modelu v produkci, detekci driftu a neočekávaných výstupů.</li>
+  <li><strong>Řízení incidentů (Incident Management):</strong> Dle čl. 73 AI Act musí být závažné incidenty hlášeny dozorovému orgánu do 15 dnů. IT musí být proškoleno na detekci anomálií a spuštění eskalačního procesu.</li>
+</ul>
+
+<div class='highlight'>
+  <strong>Příklad z praxe pro IT:</strong> Vývojář používající GitHub Copilot nebo Cursor musí být proškolen, že vygenerovaný kód nesmí být nasazen do produkce bez předchozího „code review“ člověkem. Zároveň musí IT administrátor nastavit proxy servery tak, aby do externích LLM API neunikala osobní data zákazníků z vašich databází.
+</div>
+
+<h2>5. Obsah školení — běžní uživatelé (Skupina C)</h2>
+
+<p>Tato skupina tvoří většinu vašich zaměstnanců (HR, zákaznická podpora, účetní, obchodníci, lékaři, učitelé, marketéři). Cílem školení není z nich udělat programátory, ale naučit je kritickému myšlení při interakci s AI a prevenci takzvaného „Automation bias“ (zkreslení vlivem automatizace).</p>
+
+<h3>Klíčové moduly pro běžné uživatele:</h3>
+<ul>
+  <li><strong>Základy fungování AI a ochrana dat:</strong> Co je to halucinace AI, proč jazykové modely negenerují fakta, ale pouze pravděpodobnostní text. Striktní zákaz vkládání osobních údajů klientů, rodných čísel nebo interního know-how do veřejných verzí AI nástrojů.</li>
+  <li><strong>Specifika pro zdravotnictví a vzdělávání:</strong> Vaše firma operuje v sektorech, které Příloha III AI Act definuje jako vysoce rizikové. Zaměstnanci musí být proškoleni o zvýšené ochraně zranitelných skupin (pacienti, děti). Lékař nesmí slepě přijmout AI diagnózu bez vlastního odborného posouzení. Pedagog musí vždy osobně přezkoumat AI hodnocení studenta.</li>
+  <li><strong>Transparentnost pro tvůrce obsahu (Marketing/PR):</strong> Zaměstnanci využívající DALL-E, Midjourney, HeyGen či Synthesia musí znát povinnost označovat AI generovaný obsah (obrázky, videa, audio) viditelným štítkem nebo metadaty dle čl. 50 odst. 4 AI Act.</li>
+  <li><strong>Právo na přezkum (Human Override):</strong> Dle čl. 14 odst. 4 písm. d) AI Act musí zaměstnanci vědět, že mají právo (a povinnost) ignorovat, přepsat nebo zrušit rozhodnutí AI systému, pokud mají podezření na chybu nebo diskriminaci.</li>
+</ul>
+
+<div class='no-break'>
+  <h3>Fenomén Automation Bias (Zkreslení vlivem automatizace)</h3>
+  <p>Automation bias je tendence lidských operátorů přehnaně důvěřovat výstupům automatizovaných systémů a ignorovat vlastní úsudek nebo protichůdné informace. AI Act v čl. 14 explicitně vyžaduje, aby lidský dohled zahrnoval povědomí o tomto zkreslení.</p>
+  
+  <p><strong>Příklady pro vaše odvětví, které musí zaznít na školení:</strong></p>
+  <ol>
+    <li><strong>HR a Nábor (Teamio, LinkedIn Recruiter):</strong> Personalista vidí, že AI systém vyřadil kandidáta s hodnocením „Nízká shoda“. Automation bias způsobí, že personalista životopis vůbec neotevře. <em>Správný postup:</em> Personalista musí namátkově kontrolovat i vyřazené kandidáty, aby ověřil, zda AI nediskriminuje na základě věku nebo pohlaví.</li>
+    <li><strong>Finance a Účetnictví (CRIF, Scoring Solutions):</strong> Úvěrový specialista obdrží od AI systému doporučení zamítnout klientovi odklad splátek. <em>Správný postup:</em> Specialista nesmí rozhodnutí slepě potvrdit. Musí zkontrolovat podklady a v případě pochybností rozhodnutí AI přepsat (override).</li>
+    <li><strong>Zákaznická podpora (Zendesk AI, Intercom):</strong> Operátor podpory nechá AI vygenerovat odpověď na reklamaci složitého průmyslového stroje a bez čtení ji odešle. AI si vymyslí neexistující postup opravy. <em>Správný postup:</em> Operátor nese plnou odpovědnost za odeslaný text a musí každou AI generovanou odpověď před odesláním přečíst a fakticky ověřit.</li>
+  </ol>
+</div>
+
+<h2>6. Školící materiály a způsob realizace</h2>
+
+<p>Zajištění AI gramotnosti nevyžaduje, abyste tvořili školící materiály od nuly. V rámci naší spolupráce jsme pro vás připravili profesionální podklady.</p>
+
+<div class='info'>
+  <strong>Dodáno v rámci Compliance Kitu:</strong>
+  <br><br>
+  Součástí vašeho Compliance Kitu je hotová <strong>PowerPointová prezentace „Školení AI gramotnosti“</strong>. Tato prezentace obsahuje vizuálně zpracované slidy pokrývající základy AI Act, rizika halucinací, automation bias a pravidla pro bezpečnou práci s AI.
+  <br><br>
+  Dále máte k dispozici <strong>Interní AI politiku</strong>, která slouží jako textový manuál a závazný předpis pro zaměstnance, a <strong>Vzor elektronického logu / prezenční listiny</strong> pro doložení školení kontrolnímu orgánu.
+</div>
+
+<h3>Odpovědi na vaše dotazy k realizaci (LMS a prokazatelnost)</h3>
+
+<p>Vzhledem k velikosti vaší společnosti (250+ zaměstnanců) je fyzické svolávání všech pracovníků logisticky neefektivní. Zde jsou odpovědi na vaše praktické dotazy:</p>
+
+<ul>
+  <li><strong>Lze využít firemní intranet / LMS?</strong> Ano. PPTX prezentaci můžete nahrát na firemní intranet (např. jako komentované video). Zaměstnanci mohou školení absolvovat online. Zásadní je, aby systém zaznamenal elektronickou stopu (časové razítko, ID uživatele, IP adresu) a vyžadoval aktivní odkliknutí potvrzení: <em>„Potvrzuji, že jsem se seznámil/a s obsahem školení a s Interní AI politikou společnosti.“</em></li>
+  <li><strong>Stačí potvrzení bez testů znalostí?</strong> Ano. AI Act nevyžaduje formální testování. Pokud zaměstnanec u kontroly řekne, že si nic nepamatuje, chrání vás právě elektronický log o absolvování školení a podepsaná Interní AI politika. Odpovědnost za nedodržení pravidel se tím přenáší na zaměstnance, který prokazatelně potvrdil seznámení s předpisy.</li>
+  <li><strong>Kdo školí IT oddělení a obsahuje PPTX technické detaily?</strong> Dodaná PPTX prezentace pokrývá obecnou AI gramotnost a rizika. Hluboké technické detaily (API proxy, logování, post-market monitoring) v ní nejsou, protože by běžné uživatele mátly. Jako jednatel IT oddělení technicky neškolíte – vaší rolí je předat IT řediteli technické manuály z Compliance Kitu a pověřit ho, aby zajistil soulad vývoje s těmito požadavky (případně zajistil externí technické školení pro vývojáře).</li>
+</ul>
+
+<h2>7. Harmonogram a organizace</h2>
+
+<p>Vzhledem k tomu, že zákonná lhůta pro zajištění AI gramotnosti již uplynula (2. 2. 2025), je nutné jednat bezodkladně. Dále je nutné se připravit na plnou účinnost pravidel pro vysoce rizikové systémy, která nastane <strong>2. 8. 2026</strong>.</p>
+
+<ol>
+  <li><strong>Do 14 dnů:</strong> Proškolení Skupiny A (Vedení) – seznámení s tímto Compliance Reportem a Akčním plánem. Rozhodnutí o vyřazení zakázaných systémů a alokace odpovědnosti za FRIA.</li>
+  <li><strong>Do 30 dnů:</strong> Předání technických požadavků Skupině B (IT řediteli) – zaměření na zastavení vývoje zakázaných systémů, implementaci logování a transparentnosti GPAI.</li>
+  <li><strong>Do 45 dnů:</strong> Plošné nasazení školení pro Skupinu C (Běžní uživatelé) přes firemní LMS / intranet. Zajištění elektronického potvrzení o absolvování a seznámení s Interní AI politikou.</li>
+  <li><strong>Průběžně:</strong> Začlenění AI školení a podpisu Interní AI politiky do standardního onboarding procesu pro všechny nově nastupující zaměstnance.</li>
+</ol>
+
+<h2>8. Měření efektivity</h2>
+
+<p>Jak prokážete dozorovému orgánu, že vaše školení bylo efektivní, aniž byste používali testy?</p>
+
+<ul>
+  <li><strong>Kvantitativní metriky:</strong> 100% pokrytí zaměstnanců elektronickými logy z LMS nebo prezenčními listinami. Evidence, že každý nový zaměstnanec prošel školením během prvního týdne.</li>
+  <li><strong>Kvalitativní metriky (Behaviorální změny):</strong> 
+    <ul>
+      <li>Zvýšený počet dotazů na IT oddělení ohledně bezpečnosti nových AI nástrojů před jejich použitím.</li>
+      <li>Záznamy v logu (Audit trail), které prokazují, že zaměstnanci občas využívají funkci „override“ (přepsání) u rozhodnutí AI, což dokazuje, že nepodléhají automation bias.</li>
+      <li>Aktivní hlášení drobných chyb AI systémů (halucinací) v rámci interního incident managementu.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>9. Kontrolní tabulka (Checklist)</h2>
+
+<p>Tato tabulka slouží pro interní evidenci k řízení procesu školení.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Úkol</th>
+      <th>Zodpovídá</th>
+      <th>Status / Termín</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stažení a revize dodané PPTX prezentace a vzoru prezenčního logu</td>
+      <td>Martin Haynes</td>
+      <td>Ihned</td>
+    </tr>
+    <tr>
+      <td>Nastavení školení v LMS / na intranetu včetně elektronického potvrzení</td>
+      <td>HR oddělení / IT</td>
+      <td>Do 30 dnů</td>
+    </tr>
+    <tr>
+      <td>Zajistit elektronický podpis/potvrzení seznámení s Interní AI politikou</td>
+      <td>HR oddělení</td>
+      <td>Do 45 dnů</td>
+    </tr>
+    <tr>
+      <td>Realizace strategického školení pro Vedení firmy</td>
+      <td>Martin Haynes</td>
+      <td>Do 14 dnů</td>
+    </tr>
+    <tr>
+      <td>Předání technických požadavků a manuálů IT oddělení</td>
+      <td>Martin Haynes / IT Ředitel</td>
+      <td>Do 30 dnů</td>
+    </tr>
+    <tr>
+      <td>Plošné absolvování e-learningu pro HR, Finance, Podporu a další</td>
+      <td>Vedoucí oddělení</td>
+      <td>Do 45 dnů</td>
+    </tr>
+    <tr>
+      <td>Začlenění AI školení do onboardingu nováčků</td>
+      <td>HR oddělení</td>
+      <td>Průběžně</td>
+    </tr>
+    <tr>
+      <td>Roční revize a aktualizace školících materiálů</td>
+      <td>Martin Haynes</td>
+      <td>Únor 2027</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class='sig-block'>
+  <div class='sig-field'>Za firmu Martin Haynes</div>
+  <div class='sig-field'>Za AIshield.cz</div>
+</div>

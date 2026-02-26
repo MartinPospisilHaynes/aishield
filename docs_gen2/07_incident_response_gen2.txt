@@ -1,0 +1,146 @@
+AIshield.cz
+Plán řízení AI incidentů
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:38 UTC 
+Plán řízení AI incidentů
+Postupy dle čl. 73 Nařízení (EU) 2024/1689
+Firma: Martin Haynes
+Platnost od:  24. 02. 2026, 20:38 UTC
+Verze: 1.0
+1. Definice AI incidentu
+Za AI incident se považuje situace, kdy systém umělé inteligence:
+Poskytne nesprávnou, zavádějící nebo diskriminační odpověď zákazníkovi
+Zpracuje osobní údaje v rozporu s GDPR
+Selže technicky a ovlivní provoz firmy nebo služby zákazníkům
+Vygeneruje obsah porušující autorská práva
+Se stane obětí kyberútoku (prompt injection, data poisoning, model inversion)
+Způsobí fyzickou nebo psychickou újmu osobám
+Projeví systematický bias vůči skupině osob
+2. Klasifikace závažnosti
+STUPEŇ POPIS PŘÍKLAD REAKČNÍ DOBA
+VYSOKÉ RIZIKOKritický Diskriminace, únik osobních údajů, fyzická újma 1 hodina
+Omezené rizikoStřední Chybná informace chatbotu, neoznačený AI obsah 24 hodin
+Minimální rizikoNízký Překlep v AI odpovědi, dočasný výpadek 72 hodin
+⚠️ POZOR — Zákonné lhůty hlášení dle čl. 73 AI Act:
+Závažný incident → nahlásit do 15 dnů dozorové autoritě
+Poškození zdraví → nahlásit do 10 dnů
+Masivní porušení práv → nahlásit do 2 dnů
+GDPR data breach → nahlásit ÚOOÚ do 72 hodin  (čl. 33 GDPR)• 
+• 
+• 
+• 
+• 
+• 
+• 
+3. Eskalační řetězec
+KROK KDO KONTAKT AKCE
+1Zaměstnanec (kdo
+zjistil)—Zaznamenat incident, okamžitě informovat
+odpovědnou osobu
+2Odpovědná osoba za
+AIMartin Haynes
+info@desperados-
+design.cz
+7327161Posoudit závažnost, rozhodnout o eskalaci
+3 Vedení firmy Vyplňte Schválit odstavení systému, alokovat zdroje
+4 IT / dodavatel AI Vyplňte Technická diagnostika a náprava
+5 DPO / právní poradce VyplňtePosouzení povinnosti hlášení ÚOOÚ / dozorovému
+orgánu
+6 Komunikace / PR Vyplňte Informování dotčených osob a veřejnosti
+4. Postup při incidentu
+Fáze 1 — Okamžitá reakce (0–1 h)
+1. Zastavit AI systém, který incident způsobil
+2. Zajistit důkazy — screenshot, logy, čas, dotčení uživatelé
+3. Informovat odpovědnou osobu za AI
+4. U kritických incidentů: okamžitě odstavit systém z provozu
+5. Zabezpečit AI logy před smazáním/přepsáním
+Fáze 2 — Vyhodnocení (1–24 h)
+1. Klasifikovat závažnost incidentu (kritický / střední / nízký)
+2. Identifikovat a kontaktovat dotčené osoby
+3. Posoudit, zda došlo k porušení GDPR (čl. 33 — 72h na hlášení ÚOOÚ)
+4. Posoudit povinnost hlášení dle čl. 73 AI Act (viz lhůty výše)
+5. Analyzovat root cause — co přesně způsobilo incident
+Fáze 3 — Náprava (24–72 h)
+1. Opravit AI systém / změnit konfiguraci / aktualizovat model
+2. Informovat dotčené osoby o incidentu a přijatých opatřeních
+3. Aktualizovat registr AI systémů (status, poznámky)
+4. Dokumentovat příčinu, průběh a přijatá opatření
+5. Provést test — ověřit, že náprava je účinnáAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 4 Bc. Martin Haynes | ICO: 17889251
+Fáze 4 — Poučení (do 14 dní)
+1. Post-mortem analýza s týmem
+2. Aktualizovat tento incident plán na základě zkušeností
+3. Proškolit tým o nových postupech
+4. Archivovat dokumentaci incidentu (min. 5 let)
+5. Povinné hlášení — přehled
+TYP INCIDENTU LHŮTA KOMU HLÁSIT PRÁVNÍ ZÁKLAD
+Závažný AI incident 15 dnů Dozorový orgán členského státu čl. 73 AI Act
+Poškození zdraví 10 dnů Dozorový orgán + zdravotnický úřad čl. 73 odst. 4 AI Act
+Masivní porušení základních práv 2 dny Dozorový orgán čl. 73 odst. 4 AI Act
+Porušení ochrany osobních údajů 72 hodin ÚOOÚ (Úřad pro ochranu os. údajů) čl. 33 GDPR
+Závažné poškození majetku/ŽP 15 dnů Dozorový orgán čl. 73 AI Act
+Specifické pokyny pro Martin Haynes
+Tento dokument, který definuje proces řízení AI incidentů, jste obdrželi jako součást Compliance Kitu od AIshield. Vaší
+povinností jako nasazovatele i poskytovatele AI systémů je tento proces implementovat do firemní praxe a prokazatelně s ním
+seznámit všechny relevantní zaměstnance. Podle čl. 73 Nařízení (EU) 2024/1689 (AI Act) máte povinnost nahlásit každý
+závažný incident dozorčímu orgánu nejpozději do 15 dnů od chvíle, kdy zjistíte příčinnou souvislost mezi AI systémem a
+incidentem. Závažným incidentem se rozumí událost, která vede k úmrtí, vážnému poškození zdraví, závažnému narušení
+kritické infrastruktury, porušení základních práv nebo k rozsáhlé škodě na majetku či životním prostředí. Údaje o dodavatelích
+a systémech v tomto dokumentu jsou platné ke dni 2026-02-24.
+Vzhledem k vaší roli poskytovatele vysoce rizikových systémů (např. systém „pospa ing.“ pro kritickou infrastrukturu) a
+nasazovatele systémů s omezeným rizikem (Google Gemini Chatbot) musíte být připraveni na specifické krizové situace. Níže
+uvádíme konkrétní příklady incidentů relevantních pro vaše odvětví a nasazené technologie:
+Selhání kritické infrastruktury:  Váš AI systém „pospa ing.“ nesprávně vyhodnotí zátěž v síti, což povede k lokálnímu výpadku
+dodávek energie nebo narušení logistických tras.
+Porušení základních práv:  Váš „vlastní kód“ pro biometrickou identifikaci chybně označí zaměstnance za neoprávněnou osobu a
+zablokuje mu přístup na pracoviště, čímž dojde k diskriminaci a porušení pracovněprávních předpisů.
+Únik osobních údajů přes LLM:  Zákaznický Google Gemini Chatbot začne v důsledku chyby v promptu (tzv. prompt injection)
+recitovat osobní údaje jiných klientů z vaší databáze.
+Zakázané praktiky:  Systém „vlastní html“ pro sociální scoring automaticky zamítne poskytnutí služby zákazníkovi na základě
+jeho předchozího chování, což je přímé porušení čl. 5 AI Act.
+Pro efektivní řešení těchto situací zavádíme třístupňový eskalační scénář. Tento rámec je součástí vašeho Compliance Kitu,
+avšak vyžaduje akci klienta — musíte interně určit konkrétní osoby pro jednotlivé úrovně a zajistit jejich součinnost.
+L1 (Operátor / Podpora):  První linie kontaktu. Příklad z praxe:  Pracovník zákaznické podpory zjistí, že Google Gemini Chatbot na
+webu nabízí zákazníkům neexistující slevy. Operátor okamžitě chatbot v administraci deaktivuje, zaznamená přesný čas incidentu
+do interního systému a telefonicky kontaktuje L2.
+L2 (Odpovědná osoba za AI):  Tuto roli ve vaší firmě zastává Martin Haynes. Příklad z praxe:  Martin Haynes obdrží hlášení od L1,
+analyzuje logy z AI API Proxy, potvrdí, že chyba vznikla na straně jazykového modelu, zajistí uchování důkazů a připraví podklady
+pro případné hlášení.
+L3 (Vedení společnosti / Statutární orgán):  Finální rozhodovací úroveň. Příklad z praxe:  Vedení firmy na základě podkladů od L2
+vyhodnotí, že selhání systému „pospa ing.“ způsobilo závažné narušení infrastruktury. L3 následně do 15 dnů formálně odešle
+hlášení o závažném incidentu příslušnému národnímu dozorčímu orgánu (např. NÚKIB).
+Nedílnou součástí řízení incidentů je striktní dokumentace a uchovávání záznamů. Podle čl. 12 AI Act musí vysoce rizikové
+systémy automaticky zaznamenávat události (logovat). Dle čl. 19 odst. 1 AI Act máte povinnost tyto logy uchovávat po dobu
+minimálně 6 měsíců. Vyžaduje to akci klienta: musíte technicky zajistit, aby vaše vlastní systémy („vlastní kód“, „pospa ing.“)
+generovaly auditní stopu. Při každém incidentu musíte zdokumentovat přesný čas vzniku, identifikaci dotčeného AI systému,
+rozsah dopadu na uživatele či infrastrukturu a okamžitá nápravná opatření, která byla přijata k minimalizaci škod. Šablona pro
+záznam incidentu je rovněž součástí vašeho Compliance Kitu od AIshield a je připravena k okamžitému použití.• 
+• 
+• 
+• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 4 Bc. Martin Haynes | ICO: 17889251
+6. Záznamový formulář incidentu
+Číslo incidentu AI-INC-______
+Datum a čas incidentu Vyplňte
+Datum a čas zjištění Vyplňte
+Zjištěno kým Vyplňte
+Dotčený AI systém Vyplňte
+Stupeň závažnosti ☐ Kritický ☐ Střední ☐ Nízký
+Popis incidentu Vyplňte
+Dotčené osoby (počet) Vyplňte
+Root cause Vyplňte
+Přijatá opatření Vyplňte
+Systém zastaven? ☐ ANO ☐ NE — důvod:
+Nahlášeno dozorovému orgánu? ☐ ANO — datum: ☐ NE — důvod:
+Nahlášeno ÚOOÚ? ☐ ANO — datum: ☐ NE ☐ N/A
+Podpis odpovědné osoby Vyplňte
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Plán řízení AI incidentů · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:38 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 4 Bc. Martin Haynes | ICO: 17889251

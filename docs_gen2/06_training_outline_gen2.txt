@@ -1,0 +1,142 @@
+AIshield.cz
+Školení AI Literacy
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:37 UTC 
+Školení AI Literacy
+Osnova povinného školení dle čl. 4 Nařízení (EU) 2024/1689
+Rozsah:  3–4 hodiny · Cílová skupina:  Všichni zaměstnanci Martin Haynes · Počet: 100+ osob · Úroveň: Mix — různé úrovně · 
+Frekvence:  Při nástupu + 1× ročně
+čl. 4 AI Act:  „Poskytovatelé a nasazovatelé přijímají opatření k zajištění dostatečné úrovně AI gramotnosti svého personálu a dalších
+osob, které se zabývají provozem a používáním systémů AI…" 
+Klíčové:  Školení musí být přizpůsobeno technickým znalostem, zkušenostem, vzdělání a kontextu použití AI. Nestačí obecné
+„přečtěte si PDF". 
+Modul 1 — Co je umělá inteligence (30 min)
+Definice AI dle čl. 3 odst. 1 AI Act — „strojový systém navržený pro…“
+Typy AI: generativní AI (LLM), prediktivní modely, expertní systémy, počítačové vidění
+GPAI — modely obecného určení (General Purpose AI, čl. 51–56)
+Příklady AI v každodenním životě a v podnikání
+AI vs. automatizace — jaký je rozdíl? (ne každá automatizace je AI)
+Modul 2 — EU AI Act v kostce (45 min)
+Proč EU reguluje AI — cíle nařízení: ochrana základních práv + inovace
+4 kategorie rizik: nepřijatelné (čl. 5) → vysoké (čl. 6) → omezené (čl. 50) → minimální
+Zakázané praktiky (čl. 5): sociální scoring, podprahová manipulace, biometrika
+Povinnosti transparentnosti (čl. 50) — chatboty, AI obsah, deepfakes
+Povinnosti pro nasazovatele/deployery (čl. 26) — většina českých firem
+Pokuty — až 35 mil. EUR / 7 % obratu (čl. 99) — odstupňováno dle závažnosti
+Účinnost: od 2. 2. 2025 (zakázané), od 2. 8. 2025 (GPAI), plně 2. 8. 2026
+Modul 3 — AI v naší firmě (30 min)
+Jaké AI systémy používáme — přehled z registru AI (Martin Haynes)
+Povolené vs. zakázané použití (interní AI politika)
+Pravidla pro vkládání dat do AI nástrojů — co ANO, co NIKDY
+Odpovědná osoba za AI ve firmě — kdo, co řeší, jak kontaktovat
+Proces zavedení nového AI nástroje — schvalovací workflow
+Modul 4 — Bezpečné používání AI (30 min)
+ChatGPT / Claude / Gemini — jak správně formulovat prompty
+Co do AI NIKDY nevkládat: osobní údaje, hesla, smlouvy, obchodní tajemství
+Ověřování výstupů AI — trust but verify (halucinace, neaktuální info)• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Označování AI-generovaného obsahu (čl. 50 odst. 4)
+Hlášení incidentů — postup a kontakt na odpovědnou osobu
+Modul 5 — Automation bias a kritické myšlení (30 min)
+Automation bias  — tendence nekriticky přijímat výstupy AI
+Proč lidé "věří" AI: autorita, rychlost, přesvědčivý styl odpovědí
+Reálné případy selhání AI: halucinace, zastaralé údaje, zaujatost
+Techniky kritického myšlení při práci s AI:
+• Vždy ověřit klíčová fakta z nezávislého zdroje
+• Ptát se: Mohla by tato odpověď být špatně?
+• Nikdy nepoužívat AI výstup jako jediný zdroj pro důležitá rozhodnutí
+• Vědět, kdy AI nepotřebuji a lidský úsudek je lepší
+Odpovědnost: za rozhodnutí odpovídá ČLOVĚK, ne AI (čl. 14 — lidský dohled)
+Modul 6 — Test a certifikace (15 min)
+Krátký test (10 otázek) — minimum 70 % pro úspěšné absolvování
+Certifikát o absolvování školení (podepsaný, datovaný)
+Opakovat 1× ročně jako refresher + při zavedení nového AI systému
+Evidence: prezenční listina podepsaná účastníky
+Specifická doporučení pro školení
+Podle článku 4 Nařízení (EU) 2024/1689 (AI Act) máte jako poskytovatel i nasazovatel systémů umělé inteligence povinnost
+zajistit dostatečnou úroveň takzvané AI gramotnosti (AI literacy) u všech vašich zaměstnanců. Tato povinnost je plně účinná již
+od 2. února 2025. Vzhledem k tomu, že vaše společnost s více než 250 zaměstnanci vyvíjí a nasazuje vysoce rizikové
+systémy (například pro kreditní scoring či kritickou infrastrukturu), je prokazatelné proškolení personálu naprosto klíčové.
+Zanedbání této povinnosti spadá pod sankce dle článku 99 odst. 4, kde hrozí pokuta až do výše 15 milionů EUR nebo 3 %
+celkového ročního obratu.
+V rámci vašeho Compliance Kitu jsme vám dodali veškeré potřebné materiály. K provedení školení využijte PowerPointovou
+prezentaci „Školení AI gramotnosti“, kterou jste obdrželi v Compliance Kitu od AIshield. Prezentace je připravena k
+okamžitému použití — stačí ji promítnout zaměstnancům.  Je však nezbytné, abyste jako odpovědná osoba interně zajistili
+samotnou realizaci. Musíte svolat příslušné týmy, prezentaci jim odprezentovat a vést prezenční listinu, která v případě auditu
+poslouží jako důkaz o splnění zákonné povinnosti. AIshield nedodává externí lektory pro prezenční školení vašich
+zaměstnanců.
+Vzhledem k širokému záběru vaší firmy doporučujeme rozdělit školení podle cílových skupin a přizpůsobit hloubku informací:
+Vedení a HR oddělení:  Zaměřte se na identifikaci zakázaných praktik (čl. 5) a vysoce rizikových systémů (čl. 6). Zaměstnanci
+musí vědět, že nasazení AI pro rozpoznávání emocí na pracovišti nebo sociální scoring je striktně zakázáno.
+IT oddělení a vývojáři:  Jako poskytovatelé vlastních řešení musí znát povinnosti dle článku 16 (technická dokumentace, logování,
+posouzení shody). Školení musí pokrýt i bezpečnou integraci externích API (např. Google Gemini) a nutnost lidského dohledu nad
+kódem.
+Běžní uživatelé a zákaznická podpora:  Zde je nutné klást důraz na ochranu firemních dat, zákaz vkládání osobních údajů do
+veřejných LLM modelů a transparentnost vůči zákazníkům (čl. 50).
+Kritickým bodem školení, který prezentace z Compliance Kitu detailně vysvětluje, je takzvaný automation bias  (zkreslení
+vlivem automatizace). Jde o nebezpečnou tendenci zaměstnanců nekriticky důvěřovat výstupům umělé inteligence a
+rezignovat na vlastní úsudek. Vaši zaměstnanci musí být vedeni ke kritickému myšlení a povinnému ověřování faktů. V praxi
+vaší společnosti to znamená předcházet následujícím situacím:
+Příklad ve financích:  Úvěrový specialista nekriticky schválí nebo zamítne půjčku pouze na základě výstupu AI modelu pro
+kreditní scoring, aniž by zkontroloval podkladová finanční data klienta, což vede k diskriminaci a porušení práva na lidský
+přezkum (čl. 14).
+Příklad v IT vývoji:  Programátor zkopíruje kód vygenerovaný AI asistentem přímo do produkčního prostředí bez provedení
+standardního code review, čímž do firemní infrastruktury zanese kritickou bezpečnostní zranitelnost.
+Příklad na zákaznické podpoře:  Operátor e-shopu odešle zákazníkovi halucinovanou odpověď z Google Gemini Chatbotu
+ohledně reklamačních podmínek, čímž firmu právně zaváže k neexistující garanci vrácení peněz.
+Zajistěte, aby každý zaměstnanec po absolvování školení podepsal prezenční listinu. Tento dokument pečlivě archivujte
+společně s interní směrnicí pro používání AI, kterou jste rovněž obdrželi jako součást Compliance Kitu.• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 3 Bc. Martin Haynes | ICO: 17889251
+Prezenční listina — evidence absolvování
+Uchovávejte podepsanou prezenční listinu min. 5 let pro účely auditu. 
+Č. JMÉNO ZAMĚSTNANCE POZICE DATUM ŠKOLENÍ VÝSLEDEK TESTU PODPIS
+1
+2
+3
+4
+5
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Školení AI Literacy · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:37 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 3 Bc. Martin Haynes | ICO: 17889251

@@ -11,7 +11,9 @@ FIO API dokumentace:
 """
 
 import asyncio
+import base64
 import logging
+import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -24,7 +26,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from backend.config import get_settings
 from backend.database import get_supabase
 from backend.outbound.email_engine import send_email
-from backend.outbound.payment_emails import build_payment_received_email
+from backend.outbound.payment_emails import (
+    build_payment_received_email,
+    generate_variable_symbol,
+)
+from backend.outbound.invoice_pdf import (
+    generate_invoice_pdf,
+    build_invoice_email_html,
+)
 
 logger = logging.getLogger("bank_checker")
 
@@ -44,6 +53,10 @@ async def fetch_fio_transactions(token: str, days_back: int = 3) -> list[dict]:
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(url)
+        # FIO API rate limit: max 1 request per 30s per token → 409
+        if resp.status_code == 409:
+            logger.warning("FIO API rate limit (409) — will retry next cron run")
+            return []
         resp.raise_for_status()
         data = resp.json()
 
@@ -149,6 +162,7 @@ async def match_and_confirm_payments():
             supabase.table("orders").update({
                 "status": "PAID",
                 "paid_at": datetime.utcnow().isoformat(),
+                "activated": True,
             }).eq("order_number", order_num).execute()
 
             logger.info(f"✅ Payment confirmed for {order_num} (VS={vs}, amount={actual})")
@@ -175,7 +189,112 @@ async def match_and_confirm_payments():
                         "workflow_status": "processing",
                     }).eq("id", company.data[0]["id"]).execute()
 
-            # Pošli email o přijaté platbě
+            # ── Auto-faktura (invoice) ──────────────────────────────
+            invoice_number = ""
+            try:
+                billing = order.get("billing_data") or {}
+                vs = generate_variable_symbol(order_num)
+                paid_at_str = datetime.utcnow().isoformat()
+
+                # 1) Generate PDF
+                pdf_bytes, invoice_number = generate_invoice_pdf(
+                    order_number=order_num,
+                    plan=order.get("plan", "basic"),
+                    amount=int(actual),
+                    buyer_name=billing.get("company", ""),
+                    buyer_ico=billing.get("ico", ""),
+                    buyer_dic=billing.get("dic", ""),
+                    buyer_street=billing.get("street", ""),
+                    buyer_city=billing.get("city", ""),
+                    buyer_zip=billing.get("zip", ""),
+                    buyer_email=email,
+                    paid_at=paid_at_str,
+                    created_at=order.get("created_at"),
+                    variable_symbol=vs,
+                )
+
+                # 2) Build email + attachment
+                invoice_html = build_invoice_email_html(
+                    invoice_number=invoice_number,
+                    order_number=order_num,
+                    plan=order.get("plan", "basic"),
+                    amount=int(actual),
+                )
+                pdf_b64 = base64.b64encode(pdf_bytes).decode("ascii")
+                pdf_filename = f"faktura-{invoice_number}.pdf"
+                attachments = [{"filename": pdf_filename, "content": pdf_b64}]
+
+                await send_email(
+                    to=email,
+                    subject=f"AIshield.cz — Faktura {invoice_number}",
+                    html=invoice_html,
+                    from_email="info@aishield.cz",
+                    from_name="AIshield.cz",
+                    attachments=attachments,
+                )
+                logger.info(f"Invoice {invoice_number} sent to {email} ({len(pdf_bytes)} B)")
+
+                # 3) Save to Supabase Storage
+                try:
+                    from backend.documents.pdf_generator import save_pdf_to_supabase
+                    company_id = order.get("company_id") or "no-company"
+                    pdf_url = save_pdf_to_supabase(
+                        pdf_bytes=pdf_bytes,
+                        filename=pdf_filename,
+                        client_id=f"invoices/{company_id}",
+                        bucket="documents",
+                    )
+                    logger.info(f"Invoice PDF → Supabase Storage: {pdf_url}")
+                except Exception as e:
+                    pdf_url = ""
+                    logger.error(f"Failed to save invoice to Supabase: {e}")
+
+                # 4) Save locally on VPS
+                try:
+                    year = datetime.utcnow().strftime("%Y")
+                    local_dir = f"/opt/aishield/invoices/{year}"
+                    os.makedirs(local_dir, exist_ok=True)
+                    with open(f"{local_dir}/{pdf_filename}", "wb") as f:
+                        f.write(pdf_bytes)
+                    logger.info(f"Invoice PDF → {local_dir}/{pdf_filename}")
+                except Exception as e:
+                    logger.error(f"Failed to save invoice locally: {e}")
+
+                # 5) Insert into invoices table
+                try:
+                    supabase.table("invoices").insert({
+                        "invoice_number": invoice_number,
+                        "order_number": order_num,
+                        "company_id": order.get("company_id"),
+                        "email": email,
+                        "plan": order.get("plan", ""),
+                        "amount": int(actual),
+                        "buyer_name": billing.get("company", ""),
+                        "buyer_ico": billing.get("ico", ""),
+                        "pdf_url": pdf_url,
+                        "pdf_filename": pdf_filename,
+                    }).execute()
+                    logger.info(f"Invoice record inserted: {invoice_number}")
+                except Exception as e:
+                    logger.error(f"Failed to insert invoice record: {e}")
+
+                # 6) Copy to admin
+                try:
+                    await send_email(
+                        to="info@aishield.cz",
+                        subject=f"[KOPIE] Faktura {invoice_number} — {email}",
+                        html=invoice_html,
+                        from_email="info@aishield.cz",
+                        from_name="AIshield.cz",
+                        attachments=attachments,
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send invoice copy to admin: {e}")
+
+            except Exception as e:
+                logger.error(f"Auto-invoice failed for {order_num}: {e}", exc_info=True)
+
+            # ── Platba přijata email ──────────────────────────────
             try:
                 html = build_payment_received_email(
                     order_number=order_num,
@@ -192,6 +311,25 @@ async def match_and_confirm_payments():
                 logger.info(f"Payment confirmation email sent to {email}")
             except Exception as e:
                 logger.error(f"Failed to send payment email for {order_num}: {e}")
+
+            # ── Enqueue Compliance Kit generation ─────────────────
+            try:
+                from arq import create_pool
+                from backend.jobs.worker import WorkerSettings
+                pool = await create_pool(WorkerSettings)
+                company_id = order.get("company_id") or ""
+                order_id = order.get("id") or ""
+                if company_id:
+                    await pool.enqueue_job(
+                        "generate_compliance_kit_job",
+                        company_id,
+                        order_id,
+                    )
+                    logger.info(f"Compliance Kit job enqueued for company={company_id}")
+                else:
+                    logger.warning(f"No company_id on order {order_num} — skipping kit")
+            except Exception as e:
+                logger.error(f"Failed to enqueue compliance kit for {order_num}: {e}")
 
             matched += 1
 

@@ -129,6 +129,7 @@ async def create_scan(
     """
     supabase = get_supabase()
     url = request.url
+    logger.info(f"[Scan] create_scan: url={url}, user={user.email if user else 'anonymous'}")
 
     # ── Rate limiting ──
     client_ip = "unknown"
@@ -323,8 +324,8 @@ async def get_scan_status(scan_id: str):
                     }).eq("id", scan_id).execute()
                     scan["status"] = "error"
                     scan["finished_at"] = now_iso
-            except Exception:
-                pass  # Nepodstatné — neblokujeme odpověď
+            except Exception as e:
+                logger.warning(f"[Scan] Non-critical status check failed: {e}")  # Nepodstatné — neblokujeme odpověď
 
         # Zjistíme jméno firmy
         company = supabase.table("companies").select("name").eq(
@@ -420,8 +421,8 @@ async def get_scan_findings(scan_id: str):
             if scan_row.data and scan_row.data.get("trackers_json"):
                 import json
                 trackers = json.loads(scan_row.data["trackers_json"])
-        except Exception:
-            pass  # trackers_json nemusí existovat pro starší skeny
+        except Exception as e:
+            logger.debug(f"[Scan] trackers_json not available for scan {scan_id}: {e}")
 
         return {
             "findings": deployed,

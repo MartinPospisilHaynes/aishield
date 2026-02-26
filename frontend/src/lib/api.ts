@@ -157,7 +157,7 @@ export async function startScan(url: string): Promise<ScanResponse> {
         if (res.status === 429) {
             // Rate limit — may include cached scan results
             const data = await res.json().catch(() => ({ detail: "Příliš mnoho požadavků" }));
-            const msg = data.detail || "Příliš mnoho požadavků. Zkuste to později.";
+            const msg = typeof data.detail === "string" ? data.detail : "Příliš mnoho požadavků. Zkuste to později.";
             apiLog("warn", `POST ${endpoint} → 429 (rate limited)`, msg);
 
             if (data.cached_scan_id) {
@@ -571,6 +571,7 @@ export interface DashboardCompany {
     created_at: string;
     workflow_status: string;
     payment_status: string;
+    phone?: string;
 }
 
 export interface DashboardScan {
@@ -648,6 +649,15 @@ export interface DashboardOrder {
     paid_at: string | null;
 }
 
+export interface ProcessStatus {
+    scan_done: boolean;
+    questionnaire_done: boolean;
+    payment_done: boolean;
+    documents_done: boolean;
+    steps_completed: number;
+    steps_total: number;
+}
+
 export interface DashboardData {
     company: DashboardCompany | null;
     scans: DashboardScan[];
@@ -659,7 +669,10 @@ export interface DashboardData {
     questionnaire_findings: QuestionnaireFinding[];
     questionnaire_unknowns: QuestionnaireUnknown[];
     questionnaire_summary: QuestionnaireSummary | null;
+    questionnaire_answers?: Record<string, string>;
     compliance_score: number | null;
+    process_status?: ProcessStatus;
+    action_plan_resolved?: string[];
 }
 
 /**
@@ -669,6 +682,27 @@ export async function getDashboardData(
     email: string,
 ): Promise<DashboardData> {
     const res = await authFetch(`${API_URL}/api/dashboard/${encodeURIComponent(email)}`);
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
+
+/**
+ * Označí položku akčního plánu jako splněnou / nesplněnou.
+ */
+export async function toggleActionPlanItem(
+    itemId: string,
+    resolved: boolean,
+): Promise<{ item_id: string; resolved: boolean; total_resolved: number }> {
+    const res = await authFetch(`${API_URL}/api/dashboard/action-plan/toggle`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId, resolved }),
+    });
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));

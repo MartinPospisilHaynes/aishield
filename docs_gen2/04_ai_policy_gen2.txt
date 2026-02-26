@@ -1,0 +1,188 @@
+AIshield.cz
+Interní AI politika
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:37 UTC 
+Interní AI politika
+Pravidla používání umělé inteligence dle Nařízení (EU) 2024/1689
+Firma Martin Haynes
+Verze dokumentu 1.0
+Platnost od 24. 02. 2026, 20:37 UTC
+Příští revize Nejpozději za 12 měsíců
+Schválil/a Vyplňte (jednatel / ředitel)
+Odpovědná osoba za AI Martin Haynes
+Úvod k AI politice
+Společnost Martin Haynes (dále jen „Společnost“) přijímá tuto interní politiku umělé inteligence za účelem zajištění plného
+souladu s Nařízením (EU) 2024/1689 (Akt o umělé inteligenci, dále jen „AI Act“). Vzhledem k velikosti podniku nad 250
+zaměstnanců a širokému oborovému záběru vystupuje Společnost v roli nasazovatele (čl. 3 odst. 4) i poskytovatele (čl. 3 odst.
+2) systémů umělé inteligence. Je proto naprosto nezbytné ukotvit jasná, vymahatelná pravidla pro vývoj, nákup a každodenní
+používání těchto technologií. Tento dokument jste obdrželi jako součást Compliance Kitu od AIshield. Představuje kompletní
+normativní text, který si Společnost může přizpůsobit svým vnitřním procesům. Aby vstoupil v platnost, vyžaduje akci klienta
+— formální schválení a podpis vedením Společnosti.
+Rozsah této směrnice pokrývá veškeré AI systémy vyvíjené, integrované či nasazované Společností. Naše analýza
+identifikovala kritická rizika, která tato politika bezprostředně řeší a eliminuje. Společnost musí striktně dodržovat zákaz praktik
+dle čl. 5 AI Act, jehož porušení je sankcionováno pokutou až 35 milionů EUR nebo 7 % celosvětového obratu (čl. 99 odst. 3). S
+účinností od 2. 2. 2025 je absolutně zakázáno provozovat systémy pro sociální skórování (identifikováno ve vašem modulu
+„vlastní html“) a systémy pro rozpoznávání emocí na pracovišti (identifikováno v modulu „vlastní kód“). Dále směrnice reguluje
+vysoce rizikové systémy dle Přílohy III, jako je nasazení AI v kritické infrastruktuře (váš systém „pospa ing.“) a biometrická
+identifikace. Zde Společnost v roli poskytovatele nese plnou odpovědnost za posouzení shody, vedení technické
+dokumentace a registraci. Zároveň směrnice pokrývá systémy s omezeným rizikem, jako je nasazený Google Gemini Chatbot
+a AI API Proxy, u kterých je nutné plnit transparenční povinnosti vůči koncovým uživatelům.
+V souladu s čl. 4 AI Act zavádí Společnost povinnost zajištění dostatečné úrovně gramotnosti v oblasti umělé inteligence (AI
+literacy) pro všechny zaměstnance a osoby podílející se na provozu AI systémů. Tato povinnost nabývá účinnosti 2. 2. 2025.
+Jelikož Společnost prokazatelně zpracovává osobní údaje prostřednictvím AI, je nutné dbát maximální opatrnosti, dodržovat
+zásady minimalizace dat a plně využívat stávající plány pro řešení incidentů, které musí být v případě závažného incidentu
+aktivovány a incident nahlášen dozorovému orgánu do 15 dnů (čl. 73). Odpovědnou osobou za dohled nad dodržováním této
+politiky je pan Martin Haynes. Zatímco AIshield v rámci Compliance Kitu dodává tuto směrnici, registr AI systémů a vzorovou
+dokumentaci, vyžaduje se interní akce klienta spočívající v prokazatelném proškolení zaměstnanců a technickém zablokování
+zakázaných systémů.
+Pro jasné pochopení toho, jak se tato politika promítá do každodenního chodu Společnosti, uvádíme následující konkrétní
+příklady z praxe:
+Zákaz rozpoznávání emocí (čl. 5):  HR oddělení nesmí používat váš „vlastní kód“ k analýze videozáznamů z pracovních pohovorů
+za účelem vyhodnocování stresu, únavy nebo emocí uchazečů. Tento systém vyžaduje akci klienta — musí být okamžitě
+technicky deaktivován a odstraněn ze serverů Společnosti.
+Transparentnost chatbotů (čl. 50):  Pokud zákazník otevře na vašem e-shopu zákaznickou podporu poháněnou systémem
+Google Gemini, musí se mu před zahájením konverzace zobrazit jasné upozornění: „Komunikujete s virtuálním asistentem s• 
+• 
+umělou inteligencí.“ (Tuto transparenční stránku a příslušné textace jste obdrželi jako součást Compliance Kitu od AIshield,
+vyžaduje se pouze jejich nasazení na váš web).
+Ochrana osobních údajů a AI gramotnost (čl. 4):  Zaměstnanec účetního oddělení nesmí nahrát neanonymizovanou mzdovou
+tabulku (obsahující jména a rodná čísla) do veřejně dostupného AI nástroje za účelem vytvoření finančního reportu. Zaměstnanci
+musí být poučeni, že pro tyto účely smí využívat pouze schválené interní nástroje uvedené v registru AI systémů (tento dokument
+jste obdrželi jako součást Compliance Kitu od AIshield).
+1. Účel a cíle politiky
+Tato politika stanoví pravidla pro používání, nasazování a správu systémů umělé inteligence ve společnosti Martin Haynes.
+Cílem je:
+Zajistit soulad s Nařízením (EU) 2024/1689  (AI Act) a souvisejícími předpisy
+Minimalizovat právní, reputační a provozní rizika spojená s AI
+Stanovit jasné odpovědnosti a pravidla pro zaměstnance
+Chránit práva zákazníků, zaměstnanců a dalších dotčených osob
+Podpořit odpovědné a etické využívání AI technologií
+2. Rozsah platnosti
+Tato politika se vztahuje na:
+Všechny zaměstnance, externími spolupracovníky a dodavatele společnosti Martin Haynes
+Všechny AI systémy používané interně i na veřejných platformách
+Celý životní cyklus AI systému: výběr → nasazení → provoz → monitoring → vyřazení
+AI systémy třetích stran (SaaS) i vlastní vývoj
+Aktuálně používané AI systémy:  vlastní kód, vlastní html , pospa ing. , Google Gemini Chatbot, AI služba: AI Chatbot, AI
+Transparency Notice, Google Analytics 4, Meta Pixel, AI API Proxy (geminiproxy), Google Tag Manager
+3. Klasifikace AI systémů dle AI Act
+KATEGORIE POPIS PŘÍKLAD POVINNOSTI
+unacceptableZakázané
+praktikySocial scoring, podprahová
+manipulaceAbsolutní zákaz
+VYSOKÉ
+RIZIKOVysoké rizikoHR rozhodování, credit scoring,
+biometrieDPIA, registrace, monitoring,
+audit
+Omezené rizikoOmezené riziko Chatboty, doporučovací systémyTransparenční oznámení (čl.
+50)
+Minimální rizikoMinimální rizikoSpam filtry, AI asistenti pro interní
+práciAI literacy (čl. 4)
+4. Povolené používání AI
+4.1 Obecné AI nástroje (ChatGPT, Claude, Gemini apod.)
+Povoleno pro interní práci: výzkum, analýza, brainstorming, překlady
+ZAKÁZÁNO  vkládat: osobní údaje zákazníků, finanční data, obchodní tajemství, zdravotní údaje
+Výstupy VŽDY ověřit před použitím (AI halucinace, faktuální chyby)
+4.2 AI pro kód (GitHub Copilot, Cursor apod.)
+Povoleno. Veškerý AI-generovaný kód musí projít code review• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 5 Bc. Martin Haynes | ICO: 17889251
+Nepoužívat pro bezpečnostně kritický kód bez manuální kontroly
+Zkontrolovat licenční podmínky generovaného kódu
+4.3 AI obsah (DALL-E, Midjourney, Jasper, Suno apod.)
+Povoleno. Veřejně publikovaný AI obsah musí být označen dle čl. 50 odst. 4
+Nepoužívat pro generování obsahu napodobujícího reálné osoby (deep fakes)
+Ověřit, že generovaný obsah neporušuje autorská práva
+4.4 AI pro zákaznický servis (chatboty, voiceboty)
+Povoleno. Zákazník musí být informován, že komunikuje s AI (čl. 50)
+Zajistit možnost přepnutí na lidského operátora
+Lidský dohled nad AI odpověďmi — review vzorku min. 1× týdně
+5. Zakázané praktiky (čl. 5 AI Act)
+Následující je přísně zakázáno — a to bez výjimky:
+PRAKTIKA POPIS ČLÁNEK
+Sociální scoring Hodnocení zaměstnanců/zákazníků na základě sociálního chováníčl. 5 odst. 1 písm.
+c)
+Podprahová
+manipulaceDark patterns, skrytá manipulace rozhodování pomocí AIčl. 5 odst. 1 písm.
+a)
+Real-time biometrie Biometrická identifikace v reálném čase na veřejných místechčl. 5 odst. 1 písm.
+h)
+Rozpoznávání emocí Na pracovišti a ve vzdělávání (mimo bezpečnost)čl. 5 odst. 1 písm.
+f)
+Scraping biometrie Sběr biometrických dat z internetu pro trénování AIčl. 5 odst. 1 písm.
+e)
+Prediktivní policingProfilování osob na základě osobních charakteristik pro predikci
+kriminalityčl. 5 odst. 1 písm.
+d)
+Sankce:  Až 35 000 000 EUR nebo 7 % celosvětového ročního obratu (čl. 99 odst. 3)
+6. Pravidla pro data a soukromí
+Do AI systémů třetích stran NEVKLÁDEJTE  osobní údaje (GDPR čl. 5, 6)
+Interní dokumenty smí být zpracovány AI pouze se souhlasem nadřízeného
+Ověřujte, zda AI nezpracovává data pro trénování modelů (opt-out)
+Uchovávejte záznamy o používání AI — logy min. 6 měsíců (čl. 12)
+Před nasazením nového AI systému proveďte DPIA (dle GDPR čl. 35) a posouzení rizik dle AI Act
+Zajistěte právo zákazníka na vysvětlení  AI rozhodnutí (čl. 86 AI Act)AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 5 Bc. Martin Haynes | ICO: 17889251
+7. Proces nasazení nového AI systému
+Před nasazením jakéhokoliv nového AI systému musí být dodržen následující postup:
+KROK AKTIVITA ODPOVĚDNOST
+1 Oznámení odpovědné osobě za AI Navrhovatel
+2 Klasifikace rizika dle AI Act (minimální / omezené / vysoké) Odpovědná osoba
+3 Posouzení dopadu na soukromí (DPIA) DPO / odpovědná osoba
+4 Kontrola smluvních podmínek dodavatele Právní / odpovědná osoba
+5 Test na bias, bezpečnost, přesnost IT / odpovědná osoba
+6 Zápis do registru AI systémů Odpovědná osoba
+7 Nasazení transparenčních oznámení Marketing / IT
+8 Školení dotčených zaměstnanců HR / odpovědná osoba
+9 Schválení vedením Jednatel / ředitel
+8. Odpovědnost a dohled
+Odpovědná osoba za AI Martin Haynes
+Funkce Jednatel / majitel (dohlížím osobně)
+E-mail info@desperados-design.cz
+Telefon 7327161
+Frekvence revize politiky Minimálně 1× ročně
+Reporting Čtvrtletní report vedení
+9. Povinnosti zaměstnanců
+Absolvovat školení AI literacy do 3 měsíců od nástupu (čl. 4)
+Hlásit nové AI nástroje odpovědné osobě PŘED nasazením
+Neinstalovat AI nástroje na firemní zařízení bez schválení IT
+Hlásit AI incidenty (chybné výstupy, únik dat) ihned odpovědné osobě
+Nespoléhat se slepě na AI výstupy — vždy uplatnit kritické myšlení
+Při pochybnostech kontaktovat odpovědnou osobu za AI
+10. Compliance kalendář
+TERMÍN POVINNOST STATUS
+2.2.2025 Zákaz zakázaných praktik (čl. 5) — již platí! ☐
+2.8.2025 AI literacy — školení zaměstnanců (čl. 4) ☐
+2.8.2025 Pravidla pro GPAI modely (čl. 51-56) ☐
+2.8.2026 Plná compliance pro vysoce rizikové AI systémy ☐AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 5 Bc. Martin Haynes | ICO: 17889251
+TERMÍN POVINNOST STATUS
+2.8.2027 AI systémy dle Přílohy I (bezpečnostní komponenty) ☐
+11. Sankce za porušení
+TYP PORUŠENÍ MAXIMÁLNÍ POKUTA ČLÁNEK
+Zakázané praktiky (čl. 5) 35 000 000 EUR / 7 % obratu čl. 99 odst. 3
+Vysoce rizikové systémy 15 000 000 EUR / 3 % obratu čl. 99 odst. 4
+Nepravdivé informace orgánům 7 500 000 EUR / 1 % obratu čl. 99 odst. 5
+Pro MSP a startupy platí snížené sazby. Porušení interní politiky vede k disciplinárním opatřením.
+Potvrzení o seznámení s AI politikou
+JMÉNO ZAMĚSTNANCE POZICE DATUM PODPIS
+Podpisy schválení
+Schválil/a (vedení)
+Jméno, funkce, datumOdpovědná osoba za AI
+Jméno, funkce, datumDPO (pokud existuje)
+Jméno, funkce, datum
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Interní AI politika · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:37 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 5 z 5 Bc. Martin Haynes | ICO: 17889251

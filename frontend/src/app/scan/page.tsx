@@ -211,8 +211,10 @@ const IconGlobeAlt = ({ className = "w-5 h-5" }: { className?: string }) => (
 const SCAN_STAGES = [
     { label: "Připojování k webu", desc: "Otevíráme váš web v bezpečném prohlížeči" },
     { label: "Načítání stránky", desc: "Čekáme, až se web kompletně načte" },
+    { label: "Souhlas s cookies", desc: "Klikáme na cookie lištu — někteří AI agenti se aktivují až po souhlasu" },
     { label: "Analýza HTML kódu", desc: "Procházíme zdrojový kód stránky" },
     { label: "Kontrola skriptů", desc: "Hledáme JavaScript knihovny třetích stran" },
+    { label: "Procházení podstránek", desc: "Scrollujeme stránkou a klikáme na záložky — AI nástroje se často načítají až při interakci" },
     { label: "Detekce chatbotů a AI nástrojů", desc: "Zjišťujeme, zda web obsahuje chatbota, personalizaci nebo AI vyhledávání" },
     { label: "Analýza cookies a trackerů", desc: "Kontrolujeme analytické a sledovací cookies" },
     { label: "Monitorování síťových požadavků", desc: "Sledujeme komunikaci s AI službami třetích stran" },
@@ -369,19 +371,23 @@ function ScanPageInner() {
         [fetchFindings]
     );
 
-    // Animated stage progression
+    // Dynamic stage progression — stages advance proportionally to elapsed time
+    // so the animation always fills the actual scan duration naturally
+    const EXPECTED_SCAN_MS = 90_000; // 90s expected scan time (testing mode)
+
     const startStageAnimation = useCallback(() => {
         setCurrentStage(0);
-        let stage = 0;
-        const intervals = [1800, 2200, 2500, 2800, 3200, 3000, 3500, 4000, 3000, 2500];
-        const advanceStage = () => {
-            stage++;
-            if (stage < SCAN_STAGES.length) {
-                setCurrentStage(stage);
-                stageRef.current = setTimeout(advanceStage, intervals[stage] || 2500);
-            }
-        };
-        stageRef.current = setTimeout(advanceStage, intervals[0]);
+        const t0 = Date.now();
+        stageRef.current = setInterval(() => {
+            const elapsed = Date.now() - t0;
+            // Cap progress at 92% — last stage stays visible until scan truly finishes
+            const progress = Math.min(elapsed / EXPECTED_SCAN_MS, 0.92);
+            const target = Math.min(
+                Math.floor(progress * SCAN_STAGES.length),
+                SCAN_STAGES.length - 1
+            );
+            setCurrentStage(prev => Math.max(prev, target)); // never go backwards
+        }, 1000);
     }, []);
 
     const doScan = useCallback(async (rawUrl: string) => {
@@ -952,14 +958,23 @@ function ScanPageInner() {
                                             </div>
                                         );
                                     })() : (
-                                        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-center">
-                                            <IconCheckBadge className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                                            <h3 className="text-base font-bold text-white">Sken nezachytil žádné aktivní AI systémy</h3>
-                                            <p className="text-sm text-slate-400 mt-2 max-w-lg mx-auto leading-relaxed">
-                                                To <strong className="text-white">neznamená, že žádné nepoužíváte</strong>.
-                                                Mnoho AI nástrojů se načítá dynamicky — jen v určitou denní dobu, z konkrétní geolokace,
-                                                po interakci uživatele, nebo běží na pozadí přes API.
+                                        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-6 text-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-amber-400 mx-auto mb-3">
+                                                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                                            </svg>
+                                            <h3 className="text-base font-bold text-amber-300">⚠️ Automatický sken nezachytil AI — to ale nestačí</h3>
+                                            <p className="text-sm text-amber-200/80 mt-2 max-w-lg mx-auto leading-relaxed">
+                                                <strong className="text-white">Většina AI systémů není viditelná při běžném skenu.</strong>{" "}
+                                                Chatboty, doporučovací algoritmy, AI analýza dat i interní nástroje spadají pod AI Act,
+                                                ale nefungují veřejně na webu. Sken pokrývá jen zlomek vašich povinností.
                                             </p>
+                                            <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                                                <p className="text-xs text-amber-200/70 leading-relaxed">
+                                                    <strong className="text-amber-300">AI Act se vás s velkou pravděpodobností týká</strong> — povinnosti máte
+                                                    i jako uživatel AI služeb třetích stran (ChatGPT, Copilot, AI v CRM, ERP, marketingu…).
+                                                    Doporučujeme provést kompletní audit.
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

@@ -7,6 +7,7 @@ dokumenty, skeny, akční plán.
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from backend.database import get_supabase
 from backend.api.auth import AuthUser, get_current_user
 
@@ -23,6 +24,43 @@ async def get_my_dashboard(user: AuthUser = Depends(get_current_user)):
     """
     web_url = user.metadata.get("web_url", "") if user.metadata else ""
     return await _load_dashboard(user.email, web_url=web_url)
+
+
+class ToggleActionItemRequest(BaseModel):
+    item_id: str
+    resolved: bool
+
+
+@router.patch("/action-plan/toggle")
+async def toggle_action_plan_item(req: ToggleActionItemRequest, user: AuthUser = Depends(get_current_user)):
+    """
+    Zákazník označí položku akčního plánu jako splněnou / nesplněnou.
+    Ukládá se jako JSON pole na companies.action_plan_resolved.
+    """
+    supabase = get_supabase()
+
+    # Najít firmu podle emailu
+    company_res = supabase.table("companies").select("id, action_plan_resolved").eq(
+        "email", user.email
+    ).limit(1).execute()
+
+    if not company_res.data:
+        raise HTTPException(status_code=404, detail="Firma nenalezena")
+
+    company = company_res.data[0]
+    resolved_ids: list[str] = company.get("action_plan_resolved") or []
+
+    if req.resolved:
+        if req.item_id not in resolved_ids:
+            resolved_ids.append(req.item_id)
+    else:
+        resolved_ids = [x for x in resolved_ids if x != req.item_id]
+
+    supabase.table("companies").update({
+        "action_plan_resolved": resolved_ids,
+    }).eq("id", company["id"]).execute()
+
+    return {"item_id": req.item_id, "resolved": req.resolved, "total_resolved": len(resolved_ids)}
 
 
 @router.get("/{user_email}")
@@ -186,6 +224,7 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
     questionnaire_findings = []
     questionnaire_unknowns = []
     questionnaire_summary = {}
+    questionnaire_answers: dict[str, str] = {}
     try:
         # Najdi klienta pro tuto firmu
         client_res = supabase.table("clients").select("id").eq(
@@ -197,6 +236,12 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
                 "client_id", client_id
             ).execute()
             if quest_res.data:
+                # Build simple key→answer dict for frontend display
+                questionnaire_answers = {
+                    row["question_key"]: row["answer"]
+                    for row in quest_res.data
+                    if row.get("question_key") and row.get("answer")
+                }
                 # Count total required questions dynamically
                 # Exclude conditional_fields with show_when — those are only shown when
                 # a specific answer is given, so they shouldn't block completion.
@@ -373,9 +418,9 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
         "documents": [
             {
                 "id": d["id"],
-                "template_key": d.get("template_key", ""),
+                "template_key": d.get("type", ""),
                 "name": d.get("name", ""),
-                "file_url": d.get("file_url", ""),
+                "file_url": d.get("url", ""),
                 "created_at": d.get("created_at", ""),
             }
             for d in (docs_res.data or [])
@@ -406,5 +451,7 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
         "questionnaire_findings": questionnaire_findings,
         "questionnaire_unknowns": questionnaire_unknowns,
         "questionnaire_summary": questionnaire_summary,
+        "questionnaire_answers": questionnaire_answers,
         "compliance_score": compliance_score,
+        "action_plan_resolved": company.get("action_plan_resolved") or [],
     }

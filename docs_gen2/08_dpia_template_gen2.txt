@@ -1,0 +1,173 @@
+AIshield.cz
+DPIA — Posouzení vlivu
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:38 UTC 
+DPIA — Posouzení vlivu na ochranu údajů a základní práva
+Šablona dle GDPR čl. 35 + AI Act čl. 27 (FRIA)
+Firma: Martin Haynes
+IČO: 17889251
+Datum zpracování:  24. 02. 2026, 20:38 UTC
+Verze: 1.0 — vygenerováno automaticky, vyžaduje doplnění
+33AI systémů celkem17Vysoce rizikových
+Čl. 27 AI Act — Posouzení dopadu na základní práva (FRIA):
+Nasazovatelé vysoce rizikových AI systémů musí před prvním nasazením provést posouzení dopadu na základní práva dotčených
+osob. Toto posouzení doplňuje (nenahrazuje) DPIA dle GDPR čl. 35. 
+1. Odpovědné osoby
+Správce osobních údajů Martin Haynes
+Odpovědná osoba za AI Martin Haynes
+E-mail info@desperados-design.cz
+Pověřenec (DPO) Vyplňte
+Právní poradce Vyplňte
+2. AI systémy zpracovávající osobní údaje
+AI SYSTÉM RIZIKO TYP OS. ÚDAJŮ ÚČEL ZPRACOVÁNÍ
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+vlastní kód — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+AI SYSTÉM RIZIKO TYP OS. ÚDAJŮ ÚČEL ZPRACOVÁNÍ
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+vlastní html — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+pospa ing. — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+None — Vyplňte Vyplňte
+Google Gemini ChatbotOmezené rizikoVyplňte Vyplňte
+AI služba: AI ChatbotOmezené rizikoVyplňte Vyplňte
+AI Transparency NoticeOmezené rizikoVyplňte Vyplňte
+Google Analytics 4Mimo klasifikaciVyplňte Vyplňte
+Meta PixelMimo klasifikaciVyplňte Vyplňte
+AI API Proxy (geminiproxy)Mimo klasifikaciVyplňte Vyplňte
+Google Tag ManagerMimo klasifikaciVyplňte Vyplňte
+HeurekaMimo klasifikaciVyplňte Vyplňte
+Google Gemini ChatbotOmezené rizikoVyplňte Vyplňte
+AI API Proxy (geminiproxy)Omezené rizikoVyplňte Vyplňte
+AI služba: AI ChatbotOmezené rizikoVyplňte Vyplňte
+AI Transparency NoticeOmezené rizikoVyplňte Vyplňte
+Meta PixelMinimální rizikoVyplňte Vyplňte
+3. Posouzení nezbytnosti a přiměřenosti (GDPR čl. 35)
+Zpracování je nezbytné pro splnění legitimního účelu
+Neexistují méně invazivní alternativy dosahující téhož účeluAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 5 Bc. Martin Haynes | ICO: 17889251
+Rozsah zpracovávaných údajů je minimalizován (data minimization)
+Doba uchovávání je přiměřená a definovaná
+Subjekty údajů byly řádně informovány (transparence)
+Právní základ zpracování je identifikován (čl. 6 GDPR)
+4. Posouzení dopadu na základní práva (FRIA — čl. 27 AI Act)
+Následující oblast je specifická pro AI Act a doplňuje klasické GDPR DPIA. 
+4.1 Dotčené skupiny osob
+Zaměstnanci — rozhodování o zaměstnání, hodnocení
+Zákazníci — personalizace, profilování, dynamické ceny
+Uchazeči o zaměstnání — screening, filtrování CV
+Zranitelné skupiny — děti, senioři, osoby se zdravotním postižením
+Veřejnost — veřejně dostupné AI služby (chatbot, obsah)
+4.2 Riziko diskriminace a biasu
+Genderový bias — liší se výstupy AI pro ženy vs. muže?
+Etnický bias — liší se výstupy dle etnicity uživatele?
+Věkový bias — diskriminace na základě věku?
+Socioekonomický bias — zvýhodnění/znevýhodnění určité skupiny?
+Jazykový bias — nižší kvalita pro menšinové jazyky?
+4.3 Dotčená základní práva (Listina EU)
+PRÁVO RELEVANCE OPATŘENÍ
+Lidská důstojnost (čl. 1) ☐ Relevantní ☐ Nerelevantní Vyplňte
+Ochrana os. údajů (čl. 8) ☐ Relevantní ☐ Nerelevantní Vyplňte
+Nediskriminace (čl. 21) ☐ Relevantní ☐ Nerelevantní Vyplňte
+Rovnost žen a mužů (čl. 23) ☐ Relevantní ☐ Nerelevantní Vyplňte
+Práva dítěte (čl. 24) ☐ Relevantní ☐ Nerelevantní Vyplňte
+Právo na účinný prostředek nápravy (čl. 47) ☐ Relevantní ☐ Nerelevantní Vyplňte
+5. Technická a organizační opatření
+Šifrování  — data šifrována při přenosu (TLS) i v úložišti (AES-256)
+Přístupová práva  — RBAC, přístup jen pro oprávněné osobyAIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 5 Bc. Martin Haynes | ICO: 17889251
+Logování  — operace AI systémů logovány min. 6 měsíců (čl. 12)
+Lidský dohled  — automatická rozhodnutí přezkoumatelná člověkem (čl. 14)
+Anonymizace / pseudonymizace  — data vstupující do AI anonymizována
+Pravidelné audity  — AI systémy přehodnocovány min. 1× ročně
+Právo na vysvětlení  — dotčené osoby mohou požádat o vysvětlení AI rozhodnutí
+Opt-out  — možnost odmítnout AI zpracování (fallback na lidské rozhodnutí)
+Odborné posouzení
+Posouzení vlivu na základní práva (FRIA) a ochranu osobních údajů (DPIA)
+Tento dokument představuje integrované posouzení vlivu na základní práva (FRIA) dle čl. 27 Nařízení (EU) 2024/1689 (AI Act)
+a posouzení vlivu na ochranu osobních údajů (DPIA) dle čl. 35 GDPR. Vaše společnost vystupuje v roli nasazovatele (deployer,
+čl. 3 odst. 4) a u vlastních řešení („vlastní kód“, „vlastní html“) rovněž v roli poskytovatele (provider, čl. 3 odst. 2). Vzhledem k
+identifikaci zakázaných praktik a vysoce rizikových systémů je toto posouzení kritické pro zamezení sankcím, které dle čl. 99
+odst. 3 AI Act mohou dosáhnout až 35 milionů EUR nebo 7 % celkového ročního obratu. Údaje o dodavatelích a systémech v
+tomto posouzení vycházejí ze stavu ke dni 2026-02-24.
+Na základě provedeného auditu byly identifikovány systémy s extrémním dopadem na dotčené skupiny (zaměstnanci,
+zákazníci, studenti). Systém „vlastní html“ provádějící sociální skórování a systém „vlastní kód“ pro rozpoznávání emocí na
+pracovišti a ve vzdělávání představují zakázané praktiky dle čl. 5 AI Act. Tyto systémy nepřípustně zasahují do lidské
+důstojnosti a práva na soukromí. Dále provozujete vysoce rizikové systémy dle Přílohy III AI Act (kreditní skórování, HR nábor,
+pojišťovnictví a kritická infrastruktura „pospa ing.“). Zde hrozí vysoké riziko diskriminace (bias v algoritmech), odepření
+přístupu k základním službám a porušení práva na spravedlivý proces. Jelikož potvrdili zpracování osobních údajů přes AI,
+dochází k masivnímu profilování subjektů údajů, což vyžaduje striktní aplikaci zásad minimalizace dat a transparentnosti.
+Pro zmírnění těchto rizik a dosažení souladu s platnou legislativou je nezbytné implementovat následující technická a
+organizační opatření. Níže je jasně definováno rozdělení odpovědností mezi dodanou dokumentací a vašimi interními procesy.
+Zajištěno v rámci Compliance Kitu (dodáno společností AIshield):
+Tento dokument FRIA/DPIA, který jste obdrželi jako součást Compliance Kitu od AIshield a který slouží jako formální záznam pro
+dozorové orgány.
+Metodika pro hodnocení rizik a šablona pro evidenci incidentů (tento dokument jste obdrželi jako součást Compliance Kitu od
+AIshield).
+Návrh informační povinnosti pro zákazníky a zaměstnance (tento dokument jste obdrželi jako součást Compliance Kitu od
+AIshield).
+Vyžaduje akci klienta (vaše interní implementace):
+Okamžité ukončení zakázaných praktik (čl. 5 AI Act):  Musíte fyzicky odstavit systémy porušující absolutní zákazy.
+Příklad z praxe:  Okamžitě deaktivujte modul „vlastní html“ pro sociální skórování na vašich serverech a trvale smažte veškeré
+databáze obsahující skóre uživatelů. Stejně tak odinstalujte software „vlastní kód“ z kamer na pracovišti, který analyzuje
+emoce zaměstnanců.
+Zajištění lidského dohledu (čl. 14 AI Act):  U vysoce rizikových systémů (HR, úvěry) musíte garantovat, že AI nečiní finální
+rozhodnutí autonomně.
+Příklad z praxe:  V HR systému pro třídění životopisů nastavte proces tak, že každé automatické zamítnutí kandidáta musí v
+administraci ručně zkontrolovat a schválit personalista (kliknutím na tlačítko „Potvrdit zamítnutí“) předtím, než je kandidátovi
+odeslán e-mail.
+Implementace práva na vysvětlení (čl. 86 AI Act):  Zákazníci dotčení rozhodnutím AI (např. zamítnutí úvěru nebo pojistky) musí
+mít možnost získat srozumitelné vysvětlení.
+Příklad z praxe:  Do klientského portálu přidejte k zamítnuté žádosti o úvěr tlačítko „Požádat o vysvětlení rozhodnutí“. Po
+kliknutí se vygeneruje ticket pro živého operátora, který klientovi do 15 dnů zašle konkrétní důvody zamítnutí (např.
+nedostatečná historie splácení), nikoli pouze obecnou frázi „algoritmus vás zamítl“.
+Ochrana osobních údajů a minimalizace (čl. 35 GDPR):  Zamezte neoprávněnému trénování externích modelů na vašich
+firemních datech.
+Příklad z praxe:  V administraci Google Gemini (pokud využíváte podnikovou verzi) striktně zakažte využití vašich konverzací
+pro trénink modelů Google navigací do: Settings -> Data Controls -> Turn off. U vlastních modelů zaveďte skript, který před
+odesláním dat do AI anonymizuje rodná čísla a jména.• 
+• 
+• 
+• 
+◦ 
+• 
+◦ 
+• 
+◦ 
+• 
+◦ AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 5 Bc. Martin Haynes | ICO: 17889251
+Uchovávání logů (čl. 12 a čl. 19 odst. 1 AI Act):  Zajistěte automatické zaznamenávání událostí pro zpětný audit.
+Příklad z praxe:  Nastavte váš systém „pospa ing.“ (kritická infrastruktura) tak, aby ukládal logy o každém rozhodnutí AI do
+zabezpečeného souboru na serveru, a nastavte retenci těchto logů na minimálně 6 měsíců, aby byly k dispozici pro případnou
+kontrolu NÚKIB.
+6. Závěr posouzení
+Celkové rizikoVYSOKÉ RIZIKO
+DPIA závěr ☐ Zpracování přípustné ☐ Nutná další opatření ☐ Konzultace s ÚOOÚ
+FRIA závěr (čl. 27) ☐ Dopad akceptovatelný ☐ Nutná opatření ☐ Systém nelze nasadit
+Datum příští revize Vyplňte (doporučeno: do 12 měsíců)
+Podpisy
+Odpovědná osoba za AI
+Jméno, datum, podpisDPO / pověřenec
+Jméno, datum, podpisVedení firmy
+Jméno, datum, podpis
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+DPIA — Posouzení vlivu · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:38 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 • 
+◦ AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 5 z 5 Bc. Martin Haynes | ICO: 17889251

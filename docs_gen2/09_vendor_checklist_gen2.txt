@@ -1,0 +1,128 @@
+AIshield.cz
+Dodavatelský checklist
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:38 UTC 
+Dodavatelský checklist
+Kontrolní seznam smluv s dodavateli AI dle čl. 25–26 AI Act
+Firma: Martin Haynes
+Stav smluvního pokrytí: ✓ Ano — má smlouvy s dodavateli AI
+Přehled AI systémů a dodavatelů
+AI SYSTÉM DODAVATEL (PROVIDER) SÍDLO RIZIKO
+uses_chatgpt OpenAI, Inc. 🇺🇸 USA
+Minimální riziko
+uses_copilot Microsoft Corp. 🇺🇸 USA
+Minimální riziko
+uses_ai_content — —Minimální riziko
+uses_deepfake — —Minimální riziko
+uses_ai_recruitment — —Minimální riziko
+uses_ai_employee_monitoring — —Minimální riziko
+vlastní kód — —Minimální riziko
+uses_ai_accounting — —Minimální riziko
+uses_ai_creditscoring — —Minimální riziko
+uses_ai_insurance — —Minimální riziko
+vlastní html — —Minimální riziko
+uses_ai_email_auto — —Minimální riziko
+uses_ai_decision — —Minimální riziko
+uses_dynamic_pricing — —Minimální riziko
+AI SYSTÉM DODAVATEL (PROVIDER) SÍDLO RIZIKO
+uses_ai_for_children — —Minimální riziko
+pospa ing. — —Minimální riziko
+uses_ai_safety_component — —Minimální riziko
+develops_own_ai — —Minimální riziko
+modifies_ai_purpose — —Minimální riziko
+uses_gpai_api — —Minimální riziko
+Google Gemini Chatbot Google LLC 🇺🇸 USA
+Omezené riziko
+AI služba: AI Chatbot — —Omezené riziko
+AI Transparency Notice — —Omezené riziko
+Google Analytics 4 Google LLC 🇺🇸 USA
+Mimo klasifikaci
+Meta Pixel — —Mimo klasifikaci
+AI API Proxy (geminiproxy) Google LLC 🇺🇸 USA
+Mimo klasifikaci
+Google Tag Manager Google LLC 🇺🇸 USA
+Mimo klasifikaci
+Heureka — —Mimo klasifikaci
+Google Gemini Chatbot Google LLC 🇺🇸 USA
+Omezené riziko
+AI API Proxy (geminiproxy) Google LLC 🇺🇸 USA
+Omezené riziko
+AI služba: AI Chatbot — —Omezené riziko
+AI Transparency Notice — —Omezené riziko
+Meta Pixel — —Minimální riziko
+Pozor — mimo-EU dodavatelé:  Pro předávání osobních údajů do USA je nutný standardní smluvní doložky (SCC) nebo certifikace dle
+EU-US Data Privacy Framework. Ověřte u každého dodavatele! 
+Hodnocení dodavatelů
+Vaše společnost využívá kombinaci externích AI nástrojů a vlastního vývoje. Veškeré níže uvedené údaje o dodavatelích
+vycházejí ze stavu ke dni 2026-02-24. Z hlediska nařízení (EU) 2024/1689 (AI Act) se vaše právní postavení mění v závislosti
+na původu daného systému.AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 4 Bc. Martin Haynes | ICO: 17889251
+V případě využívání externích řešení, jako je Google Gemini Chatbot nebo napojené AI API Proxy, vystupujete v roli
+nasazovatele (deployer) dle čl. 3 odst. 4. Podle čl. 26 nesete odpovědnost za to, že systémy používáte v souladu s návodem
+poskytovatele a že je zajištěn lidský dohled. Zásadním rizikem u cloudových LLM modelů je trénování na vašich firemních
+datech a vendor lock-in, který ztěžuje případnou migraci k bezpečnějšímu poskytovateli. K systematickému hodnocení těchto
+externích dodavatelů využijte Dodavatelský checklist, který jste obdrželi jako součást Compliance Kitu od AIshield. Tento
+hotový nástroj obsahuje konkrétní sadu otázek pro due diligence.
+U systémů vyvíjených interně („vlastní kód“, „vlastní html“, „pospa ing.“) se vaše role mění. Zde vystupujete jako poskytovatel
+(provider) dle čl. 3 odst. 2. Vaší povinností je zajistit plný soulad s čl. 16 AI Act, což zahrnuje vypracování technické
+dokumentace, posouzení shody a zavedení systému řízení rizik. Zvláštní pozornost věnujte systémům identifikovaným jako
+zakázané (sociální scoring, rozpoznávání emocí na pracovišti), jejichž provoz musíte okamžitě ukončit.
+Samotné oslovení dodavatelů, vyjednání smluvních podmínek a ověření shody vyžaduje vaši interní akci, do které AIshield
+nemůže smluvně vstupovat. Pro zajištění souladu dodavatelského řetězce proveďte následující kroky:
+Zajistěte opt-out z trénování modelů:  V administraci Google Cloud nebo v rozhraní Gemini API manuálně odškrtněte souhlas s
+využitím vašich firemních dat a konverzací pro vylepšování služeb a trénování modelů společnosti Google.
+Aktualizujte zpracovatelské smlouvy (DPA):  Podepište s dodavatelem AI API dodatek ke smlouvě dle čl. 28 GDPR, který
+explicitně zakazuje přesun osobních údajů vašich klientů mimo servery v EU bez adekvátních záruk.
+Ověřte transparentnost dodavatele:  Vyžádejte si od poskytovatele API dokumentaci k AI modelu, která potvrzuje, že systém
+netrpí skrytým biasem (zkreslením) při zpracování dat vašich zákazníků.
+Zajistěte exit strategii:  Do nových smluv s dodavateli AI systémů prosazujte klauzuli o standardizovaném exportu dat, abyste
+mohli v případě nutnosti přejít na jiný jazykový model bez ztráty historie konverzací.
+Při komunikaci s třetími stranami buďte asertivní a vyžadujte písemná potvrzení. Příklad komunikace s dodavatelem: „Napište
+poskytovateli chatbotu email: Prosíme o potvrzení, zda se naše konverzační data používají k trénování modelu. Potřebujeme to
+pro splnění EU AI Act.“
+Povinné smluvní náležitosti — checklist
+A. Transparentnost a dokumentace (čl. 13)
+Dodavatel poskytl návod k použití AI systému
+Dodavatel deklaroval zamýšlený účel použití
+Dodavatel sděluje info o výkonnosti a omezeních modelu
+Dodavatel poskytuje informace o trénovacích datech
+Dodavatel informuje o změnách modelu / API (notifikace)
+B. Ochrana osobních údajů (GDPR)
+Smlouva o zpracování (DPA / zpracovatelská smlouva) uzavřena
+Definovány kategorie a rozsah zpracovávaných os. údajů
+Dodavatel garantuje zpracování v EU/EHP (nebo má SCC)
+Dodavatel NEPOUŽÍVÁ data klienta k trénování modelu (opt-out)
+Definováno nakládání s daty po ukončení smlouvy (smazání)
+C. Technické záruky a SLA
+SLA — definovaná dostupnost (uptime) a výkonnost
+Reakční doba při incidentu (response time)
+Notifikace při změnách modelu / API verzí• 
+• 
+• 
+• AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 4 Bc. Martin Haynes | ICO: 17889251
+Právo na audit a kontrolu dodavatele
+Záruky ohledně bezpečnosti (SOC 2, ISO 27001)
+D. AI Act specifické požadavky
+Dodavatel poskytuje EU Declaration of Conformity (pro high-risk)
+Dodavatel je registrován v EU AI databázi (pokud relevantní)
+Dodavatel spolupracuje při plnění povinností nasazovatele (čl. 26)
+Dodavatel umožňuje lidský dohled nad AI systémem
+Per-dodavatel checklist
+Vyplňte pro každého dodavatele AI zvlášť.
+KRITÉRIUM DODAVATEL 1 DODAVATEL 2 DODAVATEL 3
+Název dodavatele
+DPA uzavřena ☐ ☐ ☐
+Data v EU ☐ ☐ ☐
+Opt-out trénování ☐ ☐ ☐
+SLA definováno ☐ ☐ ☐
+Notifikace změn ☐ ☐ ☐
+Právo na audit ☐ ☐ ☐
+Bezpečnostní certifikace ☐ ☐ ☐
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. 
+Dodavatelský checklist · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:38 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 4 Bc. Martin Haynes | ICO: 17889251

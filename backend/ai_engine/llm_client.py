@@ -36,17 +36,17 @@ from backend.config import get_settings
 logger = logging.getLogger(__name__)
 
 # ── Modely ──
-CLAUDE_MODEL = "claude-opus-4-6"
-GEMINI_MODEL = "gemini-2.5-flash"
+CLAUDE_MODEL = "claude-sonnet-4-20250514"
+GEMINI_MODEL = "gemini-3.1-pro-preview"
 GEMINI_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 )
 
 # ── Cenové tarify (USD per token) ──
-CLAUDE_COST_INPUT = 5.0 / 1_000_000   # $5 / 1M input  (Opus 4.6)
-CLAUDE_COST_OUTPUT = 25.0 / 1_000_000  # $25 / 1M output (Opus 4.6)
-GEMINI_COST_INPUT = 0.15 / 1_000_000   # $0.15 / 1M input
-GEMINI_COST_OUTPUT = 0.60 / 1_000_000  # $0.60 / 1M output
+CLAUDE_COST_INPUT = 3.0 / 1_000_000   # $3 / 1M input  (Sonnet 4 — fallback)
+CLAUDE_COST_OUTPUT = 15.0 / 1_000_000  # $15 / 1M output (Sonnet 4 — fallback)
+GEMINI_COST_INPUT = 2.0 / 1_000_000   # $2 / 1M input  (Gemini 3.1 Pro)
+GEMINI_COST_OUTPUT = 12.0 / 1_000_000  # $12 / 1M output (Gemini 3.1 Pro)
 
 # ── Retry config ──
 MAX_RETRIES = 3
@@ -119,6 +119,7 @@ async def _call_claude(
     max_tokens: int = 2048,
     model: str | None = None,
     temperature: float = 0.0,
+    prefill: str | None = None,
 ) -> LLMResult:
     """Zavolá Claude API (synchronně — Anthropic SDK nemá async)."""
     import anthropic
@@ -131,20 +132,29 @@ async def _call_claude(
     client = anthropic.Anthropic(api_key=api_key)
     use_model = model or CLAUDE_MODEL
 
+    messages = [{"role": "user", "content": user}]
+    if prefill:
+        messages.append({"role": "assistant", "content": prefill})
+
     response = client.messages.create(
         model=use_model,
         max_tokens=max_tokens,
         temperature=temperature,
         system=system,
-        messages=[{"role": "user", "content": user}],
+        messages=messages,
     )
 
     input_tokens = response.usage.input_tokens
     output_tokens = response.usage.output_tokens
     cost = (input_tokens * CLAUDE_COST_INPUT) + (output_tokens * CLAUDE_COST_OUTPUT)
 
+    # Prefill text není v odpovědi — doplníme ho
+    raw_text = response.content[0].text.strip()
+    if prefill:
+        raw_text = prefill + raw_text
+
     return LLMResult(
-        text=response.content[0].text.strip(),
+        text=raw_text,
         provider="claude",
         model=use_model,
         input_tokens=input_tokens,
@@ -170,7 +180,7 @@ async def _call_claude_vision(
         raise RuntimeError("ANTHROPIC_API_KEY není nastavený")
 
     client = anthropic.Anthropic(api_key=api_key)
-    use_model = model or "claude-opus-4-6"
+    use_model = model or CLAUDE_MODEL
 
     response = client.messages.create(
         model=use_model,
@@ -217,7 +227,8 @@ async def _call_gemini(
     temperature: float = 0.0,
 ) -> LLMResult:
     """Zavolá Gemini API přes REST."""
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    settings = get_settings()
+    api_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY není nastavený")
 
@@ -259,7 +270,7 @@ async def _call_gemini(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         cost_usd=cost,
-        fallback_used=True,
+        fallback_used=False,
     )
 
 
@@ -271,7 +282,8 @@ async def _call_gemini_vision(
     max_tokens: int = 500,
 ) -> LLMResult:
     """Zavolá Gemini Vision API přes REST."""
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    settings = get_settings()
+    api_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY není nastavený")
 
@@ -331,13 +343,15 @@ async def llm_complete(
     max_tokens: int = 2048,
     model: str | None = None,
     temperature: float = 0.0,
-    prefer: str = "claude",
+    prefer: str = "gemini",
+    prefill: str | None = None,
 ) -> LLMResult:
     """
     Univerzální LLM completion s automatickým fallback.
 
-    Pořadí: Claude → Gemini.
-    Pokud Claude selže (rate limit, outage, billing), automaticky zkusí Gemini.
+    Pořadí: Gemini → Claude (fallback).
+    Pokud Gemini selže, automaticky zkusí Claude.
+    prefill: Volitelný text pro Claude prefill (model pokračuje za ním).
 
     Args:
         system: Systémový prompt
@@ -368,6 +382,7 @@ async def llm_complete(
                     result = await _call_claude(
                         system=system, user=user, max_tokens=max_tokens,
                         model=model, temperature=temperature,
+                        prefill=prefill,
                     )
                 else:
                     result = await _call_gemini(
@@ -378,11 +393,18 @@ async def llm_complete(
                 # Úspěch — zaznamenat statistiky
                 if provider_name == "claude":
                     _stats.claude_calls += 1
+                    if prefer != "claude":
+                        # Claude was used as fallback
+                        result.fallback_used = True
+                        result.fallback_reason = str(last_error) if last_error else "gemini_unavailable"
+                        _stats.fallback_count += 1
                 else:
                     _stats.gemini_calls += 1
-                    result.fallback_used = True
-                    result.fallback_reason = str(last_error) if last_error else "claude_unavailable"
-                    _stats.fallback_count += 1
+                    if prefer != "gemini":
+                        # Gemini was used as fallback
+                        result.fallback_used = True
+                        result.fallback_reason = str(last_error) if last_error else "claude_unavailable"
+                        _stats.fallback_count += 1
 
                 _stats.total_cost_usd += result.cost_usd
                 _stats.total_input_tokens += result.input_tokens

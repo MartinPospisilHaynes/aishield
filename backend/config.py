@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # ── Claude API ──
     anthropic_api_key: str = ""
 
+    # ── Gemini API ──
+    gemini_api_key: str = ""
+
     # ── OpenAI API (Whisper speech-to-text) ──
     openai_api_key: str = ""
 
@@ -41,7 +44,7 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""      # whsec_...
 
     # ── Výchozí platební brána ──
-    default_payment_gateway: str = "stripe"  # stripe | bank_transfer
+    default_payment_gateway: str = "bank_transfer"  # bank_transfer (Fio banka API)
 
     # ── Ceny balíčků (CZK) ──
     price_basic: int = 4999

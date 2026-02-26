@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AIshield.cz — Payment Email Templates
 Branded HTML email templates for payment lifecycle:
@@ -8,7 +9,10 @@ Branded HTML email templates for payment lifecycle:
 
 import base64
 import io
+import logging
 from datetime import datetime, timedelta
+
+logger = logging.getLogger("aishield.payment_emails")
 
 try:
     import qrcode
@@ -34,7 +38,7 @@ PLAN_NAMES = {
     "basic": "BASIC — AI Act Compliance Kit",
     "pro": "PRO — Compliance Kit + implementace na klíč",
     "enterprise": "ENTERPRISE — Komplexní řešení + 2 roky péče",
-    "coffee": "Kafé ☕",
+    "coffee": "Kafé &#9749;",
 }
 
 
@@ -74,10 +78,13 @@ def _email_wrapper(content: str) -> str:
     <p style="margin:0 0 4px 0;font-size:11px;color:rgba(255,255,255,0.4);">
         Bc. Martin Haynes | IČO: 17889251
     </p>
-    <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.4);">
+    <p style="margin:0 0 6px 0;font-size:11px;color:rgba(255,255,255,0.4);">
         <a href="mailto:info@aishield.cz" style="color:#a78bfa;text-decoration:none;">info@aishield.cz</a>
         &nbsp;·&nbsp;
         <a href="https://aishield.cz" style="color:#a78bfa;text-decoration:none;">aishield.cz</a>
+    </p>
+    <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.35);">
+        <a href="https://aishield.cz/terms" style="color:rgba(255,255,255,0.5);text-decoration:underline;">Všeobecné obchodní podmínky</a>
     </p>
 </td></tr>
 
@@ -91,19 +98,25 @@ def _email_wrapper(content: str) -> str:
 def generate_variable_symbol(order_number: str) -> str:
     """
     Generate a numeric variable symbol from order number.
-    Takes the hex part of the order number and converts to a numeric string.
-    Example: AS-BASIC-A0B1C2D3 → 1680851667 (first 10 digits of hex-to-int)
+    The order number suffix IS the variable symbol (numeric).
+    Example: AS-BASIC-20261234 → 20261234
     """
-    # Extract the hex part (last 8 chars)
-    hex_part = order_number.split("-")[-1] if "-" in order_number else order_number
-    # Convert hex to int, take first 10 digits (max for VS in CZ banking)
-    num = int(hex_part, 16)
-    vs = str(num)[:10]
-    return vs
+    # Extract the last segment (numeric suffix)
+    parts = order_number.split("-") if "-" in order_number else [order_number]
+    suffix = parts[-1]
+    # If already numeric, use directly
+    if suffix.isdigit():
+        return suffix[:10]
+    # Legacy hex format: convert to int, take first 10 digits
+    try:
+        num = int(suffix, 16)
+        return str(num)[:10]
+    except ValueError:
+        return suffix[:10]
 
 
-# ── IBAN for AIshield.cz account (2610538018/3030 = Air Bank) ──
-AISHIELD_IBAN = "CZ9130300000002610538018"
+# ── IBAN for AIshield.cz account (2503446206/2010 = Fio banka) ──
+AISHIELD_IBAN = "CZ8720100000002503446206"
 
 
 def generate_payment_qr_base64(amount: int, variable_symbol: str, order_number: str) -> str:
@@ -112,7 +125,7 @@ def generate_payment_qr_base64(amount: int, variable_symbol: str, order_number: 
     Vrací base64-encoded PNG obrázek QR kódu.
 
     SPAYD formát: SPD*1.0*ACC:{IBAN}*AM:{částka}*CC:CZK*X-VS:{VS}*MSG:{zpráva}
-    Podporován všemi českými bankami (George, Air Bank, ČSOB, mBank, Fio, KB...).
+    Podporován všemi českými bankami (George, Fio, ČSOB, mBank, KB...).
     """
     if not HAS_QRCODE:
         return ""
@@ -178,6 +191,7 @@ def build_bank_transfer_email(
     Sent when customer chooses "Bankovní převod" payment method.
     Returns (html, attachments) — attachments contain the QR code as CID inline image.
     """
+    logger.info(f"[PaymentEmail] build_bank_transfer_email: order={order_number}, plan={plan}, amount={amount}, email={email}")
     plan_name = PLAN_NAMES.get(plan, plan.upper())
 
     # Generuj platební QR kód (SPAYD standard)
@@ -240,13 +254,13 @@ def build_bank_transfer_email(
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,rgba(6,182,212,0.08),rgba(124,58,237,0.08));border:1px solid rgba(6,182,212,0.2);border-radius:12px;margin-bottom:24px;">
     <tr><td style="padding:24px;">
         <p style="margin:0 0 16px 0;font-size:15px;font-weight:700;color:#ffffff;">
-            💳 Platební údaje
+            &#128179; Platební údaje
         </p>
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         <tr>
             <td style="padding:8px 0;font-size:13px;color:#94a3b8;width:40%;vertical-align:top;">Číslo účtu:</td>
-            <td style="padding:8px 0;font-size:15px;color:#22d3ee;font-weight:700;font-family:monospace;">2610538018/3030</td>
+            <td style="padding:8px 0;font-size:15px;color:#22d3ee;font-weight:700;font-family:monospace;">2503446206/2010</td>
         </tr>
         <tr>
             <td style="padding:8px 0;font-size:13px;color:#94a3b8;vertical-align:top;">Variabilní symbol:</td>
@@ -303,12 +317,13 @@ def build_payment_received_email(
     Build branded HTML email confirming payment was received.
     Sent when admin confirms bank transfer arrived.
     """
+    logger.info(f"[PaymentEmail] build_payment_received_email: order={order_number}, plan={plan}, amount={amount}")
     plan_name = PLAN_NAMES.get(plan, plan.upper())
 
     content = f"""
     <!-- Title -->
     <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
-        Platba přijata ✅
+        Platba přijata &#9989;
     </h1>
     <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
         Vaše platba za objednávku <strong style="color:#ffffff;">{order_number}</strong> dorazila na náš účet.
@@ -395,7 +410,7 @@ def build_payment_confirmation_email(
     content = f"""
     <!-- Title -->
     <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
-        Platba úspěšná ✅
+        Platba úspěšná &#9989;
     </h1>
     <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
         Děkujeme! Vaše platba přes {gateway_name} proběhla úspěšně.
@@ -495,7 +510,7 @@ def build_status_pending_email(
         {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Splatnost:</td><td style="padding:6px 0;font-size:13px;color:#fde68a;font-weight:600;">' + due_date + '</td></tr>' if due_date else ''}
         <tr>
             <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Číslo účtu:</td>
-            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2610538018/3030</td>
+            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2503446206/2010</td>
         </tr>
         {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Variabilní symbol:</td><td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">' + variable_symbol + '</td></tr>' if variable_symbol else ''}
         </table>
@@ -506,7 +521,7 @@ def build_status_pending_email(
 
     content = f"""
     <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
-        Čekáme na vaši platbu 💳
+        Čekáme na vaši platbu &#128179;
     </h1>
     <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
         Dobrý den{(', ' + company_name) if company_name else ''}, evidujeme vaši objednávku a čekáme na úhradu.
@@ -565,7 +580,7 @@ def build_status_overdue_email(
         {'<tr><td style="padding:6px 0;font-size:13px;color:#94a3b8;">Variabilní symbol:</td><td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">' + variable_symbol + '</td></tr>' if variable_symbol else ''}
         <tr>
             <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Číslo účtu:</td>
-            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2610538018/3030</td>
+            <td style="padding:6px 0;font-size:14px;color:#22d3ee;font-weight:700;font-family:monospace;">2503446206/2010</td>
         </tr>
         </table>
     </td></tr>
@@ -639,7 +654,7 @@ def build_status_refunded_email(
 
     content = f"""
     <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
-        Platba vrácena 💸
+        Platba vrácena &#128184;
     </h1>
     <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
         Dobrý den{(', ' + company_name) if company_name else ''}, potvrzujeme, že vaše platba byla vrácena.
@@ -681,7 +696,7 @@ def build_status_free_trial_email(
 
     content = f"""
     <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#ffffff;">
-        Zkušební přístup aktivován 🎁
+        Zkušební přístup aktivován &#127873;
     </h1>
     <p style="margin:0 0 24px 0;font-size:14px;color:#94a3b8;">
         Dobrý den{(', ' + company_name) if company_name else ''}, aktivovali jsme vám zkušební přístup k AIshield.cz.
@@ -691,7 +706,7 @@ def build_status_free_trial_email(
            style="background:linear-gradient(135deg,rgba(217,70,239,0.08),rgba(6,182,212,0.08));border:1px solid rgba(217,70,239,0.25);border-radius:12px;margin-bottom:24px;">
     <tr><td style="padding:24px;">
         <p style="margin:0 0 16px 0;font-size:15px;font-weight:700;color:#ffffff;">
-            🚀 Co můžete nyní udělat?
+            &#128640; Co můžete nyní udělat?
         </p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         <tr>

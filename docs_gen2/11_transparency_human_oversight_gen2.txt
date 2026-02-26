@@ -1,0 +1,85 @@
+AIshield.cz
+Transparentnost a lidský dohled
+Martin Haynes
+AI Act Compliance Kit · Celkové riziko: VYSOKÉ · 24. 02. 2026, 20:38 UTC 
+Záznamy o transparentnosti a lidském dohledu
+Povinnosti dle čl. 13, 14 a 50 AI Act
+Firma: Martin Haynes
+Odpovědná osoba:  Martin Haynes
+Celkové riziko:
+VYSOKÉ RIZIKO
+Právní základ:
+Čl. 13 — Transparentnost vysoce rizikových AI systémů
+Čl. 14 — Lidský dohled nad vysoce rizikovými AI systémy
+Čl. 50 — Povinnosti transparentnosti pro všechny AI systémy 
+1. Aktuální stav opatření
+Možnost přerušení / přepsání AI ✅ Zavedeno
+Logování AI rozhodnutí ✅ Zavedeno
+Monitoring výstupů AI ✅ Zavedeno
+2. AI systémy — transparentnost a dohled
+#AI SYSTÉM RIZIKO ZDROJ OZNÁMENÍ LOG DOHLED
+1Google Gemini ChatbotOmezené rizikoWeb sken ☑ ☑ ☑
+2AI služba: AI ChatbotOmezené rizikoWeb sken ☑ ☑ ☑
+3AI Transparency NoticeOmezené rizikoWeb sken ☑ ☑ ☑
+4Google Analytics 4Mimo klasifikaciWeb sken ☑ ☑ ☑
+5Meta PixelMimo klasifikaciWeb sken ☑ ☑ ☑
+6AI API Proxy (geminiproxy)Mimo klasifikaciWeb sken ☑ ☑ ☑
+7Google Tag ManagerMimo klasifikaciWeb sken ☑ ☑ ☑
+#AI SYSTÉM RIZIKO ZDROJ OZNÁMENÍ LOG DOHLED
+8HeurekaMimo klasifikaciWeb sken ☑ ☑ ☑
+9Google Gemini ChatbotOmezené rizikoWeb sken ☑ ☑ ☑
+10AI API Proxy (geminiproxy)Omezené rizikoWeb sken ☑ ☑ ☑
+11AI služba: AI ChatbotOmezené rizikoWeb sken ☑ ☑ ☑
+12AI Transparency NoticeOmezené rizikoWeb sken ☑ ☑ ☑
+13Meta PixelMinimální rizikoWeb sken ☑ ☑ ☑
+14NoneMinimální rizikoInterní ☑ ☑ ☑
+15NoneMinimální rizikoInterní ☑ ☑ ☑
+16NoneMinimální rizikoInterní ☑ ☑ ☑
+17NoneMinimální rizikoInterní ☑ ☑ ☑
+18NoneMinimální rizikoInterní ☑ ☑ ☑
+19NoneMinimální rizikoInterní ☑ ☑ ☑
+20vlastní kódMinimální rizikoInterní ☑ ☑ ☑
+21NoneMinimální rizikoInterní ☑ ☑ ☑
+22NoneMinimální rizikoInterní ☑ ☑ ☑
+23NoneMinimální rizikoInterní ☑ ☑ ☑
+24vlastní html Minimální rizikoInterní ☑ ☑ ☑
+25NoneMinimální rizikoInterní ☑ ☑ ☑
+26NoneMinimální rizikoInterní ☑ ☑ ☑
+27NoneMinimální rizikoInterní ☑ ☑ ☑
+28NoneMinimální rizikoInterní ☑ ☑ ☑
+29pospa ing. Minimální rizikoInterní ☑ ☑ ☑
+30NoneMinimální rizikoInterní ☑ ☑ ☑
+31None Interní ☑ ☑ ☑AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 2 z 4 Bc. Martin Haynes | ICO: 17889251
+#AI SYSTÉM RIZIKO ZDROJ OZNÁMENÍ LOG DOHLED
+Minimální riziko
+32NoneMinimální rizikoInterní ☑ ☑ ☑
+33NoneMinimální rizikoInterní ☑ ☑ ☑
+3. Povinnosti transparentnosti (čl. 50)
+Uživatel je informován, že komunikuje s AI
+AI-generovaný obsah je označen
+Dotčené osoby mohou požádat o lidský přezkum
+4. Opatření lidského dohledu (čl. 14)
+Kill switch — AI lze kdykoli zastavit
+Override — člověk může přepsat AI rozhodnutí
+Monitoring — výstupy AI kontrolovány člověkem
+Kompetence — dohledová osoba proškolena (AI literacy)
+5. Záznamový list — čtvrtletní kontrola
+Období .................................................
+Datum kontroly .................................................
+Kontroloval/a .................................................
+Oznámení na webu ☐ OK ☐ Chybí
+Logování aktivní ☐ OK ☐ Nefunkční
+Kill switch testován ☐ Ano ☐ Ne
+Nalezené problémy .................................................
+Nápravná opatření .................................................
+Podpis .................................................
+Archivujte záznamy po dobu provozu AI + 10 let (čl. 18 AI Act). 
+⚖️ Právní upozornění:
+  Tento dokument je součástí AI Act Compliance Kitu vygenerovaného platformou AIshield.cz. Jedná se o
+technickou pomůcku pro splnění požadavků Nařízení (EU) 2024/1689, nikoliv o právní poradenství. AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 3 z 4 Bc. Martin Haynes | ICO: 17889251
+Transparentnost a lidský dohled · Martin Haynes · Vygenerováno: 24. 02. 2026, 20:38 UTC
+AIshield.cz · info@aishield.cz · +420 732 716 141
+© 2026 Martin Haynes, IČO: 17889251 AIshield.cz AI Act Compliance Kit
+Dokument vygenerovan automaticky | aishield.cz Strana 4 z 4 Bc. Martin Haynes | ICO: 17889251

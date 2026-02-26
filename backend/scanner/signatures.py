@@ -402,11 +402,12 @@ AI_SIGNATURES: list[AISignature] = [
         signatures=["fbq(", "facebook.com/tr", "Meta Pixel"],
         script_patterns=["connect.facebook.net", "facebook.com/tr"],
         cookie_patterns=["_fbp", "_fbc"],
-        risk_level="limited",
-        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
-        action_required="Meta provádí AI cílení reklam na své straně. "
-                       "Informujte uživatele v cookie banneru a privacy policy.",
-        description_cs="Meta Pixel — sledování konverzí, AI cílení provádí Meta na své platformě.",
+        risk_level="minimal",
+        ai_act_article="minimální riziko — Meta Pixel není AI systém dle AI Act",
+        action_required="Meta Pixel je reklamní tracker, nikoli AI systém. "
+                       "AI cílení provádí Meta na své platformě — vaše firma žádný AI systém nenasazuje. "
+                       "Spadá pod GDPR/ePrivacy (souhlas s cookies), nikoli pod AI Act.",
+        description_cs="Meta Pixel — sledování konverzí pro reklamu. AI zpracování probíhá na straně Meta, ne na vašem webu.",
     ),
 
     AISignature(
@@ -415,11 +416,12 @@ AI_SIGNATURES: list[AISignature] = [
         signatures=["ttq.load", "tiktok.com/i18n/pixel"],
         script_patterns=["analytics.tiktok.com"],
         cookie_patterns=["_ttp"],
-        risk_level="limited",
-        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
-        action_required="TikTok provádí AI cílení reklam na své straně. "
-                       "Informujte uživatele v cookie banneru a privacy policy.",
-        description_cs="TikTok Pixel — sledování konverzí, AI cílení provádí TikTok na své platformě.",
+        risk_level="minimal",
+        ai_act_article="minimální riziko — TikTok Pixel není AI systém dle AI Act",
+        action_required="TikTok Pixel je reklamní tracker, nikoli AI systém. "
+                       "AI cílení provádí TikTok na své platformě — vaše firma žádný AI systém nenasazuje. "
+                       "Spadá pod GDPR/ePrivacy (souhlas s cookies), nikoli pod AI Act.",
+        description_cs="TikTok Pixel — sledování konverzí pro reklamu. AI zpracování probíhá na straně TikTok, ne na vašem webu.",
     ),
 
     AISignature(
@@ -428,11 +430,12 @@ AI_SIGNATURES: list[AISignature] = [
         signatures=["_linkedin_partner_id", "snap.licdn.com"],
         script_patterns=["snap.licdn.com"],
         cookie_patterns=["li_sugr", "bcookie"],
-        risk_level="limited",
-        ai_act_article="čl. 4 (gramotnost v oblasti AI)",
-        action_required="LinkedIn provádí AI cílení reklam na své straně. "
-                       "Informujte uživatele v cookie banneru a privacy policy.",
-        description_cs="LinkedIn Insight Tag — B2B analytika, AI cílení provádí LinkedIn na své platformě.",
+        risk_level="minimal",
+        ai_act_article="minimální riziko — LinkedIn Insight Tag není AI systém dle AI Act",
+        action_required="LinkedIn Insight Tag je reklamní tracker, nikoli AI systém. "
+                       "AI cílení provádí LinkedIn na své platformě — vaše firma žádný AI systém nenasazuje. "
+                       "Spadá pod GDPR/ePrivacy (souhlas s cookies), nikoli pod AI Act.",
+        description_cs="LinkedIn Insight Tag — B2B sledování konverzí. AI zpracování probíhá na straně LinkedIn, ne na vašem webu.",
     ),
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -28,9 +28,10 @@ SELLER = {
     "phone": "732 716 141",
     "email": "info@aishield.cz",
     "web": "aishield.cz",
-    "bank_account": "2610538018/3030",
-    "bank_name": "Air Bank",
-    "iban": "CZ9130300000002610538018",
+    "bank_account": "2503446206/2010",
+    "bank_name": "Fio banka",
+    "iban": "CZ8720100000002503446206",
+    "bic": "FIOBCZPPXXX",
 }
 
 PLAN_NAMES = {

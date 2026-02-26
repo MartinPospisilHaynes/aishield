@@ -164,6 +164,10 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
                             all_findings[key] = {
                                 "name": f.name,
                                 "category": f.category,
+                                "risk_level": f.risk_level,
+                                "ai_act_article": f.ai_act_article,
+                                "action_required": f.action_required,
+                                "description_cs": f.description_cs,
                                 "matched_signatures": list(f.matched_signatures[:5]),
                                 "evidence": list(f.evidence[:3]),
                                 "found_in_countries": [country],
@@ -239,6 +243,10 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
             detected_list.append(DetectedAI(
                 name=info["name"],
                 category=info["category"],
+                risk_level=info.get("risk_level", "limited"),
+                ai_act_article=info.get("ai_act_article", "čl. 50"),
+                action_required=info.get("action_required", ""),
+                description_cs=info.get("description_cs", ""),
                 matched_signatures=info["matched_signatures"],
                 evidence=info["evidence"],
                 confidence=0.8,
@@ -689,8 +697,9 @@ def _build_deep_scan_email(
     <!-- Header gradient -->
     <tr>
         <td style="background:linear-gradient(135deg,#7c3aed 0%,#06b6d4 100%);padding:32px 40px;text-align:center;">
-            <img src="https://aishield.cz/logo-white.png" alt="AIshield" width="140" style="display:block;margin:0 auto 12px;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">
+            <img src="https://aishield.cz/icon-512.png" alt="AIshield" width="48" height="48" style="display:block;margin:0 auto 8px;border-radius:8px;">
+            <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:0.5px;">AIshield</span>
+            <h1 style="margin:12px 0 0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">
                 ✅ 24h hloubkový scan dokončen
             </h1>
         </td>

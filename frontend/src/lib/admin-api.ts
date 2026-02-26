@@ -758,6 +758,40 @@ export async function confirmBankPayment(orderNumber: string): Promise<{ status:
     return res.json();
 }
 
+export async function updateOrderStatus(orderNumber: string, status: string): Promise<{ status: string; order_number: string; new_status: string }> {
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders/${encodeURIComponent(orderNumber)}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Chyba při změně statusu" }));
+        throw new Error(err.detail || "Chyba při změně statusu");
+    }
+    return res.json();
+}
+
+export async function deleteOrder(orderNumber: string): Promise<{ status: string; order_number: string }> {
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders/${encodeURIComponent(orderNumber)}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Chyba při mazání objednávky" }));
+        throw new Error(err.detail || "Chyba při mazání objednávky");
+    }
+    return res.json();
+}
+
+export async function resendInvoice(orderNumber: string): Promise<{ status: string; email: string; invoice_number: string }> {
+    const res = await adminFetch(`${API_URL}/api/payments/admin/orders/${encodeURIComponent(orderNumber)}/resend-invoice`, {
+        method: "POST",
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Chyba při odesílání faktury" }));
+        throw new Error(err.detail || "Chyba při odesílání faktury");
+    }
+    return res.json();
+}
+
 // ── Analytics ──
 
 export interface AnalyticsStats {

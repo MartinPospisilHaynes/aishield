@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta
 import uuid
 import logging
+import random
 from typing import Literal
 
 from backend.config import get_settings
@@ -377,7 +378,8 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
     amount = getattr(settings, plan["price_field"])
     gateway = req.gateway or settings.default_payment_gateway
 
-    order_number = f"AS-{req.plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
+    _numeric_suffix = str(random.randint(10000000, 99999999))
+    order_number = f"AS-{req.plan.upper()}-{_numeric_suffix}"
 
     frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
     api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
@@ -527,7 +529,8 @@ async def create_guest_checkout(req: GuestCheckoutRequest):
     amount = getattr(settings, plan["price_field"])
     gateway = req.gateway or settings.default_payment_gateway
 
-    order_number = f"AS-{req.plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
+    _numeric_suffix = str(random.randint(10000000, 99999999))
+    order_number = f"AS-{req.plan.upper()}-{_numeric_suffix}"
 
     frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
     api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
@@ -1575,3 +1578,124 @@ async def admin_confirm_bank_payment(req: ConfirmPaymentRequest):
         "message": f"Objednávka {req.order_number} potvrzena, email odeslán na {order['email']}",
     }
 
+
+# ── Order status update ──
+
+
+class UpdateOrderStatusRequest(BaseModel):
+    status: str
+
+
+@router.patch("/admin/orders/{order_number}/status")
+async def admin_update_order_status(order_number: str, req: UpdateOrderStatusRequest):
+    """Admin změní status objednávky."""
+    allowed = {"AWAITING_PAYMENT", "PAID", "CANCELLED", "REFUNDED", "EXPIRED"}
+    if req.status not in allowed:
+        raise HTTPException(status_code=400, detail=f"Nepovolený status. Povolené: {', '.join(sorted(allowed))}")
+
+    supabase = get_supabase()
+    result = supabase.table("orders").select("id").eq("order_number", order_number).limit(1).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail=f"Objednávka {order_number} nenalezena")
+
+    update_data: dict = {"status": req.status, "updated_at": datetime.utcnow().isoformat()}
+    if req.status == "PAID":
+        update_data["paid_at"] = datetime.utcnow().isoformat()
+        update_data["activated"] = True
+
+    supabase.table("orders").update(update_data).eq("order_number", order_number).execute()
+    logger.info(f"[Admin] Order {order_number} status → {req.status}")
+    return {"status": "updated", "order_number": order_number, "new_status": req.status}
+
+
+@router.delete("/admin/orders/{order_number}")
+async def admin_delete_order(order_number: str):
+    """Admin smaže objednávku."""
+    supabase = get_supabase()
+    result = supabase.table("orders").select("id").eq("order_number", order_number).limit(1).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail=f"Objednávka {order_number} nenalezena")
+
+    supabase.table("orders").delete().eq("order_number", order_number).execute()
+    logger.info(f"[Admin] Order {order_number} deleted")
+    return {"status": "deleted", "order_number": order_number}
+
+
+# ── Resend invoice ──
+
+
+@router.post("/admin/orders/{order_number}/resend-invoice")
+async def admin_resend_invoice(order_number: str):
+    """Admin znovu odešle fakturu emailem."""
+    supabase = get_supabase()
+    order_res = supabase.table("orders").select("*").eq("order_number", order_number).limit(1).execute()
+    if not order_res.data:
+        raise HTTPException(status_code=404, detail=f"Objednávka {order_number} nenalezena")
+
+    order = order_res.data[0]
+    if order["status"] not in ("PAID", "paid"):
+        raise HTTPException(status_code=400, detail="Fakturu lze odeslat pouze pro zaplacené objednávky")
+
+    # Find existing invoice
+    inv_res = supabase.table("invoices").select("*").eq("order_number", order_number).limit(1).execute()
+    if not inv_res.data:
+        raise HTTPException(status_code=404, detail="Faktura nebyla nalezena. Zkuste nejprve potvrdit platbu.")
+
+    inv = inv_res.data[0]
+    pdf_url = inv.get("pdf_url", "")
+
+    # Try to get PDF from storage
+    pdf_bytes = None
+    if pdf_url:
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(pdf_url, timeout=15)
+                if resp.status_code == 200:
+                    pdf_bytes = resp.content
+        except Exception as e:
+            logger.warning(f"[Admin] Failed to download invoice PDF from storage: {e}")
+
+    # Fallback: try local file
+    if not pdf_bytes:
+        try:
+            import os
+            year = order.get("created_at", "")[:4] or datetime.utcnow().strftime("%Y")
+            local_path = f"/opt/aishield/invoices/{year}/{inv.get('pdf_filename', '')}"
+            if os.path.exists(local_path):
+                with open(local_path, "rb") as f:
+                    pdf_bytes = f.read()
+        except Exception as e:
+            logger.warning(f"[Admin] Failed to read local invoice PDF: {e}")
+
+    if not pdf_bytes:
+        raise HTTPException(status_code=404, detail="PDF faktury nelze najít")
+
+    import base64
+    from backend.outbound.invoice_pdf import build_invoice_email_html
+
+    invoice_html = build_invoice_email_html(
+        invoice_number=inv.get("invoice_number", ""),
+        order_number=order_number,
+        plan=order.get("plan", ""),
+        amount=order.get("amount", 0),
+    )
+
+    pdf_b64 = base64.b64encode(pdf_bytes).decode("ascii")
+    attachments = [{
+        "filename": f"faktura-{inv.get('invoice_number', order_number)}.pdf",
+        "content": pdf_b64,
+    }]
+
+    from backend.outbound.email_engine import send_email
+    await send_email(
+        to=order["email"],
+        subject=f"AIshield.cz — Faktura {inv.get('invoice_number', '')}",
+        html=invoice_html,
+        from_email="info@aishield.cz",
+        from_name="AIshield.cz",
+        attachments=attachments,
+    )
+
+    logger.info(f"[Admin] Invoice {inv.get('invoice_number')} resent to {order['email']}")
+    return {"status": "sent", "email": order["email"], "invoice_number": inv.get("invoice_number")}

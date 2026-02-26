@@ -1,0 +1,401 @@
+<h1>Registr AI systémů</h1>
+
+<div class='info'>
+  <strong>Zajištěno v rámci Compliance Kitu</strong><br>
+  Tento dokument byl vygenerován společností AIshield.cz na základě provedeného auditu a webového skenování. Představuje váš výchozí, předvyplněný Registr AI systémů. 
+  <br><br>
+  <strong>Vyžaduje akci klienta:</strong><br>
+  Udržování tohoto registru v aktuálním stavu je vaší zákonnou povinností. Při každém nasazení nového systému nebo změně účelu stávajícího systému musíte tento dokument aktualizovat. Zvláštní pozornost věnujte systémům označeným jako zakázané, které musí být okamžitě vyřazeny z provozu.
+</div>
+
+<h2>1. Úvod a právní základ</h2>
+
+<p>Tento dokument slouží jako centrální evidence systémů umělé inteligence využívaných společností Martin Haynes (IČO: 17889251). Vedení přesné evidence nasazených AI systémů je nezbytným předpokladem pro zajištění souladu s Nařízením Evropského parlamentu a Rady (EU) 2024/1689 (dále jen „AI Act“), konkrétně s povinností nasazovatele vést záznamy dle čl. 26 odst. 1.</p>
+
+<p>Vzhledem k tomu, že vaše společnost provozuje celkem <strong>17 systémů v kategorii vysokého rizika</strong> (z toho 2 systémy spadající pod zakázané praktiky), je tento registr kritickým compliance dokumentem. Slouží k plnění povinností transparentnosti (čl. 50), zajištění lidského dohledu (čl. 14) a prokazování souladu dozorovým orgánům.</p>
+
+<h3>Registrace v EU databázi (čl. 71 AI Act)</h3>
+<p>Pro vysoce rizikové systémy existuje povinnost registrace v centrální databázi EU (spravované AI Office na adrese <em>ai-act-database.eu</em>). Pravidla jsou následující:</p>
+<ul>
+  <li><strong>Poskytovatel (vývojář):</strong> Má primární povinnost systém do databáze zaregistrovat (čl. 49 odst. 1).</li>
+  <li><strong>Nasazovatel (uživatel):</strong> Má povinnost ověřit, že poskytovatel systém zaregistroval. Pokud nasazujete systém biometrie nebo systém dle Přílohy III (např. HR, úvěry), máte i vy jako nasazovatel povinnost se do databáze zaregistrovat (čl. 49 odst. 2).</li>
+  <li><strong>Výjimka pro kritickou infrastrukturu:</strong> Systémy kritické infrastruktury se neregistrují do veřejné EU databáze, ale hlásí se zabezpečenou cestou národnímu dozorovému orgánu (čl. 49 odst. 4). V ČR je tímto orgánem <strong>Národní úřad pro kybernetickou a informační bezpečnost (NÚKIB)</strong>.</li>
+</ul>
+
+<div class='warning'>
+  <strong>Důležité časové upozornění (k datu 25. 02. 2026):</strong><br>
+  Zákaz praktik v oblasti AI (čl. 5) vstoupil v platnost již <strong>2. 2. 2025</strong>. Vaše společnost je v současné době v prodlení a v přímém rozporu se zákonem u systémů „vlastní html“ (sociální skórování) a „vlastní kód“ (rozpoznávání emocí na pracovišti).
+</div>
+
+<h2>2. Metodika identifikace AI systémů</h2>
+
+<p>Identifikace systémů v tomto registru proběhla kombinovanou metodou:</p>
+<ol>
+  <li><strong>Automatizovaný webový sken:</strong> Detekce skriptů, chatbotů a analytických nástrojů nasazených na vašich webových doménách.</li>
+  <li><strong>Interní dotazníkové šetření:</strong> Deklarace systémů využívaných zaměstnanci a managementem napříč odděleními.</li>
+</ol>
+
+<p>Za AI systém je ve smyslu čl. 3 odst. 1 AI Act považován strojový systém navržený tak, aby fungoval s různou mírou autonomie, a který může po svém nasazení vykazovat adaptivitu a který pro explicitní nebo implicitní cíle vyvozuje ze vstupů, které obdrží, jak generovat výstupy, jako jsou predikce, obsah, doporučení nebo rozhodnutí, jež mohou ovlivnit fyzické nebo virtuální prostředí.</p>
+
+<p><strong>Vyřazené systémy:</strong> Nástroje jako Google Analytics 4, Meta Pixel, Google Tag Manager a Heureka byly z registru automaticky vyřazeny, neboť nesplňují definici AI systému dle nařízení.</p>
+
+<p><strong>Odpověď na dotaz klienta ohledně účetních programů:</strong> Účetní systémy (Fakturoid, Pohoda, ABRA, Money S5, iDoklad), které jste uvedl v dotazníku, jsou do registru zařazeny v kategorii <em>Minimální riziko</em>. Pokud využívají AI pouze pro vytěžování faktur (OCR) nebo základní automatizaci, nepředstavují vysoké riziko a nevyžadují složitou certifikaci. Pokud by však jejich AI modul automaticky schvaloval úvěrové rámce zákazníkům, staly by se vysoce rizikovými.</p>
+
+<h2>3. Přehled evidovaných AI systémů</h2>
+
+<p>Níže je uveden konsolidovaný seznam všech identifikovaných AI systémů ve vaší organizaci. Tabulka slouží jako rychlý přehled pro management a dozorové orgány.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Název systému / Nástroj</th>
+      <th>Kategorie / Účel</th>
+      <th>Riziko dle AI Act</th>
+      <th>Relevantní článek</th>
+      <th>Stav</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>vlastní html</strong></td>
+      <td>Sociální skórování</td>
+      <td><span class='badge badge-high'>NEPŘIJATELNÉ</span></td>
+      <td>čl. 5 odst. 1 písm. c)</td>
+      <td>K okamžitému ukončení</td>
+    </tr>
+    <tr>
+      <td><strong>vlastní kód</strong></td>
+      <td>Rozpoznávání emocí na pracovišti</td>
+      <td><span class='badge badge-high'>NEPŘIJATELNÉ</span></td>
+      <td>čl. 5 odst. 1 písm. f)</td>
+      <td>K okamžitému ukončení</td>
+    </tr>
+    <tr>
+      <td><strong>Teamio, LMC, Sloneek, LinkedIn Recruiter, Prace.cz AI</strong></td>
+      <td>HR a nábor zaměstnanců</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Příloha III, bod 4</td>
+      <td>V provozu (nutná FRIA)</td>
+    </tr>
+    <tr>
+      <td><strong>CRIF, Bisnode, Scoring Solutions</strong></td>
+      <td>Kreditní skórování</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Příloha III, bod 5b</td>
+      <td>V provozu (nutná FRIA)</td>
+    </tr>
+    <tr>
+      <td><strong>Guidewire, NESS/Allianz AI, ČPP/ČSOB interní AI</strong></td>
+      <td>Pojišťovnictví (stanovení rizika)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Příloha III, bod 5a</td>
+      <td>V provozu (nutná FRIA)</td>
+    </tr>
+    <tr>
+      <td><strong>Sledování obrazovky, GPS, Kamerový dohled s AI</strong></td>
+      <td>Monitorování zaměstnanců</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>čl. 6 / GDPR čl. 22</td>
+      <td>V provozu (nutná DPIA)</td>
+    </tr>
+    <tr>
+      <td><strong>pospa ing.</strong></td>
+      <td>Kritická infrastruktura</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Příloha III, bod 2</td>
+      <td>V provozu (hlášení NÚKIB)</td>
+    </tr>
+    <tr>
+      <td><strong>Vlastní vývoj AI (OpenAI API integrace)</strong></td>
+      <td>Integrace LLM do produktů</td>
+      <td><span class='badge badge-high'>VYSOKÉ / GPAI</span></td>
+      <td>čl. 51-54 (GPAI)</td>
+      <td>V provozu (nutná analýza)</td>
+    </tr>
+    <tr>
+      <td><strong>ChatGPT, Claude, Gemini, Perplexity</strong></td>
+      <td>Generativní AI / LLM (Interní)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>čl. 50 odst. 2</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>Zendesk AI, Freshdesk AI, Intercom, Google Gemini Chatbot</strong></td>
+      <td>Zákaznická podpora / Chatbot</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>čl. 50 odst. 1</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>HeyGen, Synthesia, Midjourney, DALL-E, Sora, VEO3, ElevenLabs</strong></td>
+      <td>Generování videa, audia a grafiky</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>čl. 50 odst. 4</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>Prisync, Competera, Dynamic Yield</strong></td>
+      <td>Dynamická cenotvorba</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>čl. 50 / čl. 5 odst. 1 písm. b)</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>Vzdělávání / e-learning, Doporučování obsahu</strong></td>
+      <td>Personalizace obsahu</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>čl. 50</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>GitHub Copilot, Cursor</strong></td>
+      <td>Asistence při programování</td>
+      <td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
+      <td>čl. 4 (AI gramotnost)</td>
+      <td>V provozu</td>
+    </tr>
+    <tr>
+      <td><strong>Fakturoid, Money S5, ABRA, Pohoda, iDoklad</strong></td>
+      <td>Účetnictví a finance (OCR)</td>
+      <td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
+      <td>čl. 4 (AI gramotnost)</td>
+      <td>V provozu</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Detailní karty klíčových AI systémů</h2>
+
+<p>Následující sekce obsahuje detailní rozpad povinností pro nejkritičtější systémy. Karty vysoce rizikových systémů obsahují povinné náležitosti dle Přílohy VIII AI Act.</p>
+
+<div class='no-break'>
+  <h3>Systém: Interní vývoj „vlastní html“ a „vlastní kód“</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> Martin Haynes (Vlastní vývoj)</li>
+    <li><strong>Verze systému:</strong> Interní build</li>
+    <li><strong>Účel nasazení:</strong> Sociální skórování, rozpoznávání emocí na pracovišti.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>ZAKÁZANÉ PRAKTIKY (NEPŘIJATELNÉ RIZIKO)</span></li>
+    <li><strong>Relevantní články AI Act:</strong> čl. 5 odst. 1 písm. c), čl. 5 odst. 1 písm. f)</li>
+    <li><strong>Stav:</strong> V PROVOZU — <strong>KRITICKÉ PORUŠENÍ ZÁKONA</strong></li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti a akční kroky:</strong><br>
+    Tyto systémy spadají pod absolutní zákaz dle čl. 5 AI Act, který je účinný již od 2. 2. 2025. Provozování systému pro sociální skórování a rozpoznávání emocí na pracovišti představuje porušení zákona, za které hrozí správní pokuta až 35 milionů EUR nebo 7 % celosvětového ročního obratu dle čl. 99 odst. 3 AI Act.
+    <br><br>
+    <em>Odpověď na dotaz klienta:</em> Při okamžitém vypnutí těchto systémů není vyžadováno žádné proaktivní hlášení dozorovému orgánu. Postačuje prokazatelné ukončení provozu a smazání souvisejících dat. <strong>Systémy musí být do 24 hodin trvale vypnuty.</strong>
+    <br><br>
+    <em>Poznámka pro vlastní vývoj:</em> Jako poskytovatel vlastních systémů máte obecně povinnost vést technickou dokumentaci (Příloha IV) a provádět post-market monitoring (čl. 72). U zakázaných systémů je však jedinou přípustnou akcí jejich likvidace.
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: HR a náborové platformy (Teamio, Sloneek, LMC, LinkedIn Recruiter)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> LMC s.r.o., Sloneek s.r.o., LinkedIn Corporation</li>
+    <li><strong>Verze systému:</strong> Cloud SaaS (aktuální verze)</li>
+    <li><strong>Účel nasazení:</strong> Třídění životopisů, hodnocení kandidátů, predikce úspěšnosti.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>VYSOKÉ RIZIKO</span></li>
+    <li><strong>Relevantní články AI Act:</strong> Příloha III bod 4, čl. 14, čl. 26, čl. 27</li>
+    <li><strong>Typ posouzení shody:</strong> Zajišťuje poskytovatel (ověřte v EU databázi)</li>
+    <li><strong>Smluvní základ:</strong> DPA / SLA s dodavatelem (čl. 26 odst. 1 písm. b)</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro nasazovatele:</strong><br>
+    Jako nasazovatel musíte dle čl. 14 zajistit lidský dohled. Rozhodnutí o přijetí či zamítnutí kandidáta nesmí činit výhradně AI. Dále musíte uchovávat logy z těchto systémů po dobu minimálně 6 měsíců dle čl. 26 odst. 1 písm. f).
+    <br><br>
+    <strong>Nová povinnost (FRIA):</strong> Dle čl. 27 AI Act musíte před nasazením provést Posouzení vlivu na základní práva (FRIA).
+    <br><br>
+    <em>Příklad z praxe:</em> Pokud Sloneek AI automaticky vyřadí kandidáta na základě analýzy CV, musí mít odpovědná osoba (Martin Haynes) možnost toto rozhodnutí zrevidovat a zvrátit. Kandidát musí být o použití AI informován.
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: Monitorování zaměstnanců (Sledování obrazovky, GPS, Kamery s AI)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> [Doplnit dle konkrétního dodavatele softwaru]</li>
+    <li><strong>Účel nasazení:</strong> Sledování produktivity, analýza e-mailů, kamerový dohled.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>VYSOKÉ RIZIKO</span></li>
+    <li><strong>Relevantní články AI Act:</strong> Příloha III, čl. 14, GDPR čl. 22</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro nasazovatele:</strong><br>
+    Monitorování zaměstnanců pomocí AI je vysoce rizikové a podléhá přísné kontrole. Vyžaduje se provedení DPIA (Posouzení vlivu na ochranu osobních údajů) a transparentní informování zaměstnanců. Zaměstnanci musí vědět, jaká data AI analyzuje a jak ovlivňují jejich hodnocení.
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: Kreditní a pojišťovací skórování (CRIF, Guidewire, Allianz AI)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> CRIF, Guidewire Software, interní modely (Allianz/ČSOB)</li>
+    <li><strong>Účel nasazení:</strong> Hodnocení úvěruschopnosti, stanovování pojistného rizika a cen.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>VYSOKÉ RIZIKO</span></li>
+    <li><strong>Relevantní články AI Act:</strong> Příloha III bod 5a a 5b, čl. 27 (FRIA)</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro nasazovatele:</strong><br>
+    Finanční a pojišťovací AI systémy přímo ovlivňují přístup osob k základním službám. Dle čl. 27 AI Act musíte provést Posouzení vlivu na základní práva (FRIA). Zákazník má právo na srozumitelné vysvětlení, jak AI dospěla k rozhodnutí o zamítnutí úvěru nebo zvýšení pojistného.
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: Kritická infrastruktura („pospa ing.“)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> pospa ing. (Interní vývoj / Dodavatel)</li>
+    <li><strong>Účel nasazení:</strong> Řízení a bezpečnostní komponenty kritické infrastruktury.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>VYSOKÉ RIZIKO</span></li>
+    <li><strong>Relevantní články AI Act:</strong> Příloha III bod 2, čl. 49 odst. 4</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro nasazovatele/poskytovatele:</strong><br>
+    Pokud jste tento systém vyvinuli interně, stáváte se poskytovatelem a musíte provést posouzení shody (Conformity Assessment), vypracovat technickou dokumentaci (Příloha IV) a opatřit systém označením CE. Systémy kritické infrastruktury se neregistrují do veřejné EU databáze, ale podléhají ohlášení národnímu orgánu. <strong>V ČR je tímto orgánem Národní úřad pro kybernetickou a informační bezpečnost (NÚKIB).</strong>
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: Integrace LLM API (Vlastní vývoj AI)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> Martin Haynes (s využitím modelů OpenAI/Anthropic/Google)</li>
+    <li><strong>Účel nasazení:</strong> Integrace AI funkcí do zákaznických produktů.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-high'>VYSOKÉ RIZIKO / POTENCIÁLNÍ GPAI</span></li>
+    <li><strong>Relevantní články AI Act:</strong> čl. 51-54 (GPAI)</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro poskytovatele:</strong><br>
+    Pokud integrujete modely pro obecné účely (GPAI) do vlastních produktů a distribuujete je třetím stranám, musíte analyzovat, zda se nestáváte poskytovatelem GPAI systému dle čl. 3 odst. 63 AI Act. Pokud ano, vztahují se na vás povinnosti dle čl. 53 (transparentnost, dodržování autorských práv, bezpečnostní hodnocení) s účinností od 2. 8. 2025.
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>Systém: Generativní AI a tvorba obsahu (HeyGen, Synthesia, Midjourney, Sora, ElevenLabs)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> HeyGen, Synthesia Ltd., Midjourney, OpenAI, ElevenLabs</li>
+    <li><strong>Účel nasazení:</strong> Tvorba marketingových videí, syntetických hlasů a grafiky.</li>
+    <li><strong>Riziková kategorie:</strong> <span class='badge badge-limited'>OMEZENÉ RIZIKO</span></li>
+    <li><strong>Relevantní články AI Act:</strong> čl. 50 odst. 4</li>
+    <li><strong>Stav:</strong> V provozu</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti pro nasazovatele:</strong><br>
+    Pokud generujete syntetický obsah (deepfakes, AI avatary, syntetický hlas), který se jeví jako autentický, musíte jej jasně označit jako uměle vytvořený.
+    <br><br>
+    <em>Příklad z praxe:</em> Pokud použijete HeyGen pro vytvoření instruktážního videa s AI avatarem, musí být v rohu videa vodoznak nebo v popisku jasně uvedeno: „Toto video bylo vygenerováno pomocí umělé inteligence.“
+  </div>
+</div>
+
+<div class='no-break'>
+  <h3>[ŠABLONA] Nový AI systém (Pro budoucí použití)</h3>
+  <ul>
+    <li><strong>Poskytovatel:</strong> [Název dodavatele]</li>
+    <li><strong>Verze systému:</strong> [Verze]</li>
+    <li><strong>Účel nasazení:</strong> [K čemu systém slouží]</li>
+    <li><strong>Riziková kategorie:</strong> [Minimální / Omezené / Vysoké]</li>
+    <li><strong>Relevantní články AI Act:</strong> [Doplnit]</li>
+    <li><strong>Stav:</strong> [Plánováno / V provozu / Vyřazeno]</li>
+  </ul>
+  <div class='highlight'>
+    <strong>Povinnosti:</strong><br>
+    Před nasazením nového systému určete jeho rizikovou kategorii. Pokud jde o vysoké riziko, vyžádejte si od dodavatele EU prohlášení o shodě a proveďte FRIA.
+  </div>
+</div>
+
+<h2>5. Riziková matice a statistika</h2>
+
+<p>Následující přehled ukazuje rozložení vašich AI systémů podle rizikových kategorií definovaných v AI Act. <em>Metodická poznámka: Celkový počet 17 vysoce rizikových systémů z kontextu firmy zahrnuje 15 systémů s vysokým rizikem a 2 systémy se zakázanými praktikami.</em></p>
+
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>2</div>
+    <div class='metric-label'>Zakázané systémy (K okamžitému zrušení)</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>15</div>
+    <div class='metric-label'>Vysoce rizikové systémy (High-risk)</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>18</div>
+    <div class='metric-label'>Systémy s omezeným rizikem (Limited)</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>1</div>
+    <div class='metric-label'>Systémy s minimálním rizikem</div>
+  </div>
+</div>
+
+<p><strong>Odpovědná osoba za řízení rizik:</strong> Martin Haynes (Jednatel / majitel)</p>
+<p><em>Poznámka k AI gramotnosti:</em> Skutečnost, že odpovědná osoba má absolvované školení AI, je výborným základem. Dle čl. 4 AI Act (účinného od 2. 2. 2025) však musíte zajistit dostatečnou úroveň AI gramotnosti pro <strong>všechny zaměstnance</strong>, kteří s AI systémy pracují, a to úměrně jejich roli.</p>
+
+<h2>6. Pokyny pro údržbu registru</h2>
+
+<p>Tento registr není statický dokument. Dle principu odpovědnosti (accountability) musí odrážet reálný stav IT infrastruktury firmy. Za jeho údržbu zodpovídá určená odpovědná osoba.</p>
+
+<h3>Kdy je nutné registr aktualizovat:</h3>
+<ul>
+  <li><strong>Nasazení nového systému:</strong> Před zakoupením nebo implementací nového AI nástroje musí být systém zapsán do registru (využijte prázdnou šablonu výše).</li>
+  <li><strong>Podstatná změna (čl. 28 odst. 1 písm. b) AI Act):</strong> Pokud začnete stávající systém používat k novému účelu, stáváte se z pohledu zákona poskytovatelem a přebíráte veškeré povinnosti. <em>Příklad:</em> Dosud jste používali ChatGPT pro psaní e-mailů (omezené riziko). Nově ho napojíte přes API na automatické vyhodnocování životopisů (stává se z něj vysoce rizikový systém).</li>
+  <li><strong>Vyřazení systému:</strong> Pokud přestanete nástroj používat, označte jej v registru jako „Vyřazený“. Záznamy (logy) uchovejte: minimálně 6 měsíců jako nasazovatel (čl. 26 odst. 1 písm. f) nebo dle specifikace pro poskytovatele (čl. 19 odst. 1).</li>
+</ul>
+
+<h3>Hlášení incidentů (čl. 73 AI Act)</h3>
+<p>Pokud dojde k závažnému incidentu nebo nefunkčnosti vysoce rizikového AI systému, máte povinnost toto nahlásit dozorovému orgánu <strong>nejpozději do 15 dnů</strong> od zjištění. Postupujte dle vašeho interního Plánu řízení AI incidentů.</p>
+
+<h3>Klíčové termíny a deadliny</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Datum účinnosti</th>
+      <th>Oblast AI Act</th>
+      <th>Dopad na vaši firmu</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>2. 2. 2025</strong></td>
+      <td>Zakázané systémy (čl. 5) a AI gramotnost (čl. 4)</td>
+      <td>Okamžitě vypnout „vlastní html“ a „vlastní kód“. Proškolit zaměstnance.</td>
+    </tr>
+    <tr>
+      <td><strong>2. 8. 2025</strong></td>
+      <td>Modely pro obecné účely (GPAI)</td>
+      <td>Povinnosti pro integraci LLM API (čl. 51-54).</td>
+    </tr>
+    <tr>
+      <td><strong>2. 8. 2026</strong></td>
+      <td>Vysoce rizikové systémy (Příloha III)</td>
+      <td>Plná účinnost pro HR, úvěry, pojišťovnictví a kritickou infrastrukturu.</td>
+    </tr>
+    <tr>
+      <td><strong>2. 8. 2027</strong></td>
+      <td>Vysoce rizikové systémy (Příloha I)</td>
+      <td>Plná účinnost pro AI jako bezpečnostní komponenty produktů.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class='warning'>
+  <strong>Upozornění na sankce:</strong><br>
+  Neaktuální registr při kontrole ze strany dozorového orgánu (ČOI, ÚOOÚ, NÚKIB) může být klasifikován jako porušení povinnosti správy dat a dokumentace, což může vést k pokutě až do výše 15 milionů EUR nebo 3 % celosvětového ročního obratu.
+</div>
+
+<h2>7. Podpisový blok a schválení</h2>
+
+<p>Svým podpisem odpovědná osoba stvrzuje, že se seznámila se stavem AI systémů ve společnosti, bere na vědomí kritická rizika spojená se zakázanými praktikami a zavazuje se k udržování tohoto registru v aktuálním stavu.</p>
+
+<div class='sig-block'>
+  <div class='sig-field'>
+    Za společnost Martin Haynes<br>
+    Jméno: Martin Haynes<br>
+    Funkce: Jednatel / majitel<br>
+    Datum: 25. 02. 2026
+  </div>
+  <div class='sig-field'>
+    Za AIshield.cz (Zpracovatel auditu)<br>
+    Oddělení Compliance a AI Auditu<br>
+    Vygenerováno automaticky v rámci<br>
+    AI Act Compliance Kitu
+  </div>
+</div>

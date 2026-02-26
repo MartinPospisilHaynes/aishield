@@ -219,8 +219,8 @@ def _create_title_slide(prs, company_name, subtitle="", client_info=None):
     _add_client_footer(slide, client_info)
 
 
-def _create_content_slide(prs, title, bullets, client_info=None):
-    """Standardní obsahový slide s nadpisem a odrážkami."""
+def _create_content_slide(prs, title, bullets, client_info=None, speaker_notes=""):
+    """Standardní obsahový slide s nadpisem a odrážkami + volitelné speaker notes."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank
     _set_slide_bg(slide)
     _add_branded_header(slide, title, client_info=client_info)
@@ -232,6 +232,12 @@ def _create_content_slide(prs, title, bullets, client_info=None):
         font_size=18,
     )
     _add_client_footer(slide, client_info)
+
+    # Speaker notes pro přednášejícího
+    if speaker_notes:
+        notes_slide = slide.notes_slide
+        notes_tf = notes_slide.notes_text_frame
+        notes_tf.text = speaker_notes
 
 
 def _create_risk_slide(prs, findings, client_info=None):
@@ -270,7 +276,7 @@ def _create_risk_slide(prs, findings, client_info=None):
         dot.line.fill.background()
 
         # Finding text
-        risk_cs = {"high": "VYSOKÉ", "limited": "OMEZENÉ", "minimal": "MINIMÁLNÍ"}.get(risk, risk)
+        risk_cs = {"high": "VYSOKÉ", "limited": "OMEZENÉ", "minimal": "MINIMÁLNÍ", "none": "Mimo klasifikaci"}.get(risk, risk)
         _add_text_box(
             slide,
             left=Inches(1.1), top=y_pos,
@@ -453,15 +459,24 @@ def generate_training_pptx(data: dict) -> bytes:
 
     # ── Slide 8: Přehled rizik z dat ──
     # Kombinovat web scan findings + declared systems
+    from backend.documents.unified_pdf import QUESTIONNAIRE_RISK_MAP
     combined_findings = list(findings)
     existing_names = {(f.get("name") or "").lower() for f in findings}
     for sys in ai_declared:
         tool_name = sys.get("tool_name") or sys.get("key") or "AI systém"
         if tool_name.lower() not in existing_names:
+            # Použít QUESTIONNAIRE_RISK_MAP místo hardcoded "limited"
+            sys_key = sys.get("key", "")
+            risk_level = QUESTIONNAIRE_RISK_MAP.get(sys_key, "limited")
+            article_map = {
+                "high": "Příloha III — vysoce rizikový systém",
+                "limited": "čl. 50 — transparentnost",
+                "minimal": "dobrovolné best practices",
+            }
             combined_findings.append({
                 "name": tool_name,
-                "risk_level": "limited",  # default pro deklarovaný systém
-                "ai_act_article": "čl. 50 — transparentnost",
+                "risk_level": risk_level,
+                "ai_act_article": article_map.get(risk_level, "čl. 50 — transparentnost"),
             })
     _create_risk_slide(prs, combined_findings, client_info=client_info)
 
@@ -562,4 +577,224 @@ def generate_training_pptx(data: dict) -> bytes:
     pptx_bytes = buffer.getvalue()
 
     logger.info(f"PPTX vygenerováno: {len(pptx_bytes)} bytes, {len(prs.slides)} slidů")
+    return pptx_bytes
+
+
+# ══════════════════════════════════════════════════════════════════════
+# HTML → PPTX CONVERTER — LLM-generated slide content to PPTX
+# ══════════════════════════════════════════════════════════════════════
+
+import re
+from html.parser import HTMLParser
+
+
+class _SlideExtractor(HTMLParser):
+    """
+    Parses LLM-generated HTML where each <h2> is a slide title
+    and <li>/<p> tags under it are the slide content (bullets/text).
+    Also captures <div class='speaker-notes'> content for presenter notes.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.slides: list[dict] = []
+        self.presentation_title: str = ""
+        self._current_slide: dict | None = None
+        self._current_tag: str = ""
+        self._in_h1 = False
+        self._in_h2 = False
+        self._in_li = False
+        self._in_p = False
+        self._in_speaker_notes = False
+        self._speaker_notes_depth = 0
+        self._text_buf: list[str] = []
+        self._notes_buf: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        self._current_tag = tag
+        attrs_dict = dict(attrs)
+
+        # Detect <div class="speaker-notes"> (or class='speaker-notes')
+        if tag == "div" and "speaker-notes" in attrs_dict.get("class", ""):
+            self._in_speaker_notes = True
+            self._speaker_notes_depth = 1
+            self._notes_buf = []
+            return
+
+        # Track nested divs inside speaker-notes
+        if self._in_speaker_notes and tag == "div":
+            self._speaker_notes_depth += 1
+            return
+
+        # Skip other tags inside speaker-notes (we just collect text)
+        if self._in_speaker_notes:
+            return
+
+        if tag == "h1":
+            self._in_h1 = True
+            self._text_buf = []
+        elif tag == "h2":
+            # New slide
+            if self._current_slide:
+                self.slides.append(self._current_slide)
+            self._current_slide = {"title": "", "bullets": [], "paragraphs": [], "speaker_notes": ""}
+            self._in_h2 = True
+            self._text_buf = []
+        elif tag == "li":
+            self._in_li = True
+            self._text_buf = []
+        elif tag == "p" and self._current_slide is not None:
+            self._in_p = True
+            self._text_buf = []
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+
+        # Handle speaker-notes div closing
+        if self._in_speaker_notes and tag == "div":
+            self._speaker_notes_depth -= 1
+            if self._speaker_notes_depth <= 0:
+                self._in_speaker_notes = False
+                notes_text = " ".join("".join(self._notes_buf).split()).strip()
+                if notes_text and self._current_slide:
+                    self._current_slide["speaker_notes"] = notes_text
+                self._notes_buf = []
+            return
+
+        if self._in_speaker_notes:
+            return
+
+        if tag == "h1" and self._in_h1:
+            self._in_h1 = False
+            self.presentation_title = "".join(self._text_buf).strip()
+        elif tag == "h2" and self._in_h2:
+            self._in_h2 = False
+            if self._current_slide:
+                self._current_slide["title"] = "".join(self._text_buf).strip()
+        elif tag == "li" and self._in_li:
+            self._in_li = False
+            text = "".join(self._text_buf).strip()
+            if text and self._current_slide:
+                self._current_slide["bullets"].append(text)
+        elif tag == "p" and self._in_p:
+            self._in_p = False
+            text = "".join(self._text_buf).strip()
+            if text and self._current_slide:
+                self._current_slide["paragraphs"].append(text)
+        self._current_tag = ""
+
+    def handle_data(self, data):
+        if self._in_speaker_notes:
+            self._notes_buf.append(data)
+        elif self._in_h1 or self._in_h2 or self._in_li or self._in_p:
+            self._text_buf.append(data)
+
+    def finalize(self):
+        if self._current_slide:
+            self.slides.append(self._current_slide)
+            self._current_slide = None
+
+
+def html_slides_to_pptx(html_content: str, data: dict) -> bytes:
+    """
+    Converts LLM-generated HTML slide content to PPTX.
+
+    The HTML is expected to have:
+    - <h1> for presentation title
+    - <h2> for each slide title
+    - <ul><li> for bullet points
+    - <p> for descriptive text
+
+    Args:
+        html_content: LLM-generated HTML with slide structure
+        data: template_data dict for client info
+
+    Returns:
+        bytes — PPTX file content
+    """
+    company = data.get("company_name", "Firma")
+
+    # ── Parse HTML ──
+    parser = _SlideExtractor()
+    parser.feed(html_content)
+    parser.finalize()
+
+    if not parser.slides:
+        logger.warning("[PPTX Converter] No <h2> slides found — falling back to template PPTX")
+        return generate_training_pptx(data)
+
+    logger.info(f"[PPTX Converter] Extracted {len(parser.slides)} slides from LLM HTML")
+
+    # ── Client info ──
+    client_info = {"company": company}
+    oversight = data.get("oversight_person", {})
+    if oversight.get("name"):
+        client_info["person"] = oversight["name"]
+    if oversight.get("email"):
+        client_info["email"] = oversight["email"]
+    elif data.get("contact_email"):
+        client_info["email"] = data["contact_email"]
+    elif data.get("q_company_contact_email"):
+        client_info["email"] = data["q_company_contact_email"]
+
+    # ── Build PPTX ──
+    prs = Presentation()
+    prs.slide_width = SLIDE_WIDTH
+    prs.slide_height = SLIDE_HEIGHT
+
+    # Slide 1: Title slide
+    pres_title = parser.presentation_title or f"Školení AI Literacy — {company}"
+    first_slide = parser.slides[0] if parser.slides else None
+
+    # If first slide looks like a title slide (fewer bullets), use it
+    subtitle_parts = []
+    start_idx = 0
+    if first_slide and len(first_slide["bullets"]) <= 2:
+        # Title slide — use paragraphs and bullets as subtitle
+        subtitle_parts = first_slide["paragraphs"] + first_slide["bullets"]
+        start_idx = 1
+
+    _create_title_slide(
+        prs, company,
+        subtitle="  •  ".join(subtitle_parts) if subtitle_parts
+                 else "Povinné školení dle čl. 4 Nařízení (EU) 2024/1689 (AI Act)",
+        client_info=client_info,
+    )
+
+    # Content slides
+    for slide_data in parser.slides[start_idx:]:
+        title = slide_data["title"]
+        bullets = slide_data["bullets"]
+        paragraphs = slide_data["paragraphs"]
+        notes = slide_data.get("speaker_notes", "")
+
+        # Clean slide number prefix from title if present (e.g. "Slide 5: ...")
+        title = re.sub(r'^Slide\s*\d+\s*[:—–-]\s*', '', title, flags=re.IGNORECASE)
+
+        # If it's the last slide and looks like a disclaimer, use disclaimer style
+        if slide_data == parser.slides[-1] and (
+            "doložka" in title.lower() or "disclaimer" in title.lower()
+            or "aishield" in title.lower()
+        ):
+            _create_disclaimer_slide(prs)
+            continue
+
+        # Use bullets if available, otherwise format paragraphs as bullets
+        content = bullets if bullets else paragraphs
+
+        if content:
+            _create_content_slide(prs, title, content, client_info=client_info, speaker_notes=notes)
+        else:
+            # Empty slide — just title
+            _create_content_slide(prs, title, [""], client_info=client_info, speaker_notes=notes)
+
+    # Export to bytes
+    buffer = io.BytesIO()
+    prs.save(buffer)
+    buffer.seek(0)
+    pptx_bytes = buffer.getvalue()
+
+    logger.info(f"[PPTX Converter] LLM PPTX vygenerováno: {len(pptx_bytes)} bytes, "
+                f"{len(prs.slides)} slidů")
     return pptx_bytes

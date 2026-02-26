@@ -9,12 +9,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /* ── Helper: render warning text with **bold** markers as white bold spans ── */
 function renderWarningText(text: string) {
-    const parts = text.split(/\*\*(.*?)\*\*/g);
-    return parts.map((part, i) =>
-        i % 2 === 1
-            ? <span key={i} className="text-white font-bold">{part}</span>
-            : <span key={i}>{part}</span>
-    );
+    // Split by newlines first, then handle bold within each line
+    const lines = text.split(/\n/);
+    return lines.map((line, li) => {
+        const parts = line.split(/\*\*(.*?)\*\*/g);
+        const rendered = parts.map((part, i) =>
+            i % 2 === 1
+                ? <span key={i} className="text-white font-bold">{part}</span>
+                : <span key={i}>{part}</span>
+        );
+        return <span key={li}>{li > 0 && <br />}{rendered}</span>;
+    });
 }
 
 /* ═══════════════════════════════════════════
@@ -168,6 +173,7 @@ function QuestionnaireInner() {
     const [multiSelections, setMultiSelections] = useState<Record<string, string[]>>({});
     const [isEditMode, setIsEditMode] = useState(false);
     const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
+    const [serverAnswersLoaded, setServerAnswersLoaded] = useState(false); // flag to trigger resume-position
 
     /* ── Flat question list (with show_when filtering) ── */
     const allQuestions: (Question & { _section: string; _sectionTitle: string })[] = sections.flatMap((s) =>
@@ -263,6 +269,31 @@ function QuestionnaireInner() {
         })();
     }, [sections]); // run after sections loaded so answer slots exist
 
+    /* ── Restore from localStorage helper ── */
+    const _restoreFromLocalStorage = useCallback((cid: string) => {
+        try {
+            const saved = localStorage.getItem(`aishield_quest_${cid}`);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.answers) {
+                    setAnswers((prev) => {
+                        const updated = { ...prev };
+                        for (const [k, v] of Object.entries(parsed.answers) as [string, any][]) {
+                            if (updated[k]) {
+                                updated[k] = { ...updated[k], answer: v.answer || "", details: v.details || {}, tool_name: v.tool_name || "" };
+                            }
+                        }
+                        return updated;
+                    });
+                }
+                if (typeof parsed.currentQuestion === "number") {
+                    setCurrentQuestion(parsed.currentQuestion);
+                }
+                console.log("[Dotazník] Obnoveno z localStorage");
+            }
+        } catch { /* ignore localStorage errors */ }
+    }, []);
+
     /* ── URL params + pre-fill existing answers in edit mode ── */
     useEffect(() => {
         const cid = searchParams.get("company_id");
@@ -307,34 +338,35 @@ function QuestionnaireInner() {
                             return updated;
                         });
                         setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
+                        setServerAnswersLoaded(true);
+                        console.log(`[Dotazník] Obnoveno ${data.answers.length} odpovědí ze serveru`);
+                    } else {
+                        // Server has no answers — try localStorage
+                        _restoreFromLocalStorage(cid!);
                     }
                 })
                 .catch(() => {
-                    // No server answers — try localStorage
-                    try {
-                        const saved = localStorage.getItem(`aishield_quest_${cid}`);
-                        if (saved) {
-                            const parsed = JSON.parse(saved);
-                            if (parsed.answers) {
-                                setAnswers((prev) => {
-                                    const updated = { ...prev };
-                                    for (const [k, v] of Object.entries(parsed.answers) as [string, any][]) {
-                                        if (updated[k]) {
-                                            updated[k] = { ...updated[k], answer: v.answer || "", details: v.details || {}, tool_name: v.tool_name || "" };
-                                        }
-                                    }
-                                    return updated;
-                                });
-                            }
-                            if (typeof parsed.currentQuestion === "number") {
-                                setCurrentQuestion(parsed.currentQuestion);
-                            }
-                            console.log("[Dotazník] Obnoveno z localStorage");
-                        }
-                    } catch { /* ignore localStorage errors */ }
+                    // API error — try localStorage
+                    _restoreFromLocalStorage(cid!);
                 });
         }
     }, [searchParams]);
+
+    /* ── Resume position: jump to first unanswered question after server restore ── */
+    useEffect(() => {
+        if (!serverAnswersLoaded || allQuestions.length === 0) return;
+        // Don't override if ?q= param was provided (jump-to-question mode)
+        if (searchParams.get("q")) { setServerAnswersLoaded(false); return; }
+        const firstUnanswered = allQuestions.findIndex(q => !answers[q.key]?.answer);
+        if (firstUnanswered >= 0) {
+            setCurrentQuestion(firstUnanswered);
+            console.log(`[Dotazník] Resuming at question ${firstUnanswered} (first unanswered)`);
+        } else if (allQuestions.length > 0) {
+            setCurrentQuestion(0);
+            console.log(`[Dotazník] All answered, starting from question 0`);
+        }
+        setServerAnswersLoaded(false);
+    }, [serverAnswersLoaded, sections, answers]);
 
     /* ── Jump to specific question via ?q=question_key ── */
     useEffect(() => {
@@ -354,15 +386,27 @@ function QuestionnaireInner() {
         questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => {
             if (p >= totalQuestions - 1) return p;
-            console.log(`[Dotazník] goNext: ${p} → ${p + 1} / ${totalQuestions}`);
-            return p + 1;
+            const next = p + 1;
+            console.log(`[Dotazník] goNext: ${p} → ${next} / ${totalQuestions}`);
+            // Save position to localStorage on explicit navigation
+            if (companyId) {
+                try {
+                    const existing = localStorage.getItem(`aishield_quest_${companyId}`);
+                    const data = existing ? JSON.parse(existing) : {};
+                    data.currentQuestion = next;
+                    localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(data));
+                } catch { /* ignore */ }
+            }
+            return next;
         });
-    }, [totalQuestions]);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [totalQuestions, companyId]);
 
     const goBack = useCallback(() => {
         setDirection("back");
         questionStartTimeRef.current = Date.now();
         setCurrentQuestion((p) => p <= 0 ? -1 : p - 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }, []);
 
     // Keep answersRef in sync with answers state
@@ -398,6 +442,29 @@ function QuestionnaireInner() {
         },
         [track]
     );
+
+    /* ── Auto-save: debounced localStorage write on answer changes ── */
+    /* Only saves answers data, NOT currentQuestion position.
+       Position is saved only on explicit "Další" (goNext) or "Uložit a pokračovat později" */
+    useEffect(() => {
+        if (!companyId || currentQuestion < 0) return;
+        const timer = setTimeout(() => {
+            try {
+                const existing = localStorage.getItem(`aishield_quest_${companyId}`);
+                const existingData = existing ? JSON.parse(existing) : {};
+                const saveData = {
+                    ...existingData,
+                    answers: Object.fromEntries(
+                        Object.entries(answers).map(([k, v]) => [k, v])
+                    ),
+                    companyId,
+                    timestamp: new Date().toISOString(),
+                };
+                localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
+            } catch { /* ignore localStorage quota errors */ }
+        }, 2000); // 2s debounce
+        return () => clearTimeout(timer);
+    }, [answers, companyId]);
 
     /* ── Set detail (single select / text) ── */
     const setDetail = useCallback((qKey: string, fKey: string, value: string) => {
@@ -493,36 +560,6 @@ function QuestionnaireInner() {
         }
     }, [submitting, companyId, scanId, router]);
 
-    /* ── Keyboard handler ── */
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (currentQuestion < 0 || currentQuestion > totalQuestions) return;
-            const isLastQ = currentQuestion === totalQuestions - 1;
-            if (currentQuestion < totalQuestions) {
-                const q = allQuestions[currentQuestion];
-                if (q.type === "yes_no_unknown" || q.type === "yes_unknown") {
-                    if (e.key === "1") {
-                        setAnswer(q.key, "yes");
-                    }
-                    if (e.key === "2" && q.type === "yes_no_unknown") {
-                        setAnswer(q.key, "no");
-                    }
-                    if ((e.key === "3" && q.type === "yes_no_unknown") || (e.key === "2" && q.type === "yes_unknown")) {
-                        setAnswer(q.key, "unknown");
-                    }
-                    if ((e.key === "4" && q.type === "yes_no_unknown") || (e.key === "3" && q.type === "yes_unknown")) {
-                        setAnswer(q.key, "not_applicable");
-                    }
-                }
-            }
-            if (e.key === "Enter") {
-                if (!isLastQ) goNext();
-            }
-        };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [currentQuestion, totalQuestions, allQuestions, goNext, setAnswer, handleSubmit]);
-
     /* ── Progress ── */
     const progressPct =
         currentQuestion <= 0
@@ -555,10 +592,15 @@ function QuestionnaireInner() {
     if (submitting) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-                <div className="text-center animate-fade-in">
+                <div className="text-center animate-fade-in max-w-lg">
                     <div className="w-20 h-20 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin mx-auto mb-8" />
                     <h2 className="text-2xl font-bold text-white mb-3">Odesílám váš dotazník…</h2>
-                    <p className="text-slate-400 mb-2">Analyzujeme vaše odpovědi.</p>
+                    <div className="bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 rounded-2xl p-5 mb-4">
+                        <p className="text-base text-white leading-relaxed">
+                            👋 Děkuji za váš čas! Vše dáme dohromady — do <strong className="text-fuchsia-300">7 dní</strong> dostanete kompletní dokumentaci v elektronické podobě a do <strong className="text-cyan-300">14 dní</strong> vše v tištěné podobě na vaši adresu.
+                        </p>
+                        <p className="text-sm text-slate-400 mt-2">— Vaše Uršula</p>
+                    </div>
                     <p className="text-slate-500 text-sm">Za moment vás přesměrujeme do klientské zóny.</p>
                 </div>
                 <style>{`
@@ -643,6 +685,14 @@ function QuestionnaireInner() {
                             </>
                         )}
                     </h1>
+
+                    {/* Uršula greeting */}
+                    <div className="bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 rounded-2xl p-5 mb-4">
+                        <p className="text-lg sm:text-xl font-semibold text-white">
+                            👋 Dobrý den, já jsem váš virtuální pomocník <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">Uršula</span> a provedu vás celým procesem.
+                        </p>
+                    </div>
+
                     <p className="text-slate-400 text-lg mb-6">
                         {isEditMode
                             ? "Vaše předchozí odpovědi jsou předvyplněné. Projděte otázky a upravte, co potřebujete."
@@ -730,9 +780,7 @@ function QuestionnaireInner() {
        RISK WARNING BANNER (renders after answer for prohibited/high-risk)
        ═══════════════════════════════════════════ */
     const PROHIBITED_KEYS = new Set([
-        "uses_social_scoring", "uses_subliminal_manipulation", "uses_realtime_biometric",
-        "exploits_vulnerable_groups", "uses_criminal_risk_assessment",
-        "uses_untargeted_facial_scraping", "uses_biometric_categorization",
+        "uses_social_scoring", "uses_subliminal_manipulation",
     ]);
     const LAWYER_KEYS = new Set([
         "develops_own_ai", "modifies_ai_purpose", "uses_ai_for_children",
@@ -740,7 +788,7 @@ function QuestionnaireInner() {
     const HIGH_RISK_KEYS = new Set([
         "uses_ai_recruitment", "uses_ai_employee_monitoring", "uses_emotion_recognition",
         "uses_ai_creditscoring", "uses_ai_insurance", "uses_ai_decision",
-        "uses_ai_critical_infra", "uses_ai_education",
+        "uses_ai_critical_infra", "uses_ai_education", "uses_realtime_biometric",
     ]);
 
     const RiskWarningBanner = ({ questionKey, answer }: { questionKey: string; answer: string }) => {
@@ -828,7 +876,7 @@ function QuestionnaireInner() {
             problem: "Plán reakce na incidenty je vyžadován pro hlášení problémů.",
             solution: "Připravíme vám šablonu incident plánu včetně kontaktních postupů."
         },
-        has_human_oversight: {
+        has_oversight_person: {
             problem: "Lidský dohled nad AI je klíčový požadavek AI Act.",
             solution: "Navrhneme vám proces lidského dohledu přizpůsobený vaší firmě."
         },
@@ -836,17 +884,9 @@ function QuestionnaireInner() {
             problem: "Možnost přepsat rozhodnutí AI je povinná u vysoce rizikových systémů (čl. 14).",
             solution: "Připravíme vám dokumentaci override procesu."
         },
-        logs_ai_decisions: {
-            problem: "Logování rozhodnutí AI je potřebné pro zpětný audit.",
+        ai_decision_logging: {
+            problem: "Logovací povinnost — čl. 26 vyžaduje uchovávání automaticky generovaných protokolů.",
             solution: "Navrhneme vám systém logování a dokumentaci k němu."
-        },
-        has_cybersecurity_measures: {
-            problem: "Článek 15 AI Act vyžaduje kybernetickou bezpečnost AI systémů.",
-            solution: "Připravíme vám bezpečnostní checklist a dokumentaci opatření."
-        },
-        informs_employees_about_ai: {
-            problem: "Článek 26 odst. 7 AI Act vyžaduje informování zaměstnanců o AI na pracovišti.",
-            solution: "Dodáme vám vzorové oznámení pro zaměstnance a prezentaci."
         },
     };
 
@@ -976,9 +1016,6 @@ function QuestionnaireInner() {
                                             }
                     `}
                                     >
-                                        {selected && isMulti && (
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mb-1"><path d="M20 6L9 17l-5-5" /></svg>
-                                        )}
                                         <span className="block mb-2 text-slate-400">
                                             {INDUSTRY_SVG[opt] || (
                                                 <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
@@ -1089,13 +1126,13 @@ function QuestionnaireInner() {
                                         <input
                                             type={
                                                 field.key.includes("email") ? "email" :
-                                                field.key.includes("phone") || field.key.includes("telefon") ? "tel" : "text"
+                                                    field.key.includes("phone") || field.key.includes("telefon") ? "tel" : "text"
                                             }
                                             placeholder={
                                                 field.key.includes("email") ? "Např. technik@firma.cz" :
-                                                field.key.includes("phone") || field.key.includes("telefon") ? "Např. +420 123 456 789" :
-                                                field.key.includes("name") || field.key.includes("jméno") ? "Např. Jan Novák" :
-                                                "Napište…"
+                                                    field.key.includes("phone") || field.key.includes("telefon") ? "Např. +420 123 456 789" :
+                                                        field.key.includes("name") || field.key.includes("jméno") ? "Např. Jan Novák" :
+                                                            "Napište…"
                                             }
                                             className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-4 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
                                             value={String(ans?.details?.[field.key] || "")}
@@ -1154,7 +1191,140 @@ function QuestionnaireInner() {
         );
     }
 
-    /* ── Text input question (company name, IČO, address, email etc.) ── */
+    /* ── Address composite field (street, house number, city, zip) ── */
+    if (q.type === "address" || (q.type === "text" && q.key === "company_address")) {
+        // Parse existing answer into parts (supports ARES auto-fill as fallback)
+        const parts = (ans?.answer || "").split(" || ");
+        const hasStructured = parts.length === 4;
+        const addrStreet = hasStructured ? parts[0] : (ans?.answer || "");
+        const addrHouseNum = hasStructured ? parts[1] : "";
+        const addrCity = hasStructured ? parts[2] : "";
+        const addrZip = hasStructured ? parts[3] : "";
+
+        const composeAddress = (street: string, house: string, city: string, zip: string) => {
+            // Store as structured " || " delimited for parsing, but display-ready
+            return `${street} || ${house} || ${city} || ${zip}`;
+        };
+
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col">
+                <ProgressBarUI current={currentQuestion} total={totalQuestions} />
+
+                <div className="fixed top-[-200px] right-[-100px] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="fixed bottom-[-150px] left-[-80px] w-[350px] h-[350px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="flex-1 flex items-center justify-center p-4 pt-16">
+                    <div className={`w-full max-w-xl animate-slide-${direction === "forward" ? "in" : "in-back"}`}>
+
+                        <SectionTransitionCard />
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+                            {q.text}
+                        </h2>
+
+                        {q.help_text && (
+                            <div className="text-slate-400 text-sm mb-6 flex items-start gap-2">
+                                <span className="text-slate-500 mt-0.5 flex-shrink-0">ℹ️</span>
+                                <span className="whitespace-pre-line">{q.help_text}</span>
+                            </div>
+                        )}
+                        {!q.help_text && <div className="mb-6" />}
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Ulice</label>
+                                <input
+                                    type="text"
+                                    placeholder="Např. Václavské náměstí"
+                                    className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-3.5 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                    value={addrStreet}
+                                    onChange={(e) => setAnswer(q.key, composeAddress(e.target.value, addrHouseNum, addrCity, addrZip))}
+                                    autoFocus
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Číslo popisné</label>
+                                <input
+                                    type="text"
+                                    placeholder="Např. 837/1"
+                                    className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-3.5 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                    value={addrHouseNum}
+                                    onChange={(e) => setAnswer(q.key, composeAddress(addrStreet, e.target.value, addrCity, addrZip))}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs text-slate-400 mb-1.5 block font-medium">Město</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Např. Praha 1"
+                                        className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-3.5 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        value={addrCity}
+                                        onChange={(e) => setAnswer(q.key, composeAddress(addrStreet, addrHouseNum, e.target.value, addrZip))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-400 mb-1.5 block font-medium">PSČ</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Např. 110 00"
+                                        className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-3.5 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                                        value={addrZip}
+                                        onChange={(e) => setAnswer(q.key, composeAddress(addrStreet, addrHouseNum, addrCity, e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* AI Act reference pill */}
+                        {q.ai_act_article && (
+                            <div className="mt-4">
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Navigation */}
+                        <div className="flex justify-between mt-8">
+                            <button
+                                onClick={goBack}
+                                className="px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1]"
+                            >
+                                ← Zpět
+                            </button>
+                            {(() => {
+                                const allFilled = addrStreet.trim() && addrHouseNum.trim() && addrCity.trim() && addrZip.trim();
+                                if (isLast) {
+                                    return (
+                                        <button
+                                            onClick={handleSubmit}
+                                            disabled={submitting || !allFilled}
+                                            className={`px-8 py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${allFilled ? "bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:shadow-lg hover:shadow-cyan-500/25 animate-pulse" : "bg-white/[0.06] border border-white/[0.1] text-slate-500 cursor-not-allowed"}`}
+                                        >
+                                            {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                        </button>
+                                    );
+                                }
+                                return (
+                                    <button
+                                        onClick={goNext}
+                                        disabled={!allFilled}
+                                        className={`px-8 py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${allFilled ? "bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:shadow-lg hover:shadow-fuchsia-500/25" : "bg-white/[0.06] border border-white/[0.1] text-slate-500 cursor-not-allowed"}`}
+                                    >
+                                        Další →
+                                    </button>
+                                );
+                            })()}
+                        </div>
+                        <SaveLaterButton answers={answers} currentQuestion={currentQuestion} companyId={companyId} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /* ── Text input question (company name, IČO, email etc.) ── */
     if (q.type === "text") {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col">
@@ -1180,13 +1350,14 @@ function QuestionnaireInner() {
                         {!q.help_text && <div className="mb-6" />}
 
                         <input
-                            type={q.key === "company_contact_email" ? "email" : "text"}
+                            type={q.key === "company_contact_email" ? "email" : q.key === "company_phone" ? "tel" : "text"}
                             placeholder={
                                 q.key === "company_legal_name" ? "Např. ACME Solutions s.r.o." :
                                     q.key === "company_ico" ? "Např. 12345678" :
                                         q.key === "company_address" ? "Např. Václavské nám. 1, Praha 1" :
                                             q.key === "company_contact_email" ? "Např. ai@firma.cz" :
-                                                "Napište…"
+                                                q.key === "company_phone" ? "Např. +420 123 456 789" :
+                                                    "Napište…"
                             }
                             className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-4 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
                             value={ans?.answer || ""}
@@ -1286,7 +1457,6 @@ function QuestionnaireInner() {
                             { value: "not_applicable", label: "Netýká se mě", icon: "—" },
                         ] as const).map((opt) => {
                             const selected = ans?.answer === opt.value;
-                            const isNA = opt.value === "not_applicable";
                             return (
                                 <button
                                     key={opt.value}
@@ -1312,18 +1482,14 @@ function QuestionnaireInner() {
                                     }}
                                     className={`
                     relative py-5 px-4 rounded-2xl border text-center transition-all duration-200 cursor-pointer
-                    ${selected && isNA
-                                            ? "bg-slate-500/20 border-slate-400/50 text-slate-300 shadow-lg shadow-slate-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-slate-400/60"
-                                            : selected
-                                                ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
-                                                : isNA
-                                                    ? "bg-white/[0.02] border-white/[0.06] text-slate-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-slate-400"
-                                                    : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
+                    ${selected
+                                            ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
+                                            : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
                                         }
                   `}
                                 >
-                                    <span className={`text-2xl block mb-1 ${isNA ? "text-lg" : ""}`}>{opt.icon}</span>
-                                    <span className={`font-semibold block ${isNA ? "text-xs" : "text-base"}`}>{opt.label}</span>
+                                    <span className="text-2xl block mb-1">{opt.icon}</span>
+                                    <span className="font-semibold block text-base">{opt.label}</span>
                                 </button>
                             );
                         })}
@@ -1339,10 +1505,6 @@ function QuestionnaireInner() {
                         </div>
                     )}
 
-                    {/* Risk / Prohibited / Lawyer warning banners */}
-                    {ans?.answer && !isNA && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
-                    {ans?.answer && !isNA && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
-
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (
                         <div className="animate-slide-down mb-6">
@@ -1353,19 +1515,25 @@ function QuestionnaireInner() {
                                         <div key={field.key}>
                                             {/* Info type → informational text */}
                                             {field.type === "info" ? (
-                                                <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${field.key === "manipulation_warning"
+                                                <div className={`flex items-start gap-2 rounded-xl px-4 py-3 ${field.label.startsWith("🚫")
                                                     ? "bg-red-500/[0.12] border-2 border-red-500/40"
-                                                    : "bg-cyan-500/[0.06] border border-cyan-500/15"
+                                                    : field.label.startsWith("⚠️")
+                                                        ? "bg-amber-500/[0.08] border border-amber-500/25"
+                                                        : "bg-cyan-500/[0.06] border border-cyan-500/15"
                                                     }`}>
-                                                    {field.key === "manipulation_warning" ? (
+                                                    {field.label.startsWith("🚫") ? (
                                                         <span className="text-red-400 text-lg mt-0.5 flex-shrink-0">🚫</span>
+                                                    ) : field.label.startsWith("⚠️") ? (
+                                                        <span className="text-amber-400 text-lg mt-0.5 flex-shrink-0">⚠️</span>
                                                     ) : (
                                                         <svg className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                         </svg>
                                                     )}
-                                                    <p className={`text-xs leading-relaxed ${field.key === "manipulation_warning" ? "text-red-300 font-semibold" : "text-slate-400"
-                                                        }`}>{field.label}</p>
+                                                    <p className={`text-xs leading-relaxed ${field.label.startsWith("🚫") ? "text-red-300 font-semibold"
+                                                        : field.label.startsWith("⚠️") ? "text-amber-200"
+                                                        : "text-slate-400"
+                                                        }`}>{renderWarningText(field.label.replace(/^[🚫⚠️ℹ️✅📦]+\s*/, ''))}</p>
                                                 </div>
                                             ) : (
                                                 <label className="block text-slate-400 text-sm mb-2 font-medium">
@@ -1438,9 +1606,6 @@ function QuestionnaireInner() {
                                                                         }
                                     `}
                                                                 >
-                                                                    {selected && (
-                                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                                                                    )}
                                                                     {opt}
                                                                 </button>
                                                             );
@@ -1704,9 +1869,6 @@ function QuestionnaireInner() {
                                                                     }
                                     `}
                                                             >
-                                                                {selected && (
-                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                                                                )}
                                                                 {opt}
                                                             </button>
                                                         );
@@ -1719,6 +1881,10 @@ function QuestionnaireInner() {
                             </div>
                         </div>
                     )}
+
+                    {/* Risk / Prohibited / Lawyer warning banners */}
+                    {ans?.answer && !isNA && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
+                    {ans?.answer && !isNA && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
 
                     {/* Navigation */}
                     <div className="flex justify-between items-center mt-6">
@@ -1809,10 +1975,14 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
     currentQuestion: number;
     companyId: string | null;
 }) {
+    const [saving, setSaving] = useState(false);
     return (
         <div className="flex justify-center mt-6 mb-4">
             <button
-                onClick={() => {
+                disabled={saving}
+                onClick={async () => {
+                    setSaving(true);
+                    // 1) Save to localStorage
                     const saveData = {
                         answers: Object.fromEntries(
                             Object.entries(answers).map(([k, v]) => [k, v])
@@ -1822,7 +1992,36 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
                         timestamp: new Date().toISOString(),
                     };
                     localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(saveData));
-                    // Show styled confirmation overlay instead of ugly system alert
+
+                    // 2) Save to server (partial submit — UPSERT keeps all answers safe)
+                    if (companyId) {
+                        try {
+                            const list = Object.values(answers)
+                                .filter((a) => a.answer !== "")
+                                .map((a) => ({
+                                    question_key: (a as any).question_key,
+                                    section: (a as any).section,
+                                    answer: a.answer,
+                                    details: Object.keys(a.details).length > 0 ? a.details : null,
+                                    tool_name: (a as any).tool_name || null,
+                                }));
+                            if (list.length > 0) {
+                                await fetch(`${API_URL}/api/questionnaire/submit`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        company_id: companyId,
+                                        answers: list,
+                                    }),
+                                });
+                            }
+                        } catch {
+                            // Server save failed — localStorage backup is enough
+                            console.warn("[Dotazník] Server save failed, localStorage saved");
+                        }
+                    }
+
+                    // 3) Show confirmation overlay
                     const overlay = document.createElement('div');
                     overlay.innerHTML = `
                         <div style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.85);backdrop-filter:blur(8px);animation:fadeIn .3s ease">
@@ -1831,7 +2030,7 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
                                 <h3 style="color:white;font-size:1.25rem;font-weight:700;margin-bottom:0.5rem">Odpovědi uloženy</h3>
-                                <p style="color:rgb(148,163,184);font-size:0.875rem;line-height:1.6;margin-bottom:1.5rem">Váš pokrok je bezpečně uložen. Můžete se kdykoliv vrátit a pokračovat přesně tam, kde jste skončili.</p>
+                                <p style="color:rgb(148,163,184);font-size:0.875rem;line-height:1.6;margin-bottom:1.5rem">Váš pokrok je bezpečně uložen na serveru. Můžete se kdykoliv vrátit a pokračovat přesně tam, kde jste skončili.</p>
                                 <a href="/dashboard" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 2rem;border-radius:0.75rem;background:linear-gradient(135deg,#a855f7,#6366f1);color:white;font-weight:600;font-size:0.875rem;text-decoration:none;transition:all .2s;box-shadow:0 4px 15px rgba(168,85,247,0.3)">Zpět na dashboard</a>
                             </div>
                         </div>
@@ -1839,7 +2038,7 @@ function SaveLaterButton({ answers, currentQuestion, companyId }: {
                     `;
                     document.body.appendChild(overlay);
                 }}
-                className="px-5 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.15] transition-all flex items-center gap-2 text-sm font-medium"
+                className="px-5 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.15] transition-all flex items-center gap-2 text-sm font-medium disabled:opacity-50"
             >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />

@@ -58,8 +58,8 @@ QUESTIONNAIRE_SECTIONS = [
             {
                 "key": "company_address",
                 "text": "Sídlo firmy (adresa):",
-                "type": "text",
-                "help_text": "Adresa sídla dle rejstříku — použijeme ji v Compliance Reportu, na transparěnční stránce a v oficiální dokumentaci.\nPříklad: Václavské náměstí 1, 110 00 Praha 1",
+                "type": "address",
+                "help_text": "Adresa sídla dle rejstříku — použijeme ji v Compliance Reportu, na transparenční stránce a v oficiální dokumentaci.",
                 "risk_hint": "none",
                 "ai_act_article": None,
             },
@@ -70,6 +70,14 @@ QUESTIONNAIRE_SECTIONS = [
                 "help_text": "E-mail, na který se mohou obracet zákazníci, zaměstnanci nebo dozorové orgány ohledně vašeho používání AI. Zobrazí se na transparěnční stránce.\nPříklad: ai@vase-firma.cz nebo info@vase-firma.cz",
                 "risk_hint": "none",
                 "ai_act_article": "čl. 50 — transparentnost a informování",
+            },
+            {
+                "key": "company_phone",
+                "text": "Kontaktní telefon:",
+                "type": "text",
+                "help_text": "Telefonní číslo pro kontakt ohledně AI záležitostí. Zobrazí se v dokumentaci a na transparenční stránce.\nPříklad: +420 123 456 789",
+                "risk_hint": "none",
+                "ai_act_article": None,
             },
 {
                 "key": "company_industry",
@@ -108,11 +116,10 @@ QUESTIONNAIRE_SECTIONS = [
                     "Upgates",
                     "Shopsys",
                     "OpenCart",
-                    "Vlastní řešení (custom)",
                     "Nemám e-shop",
                     "Jiné",
                 ],
-                "help_text": "Tato informace je zásadní pro implementaci transparenční stránky AI Act — každá platforma vyžaduje jiný způsob nasazení.\n\nPříklady:\n1) Shoptet — nejrozšířenější český e-shop systém.\n2) WooCommerce — plugin pro WordPress.\n3) Shopify — cloudová platforma.\n4) Vlastní řešení — custom web/CMS.\n\nPokud víte, že váš web běží na WordPressu, ale neprodáváte online, vyberte 'WooCommerce (WordPress)' nebo 'Vlastní řešení (custom)'.\nPokud máte pouze statický web nebo web na míru, vyberte 'Vlastní řešení (custom)'.",
+                "help_text": "Tato informace je zásadní pro implementaci transparenční stránky AI Act — každá platforma vyžaduje jiný způsob nasazení.\n\nPříklady:\n1) Shoptet — nejrozšířenější český e-shop systém.\n2) WooCommerce — plugin pro WordPress.\n3) Shopify — cloudová platforma.\n\nPokud máte vlastní řešení, web na míru nebo statický web, vyberte 'Jiné' a napište nám jaký systém používáte.",
                 "followup": {
                     "condition": "Jiné",
                     "fields": [
@@ -191,6 +198,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Salesforce", "HubSpot", "ChatGPT", "Claude", "Gemini", "Jiný CRM", "Jiný"]},
                         {"key": "scoring_scope", "label": "Kdo je hodnocen?", "type": "multi_select",
                          "options": ["Zaměstnanci", "Zákazníci"]},
+                        {"key": "scoring_banned_warning", "label": "🚫 ZAKÁZANÝ SYSTÉM — Sociální scoring je výslovně zakázán čl. 5 odst. 1 písm. c) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem. Na toto nemáme kapacity ani kompetence — jedná se o protiprávní jednání, které vyžaduje právní řešení.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -204,7 +212,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "yes",
                     "fields": [
-                        {"key": "manipulation_warning", "label": "🚫 ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem. V tomto případě nedokážeme pomoct ani my — jedná se o protiprávní jednání.", "type": "info"},
+                        {"key": "manipulation_warning", "label": "🚫 ZAKÁZANÝ SYSTÉM — Podprahová manipulace pomocí AI je výslovně zakázána čl. 5 odst. 1 písm. a) AI Act. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Okamžitě ukončete provoz tohoto systému a konzultujte s právníkem. V této oblasti nemáme kapacity ani kompetence vám pomoci — jedná se o protiprávní jednání. Připravíme vám kompletní podklady pro právní konzultaci, aby právník mohl ihned řešit vaši situaci.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -222,6 +230,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["Kamerový systém", "Docházkový systém", "Přístupový systém", "Jiný"]},
                         {"key": "biometric_purpose", "label": "Účel (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Docházka zaměstnanců", "Kontrola přístupu", "Identifikace zákazníků", "Bezpečnost", "Jiné"]},
+                        {"key": "biometric_info", "label": "ℹ️ Biometrická identifikace v reálném čase ve veřejném prostoru je zakázána (čl. 5 odst. 1 písm. h). V soukromých prostorách (kanceláře, sklady) jde o vysoce rizikový systém (Příloha III) — není zakázaný, ale vyžaduje rozšířenou dokumentaci, posouzení dopadů (FRIA) a registraci. AIshield vám připraví veškerou potřebnou dokumentaci.", "type": "info"},
                     ]
                 },
                 "risk_hint": "high",
@@ -250,7 +259,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "chatgpt_purpose", "label": "K čemu je používáte?", "type": "multi_select",
                          "options": ["Psaní textů", "Překlady", "Emaily", "Analýza dat", "Programování", "Zákaznický servis", "Jiné"]},
                         {"key": "chatgpt_data_type", "label": "Jaká data do něj vkládáte?", "type": "multi_select",
-                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data", "Zdrojový kód / obchodní tajemství", "Jiné"]},
+                         "options": ["Pouze veřejná data", "Interní dokumenty", "Osobní údaje zákazníků", "Finanční data", "Zdrojový kód / obchodní tajemství", "Jiné"],
+                         "warning": {"Osobní údaje zákazníků": "⚠️ Pozor — vkládání osobních údajů do AI nástrojů může znamenat předání dat třetí straně mimo EU (čl. 44 GDPR). Zkontrolujte DPA s poskytovatelem AI a zvažte anonymizaci dat.", "Finanční data": "⚠️ Finanční data mohou podléhat regulaci (zákon o účetnictví, AML). Zvažte, zda AI nástroj splňuje požadavky na zabezpečení a zda nemůže dojít k úniku citlivých informací."}},
                     ]
                 },
                 "risk_hint": "limited",
@@ -285,6 +295,7 @@ QUESTIONNAIRE_SECTIONS = [
                          "options": ["ChatGPT / GPT-4o", "Gemini (Google)", "Claude (Anthropic)", "DALL-E", "Midjourney", "Stable Diffusion", "Canva AI", "Adobe Firefly", "Jasper", "Copy.ai", "Suno AI", "Jiný"]},
                         {"key": "content_published", "label": "Kde AI obsah používáte?", "type": "multi_select",
                          "options": ["Web / sociální sítě", "Interní materiály", "E-maily zákazníkům", "Reklamní kampaně", "Jiné"]},
+                        {"key": "content_transparency_info", "label": "ℹ️ Podle čl. 50 odst. 4 AI Act musí být AI-generovaný obsah zveřejněný pro veřejnost označen jako uměle vytvořený (platí od 2. srpna 2026). Týká se to textů, obrázků i videí na webu, sociálních sítích a v reklamních kampaních. V rámci služby AIshield vám dodáme pokyny pro správné označování AI obsahu.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -360,7 +371,8 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "emotion_tool_name", "label": "Které nástroje používáte? (vyberte vše)", "type": "multi_select",
                          "options": ["Kamerový systém", "Call centrum analýza", "ChatGPT", "Claude", "Gemini", "Jiný"]},
                         {"key": "emotion_context", "label": "V jakém kontextu? (vyberte vše, co platí)", "type": "multi_select",
-                         "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost", "Jiné"]},
+                         "options": ["Pracovní prostředí", "Zákaznický servis", "Vzdělávání", "Bezpečnost", "Jiné"],
+                         "warning": {"Pracovní prostředí": "🚫 ZAKÁZANÁ PRAKTIKA — Rozpoznávání emocí zaměstnanců na pracovišti je výslovně zakázáno čl. 5 odst. 1 písm. f) AI Act. Výjimky existují pouze pro zdravotní a bezpečnostní účely. Pokuta až 35 milionů EUR nebo 7 % celosvětového obratu. Doporučujeme okamžitě konzultovat s právníkem."}},
                     ]
                 },
                 "risk_hint": "high",
@@ -543,7 +555,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "infra_tool_name", "label": "Které systémy používáte? (vyberte vše)", "type": "multi_select",
-                         "options": ["Siemens MindSphere", "ABB Ability", "Honeywell Forge", "Jiný"]},
+                         "options": ["Siemens MindSphere", "ABB Ability", "Honeywell Forge", "Schneider Electric EcoStruxure", "GE Digital Predix", "Jiný"]},
                         {"key": "infra_sector", "label": "Sektor (vyberte vše, co platí)", "type": "multi_select",
                          "options": ["Energetika", "Doprava", "Vodohospodářství", "Telekomunikace", "Zdravotnictví", "Jiné"]},
                         {"key": "infra_warning", "label": "⚠️ KRITICKÁ INFRASTRUKTURA — AI jako bezpečnostní komponenta v kritické infrastruktuře (Příloha III bod 2) podléhá přísnému režimu. Registrace probíhá u národního orgánu (v ČR pravděpodobně NÚKIB), nikoli ve veřejné EU databázi (čl. 49 odst. 4). Povinnosti: systém řízení rizik (čl. 9), technická dokumentace (Příloha IV), posouzení shody, CE označení, post-market monitoring. Navíc platí zákon o kybernetické bezpečnosti (181/2014 Sb.). **Doporučujeme konzultaci s právníkem specializovaným na AI Act — AIshield vám připraví veškeré podklady.**", "type": "info"},
@@ -605,25 +617,28 @@ QUESTIONNAIRE_SECTIONS = [
                 "type": "yes_no_unknown",
                 "help_text": "Příklady:\n1) ChatGPT ukládá data na serverech v USA (OpenAI).\n2) Google Gemini — servery v USA i EU.\n3) Vlastní AI hostovaná na českém VPS (CZ.NIC).\nPokud nevíte, pravděpodobně jsou data mimo EU.",
                 "followup": {
-                    "condition": "unknown",
+                    "condition": "yes",
                     "fields": [
-                        {"key": "data_location_hint", "label": "Pomůžeme vám to zjistit — které AI nástroje používáte?", "type": "multi_select",
-                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA/EU)", "Microsoft Copilot (EU i USA)", "Claude (Anthropic — USA)", "Perplexity (USA)", "Midjourney (USA)", "Jasper AI (USA)", "DeepL (Německo/EU)", "Grammarly (USA)", "Notion AI (USA)", "Vlastní server v ČR/EU", "Jiný"]},
-                        {"key": "data_location_info", "label": "ℹ️ Většina velkých AI poskytovatelů (OpenAI, Google, Anthropic) ukládá data primárně v USA. Pro GDPR soulad zvažte EU hosting nebo smluvní záruky (SCC).", "type": "info"},
-                    ]
-                },
-                "followup_yes": {
-                    "fields": [
+                        {"key": "data_location_provider", "label": "Které AI nástroje / poskytovatele používáte?", "type": "multi_select",
+                         "options": ["ChatGPT (OpenAI)", "Google Gemini", "Microsoft Copilot", "Claude (Anthropic)", "Perplexity", "Midjourney", "DeepL", "Vlastní server v ČR/EU", "Jiný"]},
                         {"key": "data_location_eu_detail", "label": "Kde přesně jsou data uložena?", "type": "multi_select",
-                         "options": ["Azure EU (západní Evropa)", "AWS Frankfurt / Irsko", "GCP EU", "Vlastní server v ČR/EU", "Hetzner / OVH / jiný EU hosting", "Jiné"]},
+                         "options": ["Azure EU (západní Evropa)", "AWS Frankfurt / Irsko", "GCP EU", "Vlastní server v ČR/EU", "Hetzner / OVH / jiný EU hosting", "Nevím přesně", "Jiné"]},
                         {"key": "data_location_eu_ok", "label": "✅ Uložení dat v EU je z pohledu GDPR ideální stav. Do dokumentace zaznamenáme konkrétní lokaci.", "type": "info"},
                     ]
                 },
                 "followup_no": {
                     "fields": [
-                        {"key": "data_outside_eu_warning", "label": "⚠️ Data vašich AI systémů jsou uložena mimo EU. Dle GDPR čl. 44+ musíte mít právní základ pro přenos dat do třetích zemí — např. standardní smluvní doložky (SCC) nebo rozhodnutí o adekvaci. Ověřte, zda máte s poskytovatelem uzavřenou DPA (Data Processing Agreement).", "type": "info"},
-                        {"key": "data_outside_eu_tool", "label": "Které AI nástroje ukládají data mimo EU?", "type": "multi_select",
-                         "options": ["ChatGPT (OpenAI — USA)", "Google Gemini (USA)", "Claude (Anthropic — USA)", "Perplexity (USA)", "Jiné"]},
+                        {"key": "data_location_provider", "label": "Které AI nástroje / poskytovatele používáte?", "type": "multi_select",
+                         "options": ["ChatGPT (OpenAI)", "Google Gemini", "Microsoft Copilot", "Claude (Anthropic)", "Perplexity", "Midjourney", "DeepL", "Vlastní server v ČR/EU", "Jiný"]},
+                        {"key": "data_outside_eu_warning", "label": "⚠️ Data mimo EU vyžadují právní základ dle GDPR čl. 44+ (standardní smluvní doložky SCC nebo rozhodnutí o adekvaci). Ověřte, zda máte s poskytovatelem uzavřenou DPA (Data Processing Agreement). **V rámci dokumentace vám pomůžeme identifikovat rizika a doporučíme kroky k nápravě.**", "type": "info"},
+                    ]
+                },
+                "followup": {
+                    "condition": "unknown",
+                    "fields": [
+                        {"key": "data_location_provider", "label": "Pomůžeme vám to zjistit — které AI nástroje používáte?", "type": "multi_select",
+                         "options": ["ChatGPT (OpenAI)", "Google Gemini", "Microsoft Copilot", "Claude (Anthropic)", "Perplexity", "Midjourney", "DeepL", "Vlastní server v ČR/EU", "Jiný"]},
+                        {"key": "data_location_info", "label": "ℹ️ Většina velkých AI poskytovatelů (OpenAI, Google, Anthropic) ukládá data primárně v USA. Na základě vámi vybraných nástrojů zjistíme lokaci dat a zahrneme ji do dokumentace.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -743,6 +758,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "followup": {
                     "condition": "any",
                     "fields": [
+                        {"key": "oversight_warning", "label": "⚠️ Článek 14 AI Act vyžaduje lidský dohled nad AI systémy. Musíte určit odpovědnou osobu. Vyplňte prosím kontakt níže — použijeme ho v compliance dokumentaci.", "type": "info"},
                         {"key": "oversight_role", "label": "Jakou roli má osoba, která na AI dohlíží?", "type": "select",
                          "options": [
                              "Jednatel / majitel (dohlížím osobně)",
@@ -767,11 +783,7 @@ QUESTIONNAIRE_SECTIONS = [
                          ]},
                     ]
                 },
-                "followup_no": {
-                    "fields": [
-                        {"key": "oversight_warning", "label": "⚠️ Článek 14 AI Act vyžaduje lidský dohled nad AI systémy. Musíte určit odpovědnou osobu. Vyplňte prosím kontakt výše — použijeme ho v compliance dokumentaci.", "type": "info"},
-                    ]
-                },
+
                 "risk_hint": "high",
                 "ai_act_article": "čl. 14 — lidský dohled",
             },
@@ -806,16 +818,16 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "logging_method", "label": "Jakým způsobem logujete?", "type": "multi_select",
-                         "options": ["Logy v aplikaci (automatické)", "Export do SIEM / centrálního logu", "Excel / tabulka", "Ticketovací systém (Jira, Freshdesk)", "Jiný systém"]},
+                         "options": ["Logy v aplikaci (automatické)", "Export do SIEM / centrálního logu", "Excel / tabulka", "Ticketovací systém (Jira, Freshdesk)", "Jiný"]},
                         {"key": "logging_retention", "label": "Jak dlouho logy uchováváte?", "type": "single_select",
-                         "options": ["Méně než 6 měsíců", "6–12 měsíců", "1–3 roky", "Déle než 3 roky", "Nevím"]},
+                         "options": ["Méně než 6 měsíců", "6–12 měsíců", "1–3 roky", "Déle než 3 roky", "Nevím"],
+                         "warning": {"Nevím": "⚠️ Doporučujeme zjistit dobu uchovávání logů — čl. 26 AI Act vyžaduje minimálně 6 měsíců. Ověřte u svého IT oddělení nebo správce systému."}},
                         {"key": "logging_ok_info", "label": "✅ Výborně! Čl. 26 odst. 1 písm. f) AI Act vyžaduje uchovávání logů minimálně 6 měsíců. Do dokumentace zaznamenáme váš systém logování.", "type": "info"},
                     ]
                 },
                 "followup_no": {
                     "fields": [
-                        {"key": "logging_warning", "label": "⚠️ Článek 26 odst. 1 písm. f) AI Act vyžaduje uchovávání automaticky generovaných protokolů po dobu nejméně 6 měsíců. Logování je klíčové pro audit a zpětnou kontrolu.", "type": "info"},
-                        {"key": "logging_internal_note", "label": "⚠️ Důležité: Logování rozhodnutí AI je interní záležitost vaší firmy — vy nejlépe znáte své systémy a procesy. AIshield vám poskytne profesionálně zpracovaný logovací protokol (co zaznamenávat, jak dlouho uchovávat, formát záznamů), ale samotné logování musíte nastavit ve svých interních systémech.", "type": "info"},
+                        {"key": "logging_warning", "label": "⚠️ Článek 26 odst. 1 písm. f) AI Act vyžaduje uchovávání automaticky generovaných protokolů po dobu nejméně 6 měsíců. Logování je klíčové pro audit a zpětnou kontrolu. AIshield vám poskytne profesionálně zpracovaný logovací protokol (co zaznamenávat, jak dlouho uchovávat, formát záznamů), ale samotné logování musíte nastavit ve svých interních systémech.", "type": "info"},
                     ]
                 },
                 "risk_hint": "limited",
@@ -875,7 +887,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "gpai_provider", "label": "Které API používáte?", "type": "multi_select",
-                         "options": ["OpenAI (GPT-4/4o)", "Anthropic (Claude)", "Google (Gemini)", "Meta (Llama)", "Mistral", "Vlastní model", "Jiné"]},
+                         "options": ["OpenAI (GPT-4o / o3 / o4-mini)", "Anthropic (Claude)", "Google (Gemini)", "Meta (Llama)", "Mistral", "Vlastní model / Jiné"]},
                         {"key": "gpai_customer_facing", "label": "Jsou výstupy LLM viditelné přímo zákazníkům?", "type": "select",
                          "options": ["Ano, zákazníci vidí AI výstupy přímo", "Částečně — AI navrhuje, člověk kontroluje", "Ne — pouze interní použití"],
                          "warning": {"Ano, zákazníci vidí AI výstupy přímo": "⚠️ Od 2. srpna 2025 platí pravidla pro GPAI (čl. 51-54 AI Act). Jako deployer integrující LLM do zákaznického produktu máte povinnost transparentnosti — zákazníci musí vědět, že interagují s AI (čl. 50). **AIshield vám pomůže s GPAI compliance.**"}},
@@ -927,7 +939,8 @@ QUESTIONNAIRE_SECTIONS = [
                              "Interní chat (Teams, Slack apod.)",
                              "Ticketovací systém (Jira, Freshdesk apod.)",
                              "Nemáme definovaný kanál",
-                         ]},
+                         ],
+                         "warning": {"Nemáme definovaný kanál": "⚠️ Důrazně doporučujeme stanovit jasný komunikační kanál pro AI incidenty. Bez něj hrozí zpomalená reakce a vyšší škody. AIshield vám navrhne vhodný komunikační postup."}},
                         {"key": "incident_existing_ok", "label": "✅ Výborně! Na základě těchto informací doplníme váš stávající plán o požadavky AI Act — zejména povinné hlášení závažných incidentů dle čl. 73 a komunikaci s dozorovou autoritou.", "type": "info"},
                     ]
                 },
@@ -972,7 +985,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "condition": "yes",
                     "fields": [
                         {"key": "changes_tracking_method", "label": "Jak změny dokumentujete?", "type": "multi_select",
-                         "options": ["Verze v Git / repozitáři", "Interní tabulka / evidence", "Ticketovací systém (Jira)", "Changelog v dokumentaci", "Jiný způsob"]},
+                         "options": ["Verze v Git / repozitáři", "Interní tabulka / evidence", "Ticketovací systém (Jira)", "Changelog v dokumentaci", "Jiný"]},
                         {"key": "changes_ok_info", "label": "✅ Výborně! Dokumentace změn je požadavek Přílohy IV bod 6 AI Act. Do compliance dokumentace zaznamenáme váš systém evidence změn.", "type": "info"},
                     ]
                 },
