@@ -15,6 +15,7 @@ import asyncio
 import json
 import re
 import logging
+import httpx
 import os
 import time
 from datetime import datetime, timezone
@@ -423,6 +424,91 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
 # COMPANY CONTEXT BUILDER — sdílený kontext pro všechny moduly
 # ══════════════════════════════════════════════════════════════════════
 
+
+
+# ══════════════════════════════════════════════════════════════════════
+# BRAND COLOR EXTRACTOR — fetches client website, extracts color scheme
+# ══════════════════════════════════════════════════════════════════════
+
+def _extract_brand_colors(url: str) -> dict:
+    """
+    Fetches client homepage and extracts brand colors from CSS.
+    Returns dict with primary, secondary, bg, text colors (hex).
+    Falls back to neutral professional palette on any error.
+    """
+    NEUTRAL = {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "bg": "#ffffff",
+        "text": "#1e293b",
+        "accent": "#3b82f6",
+        "source": "default",
+    }
+    
+    if not url:
+        return NEUTRAL
+    
+    try:
+        resp = httpx.get(url, timeout=8, follow_redirects=True,
+                         headers={"User-Agent": "AIshield-BrandExtractor/1.0"})
+        if resp.status_code != 200:
+            logger.warning(f"[Brand] HTTP {resp.status_code} for {url}")
+            return NEUTRAL
+        
+        html = resp.text[:50000]  # First 50KB is enough
+        
+        colors = {}
+        
+        # Extract from inline CSS and style blocks
+        # Look for common brand color patterns
+        style_blocks = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL | re.IGNORECASE)
+        all_css = " ".join(style_blocks)
+        
+        # Also check for CSS custom properties (--primary-color, --brand-color, etc.)
+        css_vars = re.findall(r'--(primary|brand|main|accent|secondary|bg|background|text)[^:]*:\s*(#[0-9a-fA-F]{3,8})', all_css, re.IGNORECASE)
+        for var_name, color_val in css_vars:
+            vn = var_name.lower()
+            if "primary" in vn or "brand" in vn or "main" in vn:
+                colors.setdefault("primary", color_val)
+            elif "secondary" in vn:
+                colors.setdefault("secondary", color_val)
+            elif "accent" in vn:
+                colors.setdefault("accent", color_val)
+            elif "bg" in vn or "background" in vn:
+                colors.setdefault("bg", color_val)
+            elif "text" in vn:
+                colors.setdefault("text", color_val)
+        
+        # Look for commonly used hex colors in body/header/nav/a selectors
+        for selector in ["body", "header", "nav", ".header", ".navbar", "a\b", "h1", "h2"]:
+            pattern = rf'{selector}[^{{]*{{[^}}]*?(?:background(?:-color)?|color)\s*:\s*(#[0-9a-fA-F]{{3,8}})'
+            matches = re.findall(pattern, all_css, re.IGNORECASE)
+            for m in matches:
+                if selector in ("a", "h1", "h2") and "primary" not in colors:
+                    colors["primary"] = m
+                elif selector in ("body",) and "bg" not in colors:
+                    colors["bg"] = m
+                elif selector in ("header", ".header", "nav", ".navbar"):
+                    if "primary" not in colors:
+                        colors["primary"] = m
+
+        # Check meta theme-color (simple string search)
+        tc_idx = html.lower().find("theme-color")
+        if tc_idx > 0:
+            snippet = html[tc_idx:tc_idx+200]
+            tc_match = re.search(r"(#[0-9a-fA-F]{3,8})", snippet)
+            if tc_match and "primary" not in colors:
+                colors["primary"] = tc_match.group(1)
+        
+        result = {**NEUTRAL, **colors, "source": "extracted" if colors else "default"}
+        logger.info(f"[Brand] {url} -> {len(colors)} colors extracted: {colors}")
+        return result
+        
+    except Exception as e:
+        logger.warning(f"[Brand] Error extracting colors from {url}: {e}")
+        return NEUTRAL
+
+
 def build_company_context(data: dict) -> str:
     """Sestaví sdílený textový kontext firmy pro LLM moduly."""
     company = data.get("company_name", "Neznámá firma")
@@ -481,7 +567,10 @@ MÁ ŠKOLENÍ AI: {'ANO' if training.get('has_training') else 'NE'}
 MÁ INCIDENT PLÁN: {'ANO' if incident.get('has_plan') else 'NE'}
 MÁ SMLOUVY S DODAVATELI AI: {'ANO' if data_prot.get('has_vendor_contracts') else 'NE'}
 MŮŽE OVERRIDOVAT AI: {'ANO' if data.get('human_oversight', {}).get('can_override') else 'NE'}
-MÁ AI LOGGING: {'ANO' if data.get('human_oversight', {}).get('has_logging') else 'NE'}"""
+MÁ AI LOGGING: {'ANO' if data.get('human_oversight', {}).get('has_logging') else 'NE'}
+
+WEB KLIENTA: {data.get('company_url', 'neuvedeno')}
+BRAND BARVY: {data.get('brand_colors', {})}"""
 
 
 
@@ -744,8 +833,15 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     logger.info(f"[Pipeline v3] DB load: {time.time()-step_start:.1f}s")
 
     # ── 2. Build company context ──
+    # Extract brand colors from client website for transparency page
+    company_url = company_data.get("url", "")
+    brand_colors = _extract_brand_colors(company_url)
+    template_data["brand_colors"] = brand_colors
+    template_data["company_url"] = company_url
+    
     company_context = build_company_context(template_data)
     logger.info(f"[Pipeline v3] Company context: {len(company_context)} znaků")
+    logger.info(f"[Pipeline v3] Brand colors: {brand_colors.get('source', '?')} — primary={brand_colors.get('primary', '?')}")
 
     # -- 1b. Pre-flight validation --
     try:
