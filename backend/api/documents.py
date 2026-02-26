@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from backend.documents.templates import TEMPLATE_NAMES
-from backend.documents.pipeline import (
+from backend.documents.pipeline_v3 import (
     generate_compliance_kit,
     generate_single_document,
 )
