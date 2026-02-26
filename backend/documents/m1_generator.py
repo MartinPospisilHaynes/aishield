@@ -11,6 +11,7 @@ Model: Gemini 3.1 Pro — nejlepší pro dlouhé, strukturované dokumenty.
 """
 
 import logging
+import re
 from typing import Tuple
 
 from backend.documents.llm_engine import call_claude, extract_html_content
@@ -137,6 +138,15 @@ se vztahuje PRIMÁRNĚ na veřejnoprávní subjekty a nasazovatele high-risk AI 
 Přílohy III (čl. 27 odst. 1). Pro ostatní soukromé firmy jde o doporučenou best
 practice, nikoli zákonnou povinnost.
 
+═══ ADAPTIVNÍ DÉLKA DOKUMENTU ═══
+
+Přizpůsob rozsah dokumentu RIZIKOVÉMU PROFILU firmy z kontextu:
+- Celkové riziko MINIMÁLNÍ → piš STRUČNĚ (spodní hranice rozsahu). Firma potřebuje základní dokumentaci.
+- Celkové riziko OMEZENÉ → piš STŘEDNĚ (střed rozsahu). Firma potřebuje důkladnější dokumentaci.
+- Celkové riziko VYSOKÉ → piš PODROBNĚ (horní hranice rozsahu). Firma potřebuje maximální detail.
+Tabulky a strukturované přehledy mají VŽDY přednost před souvislým textem.
+Kratší, koncizní dokument s konkrétními daty je VŽDY lepší než dlouhý generický text.
+
 ═══ ABSOLUTNÍ ZÁKAZ PLACEHOLDERŮ ═══
 
 ZÁKAZ: NIKDY nepoužívej placeholdery typu [DOPLŇTE], [NÁZEV], [UPŘESNĚTE],
@@ -218,7 +228,7 @@ def _prompt_compliance_report(ctx: str) -> str:
 ═══ DOKUMENT: COMPLIANCE REPORT — Souhrnná zpráva o souladu s AI Act ═══
 
 Napiš KOMPLETNÍ Compliance Report pro tuto firmu.
-Celkový rozsah: 3000–5000 slov (cca 8-12 stran A4). Kvalita a informační hustota mají přednost před délkou.
+Celkový rozsah: 1500–2500 slov (cca 4-6 stran A4). Kvalita a informační hustota mají ABSOLUTNÍ přednost před délkou. Piš stručně a k věci.
 Toto je HLAVNÍ dokument Compliance Kitu — klient ho čte jako první.
 
 POVINNÁ STRUKTURA:
@@ -299,7 +309,7 @@ def _prompt_action_plan(ctx: str) -> str:
 ═══ DOKUMENT: AKČNÍ PLÁN IMPLEMENTACE ═══
 
 Napiš KOMPLETNÍ Akční plán implementace AI Act compliance pro tuto firmu.
-Celkový rozsah: 2500–4000 slov (cca 6-10 stran A4). Kvalita a informační hustota mají přednost před délkou.
+Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Kvalita a stručnost mají přednost před délkou.
 
 POVINNÁ STRUKTURA:
 
@@ -370,7 +380,7 @@ def _prompt_ai_register(ctx: str) -> str:
 ═══ DOKUMENT: REGISTR AI SYSTÉMŮ ═══
 
 Napiš KOMPLETNÍ Registr AI systémů pro tuto firmu.
-Celkový rozsah: 2000–3500 slov (cca 5-8 stran A4).
+Celkový rozsah: 1000–1800 slov (cca 3-5 stran A4). Piš stručně — tabulky místo odstavců.
 
 POVINNÁ STRUKTURA:
 
@@ -436,7 +446,7 @@ def _prompt_training_outline(ctx: str) -> str:
 ═══ DOKUMENT: PLÁN ŠKOLENÍ AI GRAMOTNOSTI ═══
 
 Napiš KOMPLETNÍ Plán školení AI gramotnosti pro tuto firmu.
-Celkový rozsah: 2500–4000 slov (cca 6-10 stran A4).
+Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně a prakticky.
 
 POVINNÁ STRUKTURA:
 
@@ -595,7 +605,7 @@ def _prompt_ai_policy(ctx: str) -> str:
 ═══ DOKUMENT: INTERNÍ AI POLITIKA ═══
 
 Napiš KOMPLETNÍ Interní AI politiku pro tuto firmu.
-Celkový rozsah: 3000–5000 slov (cca 8-12 stran A4).
+Celkový rozsah: 1500–2500 slov (cca 4-6 stran A4). Piš jako interní směrnici — stručně, jasně, konkrétně.
 Toto je formální interní dokument — formát jako vnitřní směrnice firmy.
 
 POVINNÁ STRUKTURA:
@@ -688,7 +698,7 @@ def _prompt_incident_response_plan(ctx: str) -> str:
 ═══ DOKUMENT: PLÁN ŘÍZENÍ INCIDENTŮ S AI ═══
 
 Napiš KOMPLETNÍ Plán řízení incidentů pro tuto firmu.
-Celkový rozsah: 2500–4000 slov (cca 6-10 stran A4).
+Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně — kroky a tabulky místo odstavců.
 
 POVINNÁ STRUKTURA:
 
@@ -763,7 +773,7 @@ def _prompt_dpia_template(ctx: str) -> str:
 ═══ DOKUMENT: POSOUZENÍ DOPADŮ (DPIA/FRIA) ═══
 
 Napiš KOMPLETNÍ Posouzení dopadů na základní práva pro tuto firmu.
-Celkový rozsah: 2500–4000 slov (cca 6-10 stran A4).
+Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně — tabulky a hodnocení místo odstavců.
 
 POVINNÁ STRUKTURA:
 
@@ -835,7 +845,7 @@ def _prompt_vendor_checklist(ctx: str) -> str:
 ═══ DOKUMENT: DODAVATELSKÝ CHECKLIST ═══
 
 Napiš KOMPLETNÍ Dodavatelský checklist pro tuto firmu.
-Celkový rozsah: 1500–2500 slov. Kvalita a informační hustota mají přednost před délkou.
+Celkový rozsah: 800–1500 slov. Stručnost a praktičnost na prvním místě — checklist, ne esej.
 
 POVINNÁ STRUKTURA:
 
@@ -905,7 +915,7 @@ def _prompt_monitoring_plan(ctx: str) -> str:
 ═══ DOKUMENT: MONITORING PLÁN AI SYSTÉMŮ ═══
 
 Napiš KOMPLETNÍ Monitoring plán pro tuto firmu.
-Celkový rozsah: 2000–3500 slov (cca 5-8 stran A4).
+Celkový rozsah: 1000–1800 slov (cca 3-5 stran A4). Piš stručně — metriky a tabulky místo textu.
 
 POVINNÁ STRUKTURA:
 
@@ -979,7 +989,7 @@ def _prompt_transparency_human_oversight(ctx: str) -> str:
 ═══ DOKUMENT: TRANSPARENTNOST A LIDSKÝ DOHLED ═══
 
 Napiš KOMPLETNÍ dokument o transparentnosti a lidském dohledu pro tuto firmu.
-Celkový rozsah: 2500–4000 slov (cca 6-10 stran A4).
+Celkový rozsah: 1200–2000 slov (cca 3-5 stran A4). Piš stručně a prakticky.
 
 POVINNÁ STRUKTURA:
 
@@ -1490,12 +1500,17 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
 
     html = extract_html_content(text)
 
-    if not html or len(html) < 500:
-        logger.warning(f"[M1 Generator] {doc_key}: krátký výstup ({len(html)} znaků), "
-                      f"zkouším znovu s vyšší temperature...")
+    # G: Quality check — délka + počet sekcí
+    h2_count = len(re.findall(r'<h2[^>]*>', html)) if html else 0
+    too_short = not html or len(html) < 500
+    missing_sections = h2_count < 3 and doc_key not in ("chatbot_notices", "vendor_checklist")
+
+    if too_short or missing_sections:
+        reason = f"krátký ({len(html or '')} znaků)" if too_short else f"málo sekcí ({h2_count} H2)"
+        logger.warning(f"[M1 Generator] {doc_key}: {reason}, zkouším znovu...")
         text2, meta2 = await call_claude(
             system=enhanced_prompt,
-            prompt=prompt + "\n\nPIŠ OBSÁHLE A PODROBNĚ. Minimum 3000 slov.",
+            prompt=prompt + "\n\nDoplň chybějící sekce. Minimum 1200 slov, ale KVALITA důležitější než délka.",
             label=f"{label}_retry",
             temperature=0.4,
             max_tokens=16000,
@@ -1726,6 +1741,7 @@ Zachovej VŠECHNY povinné sekce a tabulky. Zkrať redundance, ale nemaž celé 
         logger.error(f"[M1 Refine] {doc_key}: refine selhal, vracím original draft")
         html = draft_html
         meta["fallback"] = True
+        meta["fallback_reason"] = "M1p2 refine output empty or < 200 chars"
 
     logger.info(
         f"[M1 Refine] {doc_key}: finální verze ({len(html)} znaků, "

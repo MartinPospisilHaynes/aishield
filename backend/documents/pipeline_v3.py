@@ -528,6 +528,16 @@ def _preflight_check(company_data: dict, questionnaire_data: dict, scan_data: di
     if not questionnaire_data.get("q_company_ico") and not questionnaire_data.get("q_company_address"):
         errors.append("Chybí IČO i adresa firmy — identifikace firmy není možná")
 
+    # 6. Velikost firmy (pro adaptivní délku dokumentů)
+    company_size = questionnaire_data.get("q_company_size", "")
+    if not company_size:
+        logger.warning("[Pipeline v3] Velikost firmy neuvedena — výchozí 'neznámá'")
+
+    # 7. Odvětví firmy
+    company_industry = questionnaire_data.get("q_company_industry", "")
+    if not company_industry:
+        logger.warning("[Pipeline v3] Odvětví firmy neuvedeno — personalizace bude slabší")
+
     if errors:
         error_msg = "PRE-FLIGHT CHECK FAILED — pipeline zastaven!\n" + "\n".join(f"  ✗ {e}" for e in errors)
         logger.error(f"[Pipeline v3] {error_msg}")

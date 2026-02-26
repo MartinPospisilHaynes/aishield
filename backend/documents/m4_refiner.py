@@ -11,6 +11,7 @@ Model: Claude Sonnet 4 — nejlepší pro precizní editaci a syntézu.
 """
 
 import logging
+import re
 from typing import Tuple
 
 from backend.documents.llm_engine import call_gemini, extract_html_content
@@ -49,17 +50,21 @@ VÝSTUPNÍ PRAVIDLA:
    .sig-block, .sig-field, .no-break
 7. Pro HTML atributy používej jednoduché uvozovky: class='highlight'
 
-PRIORITY PŘI KONFLIKTU KRITIKŮ:
+PRIORITY PŘI KONFLIKTU KRITIKŮ (ZÁVAZNÉ POŘADÍ):
 Pokud se kritiky M2 (EU inspektor) a M3 (klient) vzájemně bijí:
-1. PRÁVNÍ PŘESNOST (M2) má VŽDY přednost — právní fakt zachovej
+1. PRÁVNÍ PŘESNOST (M2) má ABSOLUTNÍ přednost — právní fakt VŽDY zachovej
 2. SROZUMITELNOST (M3) — právní fakt přepiš srozumitelným jazykem dle M3
-3. DÉLKA A OBSÁHLOST — až na posledním místě
+3. STRUČNOST — preferuj kratší, hustší text. Škrtej redundance a vatu.
+4. DÉLKA A OBSÁHLOST — až na posledním místě
+Pokud M2 říká „přidej detail" a M3 říká „zkrať" → zachovej právní detail, ale piš stručněji.
 Příklad: M2 říká "přidej citaci čl. 50", M3 říká "je to moc právnické" →
 Řešení: citaci zachovej, ale vysvětli ji lidsky ("čl. 50 AI Act vyžaduje, abyste...")
 
 KVALITATIVNÍ PRAVIDLA:
 - Nesmíš VYNECHAT žádnou povinnou sekci ani tabulku z draftu
-- Můžeš zkrátit redundance a vatu, pokud tím roste kvalita a čitelnost
+- AKTIVNĚ zkracuj redundance, vatu a opakující se formulace
+- Preferuj tabulky a seznamy před souvislým textem
+- Výsledek SMÍŠ zkrátit oproti draftu, pokud zachováš všechny povinné sekce
 - Přidej chybějící obsah identifikovaný kritiky
 - Oprav právní nepřesnosti z EU kritiky
 - Zlepši srozumitelnost na základě klientské kritiky
@@ -243,8 +248,13 @@ NEMĚŇ formát — pouze vylepši OBSAH slidů.
 
     html = extract_html_content(text)
 
-    # Kontrola kvality — finální HTML by měl být >= 50% délky draftu (ochrana proti degradaci)
-    if html and len(html) < len(draft_html) * 0.5:
+    # G: Kontrola kvality — délka + sekce
+    h2_draft = len(re.findall(r'<h2[^>]*>', draft_html))
+    h2_final = len(re.findall(r'<h2[^>]*>', html)) if html else 0
+    length_ok = html and len(html) >= len(draft_html) * 0.4
+    sections_ok = h2_final >= h2_draft * 0.7  # max 30% ztráta sekcí
+
+    if html and (not length_ok or not sections_ok):
         logger.warning(f"[M4 Refiner] {doc_key}: finální HTML je výrazně kratší než draft "
                       f"({len(html)} vs {len(draft_html)}), zkouším znovu")
         text2, meta2 = await call_gemini(
@@ -269,6 +279,7 @@ Můžeš zkrátit redundance, ale nemaž celé bloky.
         logger.error(f"[M4 Refiner] {doc_key}: refine selhal, vracím original draft")
         html = draft_html
         meta["fallback"] = True
+        meta["fallback_reason"] = "M4 output empty or < 200 chars"
 
     logger.info(f"[M4 Refiner] {doc_key}: finální verze ({len(html)} znaků, "
                 f"draft byl {len(draft_html)} znaků, "

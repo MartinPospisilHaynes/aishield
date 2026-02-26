@@ -98,7 +98,7 @@ Struktura:
 PRAVIDLA:
 - Skóre 1-10: 10=perfektní, 7-9=dobré, 4-6=průměrné, 1-3=nedostatečné
 - KAŽDÝ nález MUSÍ mít referenci na AI Act pokud existuje
-- Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní a máš méně než 3 nálezy, je to OK.
+- Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní, klidně uveď 0-2 nálezy. NEVYMÝŠLEJ problémy jen pro počet — fabricované nálezy zhoršují finální dokument.
 - Najdi silné stránky — buď spravedlivý
 - Používej jednoduché uvozovky pro HTML atributy v JSON stringách
 """
@@ -293,7 +293,7 @@ async def review_eu(
         system=SYSTEM_PROMPT_M2,
         prompt=prompt,
         label=label,
-        temperature=0.2,    # low creativity, high precision
+        temperature=0.3,    # balanced: diverse findings + precision
         max_tokens=8000,
     )
 

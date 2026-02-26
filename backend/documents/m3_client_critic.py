@@ -114,7 +114,7 @@ PRAVIDLA:
   * Floskule a prázdné fráze bez informační hodnoty
   * Opakující se obsah (stejná informace na více místech)
 - Buď UPŘÍMNÝ — pokud je dokument generický, řekni to jasně
-- Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní a máš méně než 3, je to OK.
+- Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní, klidně uveď 0-2 nálezy. NEVYMÝŠLEJ problémy jen pro počet — fabricované nálezy zhoršují finální dokument.
 - Najdi silné stránky — buď spravedlivý
 - Postav se do role klienta, ne do role konzultanta
 - NESNAŽ se být technicky přesný jako právník — jsi PODNIKATEL
@@ -285,7 +285,7 @@ async def review_client(
         system=SYSTEM_PROMPT_M3,
         prompt=prompt,
         label=label,
-        temperature=0.2,    # low creativity, focused review
+        temperature=0.35,   # more diverse client perspectives
         max_tokens=8000,
     )
 
