@@ -486,6 +486,88 @@ MÁ AI LOGGING: {'ANO' if data.get('human_oversight', {}).get('has_logging') els
 
 
 
+
+
+# ══════════════════════════════════════════════════════════════════════
+# ATTENDANCE LIST POST-PROCESSOR
+# ══════════════════════════════════════════════════════════════════════
+
+def _fix_attendance_list(html: str, company_size_raw: str) -> str:
+    """
+    Programově opraví prezenční listinu v HTML dokumentu training_outline.
+    Nahradí existující tabulku prezenční listiny správným počtem řádků
+    dle company_size z dotazníku.
+    """
+    import re
+    
+    # Parse employee count from company_size string
+    size_str = (company_size_raw or "").strip().lower()
+    if "250+" in size_str or "250 a více" in size_str:
+        target_rows = 250
+    elif "101" in size_str and "250" in size_str:
+        target_rows = 250
+    elif "51" in size_str and "100" in size_str:
+        target_rows = 100
+    elif "11" in size_str and "50" in size_str:
+        target_rows = 50
+    elif "1" in size_str and "10" in size_str:
+        target_rows = 15
+    else:
+        # Try to extract a number
+        nums = re.findall(r'(\d+)', size_str)
+        if nums:
+            target_rows = max(int(n) for n in nums)
+        else:
+            target_rows = 30  # fallback
+    
+    logger.info(f"[Attendance] company_size='{company_size_raw}' → target_rows={target_rows}")
+    
+    # Find the attendance section: look for "Prezenční listina" heading
+    pattern = r'(<h2[^>]*>\s*(?:10\.)?\s*Prezenční listina[^<]*</h2>)'
+    match = re.search(pattern, html, re.IGNORECASE)
+    if not match:
+        logger.warning("[Attendance] Prezenční listina heading not found — skipping")
+        return html
+    
+    heading_end = match.end()
+    
+    # Find the existing table after the heading
+    table_pattern = r'(<table[^>]*>)(.*?)(</table>)'
+    table_match = re.search(table_pattern, html[heading_end:], re.DOTALL)
+    if not table_match:
+        logger.warning("[Attendance] No table found after Prezenční listina heading — skipping")
+        return html
+    
+    # Count existing rows
+    existing_rows = len(re.findall(r'<tr[^>]*>', table_match.group(2))) - 1  # minus header row
+    logger.info(f"[Attendance] Existing rows: {existing_rows}, target: {target_rows}")
+    
+    if existing_rows >= target_rows:
+        logger.info(f"[Attendance] Already has enough rows ({existing_rows} >= {target_rows})")
+        return html
+    
+    # Build the correct table
+    rows_html = []
+    rows_html.append('<table>')
+    rows_html.append('<thead><tr><th style="width:50px">č.</th><th>Jméno</th><th>Příjmení</th><th style="min-width:150px">Podpis</th></tr></thead>')
+    rows_html.append('<tbody>')
+    for i in range(1, target_rows + 1):
+        rows_html.append(f'<tr><td>{i}</td><td></td><td></td><td style="min-width:150px;height:22px"></td></tr>')
+    rows_html.append('</tbody>')
+    rows_html.append('</table>')
+    new_table = '\n'.join(rows_html)
+    
+    # Replace the old table
+    old_table_full = table_match.group(0)
+    abs_start = heading_end + table_match.start()
+    abs_end = heading_end + table_match.end()
+    
+    html = html[:abs_start] + new_table + html[abs_end:]
+    
+    logger.info(f"[Attendance] Replaced {existing_rows}-row table with {target_rows}-row table")
+    return html
+
+
 # ══════════════════════════════════════════════════════════════════════
 # PRE-FLIGHT VALIDATION — bezpečnostní brzda před generováním
 # ══════════════════════════════════════════════════════════════════════
@@ -787,6 +869,11 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             m4_tokens = m4_meta.get("input_tokens", 0) + m4_meta.get("output_tokens", 0)
             logger.info(f"[Pipeline v3]   M4 hotov: {len(final_html)} znaků, "
                        f"${m4_cost:.4f}, {m4_tokens} tokens, {m4_time:.1f}s")
+
+            # -- Fix attendance list for training_outline --
+            if doc_key == 'training_outline':
+                company_size = questionnaire_data.get('q_company_size', '')
+                final_html = _fix_attendance_list(final_html, company_size)
 
             # -- M6: Post-M4 INFO-ONLY check (Gemini Flash) --
             m6_cost = 0

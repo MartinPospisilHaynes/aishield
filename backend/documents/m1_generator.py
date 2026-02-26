@@ -520,10 +520,16 @@ DŮLEŽITÉ:
 
 <h2>10. Prezenční listina školení</h2>
 - Na konci dokumentu POVINNĚ přidej prezenční listinu pro evidenci účasti.
-- Zjisti počet zaměstnanců z kontextu firmy (hledej velikost firmy / company size).
-- Vytvoř HTML <table> s PŘESNĚ tolika řádky, kolik má firma zaměstnanců.
-  Pokud je uvedeno „250+" nebo rozsah, použij horní hranici (např. 250 pro „250+", 100 pro „51-100").
-  Pokud počet zaměstnanců nelze zjistit, vytvoř 30 řádků.
+- Zjisti počet zaměstnanců z kontextu firmy (hledej „Velikost:" v KONTEXTU FIRMY).
+- Pravidla pro počet řádků prezenční listiny:
+  * 1–10 zaměstnanců: vytvoř PŘESNĚ tolik řádků + 5 rezervních
+  * 11–50 zaměstnanců: vytvoř PŘESNĚ tolik řádků, kolik firma uvádí
+  * 51–250 zaměstnanců: vytvoř PŘESNĚ tolik řádků (např. 100 pro „51–100", 250 pro „101–250")
+  * 250+ zaměstnanců: vytvoř PŘESNĚ 250 řádků. NE 50, NE 100 — PŘESNĚ 250.
+  * Nelze zjistit: vytvoř 30 řádků
+- KRITICKÉ: Pokud firma má 250+ zaměstnanců, MUSÍ být 250 řádků.
+  Tabulka bude dlouhá — to je SPRÁVNĚ. Po vytištění ji zaměstnanci vyplní.
+  NIKDY nezkracuj tabulku. 250 řádků = 250 řádků.
 - Sloupce tabulky:
   | č. | Jméno | Příjmení | Podpis |
 - Každý řádek očísluj (1, 2, 3, ...).
