@@ -1242,250 +1242,190 @@ def _prompt_training_presentation(ctx: str) -> str:
 {ctx}
 
 TVŮJ ÚKOL:
-Vygeneruj KOMPLETNÍ obsah školící prezentace pro AI gramotnost (čl. 4 AI Act).
-Prezentace bude automaticky převedena do PowerPoint (PPTX) formátu.
+Vygeneruj obsah školící prezentace o AI gramotnosti (čl. 4 AI Act).
+Prezentace bude automaticky převedena do PowerPoint (PPTX).
 
-⚠️ DŮLEŽITÉ — SPECIÁLNÍ FORMÁT:
-Výstup MUSÍ být strukturovaný HTML kde KAŽDÝ slide = jedna <h2> sekce.
-Pod každým <h2> je obsah slidu jako <ul><li> body (odrážky).
-Piš přímo HTML — začni <h1> tagem s názvem prezentace.
+═══ ZÁSADNÍ PRAVIDLA STYLU ═══
 
-⚠️ SPEAKER NOTES:
-Pro KAŽDÝ slide přidej blok <div class='speaker-notes'>...</div> s poznámkami
-pro přednášejícího (2-4 věty). Tyto poznámky budou převedeny do PPTX speaker notes.
-Poznámky piš jako mluvené slovo — co má přednášející ŘÍCT publiku.
+1. PIŠ LIDSKY, NE PRÁVNICKY. Představ si, že mluvíš k běžným zaměstnancům
+   v kanceláři. Žádné „dle článku XY“, žádné paragrafové odkazy v odrážkách.
+   Články zákona patří do speaker notes pro přednášejícího, NE na slide.
 
-═══ POVINNÁ STRUKTURA — 18-22 SLIDŮ ═══
+2. MAX 5–6 ODRÁŽEK NA SLIDE. Každá odrážka max 12–15 slov.
+   Pokud máš víc bodů, rozděl na dva slidy.
 
-<h1>AI Act — Školení AI gramotnosti pro [Firma]</h1>
+3. KAŽDÝ SLIDE = 1 MYŠLENKA. Nemíchej témata. Raději udělej víc slidů
+   než narvat všechno do jednoho.
+
+4. PŘÍKLADY > DEFINICE. Místo „AI = stroj který...“ napiš
+   „Když vám Netflix doporučí film — to je AI.“
+
+5. KONKRÉTNÍ > OBECNÉ. Vždycky uváděj příklad z praxe firmy
+   nebo z běžného života. Žádné akademické definice.
+
+6. KRÁTKÁ SLOVA. Používej „musíme“ místo „jsme povinni dle nařízení“.
+   „Pozor na“ místo „Je nezbytné věnovat pozornost“.
+
+═══ FORMÁT HTML ═══
+
+- Každý slide = <h2>Nadpis slidu</h2> + <ul><li>...</li></ul>
+- Začni <h1> tagem s názvem prezentace
+- KAŽDÝ slide MUSÍ mít <div class='speaker-notes'>...</div>
+  (2–4 věty pro přednášejícího — sem patří čísla článků a detaily)
+
+═══ STRUKTURA — 18–24 SLIDŮ ═══
+
+<h1>AI ve firmě [Firma] — co potřebujete vědět</h1>
 
 <h2>Slide 1: Titulní</h2>
-<p>Povinné školení dle čl. 4 Nařízení (EU) 2024/1689 (AI Act)</p>
-<p>Obor: [odvětví firmy] | Velikost: [velikost firmy]</p>
-<div class='speaker-notes'>Uvítejte účastníky. Zdůrazněte, že toto školení je zákonná povinnost od 2.2.2025.</div>
+<p>Školení AI gramotnosti pro [Firma]</p>
+<p>[odvětví] | [velikost firmy]</p>
 
-<h2>Slide 2: Agenda školení</h2>
-<ul>
-<li>Modul 1 — Co je umělá inteligence (20 min)</li>
-<li>Modul 2 — EU AI Act v kostce (25 min)</li>
-<li>Modul 3 — AI v naší firmě (20 min)</li>
-<li>Modul 4 — Bezpečné používání AI (20 min)</li>
-<li>Modul 5 — Naše povinnosti a odpovědnosti (15 min)</li>
-<li>Modul 6 — Praktické scénáře (15 min)</li>
-<li>Modul 7 — Shrnutí a další kroky (10 min)</li>
-</ul>
-<div class='speaker-notes'>Projděte agendu. Celkový čas cca 2 hodiny s přestávkou.</div>
+<h2>Slide 2: O čem dnes bude řeč</h2>
+- 5–6 krátkých bodů agendy (bez minutáže!)
+- Napiš je lidsky: „Co je AI a kde ji potkáváte“, „Na co si dát pozor“
 
 <h2>Slide 3: Proč jsme tady</h2>
-<ul>
-<li>AI gramotnost je ZÁKONNÁ POVINNOST od 2. února 2025 (čl. 4 AI Act)</li>
-<li>Naše firma používá [N] AI nástrojů — musíme vědět, jak s nimi bezpečně pracovat</li>
-<li>Pokuty za nesplnění: až 15 mil. EUR nebo 3 % obratu (čl. 99 odst. 4)</li>
-<li>Školení chrání firmu I zaměstnance</li>
-</ul>
-<div class='speaker-notes'>Zdůrazněte urgenci — povinnost UŽ platí. Firma riskuje sankce.</div>
+- 3–4 body: zákon to vyžaduje, firma používá AI, musíme vědět jak bezpečně
+- Speaker notes: zde uvést čl. 4 AI Act a pokuty
 
-<h2>Slide 4: Co je umělá inteligence</h2>
-<ul>
-<li>AI = systém, který generuje výstupy (text, obraz, rozhodnutí) na základě vstupních dat</li>
-<li>Definice dle AI Act (čl. 3 odst. 1): strojový systém s různou mírou autonomie</li>
-<li>Typy AI: generativní AI (ChatGPT), prediktivní modely, expertní systémy</li>
-<li>AI vs. automatizace — jaký je rozdíl?</li>
-<li>Konkrétní příklad z odvětví firmy: [PERSONALIZUJ]</li>
-</ul>
-<div class='speaker-notes'>Vysvětlete AI jednoduše. Použijte příklad relevantní pro vaše odvětví.</div>
+<h2>Slide 4: Co je AI — jednoduše</h2>
+- 3–4 odrážky s PŘÍKLADY z běžného života (NE definice!)
+- Např.: „Když Google dokončí vaši větu — to je AI“
+- „Když banka zablokuje podezřelou platbu — to je AI“
 
-<h2>Slide 5: AI v běžném životě — příklady</h2>
-<ul>
-<li>Google/Seznam vyhledávání — AI řadí výsledky</li>
-<li>Netflix/Spotify — AI doporučuje obsah</li>
-<li>GPS navigace — AI optimalizuje trasu v reálném čase</li>
-<li>Email spam filtr — AI rozpoznává nevyžádané zprávy</li>
-<li>Automatický překlad (Google Translate, DeepL)</li>
-<li>Klíčový bod: AI je VŠUDE — proto EU přijala regulaci</li>
-</ul>
-<div class='speaker-notes'>Ukažte, že AI není nic exotického — každý ji denně používá.</div>
+<h2>Slide 5: Kde všude potkáváte AI</h2>
+- 5–6 příkladů z každodenního života (navigace, překlad, filtry, doporučení)
+- Pointa: AI je všude kolem nás, není to sci-fi
 
-<h2>Slide 6: EU AI Act v kostce</h2>
-<ul>
-<li>Nařízení (EU) 2024/1689 — první zákon o AI na světě</li>
-<li>Vstoupil v platnost 1. 8. 2024</li>
-<li>Cíl: bezpečné a důvěryhodné AI v EU</li>
-<li>Zakázané praktiky (čl. 5): od 2. 2. 2025</li>
-<li>AI gramotnost (čl. 4): od 2. 2. 2025</li>
-<li>GPAI modely (čl. 51-56): od 2. 8. 2025</li>
-<li>Plná účinnost: 2. 8. 2026</li>
-<li>Pokuty: až 35 mil. EUR nebo 7 % obratu</li>
-</ul>
-<div class='speaker-notes'>Zdůrazněte, že AI Act platí pro VŠECHNY firmy v EU bez ohledu na velikost.</div>
+<h2>Slide 6: Proč EU začala AI regulovat</h2>
+- 3–4 body: ochrana lidí, férovost, bezpečnost
+- Příklad: „AI v náboru diskriminovala ženy“ (Amazon 2018)
+- „AI rozpoznávání obličejů mělo problém s tmavou pletí“
+- Speaker notes: zde vysvětlit EU AI Act podrobněji
 
-<h2>Slide 7: 4 kategorie rizik AI Act</h2>
-<ul>
-<li>NEPŘIJATELNÉ — zakázáno (social scoring, manipulace, realtime biometrie)</li>
-<li>VYSOKÉ RIZIKO — přísné povinnosti (HR nábor, credit scoring, zdravotnictví)</li>
-<li>OMEZENÉ RIZIKO — transparentnost (chatboty, deepfakes, generovaný obsah)</li>
-<li>MINIMÁLNÍ RIZIKO — bez zvláštních povinností (spam filtry, doporučení)</li>
-</ul>
-<div class='speaker-notes'>Vysvětlete pyramidu rizik. Většina firem spadá do omezené/minimální kategorie.</div>
+<h2>Slide 7: 4 úrovně rizika AI</h2>
+- POUZE 4 krátké řádky, každý s jedním příkladem:
+  „[CERVENA] Zakázané — např. bodování lidí podle chování“
+  „[ORANZOVA] Vysoké riziko — např. AI výběr zaměstnanců“
+  „[ZLUTA] Omezené — např. chatbot na webu“
+  „[ZELENA] Minimální — např. spamový filtr“
 
-<h2>Slide 8: Zakázané AI praktiky (čl. 5)</h2>
-<ul>
-<li>Social scoring — hodnocení lidí podle chování</li>
-<li>Manipulativní AI — podprahové ovlivňování rozhodnutí</li>
-<li>Biometrická identifikace v reálném čase na veřejnosti</li>
-<li>Prediktivní policing na základě profilingu</li>
-<li>Emotion recognition na pracovišti/ve školství</li>
-<li>Scraping obličejů z internetu pro databáze</li>
-<li>PLATÍ UŽ OD 2. 2. 2025 — za porušení až 35 mil. EUR</li>
-</ul>
-<div class='speaker-notes'>Projděte každou zakázanou praktiku. Uveďte, které se mohou týkat vašeho odvětví.</div>
+<h2>Slide 8: Co nesmíme dělat</h2>
+- 4–5 zakázaných věcí LIDSKÝM JAZYKEM:
+  „Hodnotit lidi podle chování na sociálních sítích“
+  „Používat AI k manipulaci lidí“
+  „Skenovat obličeje zaměstnanců bez souhlasu“
+- Speaker notes: zde uvést čl. 5 a pokuty
 
-<h2>Slide 9: AI systémy v naší firmě [PERSONALIZUJ]</h2>
-<ul>
-<li>Používáme [N] AI nástrojů: [SEZNAM z kontextu]</li>
-<li>Pro KAŽDÝ systém: název, účel, riziková kategorie</li>
-<li>Odpovědná osoba za AI: [jméno z kontextu nebo bude určena]</li>
-<li>Registr AI systémů — interní dokument (součást Compliance Kitu)</li>
-<li>Interní AI politika — pravidla pro používání AI ve firmě</li>
-</ul>
-<div class='speaker-notes'>Klíčový slide — ukažte KONKRÉTNÍ systémy vaší firmy. Každý zaměstnanec musí vědět, které AI firma používá.</div>
+<h2>Slide 9: Jaké AI nástroje používáme</h2>
+- PERSONALIZUJ z kontextu firmy
+- Max 5–6 hlavních AI nástrojů s KRATŠÍM popisem co dělají
+  Např.: „ChatGPT — pomáhá psát emaily a texty“
+  „Google Analytics — analyzuje návštěvnost webu“
+- Pokud je víc než 6 nástrojů, rozděl na 2 slidy
 
-<h2>Slide 10: Rizikový profil našich AI systémů [PERSONALIZUJ]</h2>
-- Pro KAŽDÝ AI systém firmy uveď název + rizikovou kategorii v přehledné tabulce
-- Badge barvy: vysoké=červená, omezené=žlutá, minimální=zelená
-- Celkový rizikový profil firmy
-<div class='speaker-notes'>Vysvětlete proč má každý systém danou kategorii. Kategorie určuje povinnosti.</div>
+<h2>Slide 10: Rizikový profil našich AI systémů</h2>
+- Tabulkový formát: název | účel | riziko (barva)
+- MAX 8 položek na slide. Přesahuje? → další slide!
+- U každého nástroje STRUČNĚ co dělá a proč má danou kategorii
+- Pokud <table> — použij <tr><td> formát
 
-<h2>Slide 11: Co je automation bias</h2>
-<ul>
-<li>Automation bias = tendence nekriticky přijímat výstupy AI</li>
-<li>AI HALUCINUJE — generuje přesvědčivé, ale nepravdivé informace</li>
-<li>Příklad: AI napíše přesvědčivý text s neexistujícími zákony</li>
-<li>Příklad z vašeho odvětví: [PERSONALIZUJ — 2 konkrétní příklady]</li>
-<li>Pravidlo: VŽDY ověřuj kritické výstupy AI z nezávislého zdroje</li>
-</ul>
-<div class='speaker-notes'>Automation bias je největší praktické riziko. Uveďte reálné příklady halucinací AI.</div>
+<h2>Slide 11: Největší past — slepá důvěra v AI</h2>
+- Vysvětli automation bias JEDNODUŠE: „AI říká něco → my tomu věříme“
+- 2–3 KONKRÉTNÍ příklady z odvětví firmy
+- Např.: „AI napíše smlouvu s neexistujícím paragrafem“
+- „AI vypočítá cenu špatně — a vy ji pošlete klientovi“
 
-<h2>Slide 12: Bezpečné používání AI v praxi</h2>
-<ul>
-<li>PRAVIDLO 1: Nikdy nevkládejte do AI osobní údaje klientů/zaměstnanců</li>
-<li>PRAVIDLO 2: Nikdy nevkládejte hesla, přístupy, interní smlouvy</li>
-<li>PRAVIDLO 3: Vždy ověřujte důležité výstupy AI (čísla, fakta, odkazy)</li>
-<li>PRAVIDLO 4: Označujte AI-generovaný obsah před sdílením</li>
-<li>PRAVIDLO 5: Při pochybnostech se zeptejte odpovědné osoby za AI</li>
-</ul>
-<div class='speaker-notes'>Tato pravidla jsou základ. Každý zaměstnanec si je musí zapamatovat.</div>
+<h2>Slide 12: 5 zlatých pravidel pro AI</h2>
+- PŘESNĚ 5 krátkých pravidel:
+  1. Nedávej do AI osobní údaje
+  2. Nedávej do AI hesla a interní dokumenty
+  3. Vždycky ověř důležité výstupy
+  4. Řekni, že text psála AI
+  5. Nevíš? Zeptej se [odpovědné osoby]
 
-<h2>Slide 13: Co do AI NIKDY nevkládat</h2>
-<ul>
-<li>Jména, rodná čísla, adresy klientů nebo zaměstnanců</li>
-<li>Finanční údaje — platební karty, bankovní výpisy</li>
-<li>Hesla, přístupové klíče, API tokeny</li>
-<li>Interní smlouvy, NDA, obchodní tajemství</li>
-<li>Zdravotní záznamy (pokud relevantní pro odvětví)</li>
-<li>Důvěrné firemní strategie a plány</li>
-<li>[PERSONALIZUJ — specifické typy dat pro odvětví firmy]</li>
-</ul>
-<div class='speaker-notes'>Projděte každou kategorii a uveďte konkrétní příklad z vaší praxe.</div>
+<h2>Slide 13: Co do AI NIKDY nedávat</h2>
+- 4–5 konkrétních příkladů (ne kategorií!):
+  „Jméno a adresu klienta“
+  „Interní smlouvy a cenové nabídky“
+  „Přístupové údaje do systémů“
+- PERSONALIZUJ pro odvětví firmy
 
-<h2>Slide 14: AI a GDPR</h2>
-<ul>
-<li>AI zpracovává osobní údaje — platí GDPR souběžně s AI Act</li>
-<li>Právní základ: souhlas, oprávněný zájem, plnění smlouvy</li>
-<li>Právo na vysvětlení automatizovaného rozhodnutí (čl. 22 GDPR)</li>
-<li>Minimalizace dat — do AI vkládejte jen nezbytné minimum</li>
-<li>DPIA povinné pro AI s vysokým rizikem</li>
-<li>[PERSONALIZUJ — zpracovává firma osobní údaje přes AI?]</li>
-</ul>
-<div class='speaker-notes'>GDPR a AI Act se doplňují. Kdo dodržuje GDPR, má náskok i v AI Act compliance.</div>
+<h2>Slide 14: AI a osobní údaje</h2>
+- 4 body JEDNODUŠE:
+  „AI pracuje s daty — platí GDPR“
+  „Do AI dávejte jen to, co je nutné“
+  „Každý má právo vědět, že o něm rozhoduje AI“
+  „Pokud AI rozhoduje o lidech — musí to jít zkontrolovat“
+- Speaker notes: čl. 22 GDPR, DPIA detaily
 
-<h2>Slide 15: Transparentnost — co musíme oznámit</h2>
-<ul>
-<li>Čl. 50 AI Act: uživatel MUSÍ vědět, že komunikuje s AI</li>
-<li>Chatbot na webu — viditelné oznámení</li>
-<li>AI-generovaný obsah — označit jako vytvořeno pomocí AI</li>
-<li>Transparenční stránka na webu — přehled AI systémů (součást Kitu)</li>
-<li>Texty oznámení jsou připraveny v Compliance Kitu — stačí nasadit</li>
-</ul>
-<div class='speaker-notes'>Ukažte konkrétní texty oznámení z Compliance Kitu. Vysvětlete kde je nasadit.</div>
+<h2>Slide 15: Kdy musíme říct, že používáme AI</h2>
+- 3–4 situace:
+  „Chatbot na webu — musí být označený“
+  „Texty psané pomocí AI — upřesnit pokud jdou ven“
+  „AI-generované obrázky/videa — označit“
+- Transparenční stránka na webu (součást Kitu)
 
-<h2>Slide 16: Hlášení AI incidentů</h2>
-<ul>
-<li>Incident = AI systém způsobil nebo mohl způsobit škodu</li>
-<li>Příklady: chybné automatické rozhodnutí, únik dat přes AI, diskriminační výstup</li>
-<li>Postup: ZASTAVIT — DOKUMENTOVAT — NAHLÁSIT odpovědné osobě</li>
-<li>Čl. 73 AI Act: závažné incidenty nahlásit úřadům do 15 dnů</li>
-<li>Plán řízení incidentů je součástí Compliance Kitu</li>
-</ul>
-<div class='speaker-notes'>Zdůrazněte, že hlášení incidentů je povinnost KAŽDÉHO zaměstnance, ne jen IT.</div>
+<h2>Slide 16: Kdo je za AI odpovědný</h2>
+- PERSONALIZUJ: jméno answeré osoby z kontextu
+- Role nasazovatele vs. poskytovatele JEDNODUŠE:
+  „My AI používáme — jsme nasazovatel“
+  „OpenAI/Google AI vyvíjí — oni jsou poskytovatel“
+  „Oba máme povinnosti, ale různé“
 
-<h2>Slide 17: Naše konkrétní povinnosti [PERSONALIZUJ]</h2>
-- Pro KAŽDOU povinnost vyhodnoť stav: splněno / v řešení / chybí
-- AI gramotnost, Registr AI systémů, Transparentnost, Incident Response,
-  Monitoring, AI politika, Dodavatelské smlouvy
-- Vyhodnoť dle kontextu firmy co UŽ je zajištěno Compliance Kitem
-<div class='speaker-notes'>Projděte stav plnění každé povinnosti. Zdůrazněte co je hotovo díky Kitu a co ještě chybí.</div>
+<h2>Slide 17: Co když se něco pokazí</h2>
+- Postákuček při AI incidentu:
+  1. ZASTAVIT — přestat AI používat
+  2. ZAPSAT — co se stalo, kdy, kde
+  3. NAHÁSIT — komu (jméno/email z kontextu)
+- Příklad: „AI poslala špatné údaje klientovi“
 
-<h2>Slide 18: Role firmy — nasazovatel vs. poskytovatel</h2>
-<ul>
-<li>Naše firma je NASAZOVATEL (deployer) — používáme AI, ale nevyvíjíme ji</li>
-<li>Naše povinnosti dle čl. 26: transparentnost, dohled, monitoring, školení</li>
-<li>Poskytovatel AI (OpenAI, Google aj.) má vlastní povinnosti dle čl. 16-18</li>
-<li>Musíme ověřit, že naši dodavatelé AI plní SVOJE povinnosti</li>
-<li>Dodavatelský checklist je součástí Compliance Kitu</li>
-</ul>
-<div class='speaker-notes'>Vysvětlete klíčový rozdíl provider/deployer. Většina firem je deployer.</div>
+<h2>Slide 18: Jak na tom jsme</h2>
+- PERSONALIZUJ checklist ze stavu firmy:
+  ✅/⚠ u každé položky (max 5–6)
+  Školení, registr AI, transparentnost, incident plán, AI politika
+- Speaker notes: co už je hotovo díky Kitu
 
-<h2>Slide 19: Shrnutí — co si zapamatovat</h2>
-<ul>
-<li>AI Act platí pro VŠECHNY firmy v EU — i pro nás</li>
-<li>AI gramotnost je povinná od 2. 2. 2025 — tímto školením splňujete</li>
-<li>5 pravidel bezpečného používání AI (viz slide 12)</li>
-<li>NIKDY nevkládejte do AI citlivé údaje</li>
-<li>VŽDY ověřujte důležité výstupy AI</li>
-<li>Při incidentu: ZASTAVIT — DOKUMENTOVAT — NAHLÁSIT</li>
-<li>Máte otázky? Obraťte se na odpovědnou osobu za AI</li>
-</ul>
-<div class='speaker-notes'>Rekapitulujte klíčové body. Zeptejte se na dotazy.</div>
+<h2>Slide 19: Co si zapamatovat</h2>
+- MAX 4–5 bodů, každý 1 věta:
+  „AI nám pomáhá, ale musíme jí rozumět“
+  „Nikdy do AI nedávej citlivé údaje“
+  „Vždycky ověř důležité výstupy“
+  „Pokud si nejsi jistý — zeptej se“
 
-<h2>Slide 20: Další kroky a kontakty</h2>
-<ul>
-<li>Opakované školení: 1x ročně jako refresher</li>
-<li>Nový AI nástroj? — Informujte odpovědnou osobu za AI</li>
-<li>Problém s AI? — Postupujte dle Plánu řízení incidentů</li>
-<li>Odpovědná osoba za AI: [jméno z kontextu nebo bude určena]</li>
-<li>Další informace: Interní AI politika (součást Compliance Kitu)</li>
-<li>Dodržujte pravidla a buďte zodpovědní uživatelé AI</li>
-</ul>
-<div class='speaker-notes'>Připomeňte kontaktní osobu. Poděkujte za účast na školení.</div>
+<h2>Slide 20: Co dělat dál</h2>
+- 3–4 body:
+  „Opakujeme 1× ročně“
+  „Nový AI nástroj? Hlaš odpovědné osobě“
+  „Problém s AI? Postupuj dle plánu“
+  „Kontakt: [jméno, email z kontextu]“
 
-<h2>Slide 21: Právní doložka</h2>
-<p>Vytvořeno platformou AIshield.cz — automatizovaný AI Act compliance pro české firmy.</p>
-<p>Tento materiál slouží jako vzdělávací pomůcka, nepředstavuje právní poradenství.</p>
-<p>Soulad s AI Act dle stavu k [datu]. Při změně legislativy aktualizujte školení.</p>
-<div class='speaker-notes'>Přečtěte disclaimer. Školení je u konce.</div>
+<h2>Slide 21: Děkujeme</h2>
+<p>Vytvořeno platformou AIshield.cz</p>
+<p>Tento materál slouží jako vzdělávácí pomůcka, není právní poradenství.</p>
 
 ═══ PERSONALIZACE ═══
-- Pro KAŽDÝ systém z kontextu firmy personalizuj příklady
-- Pokud firma má oversight osobu, uveď jméno
-- Pokud firma zpracovává osobní údaje přes AI, zdůrazni GDPR
-- Příklady z odvětví firmy — NE obecné akademické příklady
-- Stav povinností vyhodnoť z kontextu
-- Automation bias příklady MUSÍ být z odvětví firmy
+- POVINNĚ personalizuj slidy 9, 10, 11, 13, 16, 17, 18 z dat firmy
+- Pokud firma má oversight osobu → jméno a email na slidy 12, 16, 17, 20
+- Příklady z odvětví firmy — NE obecné akademické
 
 ═══ SPEAKER NOTES ═══
 - KAŽDÝ slide MUSÍ mít <div class='speaker-notes'>...</div>
-- Poznámky piš jako mluvené slovo — co říct publiku
-- 2-4 věty na slide — stručně a prakticky
-- U personalizovaných slidů: navrhni co konkrétně říct
+- Do speaker notes patří: čísla článků zákona, pokuty, technické detaily
+- Piš jako mluvené slovo — co říct publiku
+- 2–4 věty na slide
 
-═══ TEXT NESMÍ OBSAHOVAT ═══
-- Emoji (kromě ✅ a ⚠ pro stav povinností na slide 17)
-- Zmínky o testech, kvízech nebo certifikacích — AIshield je neposkytuje
-- „V dnešní digitální době" a podobná klišé
+═══ STRIKTNĚ ZAKÁZÁNO ═══
+- Více než 6 odrážek na slide
+- Odrážky delší než 15 slov
+- Právnický žargon na slidech (patří do speaker notes)
+- „V dnešní digitální době“ a podobná klišé
 - Obecné statistiky bez vztahu k firmě
+- Emoji (kromě ✅ a ⚠ pro stav povinností na slide 18 a barevné kolečka na slide 7)
+- Zmínky o testech, kvízech nebo certifikacích (AIshield je neposkytuje)
+- Odkazování na články zákona PŘÍMO v odrážkách slidů (patří do speaker notes)
 """
-
 
 # ══════════════════════════════════════════════════════════════════════
 # PROMPT REGISTRY — mapování doc_key → prompt builder
