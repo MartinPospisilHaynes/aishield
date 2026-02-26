@@ -67,6 +67,7 @@ h1 {
     padding-bottom: 5pt;
     border-bottom: 3pt solid #7c3aed;
     page-break-after: avoid;
+    break-after: avoid;
 }
 h2 {
     font-size: 13pt;
@@ -77,6 +78,7 @@ h2 {
     padding-bottom: 3pt;
     border-bottom: 1pt solid #e2e8f0;
     page-break-after: avoid;
+    break-after: avoid;
 }
 h3 {
     font-size: 11pt;
@@ -85,6 +87,7 @@ h3 {
     margin-top: 12pt;
     margin-bottom: 5pt;
     page-break-after: avoid;
+    break-after: avoid;
 }
 h4 {
     font-size: 10pt;
@@ -130,7 +133,13 @@ table {
     border-collapse: collapse;
     margin: 8pt 0;
     font-size: 9pt;
-    page-break-inside: avoid;
+    /* page-break-inside: auto — allow large tables to break across pages */
+}
+thead {
+    display: table-header-group;  /* repeat header on each page */
+}
+tr {
+    page-break-inside: avoid;  /* keep individual rows together */
 }
 th {
     background-color: #f1f5f9;
