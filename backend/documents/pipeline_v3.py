@@ -56,7 +56,7 @@ from backend.documents.m3_client_critic import review_client
 from backend.documents.m4_refiner import refine as m4_refine, refine_with_m6 as m4_refine_v2
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
 from backend.documents.m6_post_check import post_m4_check
-from backend.documents.generation_report import send_generation_report
+# from backend.documents.generation_report import send_generation_report  # DISABLED P5.1
 from backend.documents.cover_generator import render_cover_page_html
 from backend.klienti.client_folder_manager import (
     ensure_client_folder,
@@ -1244,26 +1244,10 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             "error": str(e),
         })
 
-    # ── 3c. Email report M2/M3/M5 ──
-    try:
-        total_time = time.time() - pipeline_start
-        logger.info(f"[Pipeline v3] ═══ Odesílám report generace emailem ═══")
-        report_result = await send_generation_report(
-            generation_id=generation_id,
-            all_critiques=all_critiques,
-            m5_result=m5_result,
-            pipeline_log=result.pipeline_log,
-            total_cost=result.total_cost_usd,
-            total_tokens=result.total_tokens,
-            total_time=total_time,
-            doc_names=DOCUMENT_NAMES,
-        )
-        if report_result.get("sent"):
-            logger.info(f"[Pipeline v3] Report odeslán (resend_id={report_result.get('resend_id')})")
-        else:
-            logger.warning(f"[Pipeline v3] Report se nepodařilo odeslat: {report_result.get('error', '?')}")
-    except Exception as e:
-        logger.error(f"[Pipeline v3] Report email CHYBA (nekritická): {e}", exc_info=True)
+    # ── 3c. Email report M2/M3/M5 — DISABLED (P5.1) ──
+    # Inspector report email byl vypnut — data jsou k dispozici v gen_reports/
+    total_time = time.time() - pipeline_start
+    logger.info(f"[Pipeline v3] ═══ Report email SKIP (inspector disabled) ═══")
 
     # ── 4. Generate PDFs ──
     logger.info(f"")
