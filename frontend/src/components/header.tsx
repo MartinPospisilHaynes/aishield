@@ -73,7 +73,7 @@ export default function Header() {
                 </a>
 
                 {/* Desktop nav */}
-                <div className="hidden md:flex items-center gap-8">
+                <div className="hidden lg:flex items-center gap-6">
                     <a href="/pricing" className={`text-base transition-colors ${isActive("/pricing") ? "text-neon-fuchsia font-semibold" : "text-slate-300 hover:text-neon-fuchsia"}`}>
                         Ceník
                     </a>
@@ -142,7 +142,7 @@ export default function Header() {
 
                 {/* ── Mobile hamburger ── */}
                 <button
-                    className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 active:scale-95 transition-all"
+                    className="lg:hidden relative w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 active:scale-95 transition-all"
                     aria-label={mobileOpen ? "Zavřít menu" : "Otevřít menu"}
                     onClick={() => setMobileOpen(!mobileOpen)}
                 >
@@ -158,7 +158,7 @@ export default function Header() {
 
             {/* ── Mobile overlay + slide-down menu ── */}
             <div
-                className={`md:hidden fixed inset-0 top-[73px] z-40 transition-opacity duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                className={`lg:hidden fixed inset-0 top-[73px] z-40 transition-opacity duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
             >
                 {/* Backdrop */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />

@@ -721,7 +721,7 @@ function QuestionnaireInner() {
                     )}
 
                     {/* Feature cards */}
-                    <div className="grid grid-cols-3 gap-3 mb-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
                         {[
                             { icon: "🖱️", label: "Jen klikáte" },
                             { icon: "🔒", label: "Data v bezpečí" },

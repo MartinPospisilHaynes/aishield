@@ -86,7 +86,7 @@ export default function RootLayout({
                     <HeaderVisibility />
 
                     {/* ── Main Content ── */}
-                    <main className="min-h-screen">{children}</main>
+                    <main className="min-h-screen overflow-x-hidden">{children}</main>
 
                     {/* ── Footer ── */}
                     <footer className="border-t border-white/[0.06] bg-dark-950">
