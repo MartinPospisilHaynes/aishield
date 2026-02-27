@@ -10,15 +10,6 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 
-# Lazy import pro DOC_ORDER (vyhnutí se circular import)
-def _get_doc_order():
-    try:
-        from backend.documents.pipeline_v3 import DOC_ORDER
-        return DOC_ORDER
-    except ImportError:
-        return {}
-
-
 def _fix_orphaned_headings(html: str) -> str:
     """
     Post-processing: obalí každý <h2>/<h3> + první následující element
@@ -136,10 +127,7 @@ def generate_document_pdf(
 
     # 3. Uložit do Supabase Storage
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    # Prefix číslo dokumentu (01-13) pro řazení
-    doc_order = _get_doc_order()
-    prefix = doc_order.get(template_key, "99")
-    filename = f"{prefix}_{template_key}_{timestamp}.pdf" if has_pdf else f"{prefix}_{template_key}_{timestamp}.html"
+    filename = f"{template_key}_{timestamp}.pdf" if has_pdf else f"{template_key}_{timestamp}.html"
     download_url = save_to_supabase_storage(pdf_bytes, filename, client_id)
 
     return {

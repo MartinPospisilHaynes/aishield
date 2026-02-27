@@ -1,695 +1,368 @@
 <h1>Dodavatelský kontrolní list — hodnocení poskytovatelů AI</h1>
 
-<h2>1. Úvod</h2>
-
-<p>Dle čl. 26 AI Act je nasazovatel (deployer) povinen zajistit, aby AI systémy, které nasazuje, splňovaly požadavky nařízení. Součástí této povinnosti je due diligence vůči poskytovatelům AI systémů — ověření, že dodavatel plní své zákonné povinnosti a že smluvní vztah odpovídá požadavkům AI Act i GDPR. Čl. 25 AI Act dále stanoví, za jakých podmínek přechází odpovědnost poskytovatele na nasazovatele.</p>
-
-<div class='info'>Tento checklist je součástí Compliance Kitu dodaného AIshield.cz. Použijte ho pro systematické hodnocení každého dodavatele AI systémů ve vaší firmě. Checklist vyplňujete sami na základě komunikace s dodavateli. AIshield nevstupuje do smluvních vztahů klienta.</div>
-
-<div class='highlight'>
-<strong>Jak s tímto dokumentem pracovat:</strong>
-<ol>
-<li>Projděte přehled dodavatelů v sekci 2 a ověřte, že seznam odpovídá realitě.</li>
-<li>Pro každého dodavatele vyplňte hodnotící tabulku v sekci 3 — sloupec „Odpověď" doplňte na základě komunikace s dodavatelem.</li>
-<li>Použijte vzorové dotazy (sekce 4) a vzorový email pro oslovení dodavatelů.</li>
-<li>Vyhodnoťte dodavatele pomocí bodovacího systému v sekci 7.</li>
-<li>Pokud dodavatel nespolupracuje, postupujte dle sekce 8.</li>
-<li>Checklist aktualizujte minimálně jednou ročně nebo při podstatné změně AI systému.</li>
-</ol>
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>36</div>
+    <div class='metric-label'>Identifikovaných AI systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>17</div>
+    <div class='metric-label'>Systémů s vysokým rizikem</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>ANO</div>
+    <div class='metric-label'>Zpracování osobních údajů</div>
+  </div>
 </div>
 
-<h2>2. Přehled dodavatelů AI</h2>
+<h2>1. Úvod</h2>
+<p>Tento dokument slouží společnosti Martin Haynes (IČO: 17889251) k systematickému hodnocení dodavatelů systémů umělé inteligence. Jako nasazovatel (deployer) AI systémů máte dle čl. 26 Nařízení (EU) 2024/1689 (AI Act) povinnost zajistit, že systémy používáte v souladu s jejich určeným účelem a že vaši dodavatelé (poskytovatelé) plní své zákonné povinnosti.</p>
+<p>Integrace modelů pro obecné účely (GPAI) do vašich procesů vyžaduje smluvní ošetření dle čl. 51–54 AI Act. Due diligence dodavatelů je nezbytným krokem k minimalizaci právních a reputačních rizik.</p>
+
+<div class='info'>
+  <strong>Jak tento dokument používat:</strong> Projděte checklist u každého stávajícího i nového dodavatele AI. Pro sledování stavu komunikace se všemi 36 dodavateli doporučujeme vést evidenční tabulku (Excel / Google Sheets) se sloupci: dodavatel, datum odeslání dotazu, datum odpovědi, stav splnění, poznámky. Tuto evidenci uchovávejte minimálně po celou dobu spolupráce s dodavatelem — při případné kontrole dozorového orgánu tím doložíte svou due diligence.
+</div>
+
+<h2>2. Přehled klíčových dodavatelů AI</h2>
+<p>Výběr nejvýznamnějších dodavatelů identifikovaných ve vaší infrastruktuře, u kterých je vyžadována prioritní kontrola smluvních podmínek.</p>
 
 <table>
-<thead>
-<tr>
-<th>Dodavatel / Systém</th>
-<th>Kategorie</th>
-<th>Riziko</th>
-<th>Smluvní vztah</th>
-<th>DPA podepsáno?</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>OpenAI (ChatGPT / GPT-4o, DALL-E, Sora)</td>
-<td>GPAI / generativní AI</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Komerční API / SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Anthropic (Claude)</td>
-<td>GPAI / generativní AI</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Komerční API / SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Google (Gemini, VEO3)</td>
-<td>GPAI / generativní AI / chatbot</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Komerční API / SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Microsoft (GitHub Copilot, Copilot)</td>
-<td>Vývojový asistent / GPAI</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Komerční licence</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Perplexity AI</td>
-<td>GPAI / vyhledávání</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Midjourney</td>
-<td>Generativní AI (obraz)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>HeyGen / Synthesia</td>
-<td>Generativní AI (video / deepfake)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>ElevenLabs</td>
-<td>Generativní AI (hlas)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Freshdesk AI / Zendesk AI / Intercom</td>
-<td>Zákaznická podpora / chatbot</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>LinkedIn Recruiter / Teamio / LMC / Prace.cz AI / Sloneek</td>
-<td>HR / nábor (high-risk Příloha III)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>SaaS / licence</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Systémy monitorování zaměstnanců (sledování obrazovky, GPS, kamerový dohled s AI, analýza emailů)</td>
-<td>Monitorování zaměstnanců (high-risk Příloha III bod 4)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>SaaS / licence</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>CRIF / Bisnode / Scoring Solutions</td>
-<td>Kreditní scoring (high-risk Příloha III)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Datová služba</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Guidewire / NESS / ČPP / ČSOB interní AI</td>
-<td>Pojišťovnictví (high-risk Příloha III)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Licence / SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Prisync / Competera / Dynamic Yield</td>
-<td>Dynamické ceny</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Cursor (vývojový asistent)</td>
-<td>Vývojový asistent</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Fakturoid / Money S5 / ABRA / Pohoda / iDoklad</td>
-<td>Účetní software s AI prvky</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Licence / SaaS</td>
-<td>Ověřit</td>
-</tr>
-<tr>
-<td>Vlastní vývoj AI / vlastní kód</td>
-<td>Interní AI systém (provider role)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Interní</td>
-<td>Neuplatňuje se</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Dodavatel / Systém</th>
+      <th>Kategorie</th>
+      <th>Riziko</th>
+      <th>Smluvní vztah</th>
+      <th>DPA (GDPR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>OpenAI (ChatGPT / GPT-4o)</td>
+      <td>GPAI / LLM</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>Enterprise / API</td>
+      <td>Zajištěno</td>
+    </tr>
+    <tr>
+      <td>LMC (Teamio / Jobs.cz AI)</td>
+      <td>HR / Nábor</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Rámcová smlouva</td>
+      <td>Zajištěno</td>
+    </tr>
+    <tr>
+      <td>CRIF (Scoring Solutions)</td>
+      <td>Kreditní scoring</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Smlouva o dílo</td>
+      <td>Zajištěno</td>
+    </tr>
+    <tr>
+      <td>Zendesk (Zendesk AI)</td>
+      <td>Zákaznická podpora</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>SaaS předplatné</td>
+      <td>Zajištěno</td>
+    </tr>
+    <tr>
+      <td>Google (Gemini / VEO3)</td>
+      <td>GPAI / Generování obsahu</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>Cloud Terms</td>
+      <td>Zajištěno</td>
+    </tr>
+    <tr>
+      <td>HeyGen / Synthesia / ElevenLabs</td>
+      <td>Syntetická média (video/audio)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>SaaS předplatné</td>
+      <td>K ověření</td>
+    </tr>
+    <tr>
+      <td>GitHub Copilot / Cursor</td>
+      <td>Vývojářské nástroje</td>
+      <td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
+      <td>SaaS předplatné</td>
+      <td>K ověření</td>
+    </tr>
+    <tr>
+      <td>Sloneek</td>
+      <td>HR / Monitoring zaměstnanců</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Rámcová smlouva</td>
+      <td>K ověření</td>
+    </tr>
+  </tbody>
 </table>
 
 <h2>3. Hodnocení jednotlivých dodavatelů</h2>
+<p>Odpovědná osoba (Martin Haynes nebo pověřený pracovník) prověří tyto parametry u každého dodavatele.</p>
 
-<h3>3.1 OpenAI (ChatGPT / GPT-4o, DALL-E, Sora)</h3>
-
-<p><strong>Klíčová rizika:</strong> zpracování dat v USA, trénování na firemních datech, GPAI povinnosti dle čl. 53 AI Act.</p>
-
+<h3>3.1 Poskytovatelé GPAI (OpenAI, Anthropic, Google, Mistral)</h3>
 <table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek AI Act / GDPR</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Transparentnost</td>
-<td>Poskytuje OpenAI technickou dokumentaci a model card dle čl. 53 AI Act?</td>
-<td>Částečně — model cards dostupné, plná dokumentace dle AI Act v přípravě</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Data</td>
-<td>Kde se data zpracovávají (EU/mimo EU)?</td>
-<td>Primárně USA — ověřit DPA a SCC doložky</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>Trénování</td>
-<td>Trénuje se model na datech klienta? Existuje opt-out?</td>
-<td>API: data se nepoužívají k trénování (opt-out aktivní); ChatGPT web: ověřit nastavení v Settings → Data controls</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 6</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>Je podepsána smlouva o zpracování osobních údajů?</td>
-<td>DPA dostupná přes platform.openai.com/settings — ověřit podpis</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>SLA</td>
-<td>Jaké jsou garance dostupnosti a výkonu?</td>
-<td>SLA 99,9 % pro API — ověřit aktuální podmínky</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Smluvní právo</td>
-</tr>
-<tr>
-<td>Certifikace</td>
-<td>Má dodavatel ISO 27001, SOC 2?</td>
-<td>SOC 2 Type II — dostupné na vyžádání</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>—</td>
-</tr>
-<tr>
-<td>AI Act compliance</td>
-<td>Deklaruje dodavatel soulad s AI Act (GPAI povinnosti)?</td>
-<td>Probíhá — sledovat openai.com/compliance</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Exit strategie</td>
-<td>Je možné data exportovat a systém nahradit?</td>
-<td>Ano — API umožňuje migraci; historická data exportovatelná</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>GDPR čl. 20</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka k prověření</th>
+      <th>Požadovaný stav</th>
+      <th>Riziko při nesplnění</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Transparentnost (čl. 53)</td>
+      <td>Poskytuje dodavatel dokumentaci k modelu?</td>
+      <td>Dostupná technická specifikace</td>
+      <td>Nemožnost posoudit přesnost výstupů</td>
+    </tr>
+    <tr>
+      <td>Data a trénování</td>
+      <td>Trénuje se model na firemních datech? Existuje opt-out?</td>
+      <td>Opt-out aktivován (Enterprise verze)</td>
+      <td>Únik firemního know-how a osobních údajů</td>
+    </tr>
+    <tr>
+      <td>DPA a lokace dat</td>
+      <td>Kde se data fyzicky zpracovávají?</td>
+      <td>EU lokace nebo platné SCC doložky</td>
+      <td>Porušení GDPR (předávání do třetích zemí)</td>
+    </tr>
+    <tr>
+      <td>GPAI pravidla (čl. 51–54)</td>
+      <td>Splňuje poskytovatel povinnosti pro GPAI modely?</td>
+      <td>Dokumentace dle čl. 53, copyright politika</td>
+      <td>Nemožnost doložit soulad při auditu</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.2 Anthropic (Claude)</h3>
-
-<p><strong>Klíčová rizika:</strong> zpracování dat v USA, GPAI povinnosti dle čl. 53 AI Act.</p>
-
+<h3>3.2 Poskytovatelé vysoce rizikových systémů (LMC, CRIF, Sloneek)</h3>
 <table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Transparentnost</td>
-<td>Technická dokumentace dle čl. 53 AI Act?</td>
-<td>Model card dostupná; AI Act dokumentace v přípravě</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Data</td>
-<td>Kde se data zpracovávají?</td>
-<td>USA — ověřit SCC doložky pro přenos do EU</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>Trénování</td>
-<td>Trénuje se model na datech klienta?</td>
-<td>API: ne — ověřit aktuální podmínky na console.anthropic.com</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 6</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28?</td>
-<td>DPA dostupná — ověřit podpis pro vaši organizaci</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>SLA</td>
-<td>Garance dostupnosti?</td>
-<td>Ověřit aktuální SLA na anthropic.com</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Smluvní právo</td>
-</tr>
-<tr>
-<td>Certifikace</td>
-<td>ISO 27001 / SOC 2?</td>
-<td>SOC 2 Type II — ověřit platnost</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>—</td>
-</tr>
-<tr>
-<td>AI Act compliance</td>
-<td>Soulad s čl. 53 AI Act?</td>
-<td>Probíhá — sledovat aktualizace</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Exit strategie</td>
-<td>Portabilita dat?</td>
-<td>API umožňuje migraci</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>GDPR čl. 20</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka k prověření</th>
+      <th>Požadovaný stav</th>
+      <th>Riziko při nesplnění</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Soulad s AI Act</td>
+      <td>Deklaruje dodavatel soulad s Přílohou III?</td>
+      <td>Písemné prohlášení o shodě (CE)</td>
+      <td>Provozování nelegálního systému</td>
+    </tr>
+    <tr>
+      <td>Lidský dohled (čl. 14)</td>
+      <td>Umožňuje systém efektivní lidský dohled?</td>
+      <td>Možnost přepsat rozhodnutí AI</td>
+      <td>Sankce za plnou automatizaci bez kontroly</td>
+    </tr>
+    <tr>
+      <td>Právo na vysvětlení (čl. 86)</td>
+      <td>Generuje systém data pro vysvětlení rozhodnutí?</td>
+      <td>Dostupné logy a parametry rozhodnutí</td>
+      <td>Nemožnost reagovat na stížnosti subjektů</td>
+    </tr>
+    <tr>
+      <td>Logování (čl. 26 odst. 1 písm. f)</td>
+      <td>Umožňuje systém export a uchování logů?</td>
+      <td>Export logů, uchování min. 6 měsíců</td>
+      <td>Porušení povinnosti nasazovatele</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.3 Google (Gemini, VEO3)</h3>
-
-<p><strong>Klíčová rizika:</strong> GPAI povinnosti, nastavení EU datových regionů, opt-out z trénování.</p>
-
+<h3>3.3 Poskytovatelé nástrojů pro syntetická média (HeyGen, Synthesia, ElevenLabs)</h3>
 <table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Transparentnost</td>
-<td>Technická dokumentace dle čl. 53 AI Act?</td>
-<td>Gemini model cards dostupné; EU AI Act compliance deklarována pro Workspace</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Data</td>
-<td>Zpracování v EU?</td>
-<td>Google Cloud EU regiony dostupné — ověřit nastavení pro vaše instance</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>Trénování</td>
-<td>Trénování na datech klienta?</td>
-<td>Workspace: ne (dle podmínek); Gemini API: ověřit opt-out v Admin Console</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 6</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28?</td>
-<td>Google DPA standardně součástí Workspace smlouvy — ověřit aktuálnost</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>SLA</td>
-<td>Garance dostupnosti?</td>
-<td>99,9 % SLA pro Workspace — ověřit pro Gemini API</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>Smluvní právo</td>
-</tr>
-<tr>
-<td>Certifikace</td>
-<td>ISO 27001 / SOC 2?</td>
-<td>ISO 27001, SOC 2, SOC 3 — platné</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>—</td>
-</tr>
-<tr>
-<td>AI Act compliance</td>
-<td>Soulad s čl. 53 AI Act?</td>
-<td>Google deklaruje průběžný soulad — ověřit na cloud.google.com/compliance</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Exit strategie</td>
-<td>Portabilita dat?</td>
-<td>Google Takeout / API export — dostupné</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>GDPR čl. 20</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka k prověření</th>
+      <th>Požadovaný stav</th>
+      <th>Riziko při nesplnění</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Označení obsahu (čl. 50 odst. 4)</td>
+      <td>Umožňuje nástroj automatické označení AI obsahu metadaty?</td>
+      <td>Metadata o AI původu v každém výstupu</td>
+      <td>Porušení transparenční povinnosti, riziko deepfakes</td>
+    </tr>
+    <tr>
+      <td>Viditelné označení</td>
+      <td>Obsahuje výstup viditelný štítek „generováno AI"?</td>
+      <td>Jasné vizuální označení u každého média</td>
+      <td>Klamání příjemců obsahu</td>
+    </tr>
+    <tr>
+      <td>Ochrana identity</td>
+      <td>Jak dodavatel chrání před zneužitím hlasu/podoby?</td>
+      <td>Souhlas osoby, jejíž podoba je použita</td>
+      <td>Porušení práv na ochranu osobnosti</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.4 Microsoft (GitHub Copilot, Copilot)</h3>
-
-<p><strong>Klíčová rizika:</strong> zpracování firemního kódu (obchodní tajemství), trénování na firemních datech, GPAI povinnosti.</p>
-
+<h3>3.4 Vývojářské nástroje (GitHub Copilot, Cursor)</h3>
 <table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Transparentnost</td>
-<td>Technická dokumentace dle čl. 53 AI Act?</td>
-<td>Microsoft Responsible AI Transparency Reports dostupné; ověřit specificky pro Copilot</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>čl. 53 AI Act</td>
-</tr>
-<tr>
-<td>Data — kód firmy</td>
-<td>Zpracovává se firemní kód? Kde je uložen?</td>
-<td>GitHub Copilot Business: kód se nepoužívá k trénování (dle podmínek); ověřit nastavení v organizaci</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 46, obchodní tajemství</td>
-</tr>
-<tr>
-<td>Trénování</td>
-<td>Trénuje se model na firemním kódu?</td>
-<td>Copilot Business/Enterprise: ne (dle podmínek); Copilot Individual: ANO — zakázat pro firemní účely</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 6</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28?</td>
-<td>DPA součástí Microsoft 365 / GitHub Enterprise smlouvy — ověřit aktuálnost a rozsah</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>EU datové regiony</td>
-<td>Jsou data zpracovávána v EU?</td>
-<td>Microsoft EU Data Boundary dostupný — ověřit aktivaci pro vaši organizaci</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>Certifikace</td>
-<td>ISO 27001 / SOC 2?</td>
-<td>ISO 27001, SOC 2 Type II — platné</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>—</td>
-</tr>
-<tr>
-<td>Exit strategie</td>
-<td>Portabilita dat a kódu?</td>
-<td>Kód zůstává ve vlastnictví firmy; export přes Git — bez vendor lock-in</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>GDPR čl. 20</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kritérium</th>
+      <th>Otázka k prověření</th>
+      <th>Požadovaný stav</th>
+      <th>Riziko při nesplnění</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ochrana zdrojového kódu</td>
+      <td>Jsou firemní repozitáře použity k trénování modelu?</td>
+      <td>Opt-out aktivován, Business/Enterprise licence</td>
+      <td>Únik proprietárního kódu a obchodního tajemství</td>
+    </tr>
+    <tr>
+      <td>Code review</td>
+      <td>Prochází AI generovaný kód povinným review?</td>
+      <td>Interní pravidlo: žádný AI kód bez review</td>
+      <td>Bezpečnostní zranitelnosti, licenční problémy</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.5 LinkedIn Recruiter / Teamio / LMC / Prace.cz AI / Sloneek</h3>
+<h2>4. Vzorové dotazy pro dodavatele</h2>
+<p>Při komunikaci s dodavateli využijte následující sadu otázek. Každá směřuje k naplnění konkrétní zákonné povinnosti.</p>
 
-<div class='warning'>Tyto systémy spadají pod Přílohu III AI Act (HR screening a nábor zaměstnanců) a jsou klasifikovány jako vysoce rizikové. Dle čl. 26 AI Act musíte ověřit, že poskytovatel provedl posouzení shody a systém je registrován v EU databázi (čl. 49). Kandidáti mají právo na informaci, že jsou hodnoceni AI, a právo na přezkum člověkem.</div>
+<ul>
+  <li><strong>Kde jsou fyzicky uložena a zpracovávána data, která do systému vkládáme?</strong> (GDPR, ochrana obchodního tajemství)</li>
+  <li><strong>Jsou naše data používána k trénování vašich AI modelů? Pokud ano, jak lze tuto funkci vypnout?</strong> (Ochrana duševního vlastnictví)</li>
+  <li><strong>Jakým způsobem zajišťujete transparentnost systému dle čl. 50 AI Act?</strong> (Systémy komunikující se zákazníky)</li>
+  <li><strong>Byl váš systém klasifikován jako vysoce rizikový dle Přílohy III AI Act? Pokud ano, máte k dispozici EU prohlášení o shodě?</strong> (HR a finanční systémy)</li>
+  <li><strong>Jaké mechanismy lidského dohledu (čl. 14) váš systém technicky umožňuje?</strong> (Nastavení interních procesů)</li>
+  <li><strong>Umožňuje systém export automaticky generovaných logů a jejich uchování po dobu min. 6 měsíců?</strong> (čl. 26 odst. 1 písm. f)</li>
+  <li><strong>Označuje váš systém syntetický obsah (video, audio, obrázky) metadaty o AI původu dle čl. 50 odst. 4?</strong> (Pro HeyGen, Synthesia, ElevenLabs)</li>
+</ul>
+
+<h2>5. Vzorové e-maily pro dodavatele</h2>
+
+<div class='callout'>
+  <strong>Varianta A — Zjišťovací e-mail (pro dodavatele s nejasnou klasifikací):</strong><br><br>
+  Vážený poskytovateli,<br><br>
+  v rámci plnění požadavků EU AI Act (Nařízení 2024/1689) potřebujeme ověřit následující informace o vašem AI systému:<br><br>
+  1. Je váš systém klasifikován jako vysoce rizikový dle Přílohy III AI Act?<br>
+  2. Pokud ano, je k dispozici EU prohlášení o shodě a technická dokumentace?<br>
+  3. Jsou data naší společnosti využívána k trénování vašich modelů? Pokud ano, žádáme o opt-out.<br>
+  4. Kde jsou fyzicky zpracovávána data zadávaná do systému?<br><br>
+  Děkujeme za součinnost.
+</div>
+
+<div class='callout'>
+  <strong>Varianta B — Asertivní e-mail (pro dodavatele, u kterých již víte, že systém je vysoce rizikový — např. LMC, CRIF, Sloneek):</strong><br><br>
+  Vážený poskytovateli,<br><br>
+  váš systém [název systému] spadá dle naší analýzy pod Přílohu III Nařízení (EU) 2024/1689 (AI Act) jako vysoce rizikový AI systém. V souvislosti s tím vás žádáme o:<br><br>
+  1. Zaslání EU prohlášení o shodě a technické dokumentace dle čl. 47 AI Act.<br>
+  2. Popis mechanismů lidského dohledu, které váš systém umožňuje (čl. 14).<br>
+  3. Potvrzení, že systém generuje dostatečné logy pro vysvětlení individuálních rozhodnutí (čl. 86).<br>
+  4. Informaci o exportu a uchování automaticky generovaných protokolů (min. 6 měsíců).<br><br>
+  Tyto informace potřebujeme pro splnění našich povinností nasazovatele dle čl. 26 AI Act. Děkujeme za součinnost.
+</div>
+
+<div class='info'>
+  <strong>Jak postupovat u globálních dodavatelů (Google, OpenAI, Anthropic):</strong> Velcí poskytovatelé na individuální e-maily zpravidla neodpovídají. Postupujte takto: (1) Prostudujte jejich veřejnou dokumentaci — „AI Act compliance", „Trust Center", „Data Processing Addendum". (2) Ověřte nastavení Enterprise účtu — opt-out z trénování, lokace dat, export logů. (3) Výsledky zdokumentujte do vaší evidenční tabulky s odkazem na konkrétní stránku/dokument. (4) Pokud potřebné informace nenajdete, eskalujte přes svého account managera nebo obchodního zástupce.
+</div>
+
+<h2>6. Smluvní požadavky</h2>
+<p>Při obnově smluv nebo uzavírání nových kontraktů s poskytovateli AI systémů zajistěte, aby smlouva obsahovala:</p>
+
+<ul>
+  <li><strong>DPA (Smlouva o zpracování osobních údajů):</strong> Povinnost dle čl. 28 GDPR — vaše analýza potvrzuje zpracování osobních údajů přes AI.</li>
+  <li><strong>Zákaz trénování na datech klienta:</strong> Explicitní ujednání, že poskytovatel nesmí využívat vaše data (včetně logů a promptů) k vylepšování svých modelů bez výslovného souhlasu.</li>
+  <li><strong>Garance souladu s AI Act:</strong> Závazek poskytovatele, že systém splňuje požadavky Nařízení (EU) 2024/1689, zejména povinnosti transparentnosti a případného posouzení shody.</li>
+  <li><strong>Součinnost při incidentech:</strong> Závazek poskytnout technickou součinnost při hlášení závažných incidentů dle čl. 73 AI Act (lhůta 15 dnů od zjištění).</li>
+  <li><strong>Logování a export dat:</strong> Závazek umožnit export automaticky generovaných protokolů a jejich uchování po dobu minimálně 6 měsíců (čl. 26 odst. 1 písm. f).</li>
+  <li><strong>Portabilita a exit strategie:</strong> Jasně definovaný proces exportu dat a logů v případě ukončení spolupráce.</li>
+  <li><strong>Označování syntetického obsahu:</strong> U dodavatelů generativních nástrojů (HeyGen, Synthesia, ElevenLabs, DALL-E, Midjourney) závazek, že výstupy budou obsahovat metadata o AI původu dle čl. 50 odst. 4.</li>
+</ul>
+
+<h2>7. Akční doporučení</h2>
+
+<ul>
+  <li><strong>Revize interních systémů:</strong> Systémy označené jako „vlastní html" a „vlastní kód" vyžadují revizi klasifikace. Pokud tyto systémy vyvíjíte interně, stáváte se poskytovatelem (čl. 16) a nesete plnou odpovědnost za posouzení shody. U systémů rozpoznávání emocí nebo sociálního scoringu hrozí kolize se zakázanými praktikami (čl. 5).</li>
+  <li><strong>Zajištění práva na vysvětlení:</strong> U dodavatelů HR systémů (Teamio, Sloneek) a finančního scoringu (CRIF) smluvně vyžadujte, aby systémy poskytovaly dostatek dat pro naplnění práva dotčených osob na vysvětlení individuálního rozhodnutí dle čl. 86 AI Act.</li>
+  <li><strong>Registrace vysoce rizikových systémů:</strong> Povinnost registrace nasazení v EU databázi dle čl. 49 odst. 2 AI Act se vztahuje na orgány veřejné moci a subjekty plnící úkoly ve veřejném zájmu, případně nasazovatele biometrických systémů. Jako soukromá společnost tuto povinnost nemáte plošně — ale pokud nasazujete biometrické systémy (např. kamerový dohled s AI), registrace se na vás vztahuje. Ověřte klasifikaci každého systému.</li>
+  <li><strong>Logování:</strong> Dle čl. 26 odst. 1 písm. f) AI Act musíte jako nasazovatel uchovávat automaticky generované protokoly minimálně 6 měsíců. Ověřte u dodavatelů cloudových AI služeb, zda systém umožňuje export logů.</li>
+  <li><strong>Syntetická média:</strong> U nástrojů HeyGen, Synthesia a ElevenLabs zajistěte, aby veškerý generovaný obsah (video, audio) byl označen jako AI-generovaný — viditelně i v metadatech (čl. 50 odst. 4). Zavedete interní pravidlo: žádné syntetické médium nesmí být publikováno bez označení.</li>
+  <li><strong>Vývojářské nástroje:</strong> U GitHub Copilot a Cursor ověřte, že máte Business/Enterprise licenci s opt-out z trénování na vašem kódu. Zavedete povinný code review pro veškerý AI generovaný kód.</li>
+</ul>
+
+<div class='warning'>
+  <strong>Co dělat, když dodavatel neodpoví:</strong> (1) Zašlete opakovaný dotaz s odkazem na čl. 26 AI Act a vaši povinnost due diligence. (2) Zdokumentujte všechny pokusy o kontakt (datum, způsob, obsah). (3) Pokud dodavatel odmítá poskytnout informace potřebné pro vaši compliance, zvažte výměnu dodavatele nebo eskalaci přes právního zástupce. (4) Samotná dokumentace vašich pokusů o získání informací je důkazem vaší dobré víry při případné kontrole.
+</div>
+
+<h2>8. Kontrolní tabulka — stav due diligence</h2>
 
 <table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Prohlášení o shodě</td>
-<td>Poskytuje dodavatel prohlášení o shodě (čl. 47) a technickou dokumentaci (Příloha IV)?</td>
-<td>Vyžádat od každého dodavatele individuálně. Kde najít: zeptejte se na „EU AI Act Declaration of Conformity" nebo „Prohlášení o shodě".</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 47, Příloha IV AI Act</td>
-</tr>
-<tr>
-<td>Registrace EU databáze</td>
-<td>Je systém registrován v EU databázi high-risk AI (čl. 49)?</td>
-<td>Ověřit na <strong>eudatabase.ai</strong> (EU databáze AI systémů). Vyžádat registrační číslo od dodavatele.</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 49 AI Act</td>
-</tr>
-<tr>
-<td>Data kandidátů</td>
-<td>Kde se zpracovávají data kandidátů?</td>
-<td>LinkedIn: USA (SCC); Teamio/LMC: ČR/EU — ověřit u každého</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>Trénování</td>
-<td>Trénuje se model na datech kandidátů vaší firmy?</td>
-<td>Ověřit podmínky každého dodavatele — vyžádat písemné potvrzení</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 6</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28?</td>
-<td>Ověřit podpis pro každý systém</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>Lidský dohled</td>
-<td>Umožňuje systém přepsání rozhodnutí člověkem?</td>
-<td>Ověřit funkčnost override mechanismu — musí být technicky možné přepsat AI doporučení</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 14 AI Act</td>
-</tr>
-<tr>
-<td>Bias testing</td>
-<td>Testuje dodavatel systém na diskriminaci (pohlaví, věk, etnicita)?</td>
-<td>Vyžádat popis metodiky testování na bias</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 9-10 AI Act</td>
-</tr>
-<tr>
-<td>Exit strategie</td>
-<td>Portabilita dat kandidátů?</td>
-<td>Ověřit podmínky exportu dat</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 20</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kategorie dodavatelů</th>
+      <th>Splněno?</th>
+      <th>Potřebná akce</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Interní vývoj (vlastní kód, vlastní html)</td>
+      <td>NE</td>
+      <td>Audit funkcionalit, vyloučení zakázaných praktik (čl. 5). Pokud vyvíjíte AI, přebíráte povinnosti poskytovatele (čl. 16).</td>
+    </tr>
+    <tr>
+      <td>GPAI a LLM (OpenAI, Google, Anthropic, Mistral)</td>
+      <td>K ověření</td>
+      <td>Ověřit nastavení Enterprise účtů, potvrdit opt-out z trénování dat, prostudovat veřejnou compliance dokumentaci.</td>
+    </tr>
+    <tr>
+      <td>HR a nábor (LMC, Sloneek, LinkedIn)</td>
+      <td>K ověření</td>
+      <td>Vyžádat prohlášení o shodě (asertivní e-mail — varianta B), nastavit procesy pro lidský dohled a právo na vysvětlení (čl. 86).</td>
+    </tr>
+    <tr>
+      <td>Finanční scoring (CRIF, Bisnode)</td>
+      <td>K ověření</td>
+      <td>Vyžádat prohlášení o shodě, zajistit právo klienta na vysvětlení rozhodnutí.</td>
+    </tr>
+    <tr>
+      <td>Syntetická média (HeyGen, Synthesia, ElevenLabs)</td>
+      <td>K ověření</td>
+      <td>Ověřit automatické označování AI obsahu metadaty (čl. 50 odst. 4), zavést interní pravidla pro publikaci.</td>
+    </tr>
+    <tr>
+      <td>Vývojářské nástroje (GitHub Copilot, Cursor)</td>
+      <td>K ověření</td>
+      <td>Ověřit Business/Enterprise licenci, opt-out z trénování, zavést povinný code review.</td>
+    </tr>
+    <tr>
+      <td>Kritická infrastruktura (pospa ing.)</td>
+      <td>NE</td>
+      <td>Konzultace s NÚKIB, příprava na registraci u národního orgánu (čl. 49 odst. 4). AI v kritické infrastruktuře se registruje u národního orgánu, nikoli ve veřejné EU databázi.</td>
+    </tr>
+    <tr>
+      <td>Pojišťovnictví (Guidewire, NESS / Allianz AI)</td>
+      <td>K ověření</td>
+      <td>Vyžádat prohlášení o shodě — AI v pojišťovnictví spadá pod Přílohu III bod 5a.</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.6 Systémy monitorování zaměstnanců</h3>
+<div class='info'>
+  <strong>Evidence a archivace:</strong> Veškerou komunikaci s dodavateli (e-maily, odpovědi, odkazy na compliance dokumentaci) uchovávejte v evidenční tabulce. Doporučená struktura: název dodavatele, AI systém, datum dotazu, datum odpovědi, stav (splněno / nesplněno / čeká se), odkaz na dokument, poznámky. Uchovávejte minimálně po dobu používání systému + 1 rok po ukončení. Při kontrole dozorového orgánu tím doložíte systematický přístup k due diligence.
+</div>
 
-<div class='warning'>Monitorování zaměstnanců pomocí AI (sledování obrazovky, GPS, kamerový dohled s AI, analýza emailů) spadá pod Přílohu III bod 4 AI Act a je klasifikováno jako vysoce rizikové. Vyžaduje DPIA dle GDPR, transparentnost vůči zaměstnancům a právní základ pro zpracování. Rozpoznávání emocí na pracovišti je dle čl. 5 odst. 1 písm. f) AI Act zakázáno — ověřte, zda žádný z vašich systémů tuto funkci neobsahuje.</div>
-
-<table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Právní základ</td>
-<td>Jaký je právní základ pro zpracování dat zaměstnanců (souhlas, oprávněný zájem, kolektivní smlouva)?</td>
-<td>Ověřit — souhlas zaměstnance je problematický (nerovný vztah); preferovat oprávněný zájem s balančním testem</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 6, čl. 22</td>
-</tr>
-<tr>
-<td>DPIA</td>
-<td>Byla provedena DPIA (posouzení vlivu na ochranu osobních údajů)?</td>
-<td>Povinné pro všechny systémy monitorování zaměstnanců — ověřit provedení</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 35</td>
-</tr>
-<tr>
-<td>Transparentnost vůči zaměstnancům</td>
-<td>Jsou zaměstnanci informováni o rozsahu a účelu monitorování?</td>
-<td>Povinné — zaměstnanci musí vědět, co se sleduje, proč a jak dlouho se data uchovávají</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 26 odst. 7 AI Act, GDPR čl. 13</td>
-</tr>
-<tr>
-<td>Rozpoznávání emocí</td>
-<td>Obsahuje systém funkci rozpoznávání emocí?</td>
-<td>Pokud ano — zakázáno na pracovišti dle čl. 5 odst. 1 písm. f) AI Act. Okamžitě deaktivovat.</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 5 odst. 1 písm. f) AI Act</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28 s dodavatelem monitorovacího systému?</td>
-<td>Ověřit podpis pro každý systém</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>Prohlášení o shodě</td>
-<td>Prohlášení o shodě dle čl. 47 AI Act?</td>
-<td>Vyžádat od dodavatele — high-risk systém vyžaduje posouzení shody</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 47 AI Act</td>
-</tr>
-<tr>
-<td>Proporcionalita</td>
-<td>Je rozsah monitorování přiměřený účelu?</td>
-<td>Ověřit — nesmí jít o plošné sledování bez konkrétního důvodu</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 5 odst. 1 písm. c)</td>
-</tr>
-<tr>
-<td>Lidský dohled</td>
-<td>Může zaměstnanec napadnout rozhodnutí založené na AI monitoringu?</td>
-<td>Povinné — zaměstnanec musí mít možnost přezkumu člověkem</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 14 AI Act, GDPR čl. 22</td>
-</tr>
-</tbody>
-</table>
-
-<h3>3.7 CRIF / Bisnode / Scoring Solutions (kreditní scoring)</h3>
-
-<div class='warning'>Kreditní scoring je vysoce rizikový AI systém dle Přílohy III bod 5 písm. b) AI Act. Dle čl. 26 odst. 1 musíte zajistit soulad systému s AI Act. Čl. 86 odst. 1 AI Act (právo dotčené osoby na vysvětlení rozhodnutí) nabývá účinnosti 2. 8. 2026. Do té doby se uplatní GDPR čl. 22 odst. 3 (právo na přezkum člověkem). Doporučujeme mechanismus vysvětlení připravit již nyní.</div>
-
-<table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Prohlášení o shodě</td>
-<td>Prohlášení o shodě dle čl. 47 AI Act?</td>
-<td>Vyžádat od CRIF / Bisnode / Scoring Solutions</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 47 AI Act</td>
-</tr>
-<tr>
-<td>Vysvětlitelnost</td>
-<td>Poskytuje systém vysvětlení rozhodnutí srozumitelné dotčené osobě?</td>
-<td>Ověřit — klíčové pro práva dotčených osob. Aktuálně: GDPR čl. 22 odst. 3. Od 2. 8. 2026: čl. 86 odst. 1 AI Act.</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 86 AI Act, GDPR čl. 22</td>
-</tr>
-<tr>
-<td>Registrace EU databáze</td>
-<td>Registrace dle čl. 49 AI Act?</td>
-<td>Vyžádat potvrzení a registrační číslo</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 49 AI Act</td>
-</tr>
-<tr>
-<td>Data</td>
-<td>Zpracování v EU?</td>
-<td>CRIF/Bisnode: primárně EU — ověřit aktuální podmínky</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>GDPR čl. 46</td>
-</tr>
-<tr>
-<td>DPA</td>
-<td>DPA dle GDPR čl. 28?</td>
-<td>Ověřit podpis a aktuálnost</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>GDPR čl. 28</td>
-</tr>
-<tr>
-<td>Bias testing</td>
-<td>Testuje dodavatel scoring model na diskriminaci?</td>
-<td>Vyžádat popis metodiky — klíčové pro férovost rozhodnutí</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 9-10 AI Act</td>
-</tr>
-<tr>
-<td>Certifikace</td>
-<td>ISO 27001 / SOC 2?</td>
-<td>Ověřit u každého dodavatele</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>—</td>
-</tr>
-</tbody>
-</table>
-
-<h3>3.8 HeyGen / Synthesia / ElevenLabs (syntetická média)</h3>
-
-<p><strong>Klíčová rizika:</strong> deepfake zneužití, povinnost označení syntetického obsahu, zpracování biometrických dat (hlas, obraz).</p>
-
-<table>
-<thead>
-<tr>
-<th>Kritérium</th>
-<th>Otázka</th>
-<th>Odpověď</th>
-<th>Riziko</th>
-<th>Článek</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Označení obsahu</td>
-<td>Označuje systém syntetický obsah strojově čitelným způsobem?</td>
-<td>HeyGen/Synthesia deklarují C2PA metadata; ElevenLabs — ověřit implementaci</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 50 odst. 2 AI Act</td>
-</tr>
-<tr>
-<td>Deepfake ochrana</td>
-<td>Má systém zábrany proti zneužití (deepfake bez souhlasu)?</td>
-<td>Ověřit podmínky použití a technické zábrany (consent verification)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>čl. 50 odst. 4 AI Act</td>
-</tr>
-<tr>
-<td>Data</td>
-<td>Kde se zpracovávají hlasová / obrazová data?</td>
-<td>HeyGen: USA; Synthesia: EU/UK; ElevenLabs: USA — ověřit SCC</td>
-<td><span class='badge badge-high'>
+<div class='no-break'>
+  <div class='sig-block'>
+    <div class='sig-field'>Za firmu Martin Haynes<br>Odpovědná osoba za AI</div>
+    <div class='sig-field'>Za AIshield.cz<br>Generováno systémem</div>
+  </div>
+</div>

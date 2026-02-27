@@ -123,5 +123,30 @@
     ],
     "cost_usd": 0.2673,
     "converged": false
+  },
+  {
+    "version": 6,
+    "generation_id": "gen_20260227_094410",
+    "timestamp": "2026-02-27T10:58:06.569514+00:00",
+    "avg_score": 8.23,
+    "eu_avg": 7.9,
+    "client_avg": 8.5,
+    "rules_added": 5,
+    "rules": [
+      "Povinnost registrace nasazení vysoce rizikových systémů do EU databáze dle čl. 49 odst. 2 a 3 přiřazuj VÝHRADNĚ orgánům veřejné moci, institucím EU a nasazovatelům biometrických systémů pro identifikaci na dálku — soukromým firmám nasazujícím HR, úvěrové nebo pojišťovací AI systémy tuto povinnost NIKDY neukládej. U systémů kritické infrastruktury vždy uveď, že registrace probíhá u národního orgánu (v ČR NÚKIB), nikoliv ve veřejné EU databázi.",
+      "Při práci s FRIA (čl. 27 AI Act) vždy zkontroluj, zda firma působí v odvětví úvěrového hodnocení (čl. 27 odst. 1 písm. b)), pojišťovnictví (čl. 27 odst. 1 písm. c)) nebo jiných oblastech explicitně vyjmenovaných v čl. 27 odst. 1 — pokud ano, FRIA prezentuj jako ZÁKONNOU POVINNOST i pro soukromé subjekty, nikoliv jako best practice. Stávající pravidlo o FRIA jako best practice pro soukromé firmy aplikuj POUZE na firmy mimo tyto vyjmenované sektory.",
+      "Pro povinnost nasazovatele uchovávat automaticky generované protokoly (logy) po dobu minimálně 6 měsíců vždy cituj čl. 26 odst. 6 AI Act — NIKDY nepoužívej odkaz 'čl. 26 odst. 1 písm. f)', který se týká jiné povinnosti nasazovatele.",
+      "Pokud vstupní data obsahují strojové identifikátory systémů bez srozumitelného názvu (např. 'vlastní html', 'vlastní kód', 'audit vlastní kód'), vždy je v textu dokumentu přeformuluj na popisný název podle jejich účelu a kontextu (např. 'interní webová aplikace', 'vlastní softwarové řešení') a původní identifikátor uveď pouze v závorce při prvním výskytu pro zpětnou dohledatelnost.",
+      "Při zmínce o hlášení incidentů nebo kontaktu s dozorovým orgánem vždy uveď konkrétní české dozorové orgány relevantní pro sektory klienta — minimálně: ČOI (obecný dozor AI Act), ÚOOÚ (ochrana osobních údajů), a dále dle odvětví: ČNB (finance/pojišťovnictví), SÚKL (zdravotnické prostředky), NÚKIB (kritická infrastruktura/kybernetická bezpečnost). Nikdy nepoužívej pouze obecný termín 'dozorový orgán' bez konkretizace."
+    ],
+    "reasons": [
+      "Chybná povinnost registrace se opakuje v 6 dokumentech a je nejčastějším kritickým právním nálezem M2.",
+      "Aktuální M5 pravidlo v1 o FRIA je příliš zjednodušující — nerozlišuje sektory, kde je FRIA povinná i pro soukromé firmy. Nález se opakuje ve 4 dokumentech jako kritický.",
+      "Chybná citace logování se opakuje v 5 dokumentech. Stávající M5 pravidlo v1 o rozlišení rolí paradoxně instruuje používat právě 'čl. 26 odst. 1 písm. f)' pro nasazovatele, což je nesprávný odkaz.",
+      "Doslovné přebírání strojových názvů se opakuje v 6 dokumentech a snižuje profesionalitu i srozumitelnost dokumentů jak pro M2, tak pro M3.",
+      "Absence konkrétních dozorových orgánů se opakuje ve 4 dokumentech a je jedním z nejčastějších klientských nálezů o praktické nepoužitelnosti."
+    ],
+    "cost_usd": 0.1508,
+    "converged": false
   }
 ]

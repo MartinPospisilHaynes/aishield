@@ -1,724 +1,526 @@
-<h1>Monitoring plán AI systémů — Martin Haynes</h1>
+<h1>Monitoring plán AI systémů</h1>
 
-<div class='info'>
-Tento monitoring plán je součástí Compliance Kitu dodaného společností AIshield.cz. Implementujte jej do svých interních IT procesů a provozních postupů. AIshield nemůže přistupovat k vašim interním systémům ani provádět monitoring za vás — odpovědnost za průběžný dohled nad AI systémy leží na straně firmy Martin Haynes jako nasazovatele i poskytovatele.
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>36</div>
+    <div class='metric-label'>Celkem AI systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>17</div>
+    <div class='metric-label'>Vysoce rizikových</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>18</div>
+    <div class='metric-label'>Omezené riziko</div>
+  </div>
 </div>
 
 <h2>1. Účel a právní základ</h2>
+<p>Tento dokument stanovuje závazná pravidla pro průběžné sledování, vyhodnocování a logování systémů umělé inteligence ve společnosti Martin Haynes (IČO: 17889251). Účelem je zajistit trvalý soulad s Nařízením (EU) 2024/1689 (AI Act) a minimalizovat rizika spojená s nepřesností, zaujatostí nebo selháním AI systémů.</p>
 
-<p>Tento plán stanovuje povinnosti firmy Martin Haynes v oblasti průběžného monitoringu nasazených AI systémů. Firma provozuje rozsáhlé portfolio AI nástrojů napříč více odvětvími a vystupuje v různých rolích — jako <strong>nasazovatel</strong> (deployer dle čl. 3 odst. 4 AI Act) i jako <strong>poskytovatel</strong> (provider dle čl. 3 odst. 2 AI Act) vlastních AI řešení a systémů se změněným účelem (čl. 25 AI Act). Celkový rizikový profil je <span class='badge badge-high'>VYSOKÉ</span> s 17 systémy vysokého rizika, 18 omezeného a 1 minimálního rizika.</p>
+<p>Právní rámec tohoto plánu:</p>
+<ul>
+  <li><strong>Čl. 9 AI Act:</strong> Povinnost zavést a udržovat systém řízení rizik pro vysoce rizikové systémy.</li>
+  <li><strong>Čl. 12 a čl. 19 odst. 1 AI Act:</strong> Povinnosti poskytovatele (provider) zajistit automatické zaznamenávání událostí a uchovávání logů — vztahuje se na systémy, které společnost sama vyvíjí nebo podstatně upravuje (čl. 25).</li>
+  <li><strong>Čl. 26 odst. 1 písm. f) AI Act:</strong> Povinnost nasazovatele (deployer) uchovávat automaticky generované protokoly (logy) po dobu minimálně 6 měsíců.</li>
+</ul>
 
-<table>
-<thead>
-<tr>
-<th>Právní základ</th>
-<th>Povinnost</th>
-<th>Role</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Čl. 9 AI Act</td>
-<td>Průběžný systém řízení rizik pro high-risk AI systémy</td>
-<td>Nasazovatel / Poskytovatel</td>
-</tr>
-<tr>
-<td>Čl. 12 AI Act</td>
-<td>Automatické logování schopností AI systémů (technické logování na úrovni systému)</td>
-<td>Poskytovatel</td>
-</tr>
-<tr>
-<td>Čl. 19 odst. 1 AI Act</td>
-<td>Uchovávání logů minimálně 6 měsíců</td>
-<td>Poskytovatel</td>
-</tr>
-<tr>
-<td>Čl. 26 odst. 1 písm. b) AI Act</td>
-<td>Zajištění lidského dohledu a přezkumu rozhodnutí AI</td>
-<td>Nasazovatel</td>
-</tr>
-<tr>
-<td>Čl. 26 odst. 5 AI Act</td>
-<td>Uchovávání logů generovaných high-risk AI — dle pokynů poskytovatele, minimálně 6 měsíců</td>
-<td>Nasazovatel</td>
-</tr>
-<tr>
-<td>Čl. 50 odst. 3 AI Act</td>
-<td>Transparentnost vůči fyzickým osobám — právo na vysvětlení rozhodnutí AI</td>
-<td>Nasazovatel / Poskytovatel</td>
-</tr>
-<tr>
-<td>Čl. 72 AI Act</td>
-<td>Post-market monitoring pro poskytovatele high-risk AI</td>
-<td>Poskytovatel</td>
-</tr>
-<tr>
-<td>Čl. 73 AI Act</td>
-<td>Hlášení závažných incidentů — nasazovatel hlásí poskytovateli bez zbytečného odkladu; poskytovatel hlásí dozorové autoritě do 15 dnů</td>
-<td>Nasazovatel / Poskytovatel</td>
-</tr>
-</tbody>
-</table>
+<div class='info'>
+  <strong>Důležité rozlišení rolí:</strong> Vaše společnost vystupuje ve <strong>dvou rolích</strong> dle AI Act:
+  <ul>
+    <li><strong>Poskytovatel (provider)</strong> — u systémů, které sami vyvíjíte nebo podstatně upravujete (vlastní vývoj AI, změna účelu AI systému). Na tyto systémy se vztahuje přísnější režim: technická dokumentace (Příloha IV), posouzení shody, CE označení, registrace v EU databázi.</li>
+    <li><strong>Nasazovatel (deployer)</strong> — u systémů třetích stran, které pouze používáte (ChatGPT, Teamio, Zendesk AI apod.). Povinnosti: logování, lidský dohled, transparentnost.</li>
+  </ul>
+  V tabulce níže je u každé kategorie vyznačeno, v jaké roli vystupujete.
+</div>
+
+<div class='info'>
+  <strong>Vyžaduje akci klienta:</strong> Implementujte tyto kontrolní mechanismy do svých každodenních IT a HR procesů. AIshield nemůže aktivně přistupovat k vašim interním systémům a provádět měření za vás.
+</div>
 
 <h2>2. Přehled monitorovaných AI systémů</h2>
+<p>Harmonogram monitoringu pro klíčové kategorie AI systémů. Frekvence je odvozena od míry rizika a potenciálního dopadu na práva fyzických osob.</p>
 
 <table>
-<thead>
-<tr>
-<th>AI systém</th>
-<th>Kategorie rizika</th>
-<th>Frekvence</th>
-<th>Zodpovědná osoba</th>
-<th>Zástupce</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Monitorování zaměstnanců (sledování obrazovky, GPS, kamerový dohled s AI, analýza emailů)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí HR</td>
-</tr>
-<tr>
-<td>Kreditní scoring (CRIF, Bisnode, Scoring Solutions)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí financí</td>
-</tr>
-<tr>
-<td>Nábor a HR screening (LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Sloneek)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí HR</td>
-</tr>
-<tr>
-<td>AI v pojišťovnictví (Guidewire, NESS / Allianz AI, ČPP / ČSOB interní AI)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí pojistného oddělení</td>
-</tr>
-<tr>
-<td>Rozhodování o právech zákazníků (reklamace, slevy, schvalování žádostí, přístup ke službám)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí zákaznického servisu</td>
-</tr>
-<tr>
-<td>AI v kritické infrastruktuře — pospa ing.</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí provozu</td>
-</tr>
-<tr>
-<td>AI interagující s dětmi (vzdělávání / e-learning, mobilní aplikace)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí produktu</td>
-</tr>
-<tr>
-<td>Vlastní vývoj AI / změna účelu AI systému (čl. 25 AI Act)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-<tr>
-<td>AI bezpečnostní komponenta (čl. 6 odst. 1 AI Act)</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-<tr>
-<td>Vlastní kód — biometrická identifikace, rozpoznávání emocí</td>
-<td><span class='badge badge-high'>VYSOKÉ</span></td>
-<td>Týdně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Kategorie AI systémů (příklady)</th>
+      <th>Riziko</th>
+      <th>Role dle AI Act</th>
+      <th>Frekvence</th>
+      <th>Garant</th>
+      <th>Vykonavatel kontroly</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Nábor a HR (Teamio, LMC AI, Sloneek)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Týdně*</td>
+      <td>Martin Haynes</td>
+      <td>HR manažer</td>
+    </tr>
+    <tr>
+      <td>Kreditní scoring (CRIF, Bisnode)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Týdně*</td>
+      <td>Martin Haynes</td>
+      <td>Finanční oddělení</td>
+    </tr>
+    <tr>
+      <td>Monitorování zaměstnanců (sledování obrazovky, GPS, kamery s AI)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Měsíčně</td>
+      <td>Martin Haynes</td>
+      <td>IT administrátor</td>
+    </tr>
+    <tr>
+      <td>Kritická infrastruktura („pospa ing.")</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Nasazovatel / Poskytovatel**</td>
+      <td>Denně (automatizovaně)</td>
+      <td>Martin Haynes</td>
+      <td>Provozní technik / IT</td>
+    </tr>
+    <tr>
+      <td>AI jako bezpečnostní komponenta (zdravotnický přístroj, průmyslový stroj, vozidlo)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Poskytovatel</td>
+      <td>Denně (automatizovaně)</td>
+      <td>Martin Haynes</td>
+      <td>Provozní technik</td>
+    </tr>
+    <tr>
+      <td>Pojišťovnictví AI (Guidewire, NESS/Allianz AI)</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Týdně*</td>
+      <td>Martin Haynes</td>
+      <td>Finanční oddělení</td>
+    </tr>
+    <tr>
+      <td>Vlastní vývoj AI / změna účelu</td>
+      <td><span class='badge badge-high'>VYSOKÉ</span></td>
+      <td>Poskytovatel (čl. 25)</td>
+      <td>Průběžně</td>
+      <td>Martin Haynes</td>
+      <td>Vedoucí vývoje</td>
+    </tr>
+    <tr>
+      <td>Zákaznická podpora (Gemini, Zendesk AI, Freshdesk)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Měsíčně</td>
+      <td>Martin Haynes</td>
+      <td>Vedoucí zákaznické podpory</td>
+    </tr>
+    <tr>
+      <td>Dynamická cenotvorba (Prisync, Competera)</td>
+      <td><span class='badge badge-limited'>OMEZENÉ</span></td>
+      <td>Nasazovatel</td>
+      <td>Měsíčně</td>
+      <td>Martin Haynes</td>
+      <td>E-commerce manažer</td>
+    </tr>
+    <tr>
+      <td>Generování obsahu a kódu (GitHub Copilot, Cursor, DALL-E, Midjourney)</td>
+      <td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
+      <td>Nasazovatel</td>
+      <td>Kvartálně</td>
+      <td>Martin Haynes</td>
+      <td>Vedoucí vývoje</td>
+    </tr>
+  </tbody>
 </table>
+
+<p><em>* „Týdně" u vysoce rizikových systémů znamená rychlou kontrolu dashboardu (cca 5–10 minut), nikoli hloubkový audit. Hloubkový audit provádějte měsíčně.</em></p>
+<p><em>** Upřesněte roli dle skutečného stavu — pokud systém sami vyvíjíte, jste poskytovatel.</em></p>
 
 <div class='warning'>
-<strong>PRÁVNÍ UPOZORNĚNÍ — biometrická identifikace a rozpoznávání emocí:</strong> Tyto systémy mohou být zakázány dle čl. 5 odst. 1 písm. f) AI Act (rozpoznávání emocí na pracovišti a ve vzdělávání) a čl. 5 odst. 1 písm. d) (biometrická identifikace v reálném čase). <strong>Samotný monitoring nezajišťuje legalitu provozu.</strong> Před jakýmkoli dalším provozem je nutný okamžitý právní audit. Do jeho dokončení doporučujeme systémy pozastavit.
-</div>
-
-<table>
-<thead>
-<tr>
-<th>AI systém</th>
-<th>Kategorie rizika</th>
-<th>Frekvence</th>
-<th>Zodpovědná osoba</th>
-<th>Zástupce</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Zákaznický support AI (Freshdesk AI, Zendesk AI, Intercom)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí zákaznického servisu</td>
-</tr>
-<tr>
-<td>Generativní AI — text a kód (ChatGPT, Claude, Gemini, Copilot, Perplexity, GitHub Copilot, Cursor)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-<tr>
-<td>Generativní AI — média (DALL-E, Midjourney, Sora, VEO3, HeyGen, Synthesia, ElevenLabs)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí marketingu</td>
-</tr>
-<tr>
-<td>Dynamická cenotvorba (Prisync, Competera, Dynamic Yield)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí e-shopu</td>
-</tr>
-<tr>
-<td>Účetní a fakturační AI (Fakturoid, Money S5, ABRA, Pohoda, iDoklad)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí financí</td>
-</tr>
-<tr>
-<td>Google Gemini Chatbot / AI Chatbot (web)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-<tr>
-<td>Doporučovací systémy a moderování obsahu</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí produktu</td>
-</tr>
-<tr>
-<td>GPAI integrace do produktů (OpenAI API, Anthropic API, Google Gemini API, Mistral)</td>
-<td><span class='badge badge-limited'>OMEZENÉ</span></td>
-<td>Měsíčně</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-<tr>
-<td>AI generovaný kód — code review</td>
-<td><span class='badge badge-minimal'>MINIMÁLNÍ</span></td>
-<td>Kvartálně (doporučeno)</td>
-<td>Martin Haynes</td>
-<td>Vedoucí IT / CTO</td>
-</tr>
-</tbody>
-</table>
-
-<div class='info'>
-<strong>Minimální riziko — je monitoring povinný?</strong> AI Act nestanovuje povinný monitoring pro systémy minimálního rizika. Kvartální code review AI generovaného kódu je <strong>doporučená praxe</strong> — snižuje riziko bezpečnostních chyb a usnadňuje případný audit. Doporučujeme jej zachovat.
-</div>
-
-<div class='info'>
-<strong>Zástupné osoby (sloupec „Zástupce"):</strong> Uveďte konkrétní jména v příloze tohoto dokumentu. Funkční role v tabulce zajišťují, že dokument zůstane aktuální i při personálních změnách. Zástupce přebírá odpovědnost za monitoring v případě nepřítomnosti primární zodpovědné osoby (dovolená, nemoc, odchod). Požadavek na systémové zajištění lidského dohledu vyplývá z čl. 26 odst. 1 písm. a) AI Act.
+  <strong>Zakázané systémy — NESMÍ být monitorovány, musí být odstaveny:</strong><br>
+  Analýza identifikovala systémy „vlastní html" (znaky sociálního scoringu) a „vlastní kód" (znaky biometrické identifikace v reálném čase / rozpoznávání emocí na pracovišti). Tyto systémy spadají pod <strong>čl. 5 AI Act — zakázané praktiky</strong>.
+  <ul>
+    <li><strong>Okamžitě odstavte</strong> tyto systémy z provozu.</li>
+    <li><strong>Proveďte právní audit</strong> — ověřte s právníkem, zda skutečný účel systému odpovídá zakázané praktice, nebo zda došlo k chybné klasifikaci.</li>
+    <li>Pokud právní audit potvrdí, že systém nespadá pod čl. 5, překlasifikujte jej, zdokumentujte důvody a zařaďte do monitoringu.</li>
+    <li>Pokud spadá pod čl. 5, systém <strong>nesmí být znovu spuštěn</strong>. Zdokumentujte jeho odstavení (datum, důvod, odpovědná osoba).</li>
+  </ul>
+  Porušení čl. 5 AI Act je sankcionováno pokutou až 35 mil. EUR nebo 7 % celosvětového obratu.
 </div>
 
 <h2>3. KPI metriky pro monitoring</h2>
+<p>Pro objektivní hodnocení jsou definovány konkrétní klíčové ukazatele výkonnosti (KPI). Vykonavatel kontroly je zodpovědný za jejich pravidelné vyhodnocování a reportování garantovi.</p>
+
+<h3>3.1 HR a náborové AI systémy (Teamio, LMC AI, Sloneek)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>KPI</th>
+      <th>Popis</th>
+      <th>Cílová hodnota</th>
+      <th>Jak měřit</th>
+      <th>Frekvence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bias skóre</td>
+      <td>Rovnoměrnost doporučování kandidátů napříč demografickými skupinami</td>
+      <td>Variace &lt;10 %</td>
+      <td>Auditní kontrola zamítnutých životopisů</td>
+      <td>Měsíčně</td>
+    </tr>
+    <tr>
+      <td>False positive rate</td>
+      <td>Procento nevhodných kandidátů označených jako vhodní</td>
+      <td>&lt;5 %</td>
+      <td>Zpětná vazba od HR manažerů</td>
+      <td>Týdně (dashboard)</td>
+    </tr>
+    <tr>
+      <td>Eskalace na člověka</td>
+      <td>Počet žádostí kandidátů o lidský přezkum dle čl. 14 a čl. 86 AI Act</td>
+      <td>Vyřešeno do 48h</td>
+      <td>Evidence v HR systému</td>
+      <td>Průběžně</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Kreditní scoring a pojišťovnictví (CRIF, Bisnode, Guidewire)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>KPI</th>
+      <th>Popis</th>
+      <th>Cílová hodnota</th>
+      <th>Jak měřit</th>
+      <th>Frekvence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Přesnost predikce</td>
+      <td>Shoda AI skóre se skutečným výsledkem (splácení / pojistná událost)</td>
+      <td>&gt;85 %</td>
+      <td>Zpětná analýza po 3–6 měsících</td>
+      <td>Kvartálně</td>
+    </tr>
+    <tr>
+      <td>Diskriminační odchylka</td>
+      <td>Rozdíl ve schvalovacích poměrech mezi demografickými skupinami</td>
+      <td>Variace &lt;5 %</td>
+      <td>Statistická analýza rozhodnutí</td>
+      <td>Měsíčně</td>
+    </tr>
+    <tr>
+      <td>Právo na vysvětlení</td>
+      <td>Počet žádostí o vysvětlení rozhodnutí AI a doba vyřízení</td>
+      <td>Vyřešeno do 5 prac. dnů</td>
+      <td>Evidence žádostí</td>
+      <td>Průběžně</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.3 Zákaznické chatboty (Gemini, Zendesk AI, Freshdesk AI)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>KPI</th>
+      <th>Popis</th>
+      <th>Cílová hodnota</th>
+      <th>Jak měřit</th>
+      <th>Frekvence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Přesnost výstupů</td>
+      <td>Procento fakticky správných a relevantních odpovědí</td>
+      <td>&gt;90 %</td>
+      <td>Namátková kontrola 10 konverzací</td>
+      <td>Týdně</td>
+    </tr>
+    <tr>
+      <td>Stížnosti uživatelů</td>
+      <td>Počet stížností na kvalitu nebo chování AI</td>
+      <td>Trend klesající</td>
+      <td>Analýza ticketů v helpdesku</td>
+      <td>Měsíčně</td>
+    </tr>
+    <tr>
+      <td>Transparentnost (čl. 50)</td>
+      <td>Zda je uživatel informován, že komunikuje s AI</td>
+      <td>100 %</td>
+      <td>Kontrola úvodní zprávy chatbotu</td>
+      <td>Měsíčně</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.4 Dynamická cenotvorba (Prisync, Competera)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>KPI</th>
+      <th>Popis</th>
+      <th>Cílová hodnota</th>
+      <th>Jak měřit</th>
+      <th>Frekvence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Cenová anomálie</td>
+      <td>Výskyt cen mimo definované mantinely</td>
+      <td>0 incidentů</td>
+      <td>Automatický alert v ERP</td>
+      <td>Denně</td>
+    </tr>
+    <tr>
+      <td>Férovost cenotvorby</td>
+      <td>Absence diskriminace na základě profilování uživatele (čl. 5)</td>
+      <td>100 % shoda</td>
+      <td>Testování z různých IP/profilů</td>
+      <td>Měsíčně</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.5 Kritická infrastruktura („pospa ing." a bezpečnostní komponenty)</h3>
+<p>Systémy v kritické infrastruktuře (Příloha III bod 2) a AI jako bezpečnostní komponenta (čl. 6 odst. 1) vyžadují nejpřísnější režim monitoringu dle čl. 9 odst. 2 písm. c) AI Act.</p>
+<table>
+  <thead>
+    <tr>
+      <th>KPI</th>
+      <th>Popis</th>
+      <th>Cílová hodnota</th>
+      <th>Jak měřit</th>
+      <th>Frekvence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Dostupnost systému</td>
+      <td>Uptime AI systému v kritické infrastruktuře</td>
+      <td>&gt;99,5 %</td>
+      <td>Automatický monitoring (Zabbix, Prometheus apod.)</td>
+      <td>Kontinuálně</td>
+    </tr>
+    <tr>
+      <td>Latence rozhodnutí</td>
+      <td>Doba odezvy AI systému při kritickém rozhodování</td>
+      <td>Dle specifikace výrobce</td>
+      <td>Automatický monitoring</td>
+      <td>Kontinuálně</td>
+    </tr>
+    <tr>
+      <td>Detekce anomálií</td>
+      <td>Počet neočekávaných výstupů nebo chybových stavů</td>
+      <td>0 kritických / měsíc</td>
+      <td>Automatický alerting + manuální revize</td>
+      <td>Denně</td>
+    </tr>
+    <tr>
+      <td>Bezpečnostní incidenty</td>
+      <td>Počet bezpečnostních událostí souvisejících s AI</td>
+      <td>0</td>
+      <td>SIEM / bezpečnostní log</td>
+      <td>Kontinuálně</td>
+    </tr>
+  </tbody>
+</table>
 
 <div class='info'>
-<strong>Slovníček pojmů používaných v KPI tabulkách:</strong>
+  <strong>Poznámka ke kritické infrastruktuře:</strong> Systém „pospa ing." vyžaduje registraci u národního orgánu (v ČR NÚKIB) dle čl. 49 odst. 4 — nikoliv ve veřejné EU databázi. Zajistěte, aby provozní technik měl přístup k technické dokumentaci dodavatele a prováděl denní kontrolu automatických alertů.
+</div>
+
+<h2>4. Praktický monitoring — jak na to</h2>
+
+<div class='callout'>
+  <strong>Kontrola zákaznického chatbotu (Zendesk AI / Gemini)</strong><br>
+  <strong>Vykonavatel:</strong> Vedoucí zákaznické podpory | <strong>Frekvence:</strong> 1× týdně | <strong>Čas:</strong> cca 15 minut<br><br>
+  1. Otevřete administraci Zendesk → historie konverzací s AI.<br>
+  2. Vyfiltrujte konverzace z uplynulého týdne, náhodně vyberte 10 vzorků.<br>
+  3. U každého vzorku zkontrolujte: Byla odpověď fakticky správná? Neobsahovala halucinace? Bylo jasně deklarováno, že zákazník mluví s AI (čl. 50)?<br>
+  4. Zaznamená výsledek do interní evidence (např. „9 z 10 správných").<br>
+  5. <strong>Pokud je úspěšnost nižší než 8 z 10:</strong> Eskalujte na vedení. V Zendesku přejděte do nastavení AI agenta a přepněte režim na „Asistovaný" (AI pouze navrhuje odpověď, ale neodesílá ji automaticky). Tím omezíte autonomii chatbotu, aniž byste jej vypnuli.
+</div>
+
+<div class='callout'>
+  <strong>Kontrola HR systému (Teamio / LMC AI)</strong><br>
+  <strong>Vykonavatel:</strong> HR manažer | <strong>Frekvence:</strong> 1× měsíčně | <strong>Čas:</strong> cca 30 minut<br><br>
+  1. Vygenerujte seznam kandidátů, kteří byli AI systémem automaticky vyřazeni v prvním kole.<br>
+  2. Náhodně vyberte 5 vyřazených životopisů a proveďte manuální lidský přezkum.<br>
+  3. Ověřte, zda vyřazení bylo objektivní a nedošlo k diskriminaci (např. na základě věku nebo pohlaví).<br>
+  4. Zkontrolujte, zda byl kandidátům poskytnut transparentní proces pro odvolání se proti rozhodnutí AI (čl. 86 AI Act — právo na vysvětlení).<br>
+  5. Výsledek zapište do měsíčního reportu a předejte garantovi.
+</div>
+
+<div class='callout'>
+  <strong>Kontrola kreditního scoringu (CRIF / Bisnode)</strong><br>
+  <strong>Vykonavatel:</strong> Finanční oddělení | <strong>Frekvence:</strong> 1× týdně (dashboard) + 1× měsíčně (hloubková)<br><br>
+  1. Zkontrolujte dashboard scoringového systému — počet zamítnutých žádostí, průměrné skóre.<br>
+  2. Měsíčně: Vyberte 5 zamítnutých případů a ověřte, zda AI rozhodnutí odpovídá interním kritériím.<br>
+  3. Ověřte, zda každý zamítnutý klient obdržel srozumitelné vysvětlení důvodů zamítnutí.<br>
+  4. Zaznamenejte případné anomálie a eskalujte dle sekce 7.
+</div>
+
+<h2>5. Logování a evidence</h2>
+<p>Uchovávání záznamů (logů) je kritickou povinností pro zpětnou auditovatelnost. Dle čl. 26 odst. 1 písm. f) AI Act musí nasazovatelé uchovávat logy minimálně 6 měsíců. Pro systémy, kde jste poskytovatelem, platí přísnější požadavky čl. 12 a čl. 19 — logy musí být automatické a úplné.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Položka</th>
+      <th>Požadavek</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Co logovat</strong></td>
+      <td>Časový údaj (timestamp), identifikátor uživatele (anonymizovaný dle GDPR), vstupní data (prompt/dotaz), výstupní data (odpověď/rozhodnutí AI), verze modelu.</td>
+    </tr>
+    <tr>
+      <td><strong>Kde ukládat</strong></td>
+      <td>Logy z cloudových služeb exportujte a zálohujte na vlastním zabezpečeném firemním úložišti. Nespoléhejte výhradně na retenci dat u poskytovatele.</td>
+    </tr>
+    <tr>
+      <td><strong>Přístupová práva</strong></td>
+      <td>Přístup k logům pouze pro pověřené osoby (Martin Haynes a určení IT administrátoři).</td>
+    </tr>
+    <tr>
+      <td><strong>Doba uchovávání</strong></td>
+      <td>Minimálně 6 měsíců (čl. 26). U vysoce rizikových systémů, kde jste poskytovatelem, doporučujeme 24 měsíců.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class='callout'>
+  <strong>Jak technicky zajistit centrální logování u cloudových AI nástrojů?</strong><br><br>
+  <strong>Varianta A — Enterprise / API licence (doporučeno pro 250+ zaměstnanců):</strong><br>
+  Přejděte na týmové nebo Enterprise licence (ChatGPT Team/Enterprise, Claude for Business, Gemini for Workspace). Tyto licence nabízejí centrální administraci, export logů přes API a kontrolu nad daty. Logy automaticky stahujte do firemního úložiště (skript přes API).<br><br>
+  <strong>Varianta B — Individuální účty (dočasné řešení):</strong><br>
+  Pokud zatím používáte individuální účty, zaveďte interní směrnici:
+  <ul>
+    <li>Zaměstnanci nesmí mazat historii konverzací.</li>
+    <li>Pro citlivé úkoly (HR, finance, osobní údaje) používejte výhradně firemní API proxy (geminiproxy), který automaticky loguje veškerou komunikaci.</li>
+    <li>Jednou měsíčně IT administrátor provede export dostupných logů z administrace účtů.</li>
+  </ul>
+  <strong>Varianta C — API proxy jako centrální bod:</strong><br>
+  Směrujte veškerou komunikaci s LLM modely přes váš stávající API proxy (geminiproxy). Proxy automaticky loguje vstupy i výstupy a umožňuje filtrování citlivých dat.
+</div>
+
+<h2>6. Zvláštní povinnosti pro modely pro obecné účely (GPAI)</h2>
+<p>Vaše společnost integruje GPAI modely (OpenAI GPT-4o, Anthropic Claude, Google Gemini, Mistral) do vlastních procesů a produktů. Vztahují se na vás specifická pravidla čl. 51–54 AI Act.</p>
+
+<div class='highlight'>
+  <strong>Pravidla pro GPAI (čl. 51–54 AI Act):</strong>
+  <ul>
+    <li><strong>Poskytovatelé GPAI</strong> (OpenAI, Google, Anthropic) vám musí dodat technickou dokumentaci a instrukce k bezpečnému použití. Vyžádejte si je a archivujte.</li>
+    <li><strong>Vaše povinnosti jako nasazovatele:</strong> Dodržujte instrukce poskytovatele. Při integraci přes API do vlastních aplikací monitorujte výstupy na přítomnost toxického obsahu, halucinací a úniku citlivých dat.</li>
+    <li><strong>Vaše povinnosti jako poskytovatele</strong> (pokud GPAI integrujete do vlastního produktu pro koncové uživatele): Přebíráte odpovědnost za celý systém včetně GPAI komponenty. Zajistěte dokumentaci dle Přílohy IV.</li>
+    <li><strong>Akční bod:</strong> Do vašeho API proxy (geminiproxy) zaveďte automatizovaný filtr, který blokuje odesílání rodných čísel, finančních údajů klientů a hesel do externích LLM modelů.</li>
+  </ul>
+</div>
+
+<h2>7. Eskalační pravidla</h2>
+<p>Pokud monitoring odhalí odchylky od stanovených KPI nebo nestandardní chování AI systému:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Úroveň</th>
+      <th>Příklad</th>
+      <th>Postup</th>
+      <th>Kdo jedná</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Mírná odchylka</strong></td>
+      <td>Pokles přesnosti chatbotu o 5 %, ojedinělá cenová anomálie</td>
+      <td>Zaznamenat do měsíčního reportu, upravit promptování, sledovat vývoj</td>
+      <td>Vykonavatel kontroly</td>
+    </tr>
+    <tr>
+      <td><strong>Závažná chyba</strong></td>
+      <td>AI poskytla zákazníkovi chybnou cenu, chatbot sdělil nepravdivou informaci s dopadem na zákazníka</td>
+      <td>Okamžitá eskalace na garanta. Aktivace Plánu řízení incidentů. Přepnutí systému do asistovaného/manuálního režimu.</td>
+      <td>Vykonavatel → Martin Haynes</td>
+    </tr>
+    <tr>
+      <td><strong>Kritický incident</strong></td>
+      <td>Diskriminace v HR, únik osobních údajů přes AI, selhání kritické infrastruktury</td>
+      <td>Okamžité odstavení AI systému. Interní vyšetřování. U vysoce rizikových systémů povinnost ohlásit incident dozorovému orgánu do 15 dnů (čl. 73 AI Act).</td>
+      <td>Martin Haynes + právní poradce</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class='info'>
+  <strong>Čl. 14 odst. 4 písm. d) AI Act:</strong> Zaměstnanci musí mít možnost rozhodnutí AI systému nepoužít, přepsat nebo zrušit. Každý vykonavatel kontroly musí znát postup, jak AI systém přepnout do manuálního režimu nebo odstavit.
+</div>
+
+<h2>8. Výkaznictví a hlášení</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Typ reportu</th>
+      <th>Obsah</th>
+      <th>Zpracovatel</th>
+      <th>Příjemce</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Týdenní přehled (vysoce rizikové)</td>
+      <td>Stručné shrnutí dashboardových kontrol, případné anomálie</td>
+      <td>Vykonavatel kontroly (HR, finance, IT)</td>
+      <td>Martin Haynes</td>
+    </tr>
+    <tr>
+      <td>Měsíční přehled</td>
+      <td>Vyhodnocení KPI, seznam chyb, provedené úpravy, stav logování</td>
+      <td>Vykonavatel kontroly</td>
+      <td>Martin Haynes</td>
+    </tr>
+    <tr>
+      <td>Záznam o incidentu</td>
+      <td>Popis selhání AI, dopad na uživatele, přijatá nápravná opatření</td>
+      <td>Osoba, která chybu detekovala</td>
+      <td>Vedení společnosti</td>
+    </tr>
+    <tr>
+      <td>Roční auditní zpráva</td>
+      <td>Celkové zhodnocení rizik, návrh na vyřazení/pořízení nových AI systémů, stav souladu s AI Act</td>
+      <td>Martin Haynes + IT</td>
+      <td>Vedení společnosti</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>9. Revize a aktualizace</h2>
 <ul>
-<li><strong>DPIA</strong> (Data Protection Impact Assessment) — posouzení vlivu na ochranu osobních údajů dle GDPR čl. 35. Jde o dokument, kde popíšete, jaká data AI zpracovává, jaká jsou rizika a jak je zmírňujete.</li>
-<li><strong>Bias skóre</strong> — měření, zda AI rozhoduje spravedlivě napříč různými skupinami (pohlaví, věk, národnost). Viz konkrétní postup měření u každého KPI.</li>
-<li><strong>False positive rate</strong> — procento případů, kdy AI něco nesprávně zamítla/označila (falešný poplach).</li>
-<li><strong>C2PA metadata</strong> — technický standard pro označení AI generovaného obsahu přímo v souboru (obrázek, video). Podporují jej nástroje jako HeyGen nebo Synthesia.</li>
-<li><strong>Eskalace</strong> — předání problému na vyšší úroveň rozhodování (nadřízený, vedení, právník).</li>
+  <li><strong>Standardní revize (kvartálně):</strong> Kontrola, zda jsou KPI stále relevantní, zda nedošlo k nasazení nových neevidovaných AI nástrojů (tzv. Shadow AI) a zda se změnila role firmy u některého systému (nasazovatel → poskytovatel).</li>
+  <li><strong>Mimořádná revize (okamžitě):</strong>
+    <ul>
+      <li>Nasazení nového vysoce rizikového AI systému.</li>
+      <li>Závažný bezpečnostní incident způsobený AI.</li>
+      <li>Vydání nových prováděcích aktů k AI Act ze strany Evropské komise nebo národního regulátora.</li>
+      <li>Podstatná úprava existujícího AI systému (čl. 25 — může změnit vaši roli na poskytovatele).</li>
+    </ul>
+  </li>
 </ul>
-</div>
-
-<h3>3.1 Monitorování zaměstnanců (sledování obrazovky, GPS, kamerový dohled s AI, analýza emailů)</h3>
 
 <div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Pokrytí informováním — % zaměstnanců s platným informováním o AI monitoringu</td>
-<td>100 %</td>
-<td>Exportujte seznam zaměstnanců z HR systému; porovnejte s evidencí podepsaných informačních dokumentů o AI monitoringu</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Eskalace na člověka — počet případů, kdy AI výstup byl přepsán nadřízeným</td>
-<td>Trend sledován</td>
-<td>Interní záznamy monitorovacího systému — filtrujte případy s manuálním overridem</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Stížnosti zaměstnanců na AI monitoring</td>
-<td>0 nevyřešených</td>
-<td>HR systém — filtr stížností s kategorií „AI monitoring"</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>DPIA aktuálnost — datum poslední aktualizace posouzení vlivu na ochranu dat</td>
-<td>Max. 12 měsíců stará</td>
-<td>Zkontrolujte datum na titulní straně DPIA dokumentu</td>
-<td>Kvartálně</td>
-</tr>
-<tr>
-<td>Bias skóre — rovnoměrnost výstupů napříč skupinami zaměstnanců</td>
-<td>Variace &lt;10 %</td>
-<td>Vyberte vzorek 50 hodnocení; rozdělte dle pohlaví/věku/oddělení; porovnejte průměrné skóre mezi skupinami. Pokud rozdíl >10 %, konzultujte se statistikem nebo použijte nástroj jako IBM AI Fairness 360</td>
-<td>Kvartálně</td>
-</tr>
-</tbody>
-</table>
+  <div class='sig-block'>
+    <div class='sig-field'>Za firmu Martin Haynes<br>Martin Haynes, Jednatel</div>
+    <div class='sig-field'>Za AIshield.cz<br>Oddělení AI Compliance</div>
+  </div>
 </div>
-
-<h3>3.2 Kreditní scoring (CRIF, Bisnode, Scoring Solutions)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Přesnost scoringu — % rozhodnutí potvrzených lidským přezkumem</td>
-<td>&gt;90 %</td>
-<td>Vyberte 5 zamítnutých žádostí týdně; nechte je nezávisle posoudit člověkem; zaznamenejte shodu</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>False positive rate — % zamítnutých žádostí, které byly po přezkumu schváleny</td>
-<td>&lt;5 %</td>
-<td>Z logu zamítnutých žádostí za měsíc spočítejte, kolik bylo po odvolání/přezkumu schváleno</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Právo na vysvětlení — % žádostí o vysvětlení rozhodnutí vyřízených dle čl. 26 odst. 1 písm. b) a čl. 50 odst. 3 AI Act</td>
-<td>100 %</td>
-<td>Evidence žádostí o vysvětlení — sledujte počet přijatých vs. vyřízených</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Bias skóre — rovnoměrnost výstupů napříč demografickými skupinami</td>
-<td>Variace &lt;10 %</td>
-<td>Vzorek 50 rozhodnutí; porovnejte míru zamítnutí mezi skupinami (věk, pohlaví, region). Při variaci >10 % eskalujte</td>
-<td>Kvartálně</td>
-</tr>
-<tr>
-<td>Eskalace na člověka — počet případů přezkumu AI rozhodnutí člověkem</td>
-<td>Trend sledován</td>
-<td>Ticket systém — filtr „přezkum AI rozhodnutí"</td>
-<td>Týdně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.3 HR screening (LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Sloneek)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Lidský přezkum — % kandidátů, jejichž hodnocení prošlo lidskou kontrolou</td>
-<td>100 %</td>
-<td>HR záznamy — porovnejte počet AI hodnocení s počtem lidských přezkumů</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Bias skóre — rovnoměrnost výstupů napříč pohlavím, věkem, národností</td>
-<td>Variace &lt;10 %</td>
-<td>Vzorek 30 kandidátů; porovnejte míru vyřazení mezi skupinami. Prakticky: kolik % žen vs. mužů AI vyřadilo? Kolik % kandidátů nad 50 let?</td>
-<td>Kvartálně</td>
-</tr>
-<tr>
-<td>Transparentnost vůči kandidátům — % kandidátů informovaných o použití AI</td>
-<td>100 %</td>
-<td>Zkontrolujte, zda inzerát nebo první komunikace obsahuje informaci o AI hodnocení</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Stížnosti kandidátů na AI hodnocení</td>
-<td>0 nevyřešených</td>
-<td>HR systém — filtr stížností s kategorií „AI"</td>
-<td>Týdně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.4 AI v pojišťovnictví (Guidewire, NESS / Allianz AI, ČPP / ČSOB interní AI)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Lidský přezkum pojistných rozhodnutí — % rozhodnutí o pojistných plněních přezkoumaných člověkem</td>
-<td>100 %</td>
-<td>Evidence pojistných událostí — porovnejte AI rozhodnutí s počtem lidských přezkumů</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Stížnosti pojistníků na AI rozhodnutí</td>
-<td>0 nevyřešených</td>
-<td>Reklamační systém — filtr stížností na automatizovaná rozhodnutí</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Informovanost pojistníků — % pojistníků informovaných o právu na vysvětlení dle čl. 50 odst. 3 AI Act</td>
-<td>100 %</td>
-<td>Zkontrolujte, zda zamítací dopisy/e-maily obsahují poučení o právu na vysvětlení a přezkum člověkem</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Bias skóre — rovnoměrnost výstupů napříč demografickými skupinami</td>
-<td>Variace &lt;10 %</td>
-<td>Vzorek 50 rozhodnutí; porovnejte míru zamítnutí mezi skupinami (věk, pohlaví, region)</td>
-<td>Kvartálně</td>
-</tr>
-<tr>
-<td>Přesnost scoringu — % rozhodnutí potvrzených při namátkové kontrole</td>
-<td>&gt;90 %</td>
-<td>Vyberte 5 zamítnutých plnění týdně; nechte nezávisle posoudit člověkem</td>
-<td>Týdně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.5 AI v kritické infrastruktuře — pospa ing.</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dostupnost systému (uptime)</td>
-<td>&gt;99,9 %</td>
-<td>Monitoring nástroj (např. Uptime Robot, Zabbix) — automatický report</td>
-<td>Průběžně</td>
-</tr>
-<tr>
-<td>Neočekávané výpadky</td>
-<td>0</td>
-<td>Incident log — filtr neplánovaných výpadků</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Čas detekce anomálie</td>
-<td>&lt;15 minut</td>
-<td>Čas mezi vznikem anomálie a jejím zachycením monitoringem — měřte z alertů</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Bezpečnostní incidenty</td>
-<td>0</td>
-<td>Bezpečnostní log — filtr incidentů souvisejících s AI komponentou</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Aktuálnost technické dokumentace</td>
-<td>Max. 6 měsíců stará</td>
-<td>Zkontrolujte datum poslední revize technické dokumentace dle Přílohy IV AI Act</td>
-<td>Kvartálně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<div class='warning'>
-<strong>Eskalační bod pro kritickou infrastrukturu:</strong> Systém pospa ing. podléhá registraci u NÚKIB dle čl. 49 odst. 4 AI Act (registrace u národního orgánu, nikoli ve veřejné EU databázi). Při závažném incidentu kontaktujte NÚKIB jako sektorový dozorový orgán.
-</div>
-
-<h3>3.6 AI interagující s dětmi (vzdělávání / e-learning, mobilní aplikace)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Věková verifikace — % interakcí s ověřeným věkem uživatele</td>
-<td>100 %</td>
-<td>Technická kontrola — ověřte, zda systém vyžaduje potvrzení věku před přístupem</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Stížnosti rodičů / zákonných zástupců</td>
-<td>0 nevyřešených</td>
-<td>Support systém — filtr stížností s kategorií „nezletilí" nebo „rodiče"</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Bezpečnost obsahu — % interakcí s dětmi bez nevhodného obsahu</td>
-<td>100 %</td>
-<td>Namátková kontrola 10 interakcí týdně; ověřte, zda AI negeneruje nevhodný obsah pro děti</td>
-<td>Týdně</td>
-</tr>
-<tr>
-<td>Mechanismus nahlášení — dostupnost tlačítka/formuláře pro nahlášení nevhodného obsahu</td>
-<td>Ano — funkční</td>
-<td>Technická kontrola — otestujte, zda mechanismus funguje a hlášení se doručí odpovědné osobě</td>
-<td>Měsíčně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.7 Vlastní vývoj AI a systémy dle čl. 25 AI Act (změna účelu)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Aktuálnost technické dokumentace dle Přílohy IV AI Act</td>
-<td>Max. 3 měsíce stará</td>
-<td>Zkontrolujte datum poslední revize dokumentace; porovnejte s aktuální verzí systému</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Pokrytí testováním — % funkcionalit s automatickými testy</td>
-<td>&gt;80 %</td>
-<td>CI/CD pipeline — report pokrytí testy (code coverage tool)</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Kritické bezpečnostní zranitelnosti</td>
-<td>0 neřešených</td>
-<td>Bezpečnostní sken (SAST/DAST nástroje) — filtr kritických nálezů</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Post-market monitoring report dle čl. 72 AI Act</td>
-<td>Zpracován měsíčně</td>
-<td>Ověřte existenci a datum posledního reportu</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Evidence změn systému dle Přílohy IV bod 6</td>
-<td>Každá změna zdokumentována</td>
-<td>Changelog / evidence změn — ověřte, zda každý release má záznam</td>
-<td>Průběžně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.8 Zákaznický support AI (Freshdesk AI, Zendesk AI, Intercom)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Přesnost odpovědí — % správných a relevantních odpovědí AI</td>
-<td>&gt;90 %</td>
-<td>Namátková kontrola 10 konverzací z různých dnů</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Eskalace na člověka</td>
-<td>Trend klesající</td>
-<td>Ticket systém — počet eskalací z AI na živého operátora</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Stížnosti uživatelů na AI odpovědi</td>
-<td>Trend klesající</td>
-<td>Support systém — filtr stížností na automatické odpovědi</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Označení AI — zobrazení upozornění „komunikujete s AI"</td>
-<td>100 % konverzací</td>
-<td>Technická kontrola — otevřete 5 konverzací a ověřte přítomnost označení</td>
-<td>Měsíčně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.9 Generativní AI — text a kód (ChatGPT, Claude, Gemini, Copilot, GitHub Copilot, Cursor)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dodržování interní AI politiky — % zaměstnanců nevkládajících osobní data zákazníků do AI</td>
-<td>100 %</td>
-<td>Namátková kontrola: vyberte 5 zaměstnanců, zkontrolujte historii promptů (pokud dostupná) nebo proveďte anonymní dotazník</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Code review pokrytí — % AI generovaného kódu prošlého code review</td>
-<td>100 %</td>
-<td>Git záznamy — ověřte, zda každý pull request s AI kódem má schválení reviewera</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Incidenty úniku dat</td>
-<td>0</td>
-<td>Incident log — filtr „únik dat" + „AI nástroj"</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Označení AI výstupů — % AI generovaného obsahu publikovaného s označením původu</td>
-<td>100 %</td>
-<td>Obsahová kontrola — vzorek 10 publikovaných textů/kódů za měsíc</td>
-<td>Měsíčně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.10 Generativní AI — média (DALL-E, Midjourney, Sora, HeyGen, Synthesia, ElevenLabs)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Označení syntetického obsahu dle čl. 50 odst. 4 AI Act</td>
-<td>100 %</td>
-<td>Sestavte seznam všech AI médií publikovaných za měsíc; ověřte viditelné označení u každého</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>C2PA metadata — % médií s vloženými metadaty o AI původu</td>
-<td>100 % nových výstupů</td>
-<td>Technická kontrola — ověřte metadata v souboru (nástroj C2PA Verify nebo vlastnosti souboru)</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Stížnosti na deepfake / klamavý obsah</td>
-<td>0</td>
-<td>Support systém — filtr stížností na AI generovaná média</td>
-<td>Měsíčně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.11 Dynamická cenotvorba (Prisync, Competera, Dynamic Yield)</h3>
-
-<div class='no-break'>
-<table>
-<thead>
-<tr>
-<th>KPI</th>
-<th>Cílová hodnota</th>
-<th>Jak konkrétně měřit</th>
-<th>Frekvence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Cenová diskriminace — případy cílení na zranitelné skupiny</td>
-<td>0</td>
-<td>Vzorek 20 cen za měsíc; porovnejte ceny zobrazené různým uživatelským profilům (věk, lokalita)</td>
-<td>Měsíčně</td>
-</tr>
-<tr>
-<td>Transparentnost cenotvorby — informace o dynamickém cenotvorbě na webu</td>
-<td>Ano — zveřejněno</td>
-<td>Kontrola webu — ověřte přítomnost informace v obchodních podmínkách nebo na stránce cenotvorby</td>
-<td>Kvartálně</td>
-</tr>
-<tr>
-<td>Cenové anomálie — ceny mimo definovaný rozsah</td>
-<td>0</td>
-<td>Automatický alert v cenotvorbovém nástroji — nastavte min/max pravidla</td>
-<td>Průběžně</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-<h3>3.12 GP

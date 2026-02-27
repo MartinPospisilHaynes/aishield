@@ -1,78 +1,79 @@
 {
   "version": 6,
-  "generation_id": "gen_20260227_063137",
-  "timestamp": "2026-02-27T07:50:14.320156+00:00",
+  "generation_id": "gen_20260227_094410",
+  "timestamp": "2026-02-27T10:58:06.569514+00:00",
   "m5_full_response": {
     "analyza": {
       "prumerny_eu_score": 7.9,
-      "prumerny_client_score": 8.3,
-      "celkovy_prumer": 8.1,
+      "prumerny_client_score": 8.5,
+      "celkovy_prumer": 8.2,
       "identifikovane_vzory": [
         {
-          "vzor": "Chybná aplikace čl. 49 odst. 2 (registrace v EU databázi) na soukromé nasazovatele",
-          "pocet_vyskytu": 5,
+          "vzor": "Chybná povinnost registrace soukromého nasazovatele do EU databáze dle čl. 49 odst. 2",
+          "pocet_vyskytu": 6,
           "zavaznost": "kritické",
-          "priklad_dokumentu": "Registr AI systémů, Akční plán, Posouzení dopadů, Interní AI politika, Compliance Report",
-          "typicky_nalez": "Dokument tvrdí, že firma jako nasazovatel HR a úvěrových systémů má povinnost registrovat tyto systémy v centrální EU databázi dle čl. 49 odst. 2. Toto je právně chybně — čl. 49 odst. 2 ukládá tuto povinnost POUZE orgánům veřejné moci."
+          "priklad_dokumentu": "compliance_report, akční plán, DPIA/FRIA, dodavatelský checklist, transparentnost a lidský dohled, transparenční stránka",
+          "typicky_nalez": "Dokument tvrdí, že soukromý nasazovatel HR/úvěrových systémů má povinnost registrace v EU databázi dle čl. 49 odst. 2. Tato povinnost se však vztahuje pouze na orgány veřejné moci nebo nasazovatele biometrických systémů."
         },
         {
-          "vzor": "Chybějící role poskytovatele (Provider) u firem s vlastním vývojem AI",
-          "pocet_vyskytu": 5,
-          "zavaznost": "kritické",
-          "priklad_dokumentu": "Posouzení dopadů, Interní AI politika, Monitoring plán, Školící prezentace, Dodavatelský checklist",
-          "typicky_nalez": "Firma vyvíjí vlastní AI systémy a mění účel dodaných systémů, čímž se stává poskytovatelem. Dokument ji však hodnotí výhradně v roli nasazovatele (Deployer)."
-        },
-        {
-          "vzor": "FRIA nesprávně prezentována jako nepovinná pro soukromé subjekty s kreditním scoringem a pojišťovnictvím",
+          "vzor": "FRIA nesprávně označena jako best practice u kreditního scoringu a pojišťovnictví",
           "pocet_vyskytu": 4,
           "zavaznost": "kritické",
-          "priklad_dokumentu": "Compliance Report, Interní AI politika, Plán řízení incidentů, Posouzení dopadů",
-          "typicky_nalez": "Dokument uvádí, že FRIA je pro soukromé subjekty jen doporučená best practice. Klient však využívá AI pro úvěrový scoring a pojišťovnictví, kde je FRIA dle čl. 27 odst. 1 povinná."
+          "priklad_dokumentu": "compliance_report, akční plán, registr AI systémů, interní AI politika",
+          "typicky_nalez": "Dokument tvrdí, že FRIA je pro soukromou společnost pouze 'best practice'. Klient však využívá AI pro kreditní scoring (CRIF) a pojišťovnictví (Guidewire), pro které čl. 27 odst. 1 písm. b) a c) AI Act stanovuje FRIA jako POVINNOU i pro soukromé subjekty."
         },
         {
-          "vzor": "Neúplný výčet systémů — chybí systémy z Přílohy I, pojišťovnictví, zdravotnictví a další deklarované systémy",
+          "vzor": "Chybná citace čl. 26 odst. 1 písm. f) pro logování místo čl. 26 odst. 6",
+          "pocet_vyskytu": 5,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "akční plán, registr AI systémů, interní AI politika, DPIA/FRIA, plán řízení incidentů",
+          "typicky_nalez": "Pro povinnost nasazovatele uchovávat logy po dobu 6 měsíců je citován 'čl. 26 odst. 1 písm. f)'. Správný odkaz je čl. 26 odst. 6."
+        },
+        {
+          "vzor": "Chybějící konkrétní české dozorové orgány — dokument uvádí jen obecně 'dozorový orgán'",
+          "pocet_vyskytu": 4,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "plán řízení incidentů, akční plán, transparenční stránka, monitoring plán",
+          "typicky_nalez": "Dokument říká, že incidenty musím hlásit 'dozorovému orgánu'. Jako podnikatel ale nevím, kdo to v ČR přesně je (ÚOOÚ? ČTÚ? NÚKIB? ČOI? ČNB? SÚKL?)."
+        },
+        {
+          "vzor": "Strojové identifikátory systémů ('vlastní html', 'vlastní kód') použity doslovně v textu dokumentů",
           "pocet_vyskytu": 6,
           "zavaznost": "důležité",
-          "priklad_dokumentu": "Registr AI systémů, Posouzení dopadů, Monitoring plán, Transparenční stránka, Dodavatelský checklist, Compliance Report",
-          "typicky_nalez": "Zcela chybí systémy identifikované v auditu: účetní AI, pojišťovací AI, zdravotnické přístroje, dynamická cenotvorba a další. Tabulka pokrývá jen zlomek deklarovaných systémů."
+          "priklad_dokumentu": "plán školení, texty oznámení, interní AI politika, monitoring plán, DPIA/FRIA, školící prezentace",
+          "typicky_nalez": "V textu se objevují strojové názvy z dotazníku jako 'vlastní html' a 'vlastní kód'. Ve formální firemní směrnici nebo školení to působí nesrozumitelně a neprofesionálně."
         },
         {
-          "vzor": "Transparenční stránka (HTML) useknutá / neúplný kód",
-          "pocet_vyskytu": 1,
-          "zavaznost": "kritické",
-          "priklad_dokumentu": "Transparenční stránka (HTML)",
-          "typicky_nalez": "HTML dokument končí v polovině tagu. Chybí dokončení FAQ sekce, kontaktní údaje, patička a uzavírací HTML tagy."
+          "vzor": "Chybějící systémy v registru/transparenční stránce — neúplné pokrytí deklarovaných AI systémů",
+          "pocet_vyskytu": 3,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "registr AI systémů, transparenční stránka, monitoring plán",
+          "typicky_nalez": "V tabulce chybí řada deklarovaných systémů z kontextu — pojišťovací systémy (Guidewire), účetní programy (Fakturoid, Pohoda), zdravotnické přístroje, GPS sledování."
         }
       ],
       "odmitnute_nalezy": [
         {
-          "nalez": "Prezenční listina končí přesně číslem 250, pro firmu 250+ zaměstnanců bude potřeba více místa",
-          "zdroj": "M2",
-          "duvod_odmitnuti": "Toto je kosmetický problém formátu šablony, nikoliv obsahová chyba generovacího promptu. Prezenční listina je vzorová šablona a klient si ji může rozšířit. Přidání pravidla by zbytečně zatěžovalo prompt.",
+          "nalez": "Transparenční stránka — Reklama na dodavatele v patičce s UTM parametry",
+          "zdroj": "M3",
+          "duvod_odmitnuti": "Patička s odkazem na AIshield.cz je součást šablony/branding a není záležitostí generovacího promptu M1. Jde o business rozhodnutí platformy, ne o kvalitu compliance obsahu.",
           "pocet_vyskytu": 1
         },
         {
-          "nalez": "Formát checklistu jako PDF/HTML se špatně vyplňuje",
+          "nalez": "Dodavatelský checklist — Vzorový e-mail se ptá dodavatele na rizikovost, i když to analýza už řekla",
           "zdroj": "M3",
-          "duvod_odmitnuti": "Prompt generuje statické dokumenty dle zadání. Interaktivní formuláře jsou mimo scope generace. Klient může dokument převést do editovatelného formátu.",
-          "pocet_vyskytu": 2
-        },
-        {
-          "nalez": "Chybí vysvětlení zkratek jako DPA, DPIA pro běžné zaměstnance",
-          "zdroj": "M3",
-          "duvod_odmitnuti": "Dokumenty jsou určeny primárně pro compliance tým a vedení, nikoliv pro řadové zaměstnance. Zkratky jsou v kontextu compliance dokumentů standardní a obvykle jsou vysvětleny při prvním výskytu. Přidání glosáře by neúměrně prodloužilo každý dokument.",
+          "duvod_odmitnuti": "E-mail slouží jako formální dokumentace a due diligence vůči dodavateli — firma potřebuje písemné potvrzení od dodavatele pro svou compliance evidenci, i když interně riziko zná. Jde o správný postup.",
           "pocet_vyskytu": 1
         },
         {
-          "nalez": "Rozpor v datech — Akční plán nařizuje nasadit transparenční stránku, ale web sken říká, že web již splňuje čl. 50",
+          "nalez": "Texty oznámení — HR texty natvrdo říkají, že konečné rozhodnutí činí HR specialista",
           "zdroj": "M3",
-          "duvod_odmitnuti": "Toto je legitimní nález, ale je specifický pro jeden dokument a závisí na interpretaci vstupních dat. Prompt nemůže řešit logické rozpory ve vstupních datech — to je úloha pro M4 refiner, který to skutečně opravil (M6 skóre 9/10).",
+          "duvod_odmitnuti": "Toto je správný přístup — AI Act vyžaduje lidský dohled u vysoce rizikových HR systémů. Text správně deklaruje lidský dohled. Klient správně poznamenává, že to musí být pravda, ale to je implementační záležitost, ne chyba dokumentu.",
           "pocet_vyskytu": 1
         },
         {
-          "nalez": "Pracovněprávní terminologie — 'okamžité ukončení pracovního poměru' má přísná pravidla dle zákoníku práce",
+          "nalez": "Monitoring plán — Týdenní frekvence kontrol u HR a kreditního scoringu je příliš náročná",
           "zdroj": "M3",
-          "duvod_odmitnuti": "Compliance dokument správně uvádí sankce jako motivační prvek interní politiky. Detailní pracovněprávní úprava je mimo scope AI Act compliance dokumentů a patří do konzultace s pracovním právníkem.",
+          "duvod_odmitnuti": "Vysoce rizikové systémy ovlivňující základní práva (kreditní scoring, HR rozhodování) skutečně vyžadují častý monitoring. Týdenní frekvence je v souladu s best practices. Prompt by neměl snižovat frekvenci — spíše M4 může doporučit automatizaci.",
           "pocet_vyskytu": 1
         }
       ]
@@ -81,105 +82,106 @@
       "stav": "zasadni_zmena",
       "nova_pravidla": [
         {
-          "pravidlo": "Při citaci čl. 49 AI Act (registrace v EU databázi) vždy rozlišuj: odst. 2 se vztahuje POUZE na orgány veřejné moci a instituce EU; pro soukromé nasazovatele v kritické infrastruktuře platí registrace u národního orgánu dle čl. 49 odst. 4; ostatní soukromí nasazovatelé registrační povinnost v EU databázi NEMAJÍ.",
-          "duvod": "Chybná aplikace čl. 49 odst. 2 na soukromé firmy se opakuje v 5 dokumentech jako kritická právní chyba.",
-          "ocekavany_efekt": "Eliminace opakované kritické právní chyby ohledně registrace v EU databázi."
+          "pravidlo": "Povinnost registrace nasazení vysoce rizikových systémů do EU databáze dle čl. 49 odst. 2 a 3 přiřazuj VÝHRADNĚ orgánům veřejné moci, institucím EU a nasazovatelům biometrických systémů pro identifikaci na dálku — soukromým firmám nasazujícím HR, úvěrové nebo pojišťovací AI systémy tuto povinnost NIKDY neukládej. U systémů kritické infrastruktury vždy uveď, že registrace probíhá u národního orgánu (v ČR NÚKIB), nikoliv ve veřejné EU databázi.",
+          "duvod": "Chybná povinnost registrace se opakuje v 6 dokumentech a je nejčastějším kritickým právním nálezem M2.",
+          "ocekavany_efekt": "Eliminace nejčastější právní chyby, zvýšení EU skóre o 0.5–1 bod průměrně."
         },
         {
-          "pravidlo": "Pokud firma ve vstupním dotazníku deklaruje vlastní vývoj AI, změnu účelu AI systému nebo podstatnou úpravu dodaného systému, vždy ji v KAŽDÉM relevantním dokumentu identifikuj současně jako poskytovatele (Provider, čl. 16–25) i nasazovatele (Deployer, čl. 26) a pro každou roli uveď oddělené povinnosti včetně post-market monitoringu (čl. 72), posouzení shody a technické dokumentace.",
-          "duvod": "V 5 dokumentech chybí role poskytovatele, přestože firma vyvíjí vlastní AI. Existující pravidlo M5 v1 řeší pouze rozlišení rolí při citaci, ale neřeší systematické pokrytí obou rolí v celém dokumentu.",
-          "ocekavany_efekt": "Dokumenty budou pokrývat obě role firmy a nebudou ignorovat přísnější povinnosti poskytovatele."
+          "pravidlo": "Při práci s FRIA (čl. 27 AI Act) vždy zkontroluj, zda firma působí v odvětví úvěrového hodnocení (čl. 27 odst. 1 písm. b)), pojišťovnictví (čl. 27 odst. 1 písm. c)) nebo jiných oblastech explicitně vyjmenovaných v čl. 27 odst. 1 — pokud ano, FRIA prezentuj jako ZÁKONNOU POVINNOST i pro soukromé subjekty, nikoliv jako best practice. Stávající pravidlo o FRIA jako best practice pro soukromé firmy aplikuj POUZE na firmy mimo tyto vyjmenované sektory.",
+          "duvod": "Aktuální M5 pravidlo v1 o FRIA je příliš zjednodušující — nerozlišuje sektory, kde je FRIA povinná i pro soukromé firmy. Nález se opakuje ve 4 dokumentech jako kritický.",
+          "ocekavany_efekt": "Správná klasifikace FRIA povinnosti podle sektoru klienta, eliminace kritických nálezů M2 o FRIA."
         },
         {
-          "pravidlo": "Při práci s FRIA (čl. 27 AI Act) vždy zkontroluj, zda firma nasazuje AI systémy v oblastech kreditního scoringu, pojišťovnictví, přístupu k veřejným službám nebo hodnocení žáků/studentů — pokud ano, FRIA je pro ni zákonnou povinností i jako soukromý subjekt dle čl. 27 odst. 1 písm. b) a c), bez ohledu na obecné pravidlo o veřejnoprávních subjektech.",
-          "duvod": "Stávající pravidlo M5 v1 o FRIA je příliš zjednodušující — říká, že FRIA je pro soukromé firmy jen best practice. Čl. 27 však obsahuje výjimky pro specifické sektory (úvěry, pojištění), kde je FRIA povinná i pro soukromé subjekty. Chyba se opakuje ve 4 dokumentech.",
-          "ocekavany_efekt": "Správná klasifikace FRIA jako povinné pro firmy v regulovaných sektorech, eliminace kritických nálezů M2."
+          "pravidlo": "Pro povinnost nasazovatele uchovávat automaticky generované protokoly (logy) po dobu minimálně 6 měsíců vždy cituj čl. 26 odst. 6 AI Act — NIKDY nepoužívej odkaz 'čl. 26 odst. 1 písm. f)', který se týká jiné povinnosti nasazovatele.",
+          "duvod": "Chybná citace logování se opakuje v 5 dokumentech. Stávající M5 pravidlo v1 o rozlišení rolí paradoxně instruuje používat právě 'čl. 26 odst. 1 písm. f)' pro nasazovatele, což je nesprávný odkaz.",
+          "ocekavany_efekt": "Správná citace ve všech dokumentech, eliminace opakujícího se menšího nálezu M2."
         },
         {
-          "pravidlo": "Při tvorbě tabulek a přehledů AI systémů vždy zahrň VŠECHNY systémy identifikované ve vstupním auditu/dotazníku — pokud je systémů více než 15, vytvoř kompletní tabulku se zkrácenými řádky (název, kategorie rizika, role firmy, klíčová povinnost) a detailní karty pouze pro vysoce rizikové a zakázané systémy.",
-          "duvod": "V 6 dokumentech chybí velká část deklarovaných systémů (pojišťovnictví, zdravotnictví, účetní AI, Příloha I systémy). Klient oprávněně očekává kompletní pokrytí.",
-          "ocekavany_efekt": "Kompletní pokrytí všech systémů klienta, eliminace nálezů o neúplnosti."
+          "pravidlo": "Pokud vstupní data obsahují strojové identifikátory systémů bez srozumitelného názvu (např. 'vlastní html', 'vlastní kód', 'audit vlastní kód'), vždy je v textu dokumentu přeformuluj na popisný název podle jejich účelu a kontextu (např. 'interní webová aplikace', 'vlastní softwarové řešení') a původní identifikátor uveď pouze v závorce při prvním výskytu pro zpětnou dohledatelnost.",
+          "duvod": "Doslovné přebírání strojových názvů se opakuje v 6 dokumentech a snižuje profesionalitu i srozumitelnost dokumentů jak pro M2, tak pro M3.",
+          "ocekavany_efekt": "Profesionálnější a srozumitelnější dokumenty, eliminace opakujícího se nálezu M3 o nesrozumitelných názvech."
         },
         {
-          "pravidlo": "U HTML dokumentů (transparenční stránka) vždy ověř, že výstup obsahuje kompletní strukturu včetně uzavíracích tagů </div>, </body>, </html>, patičky s kontaktními údaji a všech deklarovaných sekcí — nikdy neukončuj HTML dokument uprostřed elementu.",
-          "duvod": "Transparenční stránka byla useknutá v polovině tagu, což je kritická chyba znemožňující použití. Pravděpodobně způsobeno limitem výstupních tokenů, ale pravidlo zajistí prioritizaci kompletnosti.",
-          "ocekavany_efekt": "HTML dokumenty budou vždy kompletní a funkční pro nasazení na web."
+          "pravidlo": "Při zmínce o hlášení incidentů nebo kontaktu s dozorovým orgánem vždy uveď konkrétní české dozorové orgány relevantní pro sektory klienta — minimálně: ČOI (obecný dozor AI Act), ÚOOÚ (ochrana osobních údajů), a dále dle odvětví: ČNB (finance/pojišťovnictví), SÚKL (zdravotnické prostředky), NÚKIB (kritická infrastruktura/kybernetická bezpečnost). Nikdy nepoužívej pouze obecný termín 'dozorový orgán' bez konkretizace.",
+          "duvod": "Absence konkrétních dozorových orgánů se opakuje ve 4 dokumentech a je jedním z nejčastějších klientských nálezů o praktické nepoužitelnosti.",
+          "ocekavany_efekt": "Okamžitě actionable dokumenty — klient ví, komu hlásit incident, bez nutnosti dalšího právního výzkumu."
         }
       ],
       "konvergence": false,
-      "komentar": "Draft skóre 8.1 ukazuje solidní základ, ale 3 kritické opakující se vzory (čl. 49 registrace, chybějící role poskytovatele, FRIA klasifikace) vyžadují zásah. Pozitivní je, že M4 refiner efektivně opravuje většinu problémů (M6 průměr 9.4), ale tyto systematické právní chyby by měly být eliminovány již v draftu. Třetí pravidlo NAHRAZUJE logiku stávajícího pravidla o FRIA z M5 v1 — doporučuji při implementaci stávající pravidlo o FRIA aktualizovat nebo nahradit novým, které pokrývá sektorové výjimky."
+      "komentar": "Identifikováno 6 opakujících se vzorů, z toho 2 kritické právní chyby (registrace EU databáze, FRIA klasifikace) a 1 systematická citační chyba (čl. 26 odst. 6). Důležité: stávající M5 pravidlo v1 o FRIA je fakticky nesprávné pro klienty v sektorech úvěrového hodnocení a pojišťovnictví — nové pravidlo ho zpřesňuje. Podobně pravidlo v1 o logování instruuje používat nesprávný odkaz 'čl. 26 odst. 1 písm. f)' — nové pravidlo to opravuje. M6 finální skóre (8.4) ukazuje, že M4 refiner většinu problémů opraví, ale Doc 6 (M6=4/10) a Doc 7 (M6=5/10) naznačují, že některé strukturální problémy M4 nedokáže vyřešit a musí se řešit na úrovni M1."
     }
   },
   "analysis_input": {
     "prumerny_eu_score": 7.9,
-    "prumerny_client_score": 8.3,
-    "celkovy_prumer": 8.1,
+    "prumerny_client_score": 8.5,
+    "celkovy_prumer": 8.2,
     "identifikovane_vzory": [
       {
-        "vzor": "Chybná aplikace čl. 49 odst. 2 (registrace v EU databázi) na soukromé nasazovatele",
-        "pocet_vyskytu": 5,
+        "vzor": "Chybná povinnost registrace soukromého nasazovatele do EU databáze dle čl. 49 odst. 2",
+        "pocet_vyskytu": 6,
         "zavaznost": "kritické",
-        "priklad_dokumentu": "Registr AI systémů, Akční plán, Posouzení dopadů, Interní AI politika, Compliance Report",
-        "typicky_nalez": "Dokument tvrdí, že firma jako nasazovatel HR a úvěrových systémů má povinnost registrovat tyto systémy v centrální EU databázi dle čl. 49 odst. 2. Toto je právně chybně — čl. 49 odst. 2 ukládá tuto povinnost POUZE orgánům veřejné moci."
+        "priklad_dokumentu": "compliance_report, akční plán, DPIA/FRIA, dodavatelský checklist, transparentnost a lidský dohled, transparenční stránka",
+        "typicky_nalez": "Dokument tvrdí, že soukromý nasazovatel HR/úvěrových systémů má povinnost registrace v EU databázi dle čl. 49 odst. 2. Tato povinnost se však vztahuje pouze na orgány veřejné moci nebo nasazovatele biometrických systémů."
       },
       {
-        "vzor": "Chybějící role poskytovatele (Provider) u firem s vlastním vývojem AI",
-        "pocet_vyskytu": 5,
-        "zavaznost": "kritické",
-        "priklad_dokumentu": "Posouzení dopadů, Interní AI politika, Monitoring plán, Školící prezentace, Dodavatelský checklist",
-        "typicky_nalez": "Firma vyvíjí vlastní AI systémy a mění účel dodaných systémů, čímž se stává poskytovatelem. Dokument ji však hodnotí výhradně v roli nasazovatele (Deployer)."
-      },
-      {
-        "vzor": "FRIA nesprávně prezentována jako nepovinná pro soukromé subjekty s kreditním scoringem a pojišťovnictvím",
+        "vzor": "FRIA nesprávně označena jako best practice u kreditního scoringu a pojišťovnictví",
         "pocet_vyskytu": 4,
         "zavaznost": "kritické",
-        "priklad_dokumentu": "Compliance Report, Interní AI politika, Plán řízení incidentů, Posouzení dopadů",
-        "typicky_nalez": "Dokument uvádí, že FRIA je pro soukromé subjekty jen doporučená best practice. Klient však využívá AI pro úvěrový scoring a pojišťovnictví, kde je FRIA dle čl. 27 odst. 1 povinná."
+        "priklad_dokumentu": "compliance_report, akční plán, registr AI systémů, interní AI politika",
+        "typicky_nalez": "Dokument tvrdí, že FRIA je pro soukromou společnost pouze 'best practice'. Klient však využívá AI pro kreditní scoring (CRIF) a pojišťovnictví (Guidewire), pro které čl. 27 odst. 1 písm. b) a c) AI Act stanovuje FRIA jako POVINNOU i pro soukromé subjekty."
       },
       {
-        "vzor": "Neúplný výčet systémů — chybí systémy z Přílohy I, pojišťovnictví, zdravotnictví a další deklarované systémy",
+        "vzor": "Chybná citace čl. 26 odst. 1 písm. f) pro logování místo čl. 26 odst. 6",
+        "pocet_vyskytu": 5,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "akční plán, registr AI systémů, interní AI politika, DPIA/FRIA, plán řízení incidentů",
+        "typicky_nalez": "Pro povinnost nasazovatele uchovávat logy po dobu 6 měsíců je citován 'čl. 26 odst. 1 písm. f)'. Správný odkaz je čl. 26 odst. 6."
+      },
+      {
+        "vzor": "Chybějící konkrétní české dozorové orgány — dokument uvádí jen obecně 'dozorový orgán'",
+        "pocet_vyskytu": 4,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "plán řízení incidentů, akční plán, transparenční stránka, monitoring plán",
+        "typicky_nalez": "Dokument říká, že incidenty musím hlásit 'dozorovému orgánu'. Jako podnikatel ale nevím, kdo to v ČR přesně je (ÚOOÚ? ČTÚ? NÚKIB? ČOI? ČNB? SÚKL?)."
+      },
+      {
+        "vzor": "Strojové identifikátory systémů ('vlastní html', 'vlastní kód') použity doslovně v textu dokumentů",
         "pocet_vyskytu": 6,
         "zavaznost": "důležité",
-        "priklad_dokumentu": "Registr AI systémů, Posouzení dopadů, Monitoring plán, Transparenční stránka, Dodavatelský checklist, Compliance Report",
-        "typicky_nalez": "Zcela chybí systémy identifikované v auditu: účetní AI, pojišťovací AI, zdravotnické přístroje, dynamická cenotvorba a další. Tabulka pokrývá jen zlomek deklarovaných systémů."
+        "priklad_dokumentu": "plán školení, texty oznámení, interní AI politika, monitoring plán, DPIA/FRIA, školící prezentace",
+        "typicky_nalez": "V textu se objevují strojové názvy z dotazníku jako 'vlastní html' a 'vlastní kód'. Ve formální firemní směrnici nebo školení to působí nesrozumitelně a neprofesionálně."
       },
       {
-        "vzor": "Transparenční stránka (HTML) useknutá / neúplný kód",
-        "pocet_vyskytu": 1,
-        "zavaznost": "kritické",
-        "priklad_dokumentu": "Transparenční stránka (HTML)",
-        "typicky_nalez": "HTML dokument končí v polovině tagu. Chybí dokončení FAQ sekce, kontaktní údaje, patička a uzavírací HTML tagy."
+        "vzor": "Chybějící systémy v registru/transparenční stránce — neúplné pokrytí deklarovaných AI systémů",
+        "pocet_vyskytu": 3,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "registr AI systémů, transparenční stránka, monitoring plán",
+        "typicky_nalez": "V tabulce chybí řada deklarovaných systémů z kontextu — pojišťovací systémy (Guidewire), účetní programy (Fakturoid, Pohoda), zdravotnické přístroje, GPS sledování."
       }
     ],
     "odmitnute_nalezy": [
       {
-        "nalez": "Prezenční listina končí přesně číslem 250, pro firmu 250+ zaměstnanců bude potřeba více místa",
-        "zdroj": "M2",
-        "duvod_odmitnuti": "Toto je kosmetický problém formátu šablony, nikoliv obsahová chyba generovacího promptu. Prezenční listina je vzorová šablona a klient si ji může rozšířit. Přidání pravidla by zbytečně zatěžovalo prompt.",
+        "nalez": "Transparenční stránka — Reklama na dodavatele v patičce s UTM parametry",
+        "zdroj": "M3",
+        "duvod_odmitnuti": "Patička s odkazem na AIshield.cz je součást šablony/branding a není záležitostí generovacího promptu M1. Jde o business rozhodnutí platformy, ne o kvalitu compliance obsahu.",
         "pocet_vyskytu": 1
       },
       {
-        "nalez": "Formát checklistu jako PDF/HTML se špatně vyplňuje",
+        "nalez": "Dodavatelský checklist — Vzorový e-mail se ptá dodavatele na rizikovost, i když to analýza už řekla",
         "zdroj": "M3",
-        "duvod_odmitnuti": "Prompt generuje statické dokumenty dle zadání. Interaktivní formuláře jsou mimo scope generace. Klient může dokument převést do editovatelného formátu.",
-        "pocet_vyskytu": 2
-      },
-      {
-        "nalez": "Chybí vysvětlení zkratek jako DPA, DPIA pro běžné zaměstnance",
-        "zdroj": "M3",
-        "duvod_odmitnuti": "Dokumenty jsou určeny primárně pro compliance tým a vedení, nikoliv pro řadové zaměstnance. Zkratky jsou v kontextu compliance dokumentů standardní a obvykle jsou vysvětleny při prvním výskytu. Přidání glosáře by neúměrně prodloužilo každý dokument.",
+        "duvod_odmitnuti": "E-mail slouží jako formální dokumentace a due diligence vůči dodavateli — firma potřebuje písemné potvrzení od dodavatele pro svou compliance evidenci, i když interně riziko zná. Jde o správný postup.",
         "pocet_vyskytu": 1
       },
       {
-        "nalez": "Rozpor v datech — Akční plán nařizuje nasadit transparenční stránku, ale web sken říká, že web již splňuje čl. 50",
+        "nalez": "Texty oznámení — HR texty natvrdo říkají, že konečné rozhodnutí činí HR specialista",
         "zdroj": "M3",
-        "duvod_odmitnuti": "Toto je legitimní nález, ale je specifický pro jeden dokument a závisí na interpretaci vstupních dat. Prompt nemůže řešit logické rozpory ve vstupních datech — to je úloha pro M4 refiner, který to skutečně opravil (M6 skóre 9/10).",
+        "duvod_odmitnuti": "Toto je správný přístup — AI Act vyžaduje lidský dohled u vysoce rizikových HR systémů. Text správně deklaruje lidský dohled. Klient správně poznamenává, že to musí být pravda, ale to je implementační záležitost, ne chyba dokumentu.",
         "pocet_vyskytu": 1
       },
       {
-        "nalez": "Pracovněprávní terminologie — 'okamžité ukončení pracovního poměru' má přísná pravidla dle zákoníku práce",
+        "nalez": "Monitoring plán — Týdenní frekvence kontrol u HR a kreditního scoringu je příliš náročná",
         "zdroj": "M3",
-        "duvod_odmitnuti": "Compliance dokument správně uvádí sankce jako motivační prvek interní politiky. Detailní pracovněprávní úprava je mimo scope AI Act compliance dokumentů a patří do konzultace s pracovním právníkem.",
+        "duvod_odmitnuti": "Vysoce rizikové systémy ovlivňující základní práva (kreditní scoring, HR rozhodování) skutečně vyžadují častý monitoring. Týdenní frekvence je v souladu s best practices. Prompt by neměl snižovat frekvenci — spíše M4 může doporučit automatizaci.",
         "pocet_vyskytu": 1
       }
     ]

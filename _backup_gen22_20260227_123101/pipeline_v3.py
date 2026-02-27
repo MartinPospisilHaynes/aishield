@@ -80,24 +80,6 @@ DOCUMENT_KEYS = [
     "training_presentation",
 ]
 
-
-# Pořadí dokumentů pro číslování souborů (01-13)
-DOC_ORDER = {
-    "compliance_report": "01",
-    "action_plan": "02",
-    "ai_register": "03",
-    "training_outline": "04",
-    "chatbot_notices": "05",
-    "ai_policy": "06",
-    "incident_response_plan": "07",
-    "dpia_template": "08",
-    "vendor_checklist": "09",
-    "monitoring_plan": "10",
-    "transparency_human_oversight": "11",
-    "transparency_page": "12",
-    "training_presentation": "13",
-}
-
 SECTION_SLUG = {
     "compliance_report": "compliance_report",
     "action_plan": "akcni_plan",

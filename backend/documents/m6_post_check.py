@@ -7,12 +7,21 @@ Po M4 refinementu zkontroluje finální HTML:
 - Pokud skóre < 8, AKTIVUJE double M4 loop (M4b re-refinement)
 - Výsledky předá M5 pro self-improvement
 
+Gen22+ vylepšení:
+- json_mode=True (response_mime_type=application/json)
+- Retry s explicitním JSON-only promptem při parse failure
+- Raw response logging při failure
+- Confidence flag (high/medium/low) na základě parse metody
+- Suspicious flag pokud M6 odchylka > 3 od M2+M3 průměru
+
 Cena: ~$0.02 per dokument
 Model: Gemini 3.1 Pro — přesné hodnocení pro double M4 loop
 """
 
 import logging
+import os
 import re
+from datetime import datetime, timezone
 from typing import Tuple, Optional
 
 from backend.documents.llm_engine import (
@@ -20,6 +29,9 @@ from backend.documents.llm_engine import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Složka pro raw M6 responses (debugging)
+M6_RAW_DIR = "/opt/aishield/logs/m6_raw"
 
 SYSTEM_PROMPT_M6 = """Jsi kontrolor kvality dokumentu AI Act Compliance Kit.
 Tvůj úkol: Zkontrolovat FINÁLNÍ verzi dokumentu a spravedlivě ji ohodnotit.
@@ -68,6 +80,32 @@ Odpověz POUZE tímto JSON:
   "poznamka": "1-2 věty shrnutí"
 }}"""
 
+RETRY_PROMPT = """Tvá předchozí odpověď nebyla validní JSON. Odpověz ZNOVU, tentokrát POUZE validní JSON:
+{{
+  "finalni_skore": <1-10>,
+  "adrresovane_nalezy": <počet>,
+  "celkem_nalezu": <počet>,
+  "pretrvavajici_problemy": [],
+  "celkove_hodnoceni": "vynikající|dobré|průměrné|nedostatečné",
+  "poznamka": "shrnutí"
+}}
+
+Předchozí raw výstup (pro kontext):
+{raw_text_preview}"""
+
+
+def _save_raw_response(doc_key: str, text: str, attempt: int = 1):
+    """Uloží raw Gemini response do souboru pro post-mortem analýzu."""
+    try:
+        os.makedirs(M6_RAW_DIR, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        fpath = os.path.join(M6_RAW_DIR, f"{doc_key}_{ts}_attempt{attempt}.txt")
+        with open(fpath, "w") as f:
+            f.write(f"doc_key: {doc_key}\nattempt: {attempt}\nlen: {len(text)}\n\n{text}")
+        logger.info(f"[M6 PostCheck] Raw response saved: {fpath} ({len(text)} chars)")
+    except Exception as e:
+        logger.warning(f"[M6 PostCheck] Cannot save raw response: {e}")
+
 
 async def post_m4_check(
     final_html: str,
@@ -78,7 +116,14 @@ async def post_m4_check(
     doc_name: str = "",
 ) -> Tuple[Optional[dict], dict]:
     """
-    INFO-ONLY post-M4 verifikace přes Gemini Flash.
+    Post-M4 verifikace přes Gemini.
+    
+    Vylepšení Gen22+:
+    - json_mode=True (response_mime_type=application/json)
+    - Retry s explicitním JSON-only promptem při parse failure
+    - Raw response logging při failure
+    - Confidence flag (high/medium/low) na základě parse metody
+    - Suspicious flag pokud M6 odchylka > 3 od M2+M3 průměru
     
     Returns:
         (check_result, metadata) — check_result je dict s nálezem nebo None při chybě.
@@ -109,8 +154,12 @@ async def post_m4_check(
     )
     
     label = f"M6_{doc_key}"
+    total_cost = 0
+    total_in_tok = 0
+    total_out_tok = 0
     
     try:
+        # ── Pokus 1: Standardní volání s json_mode ──
         text, meta = await call_gemini(
             system=SYSTEM_PROMPT_M6,
             prompt=prompt,
@@ -119,41 +168,113 @@ async def post_m4_check(
             max_tokens=2000,
             json_mode=True,
         )
+        total_cost += meta.get("cost_usd", 0)
+        total_in_tok += meta.get("input_tokens", 0)
+        total_out_tok += meta.get("output_tokens", 0)
         
         result = parse_json(text)
+        
+        # ── Pokus 2: Retry s explicitním JSON promptem ──
         if not result:
-            # Regex fallback — extract finalni_skore even from malformed JSON
+            logger.warning(
+                f"[M6 PostCheck] {doc_key}: JSON parse failure (attempt 1, {len(text)} chars). Retrying..."
+            )
+            _save_raw_response(doc_key, text, attempt=1)
+            
+            retry_prompt = RETRY_PROMPT.format(raw_text_preview=text[:500])
+            text2, meta2 = await call_gemini(
+                system=SYSTEM_PROMPT_M6,
+                prompt=retry_prompt,
+                label=f"{label}_retry",
+                temperature=0.0,
+                max_tokens=1000,
+                json_mode=True,
+            )
+            total_cost += meta2.get("cost_usd", 0)
+            total_in_tok += meta2.get("input_tokens", 0)
+            total_out_tok += meta2.get("output_tokens", 0)
+            
+            result = parse_json(text2)
+            if result:
+                logger.info(f"[M6 PostCheck] {doc_key}: JSON retry SUCCESSFUL")
+                result["m6_confidence"] = "medium"
+                result["m6_parse_method"] = "json_retry"
+            else:
+                _save_raw_response(doc_key, text2, attempt=2)
+        else:
+            result["m6_confidence"] = "high"
+            result["m6_parse_method"] = "json_direct"
+        
+        # ── Pokus 3: Regex fallback (confidence=low) ──
+        if not result:
             score_match = re.search(r'"finalni_skore"\s*:\s*(\d+)', text)
+            if not score_match:
+                # Zkusit i ve druhém pokusu
+                score_match = re.search(r'"finalni_skore"\s*:\s*(\d+)', text2)
+            
             if score_match:
                 extracted_score = int(score_match.group(1))
                 logger.warning(
-                    f"[M6 PostCheck] {doc_key}: JSON parsing selhal, "
-                    f"ale regex extrahoval skore={extracted_score}"
+                    f"[M6 PostCheck] {doc_key}: JSON parse failed 2x, "
+                    f"regex extracted score={extracted_score} (CONFIDENCE=LOW)"
                 )
                 result = {
                     "finalni_skore": extracted_score,
-                    "poznamka": f"Score extrahovan regex fallbackem. Raw: {text[:200]}",
+                    "m6_confidence": "low",
+                    "m6_parse_method": "regex_fallback",
+                    "poznamka": f"Score extrahován regex fallbackem po 2 pokusech. "
+                                f"Raw len={len(text)}+{len(text2)}",
                 }
             else:
-                logger.warning(f"[M6 PostCheck] {doc_key}: JSON parsing selhal, zadne skore")
+                logger.warning(f"[M6 PostCheck] {doc_key}: JSON + regex failed → score=None")
                 result = {
                     "finalni_skore": None,
-                    "poznamka": f"JSON parsing selhal. Raw: {text[:200]}",
+                    "m6_confidence": "none",
+                    "m6_parse_method": "failed",
+                    "poznamka": f"Všechny pokusy selhaly. Raw len={len(text)}",
                 }
         
+        # ── Dual-score validace: porovnej M6 vs M2+M3 průměr ──
+        m6_score = result.get("finalni_skore")
+        eu_score = eu_critique.get("skore") if isinstance(eu_critique, dict) else None
+        client_score = client_critique.get("skore") if isinstance(client_critique, dict) else None
+        
+        if m6_score is not None and eu_score is not None and client_score is not None:
+            try:
+                m2m3_avg = (float(eu_score) + float(client_score)) / 2
+                deviation = abs(float(m6_score) - m2m3_avg)
+                if deviation > 3:
+                    result["m6_suspicious"] = True
+                    result["m6_deviation"] = round(deviation, 1)
+                    logger.warning(
+                        f"[M6 PostCheck] {doc_key}: SUSPICIOUS — M6={m6_score} vs "
+                        f"M2+M3 avg={m2m3_avg:.1f} (odchylka {deviation:.1f} > 3)"
+                    )
+            except (ValueError, TypeError):
+                pass
+        
+        # ── Logování výsledku ──
         score = result.get("finalni_skore", "?")
         hodnoceni = result.get("celkove_hodnoceni", "?")
         addressed = result.get("adrresovane_nalezy", "?")
-        total = result.get("celkem_nalezu", "?")
+        total_findings = result.get("celkem_nalezu", "?")
         remaining = len(result.get("pretrvavajici_problemy", []))
+        confidence = result.get("m6_confidence", "?")
         
         logger.info(f"[M6 PostCheck] {doc_name}: skóre={score}/10, "
                     f"hodnocení={hodnoceni}, "
-                    f"adresováno={addressed}/{total} nálezů, "
+                    f"adresováno={addressed}/{total_findings} nálezů, "
                     f"přetrvává={remaining} problémů, "
-                    f"${meta.get('cost_usd', 0):.4f}")
+                    f"confidence={confidence}, "
+                    f"${total_cost:.4f}")
         
-        return result, meta
+        final_meta = {
+            "provider": "gemini",
+            "cost_usd": total_cost,
+            "input_tokens": total_in_tok,
+            "output_tokens": total_out_tok,
+        }
+        return result, final_meta
         
     except Exception as e:
         logger.warning(f"[M6 PostCheck] {doc_key}: CHYBA (nekritická): {e}")
