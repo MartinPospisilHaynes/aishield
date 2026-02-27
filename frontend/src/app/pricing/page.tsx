@@ -684,7 +684,7 @@ export default function PricingPage() {
                     <div className="mt-12 text-center">
                         <p className="text-xs text-slate-600">
                             Platby zpracovává{" "}
-                            <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline inline-block py-3">
+                            <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline inline-block py-3 min-w-[44px] min-h-[44px]">
                                 Stripe
                             </a>
                             {" "}— globální platební brána s PCI DSS certifikací

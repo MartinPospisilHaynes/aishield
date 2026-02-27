@@ -152,7 +152,7 @@ export default function ContactForm() {
                             <button
                                 type="button"
                                 onClick={() => { setCaptchaInput(String(Math.max(0, Number(captchaInput || 0) - 1))); setCaptchaError(false); }}
-                                className="w-10 h-11 rounded-l-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                className="w-11 h-11 rounded-l-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
                             >−</button>
                             <input
                                 id="c-captcha"
@@ -167,7 +167,7 @@ export default function ContactForm() {
                             <button
                                 type="button"
                                 onClick={() => { setCaptchaInput(String(Number(captchaInput || 0) + 1)); setCaptchaError(false); }}
-                                className="w-10 h-11 rounded-r-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                className="w-11 h-11 rounded-r-xl border border-white/10 bg-white/[0.06] text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
                             >+</button>
                         </div>
                         {captchaError && (
@@ -187,9 +187,9 @@ export default function ContactForm() {
                         />
                         <label htmlFor="c-gdpr" className="text-xs text-slate-400 leading-relaxed cursor-pointer">
                             Souhlasím se{" "}
-                            <a href="/privacy" className="text-slate-300 hover:text-neon-fuchsia underline" target="_blank">zpracováním osobních údajů</a>{" "}
+                            <a href="/privacy" className="text-slate-300 hover:text-neon-fuchsia underline inline-block py-3" target="_blank">zpracováním osobních údajů</a>{" "}
                             v souladu s{" "}
-                            <a href="/gdpr" className="text-slate-300 hover:text-neon-fuchsia underline" target="_blank">GDPR</a>{" "}
+                            <a href="/gdpr" className="text-slate-300 hover:text-neon-fuchsia underline inline-block py-3" target="_blank">GDPR</a>{" "}
                             za účelem odpovědi na můj dotaz. *
                         </label>
                     </div>

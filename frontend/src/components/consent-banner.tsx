@@ -146,19 +146,19 @@ export default function ConsentBanner() {
                     <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                         <button
                             onClick={handleAcceptAll}
-                            className="flex-1 sm:flex-none rounded-xl bg-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-fuchsia-500 transition shadow-lg shadow-fuchsia-500/25"
+                            className="flex-1 sm:flex-none rounded-xl bg-fuchsia-600 px-5 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-semibold text-white hover:bg-fuchsia-500 transition shadow-lg shadow-fuchsia-500/25"
                         >
                             Přijmout vše
                         </button>
                         <button
                             onClick={handleAcceptNecessary}
-                            className="flex-1 sm:flex-none rounded-xl bg-white/5 border border-white/10 px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/10 transition"
+                            className="flex-1 sm:flex-none rounded-xl bg-white/5 border border-white/10 px-5 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-medium text-slate-300 hover:bg-white/10 transition"
                         >
                             Jen nezbytné
                         </button>
                         <button
                             onClick={() => setShowDetails(!showDetails)}
-                            className="text-xs text-slate-500 hover:text-slate-300 transition underline underline-offset-2 py-1"
+                            className="text-xs text-slate-500 hover:text-slate-300 transition underline underline-offset-2 py-1 min-h-[44px] flex items-center justify-center"
                         >
                             {showDetails ? "Skrýt podrobnosti" : "Zobrazit podrobnosti"}
                         </button>

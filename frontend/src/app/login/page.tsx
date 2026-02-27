@@ -133,7 +133,7 @@ function LoginForm() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-2.5 -mr-1"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-2.5 -mr-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
                                     tabIndex={-1}
                                 >
                                     {showPassword ? (

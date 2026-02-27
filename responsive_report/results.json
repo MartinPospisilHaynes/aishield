@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T21:54:35.274396",
+  "generated": "2026-02-27T22:03:46.806188",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 89.7,
+  "duration_seconds": 88.7,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -45,10 +45,10 @@
               "element": "a"
             },
             {
-              "text": "INPUT",
-              "width": 234,
-              "height": 24,
-              "element": "input"
+              "text": "−",
+              "width": 40,
+              "height": 44,
+              "element": "button"
             }
           ]
         }
@@ -69,21 +69,21 @@
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
-              "text": "Sjednat Monitoring",
-              "width": 293,
-              "height": 42,
-              "element": "a"
-            },
-            {
-              "text": "Sjednat Monitoring Plus",
-              "width": 293,
+              "text": "Stripe",
+              "width": 35,
               "height": 40,
               "element": "a"
             },
             {
-              "text": "Stripe",
-              "width": 35,
-              "height": 15,
+              "text": "Ceník",
+              "width": 38,
+              "height": 44,
+              "element": "a"
+            },
+            {
+              "text": "GDPR",
+              "width": 38,
+              "height": 44,
               "element": "a"
             }
           ]
@@ -105,21 +105,21 @@
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
-              "text": "AI Act (Nařízení EU 2024/1689)",
-              "width": 244,
-              "height": 20,
-              "element": "a"
+              "text": "−",
+              "width": 40,
+              "height": 44,
+              "element": "button"
             },
             {
-              "text": "Více v ceníku →",
-              "width": 270,
-              "height": 37,
-              "element": "a"
+              "text": "+",
+              "width": 40,
+              "height": 44,
+              "element": "button"
             },
             {
-              "text": "obchodních podmínkách",
-              "width": 164,
-              "height": 17,
+              "text": "zpracováním osobních údajů",
+              "width": 169,
+              "height": 15,
               "element": "a"
             }
           ]
@@ -142,20 +142,20 @@
           "elements": [
             {
               "text": "BUTTON",
-              "width": 28,
-              "height": 28,
+              "width": 40,
+              "height": 40,
               "element": "button"
             },
             {
-              "text": "Zaregistrujte se",
-              "width": 111,
-              "height": 17,
+              "text": "Ceník",
+              "width": 38,
+              "height": 44,
               "element": "a"
             },
             {
-              "text": "Zapomenuté heslo?",
-              "width": 131,
-              "height": 17,
+              "text": "GDPR",
+              "width": 38,
+              "height": 44,
               "element": "a"
             }
           ]
@@ -178,21 +178,21 @@
           "elements": [
             {
               "text": "BUTTON",
-              "width": 28,
-              "height": 28,
+              "width": 40,
+              "height": 40,
               "element": "button"
             },
             {
               "text": "BUTTON",
-              "width": 28,
-              "height": 28,
+              "width": 40,
+              "height": 40,
               "element": "button"
             },
             {
-              "text": "INPUT",
-              "width": 13,
-              "height": 16,
-              "element": "input"
+              "text": "zpracováním osobních údajů",
+              "width": 216,
+              "height": 35,
+              "element": "a"
             }
           ]
         }
@@ -213,21 +213,21 @@
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
-              "text": "Skenovat web",
-              "width": 96,
-              "height": 36,
-              "element": "a"
-            },
-            {
-              "text": "AI dotazník",
-              "width": 73,
-              "height": 36,
-              "element": "a"
-            },
-            {
               "text": "Ceník",
               "width": 38,
-              "height": 36,
+              "height": 44,
+              "element": "a"
+            },
+            {
+              "text": "GDPR",
+              "width": 38,
+              "height": 44,
+              "element": "a"
+            },
+            {
+              "text": "Nařízení EU 2024/1689 (AI Act)",
+              "width": 229,
+              "height": 20,
               "element": "a"
             }
           ]
@@ -250,20 +250,20 @@
           "elements": [
             {
               "text": "BUTTON",
-              "width": 28,
-              "height": 28,
+              "width": 40,
+              "height": 40,
               "element": "button"
             },
             {
-              "text": "Zaregistrujte se",
-              "width": 111,
-              "height": 17,
+              "text": "Ceník",
+              "width": 38,
+              "height": 44,
               "element": "a"
             },
             {
-              "text": "Zapomenuté heslo?",
-              "width": 131,
-              "height": 17,
+              "text": "GDPR",
+              "width": 38,
+              "height": 44,
               "element": "a"
             }
           ]

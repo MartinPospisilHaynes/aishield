@@ -125,7 +125,7 @@ export default function RootLayout({
                                     <ul className="space-y-1 text-sm text-slate-500">
                                         <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Skenovat web</a></li>
                                         <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors inline-block py-3">AI dotazník</a></li>
-                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Ceník</a></li>
+                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-3 min-w-[44px]">Ceník</a></li>
                                         <li><a href="/about" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Jak to funguje</a></li>
                                     </ul>
                                 </div>
@@ -136,7 +136,7 @@ export default function RootLayout({
                                     <ul className="space-y-1 text-sm text-slate-500">
                                         <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Ochrana soukromí</a></li>
                                         <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Obchodní podmínky</a></li>
-                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors inline-block py-3">GDPR</a></li>
+                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors inline-block py-3 min-w-[44px]">GDPR</a></li>
                                         <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Cookies</a></li>
                                         <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors inline-block py-3">AI Act souhlas</a></li>
                                     </ul>
@@ -150,27 +150,27 @@ export default function RootLayout({
                                             Legislativa EU
                                         </span>
                                     </h3>
-                                    <ul className="space-y-3 text-sm">
+                                    <ul className="space-y-0 text-sm">
                                         <li>
-                                            <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium inline-flex items-center gap-1">
+                                            <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium inline-flex items-center gap-1 py-3">
                                                 Nařízení EU 2024/1689 (AI Act)
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="https://www.mpo.gov.cz/cz/podnikani/digitalni-ekonomika/umela-inteligence/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                            <a href="https://www.mpo.gov.cz/cz/podnikani/digitalni-ekonomika/umela-inteligence/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1 py-3">
                                                 MPO — Umělá inteligence
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="https://www.mpo.gov.cz/assets/cz/podnikani/2024/9/Narodni-strategie-umele-intelience-CR-2030.pdf" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                            <a href="https://www.mpo.gov.cz/assets/cz/podnikani/2024/9/Narodni-strategie-umele-intelience-CR-2030.pdf" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1 py-3">
                                                 NAIS — Národní strategie AI 2030 (PDF)
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="https://digital-strategy.ec.europa.eu/cs/policies/european-approach-artificial-intelligence" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1">
+                                            <a href="https://digital-strategy.ec.europa.eu/cs/policies/european-approach-artificial-intelligence" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-400 transition-colors inline-flex items-center gap-1 py-3">
                                                 EU Digital Strategy — AI
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                                             </a>
@@ -184,8 +184,8 @@ export default function RootLayout({
                                     <ul className="space-y-1 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
-                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-3">+420 732 716 141</a></li>
-                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-3">info@aishield.cz</a></li>
+                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-3 min-h-[44px]">+420 732 716 141</a></li>
+                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-3 min-h-[44px]">info@aishield.cz</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -198,7 +198,7 @@ export default function RootLayout({
                                         href="https://www.desperados-design.cz"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-semibold transition-colors hover:brightness-125"
+                                        className="font-semibold transition-colors hover:brightness-125 inline-block py-3"
                                         style={{ color: "#d946ef" }}
                                     >
                                         Desperados-design.cz
