@@ -1,11 +1,17 @@
 """
 AIshield.cz — Documents API
 Endpointy pro generování a stahování compliance dokumentů.
+
+SAFEGUARD: Globální file-based lock — NIKDY nepustí dvě souběžné generace.
+Funguje i s více uvicorn workery (file lock je OS-level).
 """
 
 import asyncio
+import fcntl
 import logging
+import os
 import time
+from contextlib import contextmanager
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -19,13 +25,56 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/documents")
 
-# Concurrent generation protection — one generation per client at a time
-_generation_locks: dict[str, asyncio.Lock] = {}
+# ── Global generation lock (file-based, works across workers) ──
+_LOCK_FILE = "/tmp/aishield_generation.lock"
+_generation_active = False  # In-process flag for single-worker fast check
 
-def _get_client_lock(client_id: str) -> asyncio.Lock:
-    if client_id not in _generation_locks:
-        _generation_locks[client_id] = asyncio.Lock()
-    return _generation_locks[client_id]
+
+@contextmanager
+def _global_generation_lock():
+    """
+    File-based exclusive lock — ensures ONLY ONE generation runs at a time,
+    even across multiple uvicorn workers.
+    - Uses fcntl.LOCK_EX | fcntl.LOCK_NB (non-blocking)
+    - Raises HTTPException 409 if another generation is running
+    """
+    global _generation_active
+
+    # Fast in-process check (same worker)
+    if _generation_active:
+        raise HTTPException(
+            status_code=409,
+            detail="Generování dokumentů již probíhá (in-process). Zkuste to za chvíli.",
+        )
+
+    lockfile = None
+    try:
+        lockfile = open(_LOCK_FILE, "w")
+        fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # Write PID + timestamp for debugging
+        lockfile.write(f"pid={os.getpid()} started={time.strftime('%Y-%m-%d %H:%M:%S')}")
+        lockfile.flush()
+        _generation_active = True
+        logger.info("[Documents] Generation lock ACQUIRED (pid=%d)", os.getpid())
+        yield
+    except (IOError, OSError):
+        # Another process holds the lock
+        if lockfile:
+            lockfile.close()
+        raise HTTPException(
+            status_code=409,
+            detail="Generování dokumentů již probíhá (jiný proces). Zkuste to za chvíli.",
+        )
+    finally:
+        _generation_active = False
+        if lockfile:
+            try:
+                fcntl.flock(lockfile.fileno(), fcntl.LOCK_UN)
+                lockfile.close()
+                os.unlink(_LOCK_FILE)
+            except Exception:
+                pass
+        logger.info("[Documents] Generation lock RELEASED (pid=%d)", os.getpid())
 
 
 # ── Modely ──
@@ -69,12 +118,7 @@ async def generate_kit(client_id: str):
     Vygeneruje kompletní AI Act Compliance Kit (dokumenty).
     Concurrent protection: pouze jedno generování na klienta současně.
     """
-    lock = _get_client_lock(client_id)
-    if lock.locked():
-        logger.warning("[Documents] Generování již probíhá pro client_id=%s — odmítnuto", client_id)
-        raise HTTPException(status_code=409, detail="Generování dokumentů pro tohoto klienta již probíhá. Zkuste to za chvíli.")
-
-    async with lock:
+    with _global_generation_lock():
         logger.info("[Documents] Generování Compliance Kitu pro client_id=%s", client_id)
         start = time.time()
         try:

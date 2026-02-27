@@ -741,6 +741,50 @@ def _preflight_check(company_data: dict, questionnaire_data: dict, scan_data: di
     if not company_industry:
         logger.warning("[Pipeline v3] Odvětví firmy neuvedeno — personalizace bude slabší")
 
+    # ── 8-12: NOVÉ ROZŠÍŘENÉ KONTROLY (placeholder/dummy data) ──
+
+    # 8. IČO formát — musí být 8 číslic (pokud vyplněno)
+    ico_val = questionnaire_data.get("q_company_ico", "")
+    if ico_val:
+        ico_clean = re.sub(r"\s", "", str(ico_val))
+        if not re.match(r"^\d{8}$", ico_clean):
+            logger.warning(f"[Pipeline v3] IČO '{ico_val}' nemá formát 8 číslic — může být chybné")
+
+    # 9. Kontrola placeholder/testovacích názvů firmy
+    dummy_names = ["test", "firma", "example", "xxx", "demo", "neznámá", "unknown", "test firma", "sample"]
+    name_lower = (company_data.get("company_name") or "").strip().lower()
+    if name_lower in dummy_names:
+        errors.append(f"Název firmy '{name_lower}' vypadá jako testovací/placeholder")
+
+    # 10. Kontrola že dotazník má reálné odpovědi (ne jen defaulty)
+    q_answers = questionnaire_data.get("answers", {})
+    if isinstance(q_answers, dict):
+        empty_answers = sum(1 for v in q_answers.values() if not v or str(v).strip() in ("", "N/A", "-", "?"))
+        total_answers = len(q_answers)
+        if total_answers > 0 and empty_answers / total_answers > 0.5:
+            logger.warning(
+                f"[Pipeline v3] ⚠ Dotazník: {empty_answers}/{total_answers} prázdných odpovědí "
+                f"({100*empty_answers/total_answers:.0f}%%) — kvalita dokumentů může být nižší"
+            )
+
+    # 11. AI systémy — kontrola placeholder dat
+    ai_systems = questionnaire_data.get("ai_systems_declared", [])
+    placeholder_system_names = ["test", "ai system", "systém", "example", "xxx", "n/a"]
+    suspicious_systems = [
+        s for s in ai_systems
+        if isinstance(s, dict) and str(s.get("name", "")).strip().lower() in placeholder_system_names
+    ]
+    if suspicious_systems:
+        logger.warning(
+            f"[Pipeline v3] ⚠ {len(suspicious_systems)} AI systémů vypadá jako placeholder: "
+            f"{[s.get('name') for s in suspicious_systems[:3]]}"
+        )
+
+    # 12. Company URL validace
+    company_url = company_data.get("url", "")
+    if company_url and not re.match(r"^https?://", company_url):
+        logger.warning(f"[Pipeline v3] URL firmy '{company_url}' nemá http/https prefix")
+
     if errors:
         error_msg = "PRE-FLIGHT CHECK FAILED — pipeline zastaven!\n" + "\n".join(f"  ✗ {e}" for e in errors)
         logger.error(f"[Pipeline v3] {error_msg}")
@@ -763,7 +807,7 @@ def _validate_first_document(html: str, company_name: str, ai_systems_count: int
     """
     errors = []
 
-    # 1. Kontrola placeholderů
+    # 1. Kontrola placeholderů (rozšířený seznam)
     placeholder_patterns = [
         r"\[DOPLŇTE[^\]]*\]",
         r"\[NÁZEV[^\]]*\]",
@@ -773,6 +817,12 @@ def _validate_first_document(html: str, company_name: str, ai_systems_count: int
         r"\[INSERT[^\]]*\]",
         r"\[TODO[^\]]*\]",
         r"\[XXX[^\]]*\]",
+        r"\[YOUR[^\]]*\]",
+        r"\[COMPANY[^\]]*\]",
+        r"\[DATE[^\]]*\]",
+        r"\{\{[^}]+\}\}",           # Jinja-style {{placeholder}}
+        r"<PLACEHOLDER[^>]*>",         # XML-style placeholders
+        r"Lorem ipsum",                 # Lorem ipsum text
     ]
     found_placeholders = []
     for pattern in placeholder_patterns:
