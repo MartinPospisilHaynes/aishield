@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T22:03:46.806188",
+  "generated": "2026-02-27T22:13:10.959210",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 88.7,
+  "duration_seconds": 89.7,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -18,7 +18,7 @@
   },
   "pages_tested": 7,
   "total_tests": 21,
-  "average_score": 95.0,
+  "average_score": 98.4,
   "results": [
     {
       "page": "homepage",
@@ -30,7 +30,7 @@
         {
           "type": "small_touch_target",
           "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
+          "detail": "4 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
               "text": "+420 732 716 141",
@@ -45,15 +45,15 @@
               "element": "a"
             },
             {
-              "text": "−",
-              "width": 40,
+              "text": "zpracováním osobních údajů",
+              "width": 169,
               "height": 44,
-              "element": "button"
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 85,
+      "score": 88,
       "screenshot": "screenshots/homepage_mobile.png"
     },
     {
@@ -62,34 +62,8 @@
       "url": "https://aishield.cz/pricing",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "Stripe",
-              "width": 35,
-              "height": 40,
-              "element": "a"
-            },
-            {
-              "text": "Ceník",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "GDPR",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 85,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/pricing_mobile.png"
     },
     {
@@ -102,30 +76,24 @@
         {
           "type": "small_touch_target",
           "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
+          "detail": "2 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "−",
-              "width": 40,
-              "height": 44,
-              "element": "button"
-            },
-            {
-              "text": "+",
-              "width": 40,
-              "height": 44,
-              "element": "button"
-            },
             {
               "text": "zpracováním osobních údajů",
               "width": 169,
-              "height": 15,
+              "height": 44,
+              "element": "a"
+            },
+            {
+              "text": "GDPR",
+              "width": 34,
+              "height": 44,
               "element": "a"
             }
           ]
         }
       ],
-      "score": 85,
+      "score": 94,
       "screenshot": "screenshots/about_mobile.png"
     },
     {
@@ -134,34 +102,8 @@
       "url": "https://aishield.cz/login",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "BUTTON",
-              "width": 40,
-              "height": 40,
-              "element": "button"
-            },
-            {
-              "text": "Ceník",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "GDPR",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 85,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/login_mobile.png"
     },
     {
@@ -174,25 +116,25 @@
         {
           "type": "small_touch_target",
           "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
+          "detail": "5 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "BUTTON",
-              "width": 40,
-              "height": 40,
-              "element": "button"
-            },
-            {
-              "text": "BUTTON",
-              "width": 40,
-              "height": 40,
-              "element": "button"
-            },
             {
               "text": "zpracováním osobních údajů",
               "width": 216,
               "height": 35,
               "element": "a"
+            },
+            {
+              "text": "obchodními podmínkami",
+              "width": 146,
+              "height": 15,
+              "element": "a"
+            },
+            {
+              "text": "−",
+              "width": 40,
+              "height": 44,
+              "element": "button"
             }
           ]
         }
@@ -206,34 +148,8 @@
       "url": "https://aishield.cz/scan",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "Ceník",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "GDPR",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "Nařízení EU 2024/1689 (AI Act)",
-              "width": 229,
-              "height": 20,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 85,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/scan_mobile.png"
     },
     {
@@ -242,34 +158,8 @@
       "url": "https://aishield.cz/dotaznik",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "6 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "BUTTON",
-              "width": 40,
-              "height": 40,
-              "element": "button"
-            },
-            {
-              "text": "Ceník",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "GDPR",
-              "width": 38,
-              "height": 44,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 85,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/dotaznik_mobile.png"
     },
     {

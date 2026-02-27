@@ -189,7 +189,7 @@ export default function ContactForm() {
                             Souhlasím se{" "}
                             <a href="/privacy" className="text-slate-300 hover:text-neon-fuchsia underline inline-block py-3" target="_blank">zpracováním osobních údajů</a>{" "}
                             v souladu s{" "}
-                            <a href="/gdpr" className="text-slate-300 hover:text-neon-fuchsia underline inline-block py-3" target="_blank">GDPR</a>{" "}
+                            <a href="/gdpr" className="text-slate-300 hover:text-neon-fuchsia underline inline-block py-3 min-w-[44px]" target="_blank">GDPR</a>{" "}
                             za účelem odpovědi na můj dotaz. *
                         </label>
                     </div>

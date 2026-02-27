@@ -184,8 +184,8 @@ export default function RootLayout({
                                     <ul className="space-y-1 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
-                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-3 min-h-[44px]">+420 732 716 141</a></li>
-                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-3 min-h-[44px]">info@aishield.cz</a></li>
+                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-flex items-center py-3 min-h-[44px]">+420 732 716 141</a></li>
+                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-flex items-center py-3 min-h-[44px]">info@aishield.cz</a></li>
                                     </ul>
                                 </div>
                             </div>

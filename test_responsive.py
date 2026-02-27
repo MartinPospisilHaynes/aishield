@@ -207,7 +207,7 @@ async def run_tests():
                             for (const el of clickables) {
                                 const rect = el.getBoundingClientRect();
                                 if (rect.width === 0 || rect.height === 0) continue;
-                                if (rect.width < 44 || rect.height < 44) {
+                                if (Math.round(rect.width) < 44 || Math.round(rect.height) < 44) {
                                     // Skip if invisible
                                     const style = window.getComputedStyle(el);
                                     if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;

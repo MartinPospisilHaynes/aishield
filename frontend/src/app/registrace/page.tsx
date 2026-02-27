@@ -464,11 +464,11 @@ function RegistraceInner() {
                             />
                             <span className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
                                 Souhlasím se{" "}
-                                <a href="/privacy" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline">
+                                <a href="/privacy" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline inline-block py-3 min-h-[44px]">
                                     zpracováním osobních údajů
                                 </a>
                                 {" "}a{" "}
-                                <a href="/terms" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline">
+                                <a href="/terms" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline inline-block py-3 min-h-[44px]">
                                     obchodními podmínkami
                                 </a>
                                 . Vaše data zpracováváme výhradně pro poskytování služby
