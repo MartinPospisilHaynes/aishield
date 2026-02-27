@@ -1,14 +1,14 @@
 """
-AIshield.cz — Modul 6: POST-M4 VERIFIKACE (Gemini Flash, INFO-ONLY)
+AIshield.cz — Modul 6: POST-M4 VERIFIKACE (Gemini 3.1 Pro)
 
 Po M4 refinementu zkontroluje finální HTML:
 - Zda M4 adresoval nálezy z M2/M3
 - Dá finální skóre
-- NEBLOKUJE pipeline — jen loguje
+- Pokud skóre < 8, AKTIVUJE double M4 loop (M4b re-refinement)
 - Výsledky předá M5 pro self-improvement
 
-Cena: ~$0.003 per dokument (~$0.03 per generaci)
-Model: Gemini 2.0 Flash
+Cena: ~$0.02 per dokument
+Model: Gemini 3.1 Pro — přesné hodnocení pro double M4 loop
 """
 
 import logging
@@ -16,25 +16,31 @@ from typing import Tuple, Optional
 
 from backend.documents.llm_engine import (
     call_gemini, parse_json,
-    GEMINI_FLASH_MODEL, GEMINI_FLASH_COST_INPUT, GEMINI_FLASH_COST_OUTPUT,
 )
 
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT_M6 = """Jsi kontrolor kvality dokumentu AI Act Compliance Kit.
-Tvůj úkol: Zkontrolovat FINÁLNÍ verzi dokumentu (po všech úpravách) a ohodnotit ji.
+Tvůj úkol: Zkontrolovat FINÁLNÍ verzi dokumentu a spravedlivě ji ohodnotit.
 
 Dostaneš:
-1. Finální HTML dokumentu
+1. Finální HTML dokumentu (po M4 refinementu)
 2. Nálezy z M2 (EU inspektora) a M3 (klientského kritika) na DRAFT verzi
 3. Kontext firmy
 
 Tvůj úkol:
 - Zkontroluj, zda finální verze ADRESOVALA nálezy z M2/M3
 - Dej finální skóre 1-10
-- Identifikuj případné PŘETRVÁVAJÍCÍ problémy
+- Identifikuj PŘETRVÁVAJÍCÍ problémy (pouze ty, co M4 skutečně NEOPRAVIL)
 
-NEBUĎ přísný — hledáš jen závažné problémy, které M4 NEOPRAVIL.
+KALIBRACE:
+- 8-9: Dokument adresoval většinu nálezů, je kvalitní a použitelný. STANDARDNÍ SKÓRE pro dobrou práci.
+- 7: Některé nálezy přetrvávají ale celek je solidní.
+- 5-6: M4 neadresoval klíčové problémy.
+- Pokud M4 opravil kritické a důležité nálezy, dej MINIMÁLNĚ 8 i když menší nálezy přetrvávají.
+
+DŮLEŽITÉ: Tvé skóre rozhoduje, zda se spustí další kolo refinementu.
+Skóre < 8 → dokument bude znovu opraven. Buď přesný ale SPRAVEDLIVÝ.
 Odpovídej POUZE v JSON formátu."""
 
 PROMPT_TEMPLATE = """FINÁLNÍ HTML DOKUMENTU ({doc_name}):
@@ -110,9 +116,6 @@ async def post_m4_check(
             label=label,
             temperature=0.1,
             max_tokens=2000,
-            model=GEMINI_FLASH_MODEL,
-            cost_input=GEMINI_FLASH_COST_INPUT,
-            cost_output=GEMINI_FLASH_COST_OUTPUT,
         )
         
         result = parse_json(text)

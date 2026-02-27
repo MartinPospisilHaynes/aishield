@@ -52,7 +52,7 @@ from backend.documents.pdf_renderer import render_section_html
 from backend.documents.m1_generator import generate_draft, DOCUMENT_NAMES, PROMPT_BUILDERS
 from backend.documents.m2_eu_critic import review_eu
 from backend.documents.m3_client_critic import review_client
-from backend.documents.m4_refiner import refine as m4_refine
+from backend.documents.m4_refiner import refine as m4_refine, refine_with_m6 as m4_refine_v2
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
 from backend.documents.m6_post_check import post_m4_check
 from backend.documents.generation_report import send_generation_report
@@ -921,7 +921,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         try:
             # ── M1: Generator (Gemini 3.1 Pro) ──
             m1_start = time.time()
-            logger.info(f"[Pipeline v3]   M1 Generator (Gemini) → {doc_name}...")
+            logger.info(f"[Pipeline v3]   M1 Generator (Gemini 3.1 Pro) → {doc_name}...")
             draft_html, m1_meta = await generate_draft(company_context, doc_key)
             m1_time = time.time() - m1_start
             m1_cost = m1_meta.get("cost_usd", 0)
@@ -934,7 +934,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
 
             # ── M2: EU Inspector (Claude Sonnet 4) ──
             m2_start = time.time()
-            logger.info(f"[Pipeline v3]   M2 EU Critic (Claude) → {doc_name}...")
+            logger.info(f"[Pipeline v3]   M2 EU Critic (Gemini 3.1 Pro) → {doc_name}...")
             eu_critique, m2_meta = await review_eu(draft_html, company_context, doc_key)
             m2_time = time.time() - m2_start
             m2_cost = m2_meta.get("cost_usd", 0)
@@ -943,41 +943,16 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             logger.info(f"[Pipeline v3]   M2 hotov: skóre={eu_score}/10, "
                        f"${m2_cost:.4f}, {m2_tokens} tokens, {m2_time:.1f}s")
 
-            # ── M3: Client Critic — SKIP if EU skóre >= 8 (cost optimization) ──
-            eu_score_num = 0
-            try:
-                eu_score_num = int(eu_score)
-            except (ValueError, TypeError):
-                eu_score_num = 0
-
-            if eu_score_num >= 8:
-                logger.info(f"[Pipeline v3]   M3 SKIP: EU skóre {eu_score_num} >= 8, klient review přeskočen (úspora tokenů)")
-                client_critique = {
-                    "myslenkovy_proces": f"Přeskočeno — EU skóre {eu_score_num}/10 je dostatečné.",
-                    "celkove_hodnoceni": "dobré",
-                    "skore": eu_score_num,
-                    "nalezy": [],
-                    "silne_stranky": ["EU inspektor dal vysoké skóre — dokument splňuje standardy."],
-                    "chybejici_obsah": [],
-                    "otazky_klienta": [],
-                    "celkove_doporuceni": "Dokument splňuje kvalitativní standardy.",
-                }
-                m3_meta = {"cost_usd": 0, "input_tokens": 0, "output_tokens": 0}
-                m3_cost = 0
-                m3_tokens = 0
-                m3_time = 0.0
-                client_score = eu_score_num
-            else:
-                # ── M3: Client Critic (Gemini 3.1 Pro) ──
-                m3_start = time.time()
-                logger.info(f"[Pipeline v3]   M3 Client Critic (Gemini) → {doc_name}...")
-                client_critique, m3_meta = await review_client(draft_html, company_context, doc_key)
-                m3_time = time.time() - m3_start
-                m3_cost = m3_meta.get("cost_usd", 0)
-                m3_tokens = m3_meta.get("input_tokens", 0) + m3_meta.get("output_tokens", 0)
-                client_score = client_critique.get("skore", "?")
-                logger.info(f"[Pipeline v3]   M3 hotov: skóre={client_score}/10, "
-                           f"${m3_cost:.4f}, {m3_tokens} tokens, {m3_time:.1f}s")
+            # ── M3: Client Critic (Gemini 3.1 Pro) — VŽDY spouštíme pro kvalitní M5 data ──
+            m3_start = time.time()
+            logger.info(f"[Pipeline v3]   M3 Client Critic (Gemini Pro) → {doc_name}...")
+            client_critique, m3_meta = await review_client(draft_html, company_context, doc_key)
+            m3_time = time.time() - m3_start
+            m3_cost = m3_meta.get("cost_usd", 0)
+            m3_tokens = m3_meta.get("input_tokens", 0) + m3_meta.get("output_tokens", 0)
+            client_score = client_critique.get("skore", "?")
+            logger.info(f"[Pipeline v3]   M3 hotov: skóre={client_score}/10, "
+                       f"${m3_cost:.4f}, {m3_tokens} tokens, {m3_time:.1f}s")
 
             # Uložit kritiky pro M5 analýzu
             all_critiques[doc_key] = {
@@ -1017,9 +992,42 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             except Exception as m6_err:
                 logger.warning(f"[Pipeline v3]   M6 PostCheck CHYBA (nekritická): {m6_err}")
 
+            # -- M4b: Double refinement if M6 found persisting issues --
+            m4b_cost = 0
+            m4b_tokens = 0
+            try:
+                if m6_result:
+                    m6_score_val = m6_result.get("finalni_skore")
+                    m6_issues = m6_result.get("pretrvavajici_problemy", [])
+                    if m6_score_val is not None and m6_score_val < 8 and len(m6_issues) > 0:
+                        logger.info(f"[Pipeline v3]   M4b DOUBLE REFINE: M6={m6_score_val}/10, "
+                                   f"{len(m6_issues)} přetrvávajících problémů → opravuji")
+                        m4b_start = time.time()
+                        final_html_v2, m4b_meta = await m4_refine_v2(
+                            final_html, m6_result, company_context, doc_key
+                        )
+                        m4b_time = time.time() - m4b_start
+                        m4b_cost = m4b_meta.get("cost_usd", 0)
+                        m4b_tokens = m4b_meta.get("input_tokens", 0) + m4b_meta.get("output_tokens", 0)
+
+                        if final_html_v2 and len(final_html_v2) >= len(final_html) * 0.7:
+                            final_html = final_html_v2
+                            all_final_html[doc_key] = final_html
+                            logger.info(f"[Pipeline v3]   M4b hotov: {len(final_html)} znaků, "
+                                       f"${m4b_cost:.4f}, {m4b_tokens} tokens, {m4b_time:.1f}s")
+                        else:
+                            logger.warning(f"[Pipeline v3]   M4b output příliš krátký, zachovávám M4a")
+                            m4b_cost = 0
+                            m4b_tokens = 0
+                    else:
+                        if m6_score_val is not None and m6_score_val >= 8:
+                            logger.info(f"[Pipeline v3]   M4b SKIP: M6={m6_score_val}/10 >= 8, OK")
+            except Exception as m4b_err:
+                logger.warning(f"[Pipeline v3]   M4b CHYBA (nekritická): {m4b_err}")
+
             # Celkové metriky dokumentu
-            doc_cost = m1_cost + m2_cost + m3_cost + m4_cost + m6_cost
-            doc_tokens = m1_tokens + m2_tokens + m3_tokens + m4_tokens + m6_tokens
+            doc_cost = m1_cost + m2_cost + m3_cost + m4_cost + m6_cost + m4b_cost
+            doc_tokens = m1_tokens + m2_tokens + m3_tokens + m4_tokens + m6_tokens + m4b_tokens
             doc_time = time.time() - doc_start
 
             logger.info(f"[Pipeline v3]   DOKUMENT {doc_idx} HOTOV: "

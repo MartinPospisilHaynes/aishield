@@ -316,3 +316,119 @@ Můžeš zkrátit redundance, ale nemaž celé bloky.
                 f"{'delší ✓' if len(html) >= len(draft_html) else 'KRATŠÍ ⚠'})")
 
     return html, meta
+
+
+
+# ══════════════════════════════════════════════════════════════════════
+# DOUBLE REFINEMENT — M4b (based on M6 post-check feedback)
+# ══════════════════════════════════════════════════════════════════════
+
+async def refine_with_m6(
+    final_html: str,
+    m6_result: dict,
+    company_context: str,
+    doc_key: str,
+) -> Tuple[str, dict]:
+    """
+    Second-pass refinement based on M6 post-check findings.
+    Only called when M6 score < 8 and there are persisting issues.
+
+    Args:
+        final_html: HTML z prvního M4 refinementu
+        m6_result: výsledek M6 post-check
+        company_context: kontext firmy
+        doc_key: klíč dokumentu
+
+    Returns:
+        (improved_html, metadata)
+    """
+    doc_names = {
+        "compliance_report": "Compliance Report",
+        "action_plan": "Akční plán",
+        "ai_register": "Registr AI systémů",
+        "training_outline": "Plán školení",
+        "chatbot_notices": "Texty oznámení",
+        "ai_policy": "Interní AI politika",
+        "incident_response_plan": "Plán řízení incidentů",
+        "dpia_template": "DPIA/FRIA",
+        "vendor_checklist": "Dodavatelský checklist",
+        "monitoring_plan": "Monitoring plán",
+        "transparency_human_oversight": "Transparentnost a lidský dohled",
+        "transparency_page": "Transparenční stránka (HTML)",
+        "training_presentation": "Školící prezentace (PPTX obsah)",
+    }
+    doc_name = doc_names.get(doc_key, doc_key)
+
+    # Format M6 persisting issues
+    issues = m6_result.get("pretrvavajici_problemy", [])
+    issues_text = "\n".join([
+        f"  [{p.get('zavaznost', '?')}] {p.get('oblast', '?')}: {p.get('popis', '?')}"
+        for p in issues
+    ])
+
+    m6_score = m6_result.get("finalni_skore", "?")
+    m6_note = m6_result.get("poznamka", "")
+    addressed = m6_result.get("adrresovane_nalezy", "?")
+    total = m6_result.get("celkem_nalezu", "?")
+
+    ctx_short = company_context[:2000] if len(company_context) > 2000 else company_context
+
+    prompt = f"""OPRAV následující dokument na základě POST-REVIEW kontroly kvality.
+
+Kontrolor hodnotil tvou předchozí práci skóre {m6_score}/10 a identifikoval přetrvávající problémy.
+Adresováno {addressed}/{total} nálezů z původních kritik. Zbytek je potřeba opravit.
+
+══ KONTEXT FIRMY (zkrácený) ══
+{ctx_short}
+
+══ FINÁLNÍ DOKUMENT K OPRAVĚ: {doc_name} ══
+
+{final_html}
+
+══ POST-REVIEW KONTROLA ══
+Skóre: {m6_score}/10
+Hodnocení: {m6_result.get('celkove_hodnoceni', '?')}
+Poznámka: {m6_note}
+
+PŘETRVÁVAJÍCÍ PROBLÉMY:
+{issues_text}
+
+══ TVŮJ ÚKOL ══
+1. Adresuj VŠECHNY přetrvávající problémy uvedené výše.
+2. NERUŠIL to co funguje — pouze oprav identifikované problémy.
+3. Zachovej CELOU strukturu, formát a všechny sekce dokumentu.
+4. Piš přímo HTML — začni <h1>. Žádné komentáře, žádný wrapper.
+"""
+
+    # Special handling for transparency_page
+    if doc_key == "transparency_page":
+        prompt += """
+⚠️ SPECIÁLNÍ: Zachovej kompletní HTML strukturu (head, meta, JSON-LD, CSS) — NEZAČÍNEJ <h1>.
+"""
+
+    label = f"M4b_{doc_key}"
+    logger.info(f"[M4b Refiner] Double refinement: {doc_name} "
+                f"(M6 skóre={m6_score}/10, {len(issues)} přetrvávajících problémů)")
+
+    text, meta = await call_claude(
+        system=SYSTEM_PROMPT_M4,
+        prompt=prompt,
+        label=label,
+        temperature=0.15,
+        max_tokens=10000,
+        model="claude-opus-4-6",
+    )
+
+    html = extract_html_content(text)
+
+    # Safety: if M4b produces much shorter output, keep original
+    if not html or len(html) < len(final_html) * 0.5:
+        logger.warning(f"[M4b Refiner] {doc_key}: M4b output příliš krátký "
+                      f"({len(html) if html else 0} vs {len(final_html)}), "
+                      f"zachovávám původní M4a verzi")
+        return final_html, meta
+
+    logger.info(f"[M4b Refiner] {doc_key}: hotov ({len(html)} znaků, "
+                f"original {len(final_html)} znaků)")
+
+    return html, meta

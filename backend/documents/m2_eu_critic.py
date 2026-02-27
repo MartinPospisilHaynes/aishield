@@ -1,5 +1,5 @@
 """
-AIshield.cz — Modul 2: EU INSPECTOR CRITIC (Claude Sonnet 4)
+AIshield.cz — Modul 2: EU INSPECTOR CRITIC (Gemini 3.1 Pro)
 
 Kontroluje draft dokumentu z pohledu EU inspektora AI Act.
 Chain-of-thought reasoning, citace konkrétních článků, structured JSON output.
@@ -7,14 +7,14 @@ Chain-of-thought reasoning, citace konkrétních článků, structured JSON outp
 Vstup:  draft_html (str) + company_context (str) + doc_key (str)
 Výstup: (critique_dict, metadata)
 
-Model: Claude Sonnet 4 — nejlepší pro analytické, kritické myšlení.
+Model: Gemini 3.1 Pro — silný analytický model, cross-model validace s M4 (Claude Opus).
 """
 
 import json
 import logging
 from typing import Tuple
 
-from backend.documents.llm_engine import call_claude, parse_json
+from backend.documents.llm_engine import call_gemini, parse_json
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 # SYSTEM PROMPT — EU AI Act Inspector Persona
 # ══════════════════════════════════════════════════════════════════════
 
-SYSTEM_PROMPT_M2 = """Jsi přísný inspektor EU AI Act — pracuješ pro evropský dozorový úřad
-pro umělou inteligenci. Tvým úkolem je KRITICKY přezkoumat compliance dokumentaci
-českých firem a identifikovat VŠECHNY nedostatky, chyby a mezery.
+SYSTEM_PROMPT_M2 = """Jsi precizní inspektor EU AI Act — pracuješ pro evropský dozorový úřad
+pro umělou inteligenci. Tvým úkolem je SPRAVEDLIVĚ přezkoumat compliance dokumentaci
+českých firem. Identifikuj skutečné nedostatky, ale UZNEJ kvalitní práci.
 
 TVOJE ROLE:
 - Jsi expert na Nařízení (EU) 2024/1689 (AI Act) a znáš KAŽDÝ článek zpaměti.
@@ -95,11 +95,21 @@ Struktura:
   "celkove_doporuceni": "Souhrnné doporučení pro zlepšení dokumentu — 2-3 věty."
 }
 
+KALIBRACE SKÓRE — SMĚ se dát vysoké skóre:
+- 9-10: Dokument je právně přesný, úplný, personalizovaný. Může mít drobné formulační nedostatky.
+- 8: Dokument je solidní — správné citace, pokrývá hlavní povinnosti, specifický pro firmu.
+       TOTO JE STANDARDNÍ SKÓRE pro kvalitní AI-generovaný compliance dokument.
+- 7: Dokument má 1-2 právní nepřesnosti nebo chybí důležitá sekce, ale je celkově použitelný.
+- 5-6: Dokument má ZÁVAŽNÉ právní chyby, zásadně chybějící obsah, nebo je generický.
+- 1-4: Dokument je fakticky chybný nebo nepoužitelný.
+
 PRAVIDLA:
-- Skóre 1-10: 10=perfektní, 7-9=dobré, 4-6=průměrné, 1-3=nedostatečné
-- KAŽDÝ nález MUSÍ mít referenci na AI Act pokud existuje
-- Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní, klidně uveď 0-2 nálezy. NEVYMÝŠLEJ problémy jen pro počet — fabricované nálezy zhoršují finální dokument.
-- Najdi silné stránky — buď spravedlivý
+- KAŽDÝ nález MUSÍ mít referenci na AI Act pokud existuje.
+- Pokud je dokument kvalitní, uveď 0-3 nálezy a DEJ SKÓRE 8-9. To je správné chování.
+- NEVYMÝŠLEJ problémy jen pro počet — fabricované nálezy AKTIVNĚ ŠKODÍ finálnímu dokumentu.
+  Každý tvůj nález bude použit k přepsání dokumentu. Falešný nález = zbytečné zhoršení.
+- Drobné kosmetické nedostatky (formulace, pořadí sekcí, stylistika) NESNIŽUJÍ skóre pod 7.
+- Najdi silné stránky — buď SPRAVEDLIVÝ. Dobrá práce si zaslouží uznání.
 - Používej jednoduché uvozovky pro HTML atributy v JSON stringách
 """
 
@@ -289,11 +299,11 @@ async def review_eu(
     label = f"M2_{doc_key}"
     logger.info(f"[M2 EU Critic] Kontroluji: {doc_name} ({len(draft_html)} znaků draftu)")
 
-    text, meta = await call_claude(
+    text, meta = await call_gemini(
         system=SYSTEM_PROMPT_M2,
         prompt=prompt,
         label=label,
-        temperature=0.3,    # balanced: diverse findings + precision
+        temperature=0.3,
         max_tokens=8000,
     )
 

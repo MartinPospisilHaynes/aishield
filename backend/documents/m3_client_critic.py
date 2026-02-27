@@ -1,5 +1,5 @@
 """
-AIshield.cz — Modul 3: CLIENT CRITIC (Gemini 2.0 Flash)
+AIshield.cz — Modul 3: CLIENT CRITIC (Gemini 3.1 Pro)
 
 Kontroluje draft dokumentu z pohledu českého podnikatele / klienta.
 Zaměřuje se na srozumitelnost, praktičnost a užitečnost dokumentu.
@@ -8,13 +8,13 @@ Chain-of-thought reasoning, structured JSON output.
 Vstup:  draft_html (str) + company_context (str) + doc_key (str)
 Výstup: (critique_dict, metadata)
 
-Model: Gemini 2.0 Flash — cross-model validace (jiný model než M2). Levný pro soft task.
+Model: Gemini 3.1 Pro — silný model pro hlubokou klientskou perspektivu.
 """
 
 import logging
 from typing import Tuple
 
-from backend.documents.llm_engine import call_gemini, parse_json, GEMINI_FLASH_MODEL, GEMINI_FLASH_COST_INPUT, GEMINI_FLASH_COST_OUTPUT
+from backend.documents.llm_engine import call_gemini, parse_json
 
 logger = logging.getLogger(__name__)
 
@@ -99,27 +99,22 @@ Odpověz VÝHRADNĚ platným JSON objektem. Začni { a skonči }.
 
 PRAVIDLA:
 - Skóre 1-10: 10=perfektní dokument, 7-9=dobrý, 4-6=průměrný, 1-3=nedostatečný
-- PŘÍSNÉ HODNOCENÍ SKÓRE:
-  * 9-10: Dokument mohu PŘÍMO použít BEZ JAKÝCHKOLI ÚPRAV. Žádné [K DOPLNĚNÍ],
-    žádný generický text, vše je personalizované pro mou firmu. Toto skóre je VZÁCNÉ.
-  * 7-8: Dokument je dobrý, ale potřebuje menší úpravy (doplnit 1-2 údaje,
-    přeformulovat nejasný odstavec). Typické skóre pro kvalitní dokument.
-  * 5-6: Dokument má zásadní mezery — příliš obecný, chybí příklady z mé praxe,
-    nebo obsahuje více než 3 placeholdery [K DOPLNĚNÍ].
-  * 1-4: Dokument je v současné podobě nepoužitelný.
-- HLEDEJ AKTIVNĚ problémy:
-  * Počet [K DOPLNĚNÍ] placeholderů — každý snižuje skóre
-  * Generický text, který by mohl být pro jakoukoli firmu
-  * Chybějící konkrétní příklady z mého odvětví
-  * Floskule a prázdné fráze bez informační hodnoty
-  * Opakující se obsah (stejná informace na více místech)
-- Buď UPŘÍMNÝ — pokud je dokument generický, řekni to jasně
+- KALIBRACE SKÓRE — realistická očekávání:
+  * 9-10: Dokument je téměř dokonalý — personalizovaný, srozumitelný, kompletní.
+  * 8: Dokument je SOLIDNÍ — profesionální, specifický pro mou firmu, mohu s ním pracovat.
+    TOTO JE STANDARDNÍ SKÓRE PRO KVALITNÍ COMPLIANCE DOKUMENT.
+  * 7: Dokument potřebuje menší úpravy — doplnit 1-2 příklady, upřesnit formulace.
+  * 5-6: Dokument je generický, chybí klíčové informace, má více než 5 placeholderů.
+  * 1-4: Dokument je nepoužitelný bez zásadního přepracování.
+- Nedostatky jako 'mohl by být ještě detailnější' jsou MAX srážka -1, NE -3.
+- [K DOPLNĚNÍ] placeholder pro údaje, které AI nemůže znát (interní kontakty, hesla) JE PŘIJATELNÝ.
+- Buď UPŘÍMNÝ — pokud je dokument generický, řekni to. Ale uznej kvalitní práci.
 - Najdi VŠECHNY relevantní nálezy. Pokud je dokument kvalitní, klidně uveď 0-2 nálezy. NEVYMÝŠLEJ problémy jen pro počet — fabricované nálezy zhoršují finální dokument.
 - Najdi silné stránky — buď spravedlivý
 - Postav se do role klienta, ne do role konzultanta
 - NESNAŽ se být technicky přesný jako právník — jsi PODNIKATEL
 - Pokud bys musel hledat na internetu co znamená pojem v dokumentu → je to chyba
-- Pokud text vypadá jako z šablony a NE jako psaný pro mou firmu → MAX skóre 6
+- Pokud text vypadá jako z šablony a NE jako psaný pro mou firmu → výrazně sniž skóre
 """
 
 
@@ -285,11 +280,8 @@ async def review_client(
         system=SYSTEM_PROMPT_M3,
         prompt=prompt,
         label=label,
-        temperature=0.35,   # more diverse client perspectives
+        temperature=0.35,
         max_tokens=8000,
-        model=GEMINI_FLASH_MODEL,
-        cost_input=GEMINI_FLASH_COST_INPUT,
-        cost_output=GEMINI_FLASH_COST_OUTPUT,
     )
 
     # Parse JSON

@@ -7,14 +7,15 @@ Každý dokument je plně personalizovaný na základě dat firmy.
 Vstup:  company_context (str) + doc_key (str)
 Výstup: (html_draft, metadata)
 
-Model: Gemini 3.1 Pro — nejlepší pro dlouhé, strukturované dokumenty.
+Model: Gemini 3.1 Pro — silný model pro dlouhé, strukturované HTML dokumenty.
+       Fallback na Claude Sonnet 4.6 při rate limitech.
 """
 
 import logging
 import re
 from typing import Tuple
 
-from backend.documents.llm_engine import call_claude, extract_html_content
+from backend.documents.llm_engine import call_gemini, call_claude, extract_html_content
 from backend.documents.m5_prompt_optimizer import get_enhanced_system_prompt_m1
 
 logger = logging.getLogger(__name__)
@@ -98,6 +99,22 @@ VŽDY:
   ✓ Zajištěno v Compliance Kitu — co klient UŽ OBDRŽEL od AIshield
   → Vyžaduje akci klienta — co musí klient udělat SÁM
 - Piš obsáhle a podrobně — každý dokument je komerční produkt za 10 000 Kč.
+
+═══ KONTROLNÍ SEZNAM KVALITY — PROVĚŘ PŘED ODESLÁNÍM ═══
+
+Před finalizací dokumentu VŽDY projdi tyto body (v hlavě, nepřidávej do výstupu):
+1. Je název firmy, IČO a odvětví zmíněno v dokumentu? → pokud ne, doplň z kontextu
+2. Má KAŽDÉ doporučení KONKRÉTNÍ příklad z kontextu firmy? → pokud ne, přidej
+3. Je u KAŽDÉ právní citace správný článek a odstavec AI Act? → pokud ne, oprav
+4. Je jasné co je „Zajištěno v Compliance Kitu" vs. „Vyžaduje akci klienta"? → pokud ne, označ
+5. Jsou VŠECHNY nadpisy česky? → žádné anglické nadpisy (Executive Summary → Shrnutí)
+6. Neobsahuje dokument emoji nebo neformální fráze? → pokud ano, odstraň
+7. Má formální dokument podpisový blok? → pokud ne, přidej
+8. Jsou tabulky vyplněné konkrétními daty firmy, ne prázdné buňky? → pokud ne, doplň
+9. Rozlišuješ správně roli firmy: nasazovatel (čl. 26) vs. poskytovatel (čl. 16)?
+10. Neuvádíš nerealistické lhůty nebo ultimáta klientovi?
+
+Cíl: Dokument, který EU inspektor ohodnotí 8-9/10. Kvalitní, přesný, personalizovaný.
 - Používej tabulky kde to dává smysl (přehled systémů, rizik, povinností).
 - Strukturuj text jasně: H2 pro hlavní sekce, H3 pro podsekce.
 
@@ -1623,13 +1640,12 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
     logger.info(f"[M1 Generator] Generuji draft: {DOCUMENT_NAMES.get(doc_key, doc_key)} "
                 f"(prompt: {len(prompt)} znaků)")
 
-    text, meta = await call_claude(
+    text, meta = await call_gemini(
         system=enhanced_prompt,
         prompt=prompt,
         label=label,
         temperature=0.3,
         max_tokens=10000,
-        model="claude-sonnet-4-6",
     )
 
     html = extract_html_content(text)
@@ -1642,13 +1658,12 @@ async def generate_draft(company_context: str, doc_key: str) -> Tuple[str, dict]
     if too_short or missing_sections:
         reason = f"krátký ({len(html or '')} znaků)" if too_short else f"málo sekcí ({h2_count} H2)"
         logger.warning(f"[M1 Generator] {doc_key}: {reason}, zkouším znovu...")
-        text2, meta2 = await call_claude(
+        text2, meta2 = await call_gemini(
             system=enhanced_prompt,
             prompt=prompt + "\n\nDoplň chybějící sekce. KVALITA důležitější než délka. Piš stručně.",
             label=f"{label}_retry",
             temperature=0.4,
             max_tokens=10000,
-            model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)
         if len(html2) > len(html):
