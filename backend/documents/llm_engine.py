@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ── Model konfigurace ──
 GEMINI_MODEL = "gemini-3.1-pro-preview"
+GEMINI_PRO_25_MODEL = "gemini-2.5-pro"  # Fallback when 3.1 Pro RPD exhausted
 GEMINI_FLASH_MODEL = "gemini-2.5-flash"
 CLAUDE_MODEL = "claude-sonnet-4-6"
 CLAUDE_FALLBACK_MODEL = "claude-opus-4-6"
@@ -30,6 +31,8 @@ VERTEX_SA_KEY_PATH = "/opt/aishield/vertex-sa-key.json"
 
 GEMINI_COST_INPUT = 2.0 / 1_000_000
 GEMINI_COST_OUTPUT = 12.0 / 1_000_000
+GEMINI_PRO_25_COST_INPUT = 1.25 / 1_000_000   # Gemini 2.5 Pro
+GEMINI_PRO_25_COST_OUTPUT = 10.0 / 1_000_000   # Gemini 2.5 Pro
 GEMINI_FLASH_COST_INPUT = 0.15 / 1_000_000   # Gemini 2.5 Flash
 GEMINI_FLASH_COST_OUTPUT = 0.60 / 1_000_000   # Gemini 2.5 Flash
 CLAUDE_COST_INPUT = 3.0 / 1_000_000
@@ -214,10 +217,37 @@ async def call_gemini(
             if attempt == retries - 1:
                 raise
 
-    # ── Fallback na Claude, pokud Gemini vyčerpala denní kvótu ──
+    # ── Fallback 1: Gemini 2.5 Pro (vyšší RPD limity: 1K vs 250) ──
+    used_model = model or GEMINI_MODEL
+    if used_model == GEMINI_MODEL:
+        logger.warning(
+            "[LLM Engine] %s: Gemini 3.1 Pro selhala po %d pokusech — zkouším Gemini 2.5 Pro...",
+            label, retries,
+        )
+        try:
+            text, meta = await call_gemini(
+                system=system,
+                prompt=prompt,
+                label=f"{label}_g25pro_fallback",
+                temperature=temperature,
+                max_tokens=max_tokens,
+                retries=3,  # Méně retries pro fallback
+                model=GEMINI_PRO_25_MODEL,
+                cost_input=GEMINI_PRO_25_COST_INPUT,
+                cost_output=GEMINI_PRO_25_COST_OUTPUT,
+                json_mode=json_mode,
+            )
+            meta["fallback_from"] = "gemini-3.1-pro"
+            meta["original_model"] = GEMINI_MODEL
+            logger.info("[LLM Engine] %s: Gemini 3.1→2.5 Pro fallback úspěšný (%d znaků)", label, len(text))
+            return text, meta
+        except Exception as g25_err:
+            logger.warning("[LLM Engine] %s: Gemini 2.5 Pro fallback také selhal: %s", label, g25_err)
+
+    # ── Fallback 2: Claude Sonnet (poslední záchrana) ──
     logger.warning(
-        "[LLM Engine] %s: Gemini selhala po %d pokusech — zkouším fallback na Claude Sonnet...",
-        label, retries,
+        "[LLM Engine] %s: Všechny Gemini modely selhaly — zkouším Claude Sonnet...",
+        label,
     )
     try:
         text, meta = await call_claude(
@@ -228,7 +258,7 @@ async def call_gemini(
             max_tokens=max_tokens,
         )
         meta["fallback_from"] = "gemini"
-        meta["original_model"] = model or GEMINI_MODEL
+        meta["original_model"] = used_model
         logger.info("[LLM Engine] %s: Gemini→Claude fallback úspěšný (%d znaků)", label, len(text))
         return text, meta
     except Exception as fallback_err:

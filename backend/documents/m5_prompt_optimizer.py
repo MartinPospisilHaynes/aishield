@@ -806,7 +806,7 @@ def _safety_check_rules(rules: List[dict]) -> List[dict]:
 
 
 async def _call_m5(prompt: str) -> Tuple[Optional[dict], dict]:
-    """Zavolá Claude Opus 4.6 pro M5 analýzu."""
+    """Zavolá Claude Opus 4.6 pro M5 analýzu. Retry při truncation."""
     import anthropic
     import os
     from backend.config import get_settings
@@ -818,39 +818,94 @@ async def _call_m5(prompt: str) -> Tuple[Optional[dict], dict]:
 
     client = anthropic.AsyncAnthropic(api_key=api_key)
 
-    try:
-        response = await client.messages.create(
-            model=M5_MODEL,
-            max_tokens=4000,    # M5 nepotřebuje dlouhý output
-            temperature=0.2,    # lehce kreativní pro meta-analýzu
-            system=SYSTEM_PROMPT_M5,
-            messages=[{"role": "user", "content": prompt}],
-        )
+    # Postupné zvyšování max_tokens při truncation
+    token_limits = [8000, 12000]
+    total_cost = 0
+    total_in = 0
+    total_out = 0
 
-        text = response.content[0].text if response.content else ""
-        in_tok = response.usage.input_tokens if response.usage else 0
-        out_tok = response.usage.output_tokens if response.usage else 0
-        cost = (in_tok * M5_COST_INPUT) + (out_tok * M5_COST_OUTPUT)
+    for attempt_idx, max_tok in enumerate(token_limits):
+        try:
+            response = await client.messages.create(
+                model=M5_MODEL,
+                max_tokens=max_tok,
+                temperature=0.2,
+                system=SYSTEM_PROMPT_M5,
+                messages=[{"role": "user", "content": prompt}],
+            )
 
-        logger.info(f"[M5 PromptOptimizer] Claude Opus 4.6: "
-                    f"tokens={in_tok}+{out_tok}, cost=${cost:.4f}")
+            text = response.content[0].text if response.content else ""
+            in_tok = response.usage.input_tokens if response.usage else 0
+            out_tok = response.usage.output_tokens if response.usage else 0
+            cost = (in_tok * M5_COST_INPUT) + (out_tok * M5_COST_OUTPUT)
+            total_cost += cost
+            total_in += in_tok
+            total_out += out_tok
 
-        meta = {
-            "provider": "claude",
-            "model": M5_MODEL,
-            "input_tokens": in_tok,
-            "output_tokens": out_tok,
-            "cost_usd": cost,
-        }
+            logger.info(f"[M5 PromptOptimizer] Claude Opus 4.6: "
+                        f"tokens={in_tok}+{out_tok}, cost=${cost:.4f}, max_tokens={max_tok}")
 
-        # Parse JSON
-        from backend.documents.llm_engine import parse_json
-        parsed = parse_json(text)
-        return parsed, meta
+            # Detekce truncation: stop_reason == "max_tokens" nebo out_tok ~= max_tok
+            stop_reason = getattr(response, "stop_reason", None)
+            is_truncated = (stop_reason == "max_tokens") or (out_tok >= max_tok - 10)
 
-    except Exception as e:
-        logger.error(f"[M5 PromptOptimizer] Chyba volání: {e}", exc_info=True)
-        return None, {"cost_usd": 0, "error": str(e)}
+            if is_truncated and attempt_idx < len(token_limits) - 1:
+                logger.warning(f"[M5 PromptOptimizer] TRUNCATION detekována! "
+                             f"(out_tok={out_tok}, max={max_tok}, stop={stop_reason}). "
+                             f"Retry s max_tokens={token_limits[attempt_idx + 1]}...")
+                continue
+
+            if is_truncated:
+                logger.warning(f"[M5 PromptOptimizer] Stále truncated po {len(token_limits)} pokusech.")
+
+            meta = {
+                "provider": "claude",
+                "model": M5_MODEL,
+                "input_tokens": total_in,
+                "output_tokens": total_out,
+                "cost_usd": total_cost,
+                "truncated": is_truncated,
+                "attempts": attempt_idx + 1,
+            }
+
+            # Parse JSON
+            from backend.documents.llm_engine import parse_json
+            parsed = parse_json(text)
+
+            # Pokud parse selže a je truncated, pokus o opravu neúplného JSON
+            if parsed is None and is_truncated:
+                logger.warning("[M5 PromptOptimizer] Truncated JSON — pokouším se opravit...")
+                parsed = _try_fix_truncated_json(text)
+                if parsed:
+                    logger.info("[M5 PromptOptimizer] Truncated JSON opraven úspěšně.")
+
+            return parsed, meta
+
+        except Exception as e:
+            logger.error(f"[M5 PromptOptimizer] Chyba volání (pokus {attempt_idx+1}): {e}", exc_info=True)
+            if attempt_idx == len(token_limits) - 1:
+                return None, {"cost_usd": total_cost, "error": str(e)}
+
+    return None, {"cost_usd": total_cost, "error": "All attempts exhausted"}
+
+
+def _try_fix_truncated_json(text: str) -> Optional[dict]:
+    """Pokusí se uzavřít neúplný JSON z truncated odpovědi."""
+    import json as _json
+    import re as _re
+    text = text.strip()
+    text = _re.sub(r"^```(?:json)?\s*\n?", "", text)
+    text = _re.sub(r"\n?```\s*$", "", text)
+    text = text.strip()
+
+    for suffix in ['"}]}]}', '"]}]}', ']}]}', '"]}\n}', '"]}}', ']}}', '"}', '}']:
+        try:
+            result = _json.loads(text + suffix)
+            if isinstance(result, dict) and "analyza" in result:
+                return result
+        except (_json.JSONDecodeError, ValueError):
+            continue
+    return None
 
 
 # ══════════════════════════════════════════════════════════════════════

@@ -1,270 +1,301 @@
 <h1>Transparentnost a lidský dohled nad AI systémy</h1>
 
 <div class='info'>
-  <p><strong>Společnost:</strong> Martin Haynes (IČO: 17889251)</p>
-  <p><strong>Odpovědná osoba:</strong> Martin Haynes (Jednatel / majitel)</p>
-  <p><strong>Dokument:</strong> Závazná pravidla pro zajištění transparentnosti a lidského dohledu dle Nařízení (EU) 2024/1689 (AI Act).</p>
+  <p><strong>Kontext dokumentu:</strong> Tento dokument stanovuje závazná pravidla pro zajištění transparentnosti a lidského dohledu nad systémy umělé inteligence ve společnosti Martin Haynes (IČO: 17889251). Dokument je zpracován v souladu s Nařízením (EU) 2024/1689 (AI Act) a reflektuje vysoce rizikový profil společnosti, která využívá široké spektrum AI systémů napříč odvětvími včetně financí, zdravotnictví, HR a kritické infrastruktury.</p>
 </div>
 
-<p>Tento dokument definuje procesy a technická opatření nezbytná k zajištění souladu s požadavky na transparentnost a lidský dohled nad systémy umělé inteligence provozovanými ve vaší společnosti. Vzhledem k rozsáhlému portfoliu využívaných systémů a identifikaci vysoce rizikových řešení je striktní dodržování těchto pravidel klíčové pro minimalizaci právních a finančních rizik.</p>
+<div class='metric-grid'>
+  <div class='metric-card'>
+    <div class='metric-value'>36</div>
+    <div class='metric-label'>Aktivních AI systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>17</div>
+    <div class='metric-label'>Vysoce rizikových systémů</div>
+  </div>
+  <div class='metric-card'>
+    <div class='metric-value'>1</div>
+    <div class='metric-label'>Odpovědná osoba</div>
+  </div>
+</div>
 
 <h2>1. Právní rámec</h2>
 
-<p>Nařízení o umělé inteligenci (AI Act) stanovuje specifické povinnosti v závislosti na rizikové klasifikaci systému a roli vaší společnosti. Společnost Martin Haynes vystupuje primárně v roli <strong>nasazovatele</strong> (deployer) dle čl. 26, avšak u systémů vlastního vývoje přebírá roli <strong>poskytovatele</strong> (provider) dle čl. 16.</p>
+<p>Společnost Martin Haynes vystupuje u většiny systémů v roli <strong>nasazovatele</strong> (deployer), u vlastního vývoje pak v roli <strong>poskytovatele</strong> (provider). Klíčová ustanovení AI Act:</p>
 
 <ul>
-  <li><strong>Čl. 13 AI Act (Transparentnost a poskytování informací):</strong> Vysoce rizikové systémy musí být navrženy tak, aby jejich provoz byl dostatečně transparentní a umožňoval nasazovatelům interpretovat výstupy. Poskytovatel musí dodat podrobný návod k použití.</li>
-  <li><strong>Čl. 14 AI Act (Lidský dohled):</strong> Vysoce rizikové systémy musí umožňovat účinný dohled fyzickými osobami (včetně možnosti systém pozastavit nebo ignorovat jeho výstupy).</li>
-  <li><strong>Čl. 50 AI Act (Povinnosti transparentnosti):</strong> Fyzické osoby musí být informovány, že komunikují s AI systémem (odst. 1), a syntetický obsah musí být strojově čitelně označen (odst. 4). Účinnost od 2. 2. 2025.</li>
-  <li><strong>Čl. 26 odst. 1 písm. f) AI Act (Uchovávání protokolů):</strong> Nasazovatelé musí uchovávat automaticky generované protokoly (logy) po dobu minimálně 6 měsíců.</li>
-  <li><strong>Čl. 86 AI Act (Právo na vysvětlení):</strong> Dotčené osoby mají právo na vysvětlení individuálního rozhodnutí učiněného na základě výstupu vysoce rizikového AI systému.</li>
+  <li><strong>Čl. 13 (Transparentnost pro nasazovatele):</strong> Poskytovatelé vysoce rizikových systémů musí dodat návod k použití. Společnost jako nasazovatel musí tyto návody striktně dodržovat a řídit se jimi při provozu.</li>
+  <li><strong>Čl. 14 (Lidský dohled):</strong> Vysoce rizikové systémy musí umožňovat dohled fyzickými osobami. Pověřené osoby (pan Martin Haynes a jím určení pracovníci) musí plně rozumět kapacitám a omezením systému.</li>
+  <li><strong>Čl. 26 odst. 6 (Uchovávání protokolů):</strong> Nasazovatelé vysoce rizikových systémů musí uchovávat automaticky generované protokoly (logy) minimálně 6 měsíců.</li>
+  <li><strong>Čl. 26 odst. 11 (Informování zaměstnanců):</strong> Před nasazením vysoce rizikového AI systému na pracovišti musí nasazovatel informovat zástupce zaměstnanců a dotčené pracovníky o tom, že budou vystaveni působení takového systému.</li>
+  <li><strong>Čl. 50 (Povinnosti transparentnosti vůči uživatelům):</strong> Fyzické osoby musí být informovány, že komunikují s AI (např. Google Gemini Chatbot), a obsah generovaný AI (např. výstupy z HeyGen, Synthesia) musí být strojově čitelně označen.</li>
+  <li><strong>Čl. 51–54 (Modely pro obecné účely — GPAI):</strong> Při integraci modelů jako OpenAI, Anthropic nebo Google Gemini do vlastních řešení se uplatňují specifická pravidla pro transparentnost a dodržování autorských práv.</li>
 </ul>
 
 <h2>2. Přehled požadavků na transparentnost</h2>
 
-<p>Následující tabulka kategorizuje klíčové AI systémy identifikované ve vaší infrastruktuře a přiřazuje jim příslušné zákonné povinnosti.</p>
+<p>Tabulka kategorizuje klíčové AI systémy společnosti a přiřazuje jim zákonné povinnosti:</p>
 
 <table>
   <thead>
     <tr>
-      <th>Kategorie / AI systém</th>
-      <th>Čl. 50 (Oznámení)</th>
-      <th>Čl. 13 (Dokumentace)</th>
-      <th>Čl. 14 (Lidský dohled)</th>
-      <th>Klíčové opatření</th>
+      <th>Kategorie AI systémů</th>
+      <th>Čl. 50 (Informování uživatelů)</th>
+      <th>Čl. 13 a 14 (Vysoce rizikový dohled)</th>
+      <th>Hlavní opatření</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Chatboty a LLM</strong><br><em>(Google Gemini Chatbot, Zendesk AI, ChatGPT)</em></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-minimal'>NE</span></td>
-      <td><span class='badge-minimal'>NE</span></td>
-      <td>Viditelné upozornění na webu/v chatu.</td>
+      <td><strong>Zákaznická podpora</strong><br><em>(Google Gemini Chatbot, AI Chatbot, Freshdesk AI, Zendesk AI, Intercom)</em></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td><span class='badge-minimal'>NEAPLIKUJE SE</span></td>
+      <td>Viditelné označení komunikace s AI. Možnost přepojení na živého operátora.</td>
     </tr>
     <tr>
-      <td><strong>Generování obsahu</strong><br><em>(HeyGen, Midjourney, DALL-E)</em></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-minimal'>NE</span></td>
-      <td><span class='badge-minimal'>NE</span></td>
-      <td>Vodoznaky a metadata v souborech.</td>
+      <td><strong>HR a nábor</strong><br><em>(LinkedIn Recruiter, Teamio, LMC/Jobs.cz AI, Sloneek)</em></td>
+      <td><span class='badge-limited'>DOPORUČENÉ</span></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td>Lidský přezkum rozhodnutí o přijetí/zamítnutí. Informování zaměstnanců a jejich zástupců před nasazením (čl. 26 odst. 11).</td>
     </tr>
     <tr>
-      <td><strong>HR a Skórování</strong><br><em>(Teamio, CRIF, vlastní html)</em></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td>Právo na přezkum člověkem, vysvětlení rozhodnutí.</td>
+      <td><strong>Finance a pojišťovnictví</strong><br><em>(CRIF, Scoring Solutions, Guidewire, NESS / Allianz AI)</em></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td>Právo klienta na vysvětlení rozhodnutí. Lidský dohled nad schvalováním. Provedení FRIA (čl. 27).</td>
     </tr>
     <tr>
-      <td><strong>Sledování a Biometrie</strong><br><em>(Kamerový dohled, vlastní kód)</em></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td>Okamžitá revize klasifikace, DPIA.</td>
+      <td><strong>Kritická infrastruktura a zdravotnictví</strong><br><em>(interní systém kritické infrastruktury, zdravotnický přístroj)</em></td>
+      <td><span class='badge-limited'>DLE KONTEXTU</span></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td>Striktní lidský dohled, bezpečné nouzové vypnutí, registrace u NÚKIB / SÚKL.</td>
     </tr>
     <tr>
-      <td><strong>Průmysl a Zdravotnictví</strong><br><em>(pospa ing., Zdravotnický přístroj)</em></td>
-      <td><span class='badge-limited'>Dle kontextu</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td><span class='badge-high'>ANO</span></td>
-      <td>CE certifikace, registrace u národního orgánu.</td>
+      <td><strong>Generování obsahu (GPAI)</strong><br><em>(ChatGPT, Claude, Midjourney, HeyGen, Synthesia)</em></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td><span class='badge-minimal'>NEAPLIKUJE SE</span></td>
+      <td>Označování syntetického obsahu (vodoznaky, metadata) dle čl. 50 odst. 4.</td>
+    </tr>
+    <tr>
+      <td><strong>Interní systémy vyžadující revizi</strong><br><em>(interní webová aplikace, vlastní softwarové řešení)</em></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td><span class='badge-high'>POVINNÉ</span></td>
+      <td>Revize klasifikace. Zastavení automatizovaného hodnocení do dokončení auditu.</td>
     </tr>
   </tbody>
 </table>
 
-<div class='warning'>
-  <p><strong>Upozornění k automatické identifikaci:</strong> Názvy systémů „vlastní html", „vlastní kód" a „pospa ing." pocházejí z automatického skenu nebo dotazníku. Tyto systémy vykazují znaky vysoce rizikových nebo zakázaných praktik (sociální skórování, biometrie, kritická infrastruktura). Doplňte skutečný název a přesný účel těchto systémů do interního registru pro finální právní posouzení.</p>
-</div>
+<h2>3. Transparenční opatření — podle kategorie systémů</h2>
 
-<h2>3. Transparenční opatření dle kategorií systémů</h2>
-
-<h3>3.1 Komunikační a zákaznické systémy</h3>
-<p><em>Zahrnuje: Google Gemini Chatbot, AI Chatbot, Freshdesk AI, Zendesk AI, Intercom.</em></p>
+<h3>3.1 Zákaznická podpora a chatboty</h3>
 <ul>
-  <li><strong>Požadované oznámení:</strong> Dle čl. 50 odst. 1 musí být uživatel informován, že komunikuje se strojem.</li>
-  <li><strong>Implementace:</strong> Do úvodní zprávy každého chatbotu přidejte text: „Dobrý den, jsem virtuální asistent poháněný umělou inteligencí."</li>
-  <li><strong>Zajištěno v Compliance Kitu:</strong> Dokument „Texty oznámení pro AI systémy" obsahuje přesné formulace pro různé komunikační kanály.</li>
-  <li><strong>Vyžaduje akci klienta:</strong> Fyzické vložení těchto textů do nastavení systémů Zendesk, Freshdesk a vlastních webových rozhraní.</li>
+  <li><strong>Systémy:</strong> Google Gemini Chatbot, AI Chatbot, Freshdesk AI, Zendesk AI, Intercom.</li>
+  <li><strong>Opatření (čl. 50 odst. 1):</strong> Každý uživatel musí být před zahájením interakce informován, že komunikuje s umělou inteligencí.</li>
+  <li><strong>Implementace:</strong> Do uvítací zprávy chatbotů vložte text: <em>„Dobrý den, jsem virtuální asistent poháněný umělou inteligencí. Jak vám mohu pomoci?"</em> Konkrétní textace jsou obsaženy v dokumentu <em>Texty oznámení</em> z Compliance Kitu.</li>
 </ul>
 
-<h3>3.2 Generování syntetického obsahu</h3>
-<p><em>Zahrnuje: HeyGen, Synthesia, ElevenLabs, Midjourney, DALL-E.</em></p>
+<h3>3.2 Generování obsahu a syntetická média</h3>
 <ul>
-  <li><strong>Požadované oznámení:</strong> Dle čl. 50 odst. 4 musí být výstupy označeny jako uměle vytvořené.</li>
-  <li><strong>Implementace — metadata C2PA:</strong> C2PA (Coalition for Content Provenance and Authenticity) je otevřený standard, který do obrázků a videí vkládá strojově čitelnou informaci o tom, že obsah vytvořila AI. Prakticky to znamená:
-    <ul>
-      <li>Při exportu z nástrojů jako Midjourney nebo DALL-E <strong>nemažte metadata</strong> souborů (např. při úpravě v Photoshopu zvolte „Uložit jako" s ponecháním metadat).</li>
-      <li>Pro ruční přidání C2PA metadat použijte bezplatný nástroj <strong>Content Credentials</strong> od Adobe (contentcredentials.org) — stačí nahrát soubor a metadata se doplní automaticky.</li>
-      <li>U videí z HeyGen/Synthesia vkládejte do popisku nebo přímo do videa textovou informaci o AI původu.</li>
-    </ul>
-  </li>
-  <li><strong>Vyžaduje akci klienta:</strong> Úprava interních směrnic pro marketingové oddělení, aby žádný syntetický obsah neopustil firmu bez tohoto označení.</li>
+  <li><strong>Systémy:</strong> HeyGen, Synthesia, ElevenLabs, DALL-E, Midjourney.</li>
+  <li><strong>Opatření (čl. 50 odst. 4):</strong> Obsah, který byl uměle vytvořen nebo zmanipulován (deepfakes, syntetické video/audio), musí být jasně označen.</li>
+  <li><strong>Implementace:</strong> U videí z HeyGen a Synthesia zachovejte nebo přidejte viditelný vodoznak či textové upozornění v popisku videa. Neodstraňujte C2PA metadata z výstupů generativních modelů.</li>
 </ul>
 
-<h3>3.3 HR, Skórování a Rozhodovací systémy</h3>
-<p><em>Zahrnuje: Teamio, LMC/Jobs.cz AI, Sloneek, CRIF, Scoring Solutions, „vlastní html".</em></p>
+<h3>3.3 HR a nábor (vysoce rizikové systémy)</h3>
 <ul>
-  <li><strong>Požadované oznámení:</strong> Tyto systémy spadají do vysoce rizikové kategorie (Příloha III). Dle čl. 86 AI Act musíte zajistit právo na vysvětlení rozhodnutí.</li>
-  <li><strong>Implementace:</strong> Pokud systém CRIF zamítne žádost klienta, nebo systém Teamio vyřadí kandidáta, musí dotčená osoba obdržet informaci o roli AI v tomto procesu a kontakt pro vyžádání lidského přezkumu.</li>
-  <li><strong>Zajištěno v Compliance Kitu:</strong> Šablona pro vyřízení žádosti o vysvětlení AI rozhodnutí.</li>
-  <li><strong>Registrace do EU databáze:</strong> Povinnost registrace dle čl. 49 odst. 1 AI Act se vztahuje na <strong>poskytovatele</strong> (výrobce) vysoce rizikových systémů. Vaše společnost jako soukromý nasazovatel komerčních HR systémů (Teamio, CRIF) tuto povinnost <strong>nemá</strong> — registraci provádí jejich výrobce. Povinnost registrace nasazovatelem (čl. 49 odst. 2) se týká pouze orgánů veřejné moci a specifických případů (biometrie, vymáhání práva). U systémů <strong>vlastního vývoje</strong>, kde vystupujete jako poskytovatel, registrační povinnost máte vy.</li>
-  <li><strong>Vyžaduje akci klienta:</strong> Doporučujeme provést posouzení vlivu na základní práva (FRIA) dle čl. 27. Ačkoliv je FRIA primárně povinná pro veřejný sektor, pro soukromé subjekty využívající HR a skórovací AI jde o silně doporučenou best practice prokazující soulad s GDPR a AI Act.</li>
-</ul>
-
-<h3>3.4 Průmysl, Zdravotnictví a Kritická infrastruktura</h3>
-<p><em>Zahrnuje: Zdravotnický přístroj, Průmyslový stroj, Bezpečnostní systém, „pospa ing.".</em></p>
-<ul>
-  <li><strong>Požadované oznámení:</strong> Systémy spadající pod bezpečnostní komponenty (čl. 6) vyžadují striktní technickou dokumentaci dle Přílohy IV.</li>
-  <li><strong>Implementace:</strong> Provozní manuály musí jasně definovat limity AI systému, přesnost měření a postupy při selhání.</li>
-  <li><strong>Vyžaduje akci klienta:</strong> Zajištění, že dodavatelé těchto technologií poskytli prohlášení o shodě (CE) a kompletní návod k použití dle čl. 13.</li>
-</ul>
-
-<div class='warning'>
-  <p><strong>Specifický režim pro kritickou infrastrukturu („pospa ing."):</strong> Systémy kritické infrastruktury spadající pod Přílohu III bod 2 AI Act vyžadují dle čl. 49 odst. 4 registraci <strong>u národního dozorového orgánu</strong>, nikoliv ve veřejné EU databázi. V České republice je příslušným orgánem <strong>NÚKIB</strong> (Národní úřad pro kybernetickou a informační bezpečnost). Kontaktujte NÚKIB pro ověření registračních povinností tohoto systému.</p>
-</div>
-
-<h2>4. Lidský dohled a kontrolní mechanismy</h2>
-
-<p>Dle čl. 14 AI Act musí být vysoce rizikové systémy navrženy tak, aby na ně mohly dohlížet fyzické osoby. Cílem je předcházet rizikům pro zdraví, bezpečnost a základní práva.</p>
-
-<h3>4.1 Nouzové vypnutí</h3>
-<ul>
-  <li><strong>Požadavek:</strong> Každý autonomní nebo vysoce rizikový systém musí mít mechanismus pro okamžité zastavení provozu bez nevratných škod.</li>
-  <li><strong>Příklad — dynamická cenotvorba:</strong> Pokud AI systém pro dynamické ceny (Dynamic Yield, Competera) začne generovat nesmyslné slevy nebo diskriminační ceny, musí mít odpovědný manažer možnost systém jedním kliknutím deaktivovat a přejít na manuální ceník.</li>
-  <li><strong>Příklad — API integrace (OpenAI, Gemini):</strong> U systémů napojených přes API (např. AI API Proxy / geminiproxy) znamená nouzové vypnutí <strong>zneplatnění API klíče</strong> v administraci poskytovatele nebo přepnutí na záložní (fallback) systém — např. přesměrování chatbotu na živého operátora.</li>
-  <li><strong>Příklad — kritická infrastruktura a biometrie:</strong> U systémů „pospa ing." (kritická infrastruktura) a biometrických systémů (kamerový dohled s AI, „vlastní kód") musí být nouzové vypnutí realizovatelné <strong>fyzicky i vzdáleně</strong> — hardwarový vypínač na zařízení a současně možnost vzdálené deaktivace přes administrační rozhraní. Tyto systémy představují nejvyšší fyzické a právní riziko.</li>
-  <li><strong>Odpovědnost:</strong> Martin Haynes nebo jím pověřený IT administrátor.</li>
-  <li><strong>Zajištěno v Compliance Kitu:</strong> Plán řízení incidentů definuje eskalační proces pro aktivaci nouzového vypnutí.</li>
+  <li><strong>Systémy:</strong> Teamio, Sloneek, LinkedIn Recruiter, LMC/Jobs.cz AI.</li>
+  <li><strong>Informování kandidátů (GDPR čl. 13, 14 a 22):</strong> Uchazeči musí být informováni, že jejich data zpracovává AI systém. Do formulářů pro uchazeče doplňte odkaz na vaši Transparenční stránku.</li>
+  <li><strong>Informování zaměstnanců (čl. 26 odst. 11 AI Act):</strong> Před nasazením jakéhokoli vysoce rizikového AI systému na pracovišti musíte informovat zástupce zaměstnanců (odbory, radu zaměstnanců) a přímo dotčené pracovníky. U firmy s 250+ zaměstnanci je toto obzvláště důležité — doporučujeme písemné oznámení s potvrzením o doručení.</li>
 </ul>
 
 <div class='callout'>
-  <p><strong>Komunikace výpadku zákazníkům:</strong> Při nouzovém vypnutí zákaznického AI systému (chatbot, cenotvorba) doporučujeme: (1) okamžitě zobrazit na webu/v aplikaci informaci „Systém je dočasně nedostupný, pracujeme na nápravě"; (2) přesměrovat zákazníky na alternativní kanál (e-mail, telefon, živý operátor); (3) po obnovení provozu informovat dotčené zákazníky o příčině a přijatých opatřeních.</p>
+  <p><strong>Praktický postup:</strong> Připravte písemné oznámení pro zaměstnance, ve kterém uvedete: (1) jaký AI systém bude nasazen, (2) k jakému účelu, (3) jaká data zaměstnanců bude zpracovávat, (4) kdo je odpovědná osoba. Vzor oznámení je součástí Compliance Kitu.</p>
 </div>
 
-<h3>4.2 Lidský přezkum</h3>
+<h3>3.4 Finance a pojišťovnictví (vysoce rizikové systémy)</h3>
 <ul>
-  <li><strong>Požadavek:</strong> Zaměstnanci musí mít pravomoc ignorovat, přepsat nebo zvrátit výstup AI systému (čl. 14 odst. 4 písm. d).</li>
-  <li><strong>Příklad z praxe firmy:</strong> Při schvalování žádostí přes systém CRIF nesmí být zamítnutí plně automatizované bez možnosti zásahu. Operátor musí mít v uživatelském rozhraní tlačítko „Manuální schválení", které přepíše doporučení AI.</li>
-  <li><strong>Frekvence kontrol:</strong> Namátková kontrola 5 % AI rozhodnutí měsíčně.</li>
+  <li><strong>Systémy:</strong> CRIF, Scoring Solutions, Guidewire, NESS / Allianz AI.</li>
+  <li><strong>Informování klientů (GDPR čl. 13, 14 a 22):</strong> Žadatelé o úvěr nebo pojištění musí být informováni o tom, že jejich data zpracovává AI systém. Do úvěrových a pojistných smluv doplňte odkaz na Transparenční stránku.</li>
+  <li><strong>Právo na vysvětlení:</strong> Klient má právo na srozumitelné vysvětlení, proč AI systém doporučil zamítnutí žádosti.</li>
 </ul>
 
-<h3>4.3 Kompetence dohledové osoby</h3>
+<div class='warning'>
+  <p><strong>Povinnost provést FRIA (čl. 27 AI Act):</strong> Vzhledem k působení v sektoru úvěrového hodnocení a pojišťovnictví je pro společnost <strong>zákonnou povinností</strong> provést posouzení vlivu na základní práva (FRIA) dle čl. 27 odst. 1 písm. b) a c). Compliance Kit obsahuje <strong>šablonu FRIA</strong> s předvyplněnými údaji o vašich systémech (CRIF, Guidewire). Šablona vás provede krok za krokem — identifikace dotčených skupin, posouzení rizik diskriminace, opatření ke zmírnění. Vyplnění zvládnete interně, doporučujeme však výsledek nechat zrevidovat právníkem specializovaným na AI regulaci.</p>
+</div>
+
+<h3>3.5 Specifické povinnosti pro modely pro obecné účely (GPAI)</h3>
 <ul>
-  <li><strong>Požadavek:</strong> Osoby pověřené dohledem musí mít odpovídající úroveň AI gramotnosti (čl. 4 AI Act).</li>
-  <li><strong>Vyžaduje akci klienta:</strong> Proškolení všech zaměstnanců, kteří pracují s výstupy systémů jako Teamio, CRIF nebo Zendesk AI.</li>
-  <li><strong>Zajištěno v Compliance Kitu:</strong> Plán školení AI gramotnosti a připravená prezentace. Školení musí klient realizovat interně.</li>
+  <li><strong>Systémy:</strong> Integrace OpenAI (GPT-4o), Anthropic (Claude), Google (Gemini) API do vlastních produktů.</li>
+  <li><strong>Opatření (čl. 51–54):</strong> Jako nasazovatel integrující GPAI modely musíte zajistit, že vaši dodavatelé (OpenAI, Google) plní své povinnosti. Nesmíte obcházet jejich bezpečnostní filtry a musíte zachovat transparentnost vůči koncovým uživatelům vašich aplikací.</li>
 </ul>
 
-<h2>5. Specifické povinnosti pro modely pro obecné účely (GPAI)</h2>
-
-<p>Vzhledem k tomu, že vaše společnost integruje LLM modely (OpenAI GPT-4, Anthropic Claude, Google Gemini, Mistral) do vlastních produktů a zákaznických řešení (např. přes AI API Proxy), vztahují se na vás specifická pravidla.</p>
-
-<div class='highlight'>
-  <p><strong>Povinnosti při integraci GPAI (čl. 51–54):</strong></p>
-  <ul>
-    <li><strong>Role dodavatele:</strong> Poskytovatelé samotných modelů (OpenAI, Google) plní povinnosti dle čl. 53 (trénovací data, autorská práva).</li>
-    <li><strong>Vaše role (Nasazovatel/Integrátor):</strong> Musíte smluvně zajistit, že vámi využívané API služby tyto podmínky splňují. Nesmíte odstraňovat bezpečnostní filtry (tzv. guardrails) nastavené poskytovatelem modelu.</li>
-    <li><strong>Transparentnost:</strong> Pokud přes API generujete texty pro koncové zákazníky, povinnost označit AI obsah (čl. 50) přechází plně na vaši společnost.</li>
-  </ul>
+<div class='warning'>
+  <p><strong>Oblast vyžadující pozornost — interní systémy:</strong> Systémy identifikované jako <em>interní webová aplikace</em> a <em>vlastní softwarové řešení</em>, které zahrnují prvky sociálního scoringu, rozpoznávání emocí na pracovišti nebo biometrické identifikace, vyžadují revizi klasifikace. Tyto funkcionality mohou spadat pod zakázané praktiky dle čl. 5 AI Act. Do doby dokončení právního auditu doporučujeme pozastavit jejich automatizované rozhodovací funkce.</p>
+  <p><strong>Doporučení k názvosloví:</strong> Pracovní názvy „vlastní html" a „vlastní kód" z dotazníku přejmenujte v interním registru na konkrétní a popisné názvy (např. „Interní HR portál", „Kamerový systém s biometrií", „Webová aplikace pro hodnocení zaměstnanců"). Usnadní to komunikaci s dozorovými orgány i interní orientaci.</p>
 </div>
 
-<h2>6. Čtvrtletní kontrola transparentnosti a dohledu</h2>
+<h2>4. Lidský dohled — opatření</h2>
 
-<p>Pro zajištění trvalého souladu s AI Act a prokazatelnosti vůči dozorovým orgánům provádějte pravidelnou kontrolu. Níže uvedený formulář slouží jako závazný interní kontrolní seznam.</p>
+<p>Lidský dohled (čl. 14) je kritickým požadavkem pro všechny vysoce rizikové systémy. Cílem je předcházet rizikům pro zdraví, bezpečnost a základní práva.</p>
 
-<div class='info'>
-  <p>Tuto kontrolní tabulku vyplňujte čtvrtletně a archivujte ji společně s logy systémů.</p>
-</div>
+<h3>4.1 Nouzové vypnutí (kill switch)</h3>
+<p>Každý vysoce rizikový AI systém musí mít mechanismus pro okamžité zastavení provozu v případě nestandardního chování (čl. 14 odst. 4 písm. e).</p>
 
+<ul>
+  <li><strong>Kdo má pravomoc:</strong> Martin Haynes (Jednatel) nebo jím explicitně pověřený IT administrátor / vedoucí provozu.</li>
+  <li><strong>Podmínky aktivace:</strong> Detekce diskriminace v HR systémech, kritická chyba v úvěrovém scoringu (CRIF), bezpečnostní anomálie v systému kritické infrastruktury. Postup je detailně popsán v <em>Plánu řízení incidentů</em> (součást Compliance Kitu).</li>
+</ul>
+
+<p><strong>Technická implementace podle typu systému:</strong></p>
 <table>
   <thead>
     <tr>
-      <th>Kontrolní bod</th>
-      <th>Otázka k ověření</th>
-      <th>Odpovědná osoba / Role</th>
-      <th>Stav (ANO/NE)</th>
-      <th>Poznámka</th>
+      <th>Typ systému</th>
+      <th>Postup nouzového vypnutí</th>
+      <th>Příklady</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Oznámení aktivní</strong></td>
-      <td>Jsou všechna AI oznámení (chatboty, generovaný obsah) na webu a v aplikacích viditelná?</td>
-      <td>Marketing / IT administrátor</td>
-      <td></td>
-      <td></td>
+      <td><strong>API integrace</strong></td>
+      <td>Deaktivace API klíčů, odpojení endpointu</td>
+      <td>OpenAI, Gemini API</td>
     </tr>
     <tr>
-      <td><strong>Transparenční stránka</strong></td>
-      <td>Je dedikovaná informační stránka o AI aktuální a veřejně přístupná?</td>
-      <td>Marketing / Webmaster</td>
-      <td></td>
-      <td></td>
+      <td><strong>SaaS řešení</strong></td>
+      <td>Vypnutí AI modulu v administrátorském rozhraní</td>
+      <td>Zendesk AI, Teamio, Freshdesk AI</td>
     </tr>
     <tr>
-      <td><strong>Nouzové vypnutí funkční</strong></td>
-      <td>Byl otestován proces nouzového vypnutí u kritických systémů (dynamické ceny, biometrie, kritická infrastruktura)?</td>
-      <td>IT administrátor</td>
-      <td></td>
-      <td>Test 1x za 6 měsíců</td>
+      <td><strong>Zdravotnický přístroj</strong></td>
+      <td>Přepnutí do manuálního režimu dle provozního řádu přístroje. <strong>Nikdy neprovádějte náhlé odpojení</strong>, pokud je přístroj v aktivním použití u pacienta — nejprve zajistěte bezpečnost pacienta, poté přepněte na manuální režim a teprve následně deaktivujte AI komponentu. Řiďte se bezpečnostními směrnicemi výrobce a SÚKL.</td>
+      <td>Zdravotnický přístroj s AI</td>
     </tr>
     <tr>
-      <td><strong>Registr aktuální</strong></td>
-      <td>Jsou všechny nově nasazené AI systémy zapsány v interním registru?</td>
-      <td>Martin Haynes / AI odpovědná osoba</td>
-      <td></td>
-      <td>Při každé změně</td>
-    </tr>
-    <tr>
-      <td><strong>Logy uchovávány</strong></td>
-      <td>Jsou automatické protokoly (logy) z AI systémů bezpečně zálohovány za posledních 6 měsíců?</td>
-      <td>IT administrátor</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td><strong>Stížnosti řešeny</strong></td>
-      <td>Byly vyřízeny všechny žádosti o lidský přezkum a vysvětlení AI rozhodnutí?</td>
-      <td>Zákaznická podpora / HR</td>
-      <td></td>
-      <td>Dle interních SLA</td>
+      <td><strong>Průmyslový stroj / kritická infrastruktura</strong></td>
+      <td>Přepnutí do manuálního nebo nouzového režimu dle provozní dokumentace. U kritické infrastruktury kontaktujte NÚKIB. Zajistěte, aby přechod na manuální řízení neohrozil bezpečnost provozu — postupujte dle havarijního plánu.</td>
+      <td>Průmyslový stroj, bezpečnostní systém</td>
     </tr>
   </tbody>
 </table>
 
-<h2>7. Archivace a evidence</h2>
-
+<h3>4.2 Lidský přezkum (human override)</h3>
+<p>Dle čl. 14 odst. 4 písm. d) musí mít pověřené osoby možnost rozhodnutí AI systému nepoužít, přepsat nebo zrušit.</p>
 <ul>
-  <li><strong>Uchovávání logů (čl. 26 odst. 1 písm. f):</strong> Jako nasazovatel máte povinnost uchovávat automaticky generované protokoly z provozu AI systémů po dobu <strong>minimálně 6 měsíců</strong>. Toto se týká zejména systémů s dopadem na zákazníky a zaměstnance.</li>
-  <li><strong>Archivace dokumentace (čl. 18):</strong> U systémů vlastního vývoje (kde figurujete jako poskytovatel) musí být technická dokumentace a protokoly o posouzení shody uchovávány po dobu <strong>10 let</strong> od uvedení systému na trh.</li>
-  <li><strong>Vyžaduje akci klienta:</strong> Nastavení automatických retenčních politik v IT systémech a cloudových úložištích pro zajištění těchto lhůt.</li>
+  <li><strong>HR systémy (Teamio, Sloneek):</strong> AI smí pouze doporučovat kandidáty. Finální rozhodnutí o vyřazení kandidáta MUSÍ potvrdit lidský personalista.</li>
+  <li><strong>Finanční a pojistné systémy (CRIF, Guidewire):</strong> Zamítnutí úvěru nebo pojistného plnění navržené AI podléhá právu klienta na lidský přezkum. Operátor musí mít přístup k parametrům, na základě kterých AI rozhodla.</li>
+  <li><strong>Průmyslové a zdravotnické systémy:</strong> Výstupy ze zdravotnického přístroje a průmyslového stroje musí být vždy validovány kvalifikovaným odborníkem před provedením nevratného úkonu.</li>
 </ul>
 
-<h2>8. Shrnutí a další kroky</h2>
+<h3>4.3 Kompetence dohledové osoby</h3>
+<p>Osoba pověřená dohledem (Martin Haynes a delegovaní vedoucí oddělení) musí splňovat požadavky na AI gramotnost dle čl. 4 AI Act:</p>
+<ul>
+  <li><strong>Kvalifikace:</strong> Schopnost porozumět omezením AI (halucinace, bias) a interpretovat výstupy.</li>
+  <li><strong>Školení:</strong> Povinné absolvování interního školení (využijte <em>Školící prezentaci AI gramotnosti</em> z Compliance Kitu).</li>
+</ul>
 
-<p>Zajištění transparentnosti a lidského dohledu je kontinuální proces. Vaše společnost využívá široké spektrum AI nástrojů, od nízkorizikových analytických nástrojů až po vysoce rizikové systémy v HR, financích a průmyslu.</p>
+<h2>5. Čtvrtletní kontrola transparentnosti a dohledu</h2>
 
-<div class='metric-grid'>
-  <div class='metric-card'>
-    <div class='metric-value'>17</div>
-    <div class='metric-label'>Vysoce rizikových systémů vyžadujících lidský dohled</div>
-  </div>
-  <div class='metric-card'>
-    <div class='metric-value'>18</div>
-    <div class='metric-label'>Systémů vyžadujících transparenční oznámení</div>
-  </div>
+<div class='info'>
+  <p>Tuto kontrolní tabulku vyplňujte čtvrtletně a archivujte jako důkaz o plnění povinností průběžného monitoringu. Slouží jako podklad pro případnou kontrolu ze strany dozorových orgánů (ČOI, ÚOOÚ, ČNB, SÚKL, NÚKIB).</p>
 </div>
 
-<p><strong>Zajištěno v rámci Compliance Kitu:</strong> Obdrželi jste texty oznámení, šablonu transparenční stránky, plán řízení incidentů a školící materiály pro zajištění AI gramotnosti.</p>
+<div class='no-break'>
+  <table>
+    <thead>
+      <tr>
+        <th>Kontrolní bod</th>
+        <th>Otázka</th>
+        <th>ANO/NE</th>
+        <th>Poznámka / Zjištění</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Oznámení aktivní</td>
+        <td>Jsou všechna AI oznámení (chatboti, generovaný obsah) na webu a v aplikacích viditelná?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Transparenční stránka</td>
+        <td>Je dedikovaná stránka o využívání AI aktuální a veřejně přístupná?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Nouzové vypnutí funkční</td>
+        <td>Byl otestován proces nouzového vypnutí u kritických systémů (včetně hardwarových)?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Registr aktuální</td>
+        <td>Jsou všechny nově nasazené AI systémy zapsány v interním Registru AI systémů?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Logy uchovávány</td>
+        <td>Jsou automaticky generované protokoly z vysoce rizikových systémů dostupné za posledních 6 měsíců?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Lidský přezkum aktivní</td>
+        <td>Probíhá lidský přezkum rozhodnutí (HR, finance) dle stanovených pravidel?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Zaměstnanci informováni</td>
+        <td>Byli zaměstnanci a jejich zástupci informováni před nasazením nových vysoce rizikových AI systémů (čl. 26 odst. 11)?</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Stížnosti řešeny</td>
+        <td>Byly evidovány a vyřešeny stížnosti zákazníků/zaměstnanců na rozhodnutí učiněná AI?</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<p><strong>Vyžaduje akci klienta:</strong></p>
+<h2>6. Archivace a evidence</h2>
+
 <ul>
-  <li>Implementujte textová upozornění do chatbotů (Zendesk, Freshdesk, Gemini Chatbot).</li>
-  <li>Zaveďte proces lidského přezkumu pro HR a skórovací systémy (Teamio, CRIF).</li>
-  <li>Zajistěte vyjasnění účelu u systémů identifikovaných pod nejasnými názvy („vlastní html", „vlastní kód", „pospa ing.").</li>
-  <li>Ověřte registrační povinnosti u NÚKIB pro systém kritické infrastruktury.</li>
-  <li>Aktualizujte interní směrnice marketingového oddělení o povinnost označování syntetického obsahu (C2PA metadata).</li>
+  <li><strong>Uchovávání logů (čl. 26 odst. 6):</strong> Automaticky generované protokoly z vysoce rizikových systémů (HR, finance, kritická infrastruktura) musí být uchovávány minimálně <strong>6 měsíců</strong>. Společnost již logování provádí — ověřte, že retenční doba je správně nastavena.</li>
+  <li><strong>Archivace dokumentace:</strong> Technická dokumentace, návody k použití od poskytovatelů a záznamy o lidském dohledu (vyplněné čtvrtletní kontroly) musí být uchovávány po celou dobu provozu systému a následně <strong>10 let</strong> po jeho vyřazení.</li>
+  <li><strong>Přístupová pravidla:</strong> K logům a dokumentaci mají přístup pouze pověřené osoby (Martin Haynes, IT administrátoři) za účelem auditu nebo vyšetřování incidentů.</li>
+</ul>
+
+<h2>7. Doporučení a další kroky</h2>
+
+<p>Pro dosažení plného souladu v oblasti transparentnosti a lidského dohledu je nutná součinnost mezi dodanými materiály a interními procesy společnosti.</p>
+
+<h3>Zajištěno v Compliance Kitu</h3>
+<ul>
+  <li>Texty oznámení pro chatboty a generovaný obsah</li>
+  <li>HTML kód Transparenční stránky pro váš web</li>
+  <li>Plán řízení incidentů (včetně procedur nouzového vypnutí)</li>
+  <li>Školící prezentace pro dohledové osoby</li>
+  <li>Šablona FRIA (posouzení vlivu na základní práva) s předvyplněnými údaji</li>
+  <li>Vzor oznámení zaměstnancům o nasazení AI systému</li>
+</ul>
+
+<h3>Vyžaduje akci klienta</h3>
+<ul>
+  <li>Fyzické nasazení textů oznámení do systémů Google Gemini Chatbot a Zendesk/Freshdesk.</li>
+  <li>Publikování Transparenční stránky na firemním webu.</li>
+  <li>Zavedení procesu lidského přezkumu v HR oddělení (Teamio, Sloneek) a ve finančním oddělení (CRIF, Guidewire).</li>
+  <li>Písemné informování zaměstnanců a jejich zástupců o nasazení vysoce rizikových AI systémů na pracovišti (čl. 26 odst. 11).</li>
+  <li>Vyplnění šablony FRIA pro finanční a pojistné systémy — doporučujeme revizi právníkem.</li>
+  <li>Provedení interního auditu systémů <em>interní webová aplikace</em> a <em>vlastní softwarové řešení</em> za účelem vyloučení zakázaných praktik.</li>
+  <li>Přejmenování pracovních názvů „vlastní html" a „vlastní kód" v interním registru na konkrétní popisné názvy.</li>
+  <li>Ověření, že retenční doba logů z vysoce rizikových systémů je nastavena na minimálně 6 měsíců.</li>
+  <li>Ověření postupů nouzového vypnutí u zdravotnického přístroje a průmyslového stroje dle provozní dokumentace výrobce.</li>
 </ul>
 
 <div class='sig-block'>
