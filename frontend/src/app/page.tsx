@@ -426,9 +426,9 @@ function TestimonialCarousel() {
                 }
 
                 // Seamless loop: when we've scrolled past the first set, jump back
-                const halfScroll = container.scrollWidth / 2;
-                if (container.scrollLeft >= halfScroll) {
-                    container.scrollLeft -= halfScroll;
+                const thirdScroll = container.scrollWidth / 3;
+                if (container.scrollLeft >= thirdScroll) {
+                    container.scrollLeft -= thirdScroll;
                 }
             }
             lastTime = time;
@@ -440,7 +440,7 @@ function TestimonialCarousel() {
     }, [paused]);
 
     // Double the testimonials for seamless looping
-    const items = [...TESTIMONIALS, ...TESTIMONIALS];
+    const items = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
 
     return (
         <div
@@ -708,139 +708,23 @@ export default function HomePage() {
                     </ScrollReveal>
                 </div>
             </section>
-            <section className="border-t border-white/[0.06] py-16 sm:py-24 relative overflow-hidden">
-                <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-[30%] left-[10%] h-[500px] w-[500px] rounded-full bg-cyan-600/8 blur-[120px]" />
-                    <div className="absolute top-[10%] right-[15%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/6 blur-[100px]" />
-                </div>
 
-                <div className="mx-auto max-w-5xl px-4 sm:px-6">
-                    <ScrollReveal variant="fade-up">
-                        <div className="text-center mb-12 sm:mb-16">
-                            <div className="neon-divider mb-6" />
-                            <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                                </span>
-                                Unikátní v ČR
-                            </div>
-                            <h2 className="text-3xl font-extrabold sm:text-5xl leading-tight">
-                                24hodinový hloubkový <span className="neon-text">scan</span>
-                            </h2>
-                            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-                                Jeden rychlý scan nestačí. AI systémy se na webu chovají různě podle času, lokace i&nbsp;zařízení.
-                                Proto provádíme <strong className="text-white">24 nezávislých skenů v 6 kolech ze&nbsp;7 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
-                            </p>
-                        </div>
-                    </ScrollReveal>
-
-                    {/* Globe visual + features */}
-                    <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
-
-                        {/* Left — Globe / map visual */}
-                        <ScrollReveal variant="scale-up" delay={1}>
-                            <div className="relative">
-                                <div className="glass p-8 sm:p-10 text-center float-bob">
-                                    <div className="text-6xl sm:text-7xl mb-4">🌍</div>
-                                    <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
-                                        {[
-                                            { flag: "🇨🇿", code: "CZ" },
-                                            { flag: "🇬🇧", code: "GB" },
-                                            { flag: "🇺🇸", code: "US" },
-                                            { flag: "🇧🇷", code: "BR" },
-                                            { flag: "🇯🇵", code: "JP" },
-                                            { flag: "🇿🇦", code: "ZA" },
-                                            { flag: "🇦🇺", code: "AU" },
-                                        ].map((c) => (
-                                            <div key={c.code} className="flex flex-col items-center gap-1 rounded-lg bg-white/5 border border-white/10 py-2 px-1">
-                                                <span className="text-xl">{c.flag}</span>
-                                                <span className="text-[10px] text-slate-500 font-mono">{c.code}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <p className="text-sm text-slate-400">
-                                        <strong className="text-white">24 skenů</strong> z rezidenčních IP adres v&nbsp;7 zemích za 24 hodin
-                                    </p>
-                                </div>
-                            </div>
-                        </ScrollReveal>
-
-                        {/* Right — Feature list */}
-                        <div className="space-y-5">
-                            {[
-                                {
-                                    icon: (
-                                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                                    ),
-                                    title: "6 kol po 4 hodinách",
-                                    desc: "Skenujeme v 6 kolech rozložených přes 24 hodin — ráno, odpoledne, večer, v noci. Odhalíme AI systémy, které se aktivují jen v určitou hodinu."
-                                },
-                                {
-                                    icon: (
-                                        <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" /></svg>
-                                    ),
-                                    title: "7 zemí × 24 skenů",
-                                    desc: "V každém kole skenujeme ze 4 zemí (rotace CZ, GB, US, BR, JP, ZA, AU). Chatboti se často zobrazují jen návštěvníkům z určitých regionů — tohle je odhalí."
-                                },
-                                {
-                                    icon: (
-                                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
-                                    ),
-                                    title: "Desktop i mobilní zařízení",
-                                    desc: "V rámci každého kola střídáme desktopové a mobilní prohlížeče — mnoho chatbotů se zobrazuje jen na mobilu, nebo naopak."
-                                },
-                                {
-                                    icon: (
-                                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-                                    ),
-                                    title: "Agregovaný report za 24h",
-                                    desc: "Po dokončení všech 24 skenů vám pošleme kompletní report — deduplikovaný přehled všech nalezených AI systémů s označením, kde a kdy byly detekovány."
-                                },
-                            ].map((item, i) => (
-                                <ScrollReveal key={i} variant="scale-up" delay={i + 1}>
-                                    <div className="flex gap-4 items-start">
-                                        <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                            {item.icon}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-white">{item.title}</h3>
-                                            <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
-                                        </div>
-                                    </div>
-                                </ScrollReveal>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* CTA */}
-                    <ScrollReveal variant="scale-up">
-                        <div className="mt-12 sm:mt-16 text-center">
-                            <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
-                                <h3 className="text-xl sm:text-2xl font-bold mb-3">
-                                    Chcete kompletní přehled?
-                                </h3>
-                                <p className="text-slate-400 mb-6">
-                                    Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
-                                    O&nbsp;výsledku vás budeme informovat e-mailem.
-                                </p>
-                                <a href="/registrace" className="btn-primary cta-pulse text-base px-10 py-4 inline-flex items-center gap-2">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
-                                    Registrovat se a spustit 24h scan
-                                </a>
-                                <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
-                            </div>
-                        </div>
-                    </ScrollReveal>
-                </div>
-            </section>
-
-            {/* ══════ SOCIAL PROOF ══════ */}
+            {/* ══════ STATS / FOMO ══════ */}
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
+                    <ScrollReveal variant="fade-up">
+                        <div className="text-center mb-10">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-2xl font-extrabold sm:text-3xl">
+                                Víte, co běží na <span className="neon-text">vašem webu</span>?
+                            </h2>
+                            <p className="mt-3 text-slate-400">Data z&nbsp;našich automatizovaných skenů mluví jasně</p>
+                        </div>
+                    </ScrollReveal>
+
                     {/* ── Stats counter row ── */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         {[
                             { value: "500+", label: "Proskenovaných webů", color: "text-neon-fuchsia" },
                             { value: "1 200+", label: "Nalezených AI systémů", color: "text-neon-cyan" },
@@ -858,50 +742,6 @@ export default function HomePage() {
                         ))}
                     </div>
 
-                    {/* ── Testimonials carousel ── */}
-                    <ScrollReveal variant="fade-up">
-                        <div className="text-center mb-8">
-                            <div className="neon-divider mb-6" />
-                            <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
-                        </div>
-                        <TestimonialCarousel />
-                    </ScrollReveal>
-                </div>
-            </section>
-
-            <section className="border-t border-white/[0.06] py-12 sm:py-20">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                    <ScrollReveal variant="fade-up">
-                        <div className="text-center mb-10 sm:mb-12">
-                            <div className="neon-divider mb-6" />
-                            <h2 className="text-3xl font-extrabold sm:text-4xl">
-                                Proč by vás to mělo <span className="neon-text">zajímat</span>?
-                            </h2>
-                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                                Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
-                                A týká se i VAŠÍ firmy.
-                            </p>
-                        </div>
-                    </ScrollReveal>
-
-                    {/* First in CZ panel */}
-                    <ScrollReveal variant="scale-up" delay={1}>
-                        <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
-                            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
-                                <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                                <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
-                            <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                                Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
-                                přes kompletní dokumentaci, až po průběžný monitoring.
-                                Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
-                                My Vám pomůžeme splnit zákon jednoduše a bez stresu.
-                                Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
-                                než je byrokracie z Bruselu. Jako je například Vaše podnikání.
-                            </p>
-                        </div>
-                    </ScrollReveal>
                 </div>
             </section>
 
@@ -1006,6 +846,194 @@ export default function HomePage() {
                             </ScrollReveal>
                         ))}
                     </div>
+                </div>
+            </section>
+
+            <section className="border-t border-white/[0.06] py-16 sm:py-24 relative overflow-hidden">
+                <div className="absolute inset-0 -z-10">
+                    <div className="absolute top-[30%] left-[10%] h-[500px] w-[500px] rounded-full bg-cyan-600/8 blur-[120px]" />
+                    <div className="absolute top-[10%] right-[15%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/6 blur-[100px]" />
+                </div>
+
+                <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
+                        <div className="text-center mb-12 sm:mb-16">
+                            <div className="neon-divider mb-6" />
+                            <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-6">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                                </span>
+                                Unikátní v ČR
+                            </div>
+                            <h2 className="text-3xl font-extrabold sm:text-5xl leading-tight">
+                                24hodinový hloubkový <span className="neon-text">scan</span>
+                            </h2>
+                            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
+                                Jeden rychlý scan nestačí. AI systémy se na webu chovají různě podle času, lokace i&nbsp;zařízení.
+                                Proto provádíme <strong className="text-white">24 nezávislých skenů v 8 kolech z&nbsp;8 zemí</strong> — přes rezidenční proxy, střídavě z desktopu i mobilu.
+                            </p>
+                        </div>
+                    </ScrollReveal>
+
+                    {/* Globe visual + features */}
+                    <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
+
+                        {/* Left — Globe / map visual */}
+                        <ScrollReveal variant="scale-up" delay={1}>
+                            <div className="relative">
+                                <div className="glass p-8 sm:p-10 text-center float-bob">
+                                    <div className="text-6xl sm:text-7xl mb-4">🌍</div>
+                                    <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
+                                        {[
+                                            { flag: "🇨🇿", code: "CZ" },
+                                            { flag: "🇬🇧", code: "GB" },
+                                            { flag: "🇺🇸", code: "US" },
+                                            { flag: "🇧🇷", code: "BR" },
+                                            { flag: "🇯🇵", code: "JP" },
+                                            { flag: "🇿🇦", code: "ZA" },
+                                            { flag: "🇦🇺", code: "AU" },
+                                            { flag: "🇩🇪", code: "DE" },
+                                        ].map((c) => (
+                                            <div key={c.code} className="flex flex-col items-center gap-1 rounded-lg bg-white/5 border border-white/10 py-2 px-1">
+                                                <span className="text-xl">{c.flag}</span>
+                                                <span className="text-[10px] text-slate-500 font-mono">{c.code}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-sm text-slate-400">
+                                        <strong className="text-white">24 skenů</strong> z rezidenčních IP adres v&nbsp;8 zemích za 24 hodin
+                                    </p>
+                                </div>
+                            </div>
+                        </ScrollReveal>
+
+                        {/* Right — Feature list */}
+                        <div className="space-y-5">
+                            {[
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                    ),
+                                    title: "8 kol po 3 hodinách",
+                                    desc: "Skenujeme v 8 kolech rozložených přes 24 hodin — každé 3 hodiny, nepřetržitě. Odhalíme AI systémy, které se aktivují jen v určitou hodinu."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" /></svg>
+                                    ),
+                                    title: "8 zemí × 24 skenů",
+                                    desc: "V každém kole skenujeme z jiné země (rotace CZ, GB, US, BR, JP, ZA, AU, DE). Chatboti se často zobrazují jen návštěvníkům z určitých regionů — tohle je odhalí."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+                                    ),
+                                    title: "Desktop i mobilní zařízení",
+                                    desc: "V rámci každého kola střídáme desktopové a mobilní prohlížeče — mnoho chatbotů se zobrazuje jen na mobilu, nebo naopak."
+                                },
+                                {
+                                    icon: (
+                                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                                    ),
+                                    title: "Agregovaný report za 24h",
+                                    desc: "Po dokončení všech 24 skenů vám pošleme kompletní report — deduplikovaný přehled všech nalezených AI systémů s označením, kde a kdy byly detekovány."
+                                },
+                                {
+                                    icon: (<svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3" /></svg>),
+                                    title: "Automatické odkliknutí cookies",
+                                    desc: "Náš skener automaticky odklikne cookies lištu — mnoho AI chatbotů se projeví až po udělení souhlasu s cookies."
+                                },
+                                {
+                                    icon: (<svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5-6L16.5 15m0 0L12 10.5m4.5 4.5V1.5" /></svg>),
+                                    title: "Scrollování a interakce",
+                                    desc: "Scrollujeme přes celou hlavní stránku a klikáme na náhodné záložky — mnoho AI agentů se projeví až při interakci uživatele se stránkou."
+                                },
+                            ].map((item, i) => (
+                                <ScrollReveal key={i} variant="scale-up" delay={i + 1}>
+                                    <div className="flex gap-4 items-start">
+                                        <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-white">{item.title}</h3>
+                                            <p className="text-sm text-slate-400 mt-0.5">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                </ScrollReveal>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* CTA */}
+                    <ScrollReveal variant="scale-up">
+                        <div className="mt-12 sm:mt-16 text-center">
+                            <div className="glass inline-block px-8 sm:px-12 py-8 sm:py-10 max-w-2xl">
+                                <h3 className="text-xl sm:text-2xl font-bold mb-3">
+                                    Chcete kompletní přehled?
+                                </h3>
+                                <p className="text-slate-400 mb-6">
+                                    Registrujte se a&nbsp;my spustíme <strong className="text-white">24hodinový hloubkový scan</strong> vašeho webu.
+                                    O&nbsp;výsledku vás budeme informovat e-mailem.
+                                </p>
+                                <a href="/registrace" className="btn-primary cta-pulse text-base px-10 py-4 inline-flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
+                                    Registrovat se a spustit 24h scan
+                                </a>
+                                <p className="text-xs text-slate-500 mt-3">Zdarma • Bez závazků • Výsledek do 24 hodin na email</p>
+                            </div>
+                        </div>
+                    </ScrollReveal>
+                </div>
+            </section>
+
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <ScrollReveal variant="fade-up">
+                        <div className="text-center mb-10 sm:mb-12">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Proč by vás to mělo <span className="neon-text">zajímat</span>?
+                            </h2>
+                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
+                                Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
+                                A týká se i VAŠÍ firmy.
+                            </p>
+                        </div>
+                    </ScrollReveal>
+
+                    {/* First in CZ panel */}
+                    <ScrollReveal variant="scale-up" delay={1}>
+                        <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
+                            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
+                                <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
+                            <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                                Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
+                                přes kompletní dokumentaci, až po průběžný monitoring.
+                                Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
+                                My Vám pomůžeme splnit zákon jednoduše a bez stresu.
+                                Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
+                                než je byrokracie z Bruselu. Jako je například Vaše podnikání.
+                            </p>
+                        </div>
+                    </ScrollReveal>
+                </div>
+            </section>
+
+            {/* ══════ TESTIMONIALS ══════ */}
+            <section className="border-t border-white/[0.06] py-12 sm:py-20">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    {/* ── Testimonials carousel ── */}
+                    <ScrollReveal variant="fade-up">
+                        <div className="text-center mb-8">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-2xl font-extrabold sm:text-3xl">Co říkají naši <span className="neon-text">klienti</span></h2>
+                        </div>
+                        <TestimonialCarousel />
+                    </ScrollReveal>
                 </div>
             </section>
 

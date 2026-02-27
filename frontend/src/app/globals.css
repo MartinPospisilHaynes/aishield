@@ -316,3 +316,19 @@ textarea {
 .float-bob {
     animation: floatBob 3.5s ease-in-out infinite;
 }
+/* ── Disable scroll-reveal animations on mobile ── */
+@media (max-width: 768px) {
+    .scroll-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .anim-fade-up,
+    .anim-slide-left,
+    .anim-slide-right,
+    .anim-scale-up {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+}

@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T22:32:35.951243",
+  "generated": "2026-02-27T22:37:57.570701",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 88.4,
+  "duration_seconds": 87.2,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -18,7 +18,7 @@
   },
   "pages_tested": 7,
   "total_tests": 21,
-  "average_score": 99.7,
+  "average_score": 100.0,
   "results": [
     {
       "page": "homepage",
@@ -26,28 +26,8 @@
       "url": "https://aishield.cz/",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "2 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "+420 732 716 141",
-              "width": 343,
-              "height": 40,
-              "element": "a"
-            },
-            {
-              "text": "info@aishield.cz",
-              "width": 343,
-              "height": 42,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 94,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/homepage_mobile.png"
     },
     {

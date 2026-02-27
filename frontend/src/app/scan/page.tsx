@@ -351,6 +351,7 @@ function ScanPageInner() {
                     const status = await getScanStatus(id);
                     setScanResult(status);
                     if (status.status === "done" || status.status === "error") {
+                            if (status.status === "done") setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
                         if (pollingRef.current) clearInterval(pollingRef.current);
                         pollingRef.current = null;
                         if (stageRef.current) clearTimeout(stageRef.current);
@@ -423,7 +424,10 @@ function ScanPageInner() {
                 setScanResult(status);
                 setLoading(false);
                 setCurrentStage(SCAN_STAGES.length);
-                if (status.status === "done") await fetchFindings(result.scan_id);
+                if (status.status === "done") {
+                            await fetchFindings(result.scan_id);
+                            setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
+                        }
                 return;
             }
 
@@ -436,7 +440,10 @@ function ScanPageInner() {
                 setLoading(false);
                 if (stageRef.current) clearTimeout(stageRef.current);
                 setCurrentStage(SCAN_STAGES.length);
-                if (status.status === "done") await fetchFindings(result.scan_id);
+                if (status.status === "done") {
+                            await fetchFindings(result.scan_id);
+                            setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
+                        }
             }
         } catch (err) {
             const errMsg = err instanceof Error ? err.message : "Nastala neočekávaná chyba";
@@ -491,10 +498,10 @@ function ScanPageInner() {
     };
     const riskLabel = (level: string) => {
         switch (level) {
-            case "high": return "Čl. 6 — vysoce rizikový systém";
-            case "limited": return "Čl. 50 — transparenční povinnosti";
-            case "minimal": return "Minimální riziko";
-            default: return level;
+            case "high": return "";
+            case "limited": return "";
+            case "minimal": return "";
+            default: return "";
         }
     };
     const riskDotColor = (level: string) => {
@@ -809,9 +816,7 @@ function ScanPageInner() {
                                                     Dalších {trackers.length} sledovacích {trackers.length === 1 ? "systém" : trackers.length < 5 ? "systémy" : "systémů"} (non-AI)
                                                 </span>
                                             </div>
-                                            <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 border border-green-500/20 px-2.5 py-0.5 text-[11px] font-medium text-green-400">
-                                                ✓ Nespadá pod AI Act
-                                            </span>
+                                            <!-- badge removed -->
                                         </div>
                                         <p className="text-xs text-slate-500 mt-1.5">
                                             Tyto technologie <strong className="text-slate-400">nejsou umělou inteligencí</strong> a nevyžadují regulaci dle EU AI Act.
@@ -1008,7 +1013,24 @@ function ScanPageInner() {
 
                                     {emailSent ? (
                                         <div className="inline-flex items-center gap-2 text-green-400 font-medium text-sm">
-                                            <IconCheckCircle className="w-4 h-4" /> Report odeslán na {reportEmail}
+                                            <IconCheckCircle className="w-4 h-4" /> Report odeslán na{" "}
+                                            <a
+                                                href={
+                                                    reportEmail.endsWith("@gmail.com") ? "https://mail.google.com/mail/u/0/#inbox"
+                                                    : reportEmail.endsWith("@seznam.cz") ? "https://email.seznam.cz/"
+                                                    : reportEmail.endsWith("@email.cz") ? "https://email.seznam.cz/"
+                                                    : reportEmail.endsWith("@outlook.com") || reportEmail.endsWith("@hotmail.com") || reportEmail.endsWith("@live.com") ? "https://outlook.live.com/mail/0/inbox"
+                                                    : reportEmail.endsWith("@yahoo.com") ? "https://mail.yahoo.com/"
+                                                    : reportEmail.endsWith("@icloud.com") ? "https://www.icloud.com/mail/"
+                                                    : `mailto:${reportEmail}`
+                                                }
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="underline hover:text-green-300 transition-colors"
+                                            >
+                                                {reportEmail}
+                                            </a>
+                                            <span className="block text-xs text-slate-500 mt-1">Klikněte pro otevření schránky</span>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2 max-w-sm mx-auto">

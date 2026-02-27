@@ -74,10 +74,10 @@ const plans = [
         description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Vše z PRO",
+            "★ 2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Tištěná dokumentace v profesionální vazbě — připravená na kontrolu",
             "10 hodin on-line konzultací s compliance specialistou",
             "Metodická kontrola veškeré dokumentace",
-            "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Dedikovaný specialista",
             "SLA 4h odezva v pracovní době",
         ],
@@ -96,8 +96,6 @@ const plans = [
 export default function PricingPage() {
     const [loading, setLoading] = useState<string | null>(null);
     const [error, setError] = useState("");
-    const [coffeeEmail, setCoffeeEmail] = useState("");
-    const [showCoffeeEmail, setShowCoffeeEmail] = useState(false);
 
     const { user } = useAuth();
     const router = useRouter();
@@ -230,7 +228,7 @@ export default function PricingPage() {
                                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            <span className="text-slate-300">{feature}</span>
+                                            <span className={`${feature.startsWith("★") ? "text-green-300 font-bold" : "text-slate-300"}`}>{feature}</span>
                                         </li>
                                     ))}
                                     {plan.notIncluded.map((feature) => (
@@ -392,7 +390,7 @@ export default function PricingPage() {
 
                     <div className="mt-6 text-center space-y-1">
                         <p className="text-xs text-slate-500">
-                            Monitoring je volitelný doplněk — lze aktivovat pouze po zakoupení balíčku BASIC, PRO nebo ENTERPRISE.
+                            Monitoring je volitelný doplněk dostupný pouze pro stávající klienty — lze aktivovat až po zakoupení balíčku BASIC, PRO nebo ENTERPRISE a přihlášení do dashboardu.
                         </p>
                         <p className="text-xs text-slate-500">
                             Minimální doba: 3 měsíce. Výpověď: 1 měsíc. U balíčku ENTERPRISE je 2 roky monitoringu již v ceně.
@@ -433,7 +431,7 @@ export default function PricingPage() {
                                 { label: "Prioritní zpracování", basic: false, pro: true, enterprise: true },
                                 { label: "10 h on-line konzultací se specialistou", basic: false, pro: false, enterprise: true },
                                 { label: "Metodická kontrola dokumentace", basic: false, pro: false, enterprise: true },
-                                { label: "2 roky měsíčního monitoringu", basic: false, pro: false, enterprise: true },
+                                { label: "★ 2 roky měsíčního monitoringu", basic: false, pro: false, enterprise: true },
                                 { label: "Dedikovaný specialista", basic: false, pro: false, enterprise: true },
                                 { label: "SLA 4h odezva v prac. době", basic: false, pro: false, enterprise: true },
                             ];
@@ -471,7 +469,7 @@ export default function PricingPage() {
                                             <tbody>
                                                 {FEATURES.map((feat, i) => (
                                                     <tr key={feat.label} className={`border-b border-white/[0.04] ${i % 2 === 1 ? "bg-white/[0.01]" : ""}`}>
-                                                        <td className="pl-6 pr-4 py-3 text-[13px] text-slate-300 leading-snug">{feat.label}</td>
+                                                        <td className={`pl-6 pr-4 py-3 text-[13px] leading-snug ${feat.label.startsWith("★") ? "text-green-300 font-bold" : "text-slate-300"}`}>{feat.label}</td>
                                                         <td className="px-4 py-3 text-center">{feat.basic ? CHECK : CROSS}</td>
                                                         <td className="px-4 py-3 text-center bg-fuchsia-500/[0.02] border-x border-fuchsia-500/[0.06]">{feat.pro ? CHECK : CROSS}</td>
                                                         <td className="px-4 py-3 text-center">{feat.enterprise ? CHECK : CROSS}</td>
@@ -529,7 +527,7 @@ export default function PricingPage() {
                                                             {included.map((f) => (
                                                                 <div key={f.label} className="flex items-start gap-2.5 text-[13px]">
                                                                     <svg className="w-4 h-4 mt-0.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                                                    <span className="text-slate-300">{f.label}</span>
+                                                                    <span className={`${f.label.startsWith("★") ? "text-green-300 font-bold" : "text-slate-300"}`}>{f.label}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -569,115 +567,9 @@ export default function PricingPage() {
                 </div>
 
                 {/* FAQ */}
-                <ScrollReveal variant="fade-up" delay={0}>
-                    <div className="mt-20 max-w-2xl mx-auto">
-                        <h2 className="text-2xl font-bold text-center mb-8">Časté dotazy k platbám</h2>
-                        <div className="space-y-3">
-                            {[
-                                {
-                                    q: "Jak platba probíhá?",
-                                    a: "Po kliknutí na tlačítko Objednat budete přesměrováni na zabezpečenou platební stránku Stripe, kde zaplatíte kartou, Apple Pay nebo Google Pay. Pokud preferujete bankovní převod, zašleme vám po objednávce fakturu s platebními údaji."
-                                },
-                                {
-                                    q: "Je to jednorázová platba?",
-                                    a: "Balíčky BASIC a PRO jsou jednorázové. Monitoring je volitelný měsíční doplněk — můžete ho přidat ke kterémukoliv balíčku, ale nemusíte."
-                                },
-                                {
-                                    q: "Co dostanu po zaplacení?",
-                                    a: "Po zaplacení se vám okamžitě odemkne Dashboard. Něž obdržíte dokumenty, provedeme hloubkový 24hodinový sken vašeho webu — 24 nezávislých skenů v 6 kolech ze 7 zemí světa (CZ, GB, US, BR, JP, ZA, AU), střídavě z desktopu i mobilu přes rezidenční proxy. Poté naše dokumenty projdou interní kontrolou kvality (obvykle do 48 hodin, max. 7 pracovních dnů). Výsledkem je sada až 12 compliance dokumentů v PDF přizpůsobená vašemu rizikovému profilu. Do 14 dnů vám navíc všechny dokumenty doručíme v tištěné podobě v profesionální vazbě — připravené na případnou kontrolu."
-                                },
-                                {
-                                    q: "Proč potřebuji měsíční monitoring?",
-                                    a: "AI systémy se na webu objevují i bez vašeho vědomí — po aktualizaci pluginu, upgradu e-shopové platformy, změně chatbotu nebo aktivaci AI funkcí třetí stranou (analytika, reklamy, platební brána). Monitoring každý měsíc váš web proskenuje a upozorní vás na změny."
-                                },
-                                {
-                                    q: "Můžu monitoring kdykoliv zrušit?",
-                                    a: "Ano. Minimální doba je 3 měsíce, poté můžete kdykoliv vypovědět s 1měsíční výpovědní lhůtou. Při roční platbě ušetříte 17 %."
-                                },
-                                {
-                                    q: "Nahradíte advokáta?",
-                                    a: "Ne — jsme technický nástroj, ne právní poradna. Připravíme vám dokumentační podklady, které můžete vzít k právníkovi k odborné revizi."
-                                },
-                                {
-                                    q: "Můžu dostat fakturu?",
-                                    a: "Samozřejmě. Faktura se automaticky vygeneruje a odešle na váš email. Nejsme plátci DPH — uvedená cena je konečná."
-                                },
-                            ].map((faq) => (
-                                <details
-                                    key={faq.q}
-                                    className="group rounded-xl border border-white/[0.06] bg-white/[0.02]"
-                                >
-                                    <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-sm font-medium text-slate-200 hover:text-fuchsia-300 transition-colors">
-                                        {faq.q}
-                                        <svg className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </summary>
-                                    <p className="px-6 pb-4 text-sm text-slate-400 leading-relaxed">
-                                        {faq.a}
-                                    </p>
-                                </details>
-                            ))}
-                        </div>
-                    </div>
-                </ScrollReveal>
+                
+                {/* Café panel removed */}
 
-                {/* ── Pozvi mě na kafé ── */}
-                <ScrollReveal variant="scale-up" delay={1}>
-                    <div className="mt-20 max-w-md mx-auto">
-                        <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-amber-500/[0.06] to-transparent p-8 text-center">
-                            <div className="mx-auto w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4">
-                                <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 20h10" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 4v2m3-2v2m3-2v2" />
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Pozvi nás na kafé</h3>
-                            <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-                                Chcete nás podpořit? Kupte nám kafé za 50&nbsp;Kč
-                                a&nbsp;zároveň si odzkoušíte, že platební brána funguje.
-                            </p>
-                            <div className="mb-5">
-                                <span className="text-4xl font-extrabold text-amber-400">50</span>
-                                <span className="text-slate-500 ml-1">Kč</span>
-                            </div>
-                            {showCoffeeEmail && !user && (
-                                <div className="mb-4">
-                                    <label className="block text-xs text-slate-400 mb-1.5 text-left">Váš email (ať víme, kdo nás zve)</label>
-                                    <input
-                                        type="email"
-                                        value={coffeeEmail}
-                                        onChange={(e) => setCoffeeEmail(e.target.value)}
-                                        placeholder="vas@email.cz"
-                                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-500/40 focus:outline-none focus:ring-1 focus:ring-amber-500/20"
-                                    />
-                                </div>
-                            )}
-                            <button
-                                onClick={() => handleCheckout("coffee")}
-                                disabled={loading === "coffee"}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-3.5 text-sm font-bold text-black hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading === "coffee" ? (
-                                    "Přesměrování na platbu…"
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
-                                        </svg>
-                                        Kup kafé
-                                    </>
-                                )}
-                            </button>
-                            <p className="text-xs text-slate-600 mt-4">
-                                Bezpečná platba přes Stripe.
-                            </p>
-                        </div>
-                    </div>
-                </ScrollReveal>
 
                 {/* Powered by */}
                 <ScrollReveal variant="fade-up" delay={1}>

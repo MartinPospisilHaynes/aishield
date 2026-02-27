@@ -3315,9 +3315,26 @@ export default function AdminPage() {
                                     </p>
                                     <button
                                         onClick={async () => {
-                                            const typed = window.prompt(
-                                                "⚠️ POZOR: Toto smaže VŠECHNA data!\n\nPro potvrzení napište VYMAZ:"
-                                            );
+                                            // Krok 1: Admin heslo
+                                            const pwd = window.prompt("🔐 Krok 1/2: Zadejte admin heslo:");
+                                            if (!pwd) return;
+                                            // Ověření hesla přes API
+                                            try {
+                                                const authCheck = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim() + "/api/admin/verify-password", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}` },
+                                                    body: JSON.stringify({ password: pwd }),
+                                                });
+                                                if (!authCheck.ok) {
+                                                    setToolResult("❌ Nesprávné admin heslo. Factory reset zrušen.");
+                                                    return;
+                                                }
+                                            } catch {
+                                                setToolResult("❌ Nelze ověřit heslo. Zkuste to znovu.");
+                                                return;
+                                            }
+                                            // Krok 2: Napsat VYMAZ
+                                            const typed = window.prompt("⚠️ Krok 2/2: POZOR — toto smaže VŠECHNA data!\n\nPro potvrzení napište VYMAZ:");
                                             if (typed !== "VYMAZ") {
                                                 if (typed !== null) setToolResult("❌ Factory reset zrušen — nesprávné potvrzení.");
                                                 return;

@@ -63,6 +63,14 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     },
 ];
 
+// Format display values — clean || separators in addresses
+function formatDisplayValue(key: string, value: string): string {
+    if (key === "company_address" || key.includes("address") || key.includes("adresa")) {
+        return value.replace(/\s*\|\|\s*/g, ", ");
+    }
+    return value;
+}
+
 const TEMPLATE_NAMES: Record<string, string> = {
     compliance_report: "Zpráva o souladu s AI Act",
     transparency_page: "Transparentní stránka",
@@ -234,9 +242,18 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex gap-3">
                         <a href="/scan" className="btn-secondary text-sm px-4 py-2">Nový sken</a>
-                        <a href={data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik"} className="btn-primary text-sm px-4 py-2">
-                            {data?.questionnaire_status === "dokončen" ? "Dotazník ✓" : data?.questionnaire_status?.startsWith("rozpracován") ? "Pokračovat v dotazníku" : "Vyplnit dotazník"}
-                        </a>
+                        {(ps.questionnaire_done && ps.payment_done && ps.documents_done) ? (
+                            <button
+                                onClick={() => alert("Vaše odpovědi jsme již zpracovali a na základě Vašich odpovědí jsme Vám vygenerovali všechny potřebné dokumenty, které obdržíte e-mailem a do 14ti dní i poštou.\n\nV případě, že chcete změnit některé své odpovědi v dotazníku, protože se Vaše situace změnila, kontaktujte nás formou dotazníku na info@aishield.cz, kde nám popíšete Váš problém a my budeme Vaši žádost řešit individuálně.")}
+                                className="btn-secondary text-sm px-4 py-2 opacity-70"
+                            >
+                                Dotazník ✓ Zpracován
+                            </button>
+                        ) : (
+                            <a href={data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik"} className="btn-primary text-sm px-4 py-2">
+                                {data?.questionnaire_status === "dokončen" ? "Dotazník ✓" : data?.questionnaire_status?.startsWith("rozpracován") ? "Pokračovat v dotazníku" : "Vyplnit dotazník"}
+                            </a>
+                        )}
                     </div>
                 </div>
 
@@ -264,11 +281,12 @@ export default function DashboardPage() {
                         value={data?.questionnaire_status === "dokončen" ? "Hotovo" : data?.questionnaire_status?.startsWith("rozpracován") ? "Rozpracován" : "Čeká"}
                         sub={data?.questionnaire_status === "dokončen" ? "Vyplněn" : data?.questionnaire_status?.startsWith("rozpracován") ? "Pokračujte ve vyplňování" : "Vyplňte pro přesnější analýzu"}
                         color={data?.questionnaire_status === "dokončen" ? "text-green-400" : data?.questionnaire_status?.startsWith("rozpracován") ? "text-cyan-400" : "text-amber-400"}
-                        href={data?.questionnaire_status === "dokončen" ? undefined : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
+                        href={(ps.questionnaire_done && ps.payment_done && ps.documents_done) ? undefined : data?.questionnaire_status === "dokončen" ? undefined : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
                     />
                 </div>
 
-                <div className="flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 pb-px">
+                {/* Desktop tabs */}
+                <div className="hidden md:flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 pb-px">
                     {TABS.map((tab) => (
                         <button
                             key={tab.key}
@@ -280,6 +298,23 @@ export default function DashboardPage() {
                         >
                             {tab.icon}
                             {tab.label}
+                        </button>
+                    ))}
+                </div>
+                {/* Mobile accordion tabs */}
+                <div className="md:hidden mb-6 space-y-1">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${activeTab === tab.key
+                                ? "text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20"
+                                : "text-slate-400 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04]"
+                                }`}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                            <svg className={`w-4 h-4 ml-auto transition-transform ${activeTab === tab.key ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                         </button>
                     ))}
                 </div>
@@ -368,15 +403,15 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
             cta: "Spustit sken",
         },
         {
-            done: deepDone || deepRunning,
+            done: deepDone || deepRunning || (hasQuest && hasPaidOrder),
             optional: true,
             label: deepRunning && !deepDone ? "24h test ⏳" : "24h test",
             desc: deepDone
-                ? "Hloubkový scan ze 7 zemí a 6 kontinentů byl úspěšně dokončen"
+                ? "Hloubkový scan ze 8 zemí a 6 kontinentů byl úspěšně dokončen"
                 : deepRunning
                     ? "Hloubkový scan probíhá na pozadí ze 7 zemí — mezitím pokračujte dotazníkem"
                     : hasScans
-                        ? "Spusťte 24hodinový hloubkový test ze 7 zemí a 6 kontinentů"
+                        ? "Spusťte 24hodinový hloubkový test ze 8 zemí a 6 kontinentů"
                         : "Nejprve dokončete rychlý sken webu",
             detail: null,
             href: null,
@@ -543,7 +578,7 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                                             <p className="text-xs text-red-400">{deepScanError}</p>
                                         )}
                                         <p className="text-xs text-slate-400">
-                                            🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 — 7 zemí, 6 kontinentů, desktop i mobil
+                                            🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪 — 7 zemí, 6 kontinentů, desktop i mobil
                                         </p>
                                     </div>
                                 )}
@@ -622,11 +657,11 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                         <div>
                             <h4 className="font-semibold text-cyan-300 text-sm">24h hloubkový test probíhá</h4>
                             <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Testujeme váš web ze <strong className="text-slate-300">7 zemí a 6 kontinentů</strong> (desktop i mobil).
+                                Testujeme váš web ze <strong className="text-slate-300">8 zemí a 6 kontinentů</strong> (desktop i mobil).
                                 Výsledky budou přibližně za <strong className="text-slate-300">24 hodin</strong> — pošleme vám e-mail.
                             </p>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className="text-[10px] text-slate-500">🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺</span>
+                                <span className="text-[10px] text-slate-500">🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪</span>
                             </div>
                         </div>
                     </div>
@@ -665,13 +700,13 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                     <h3 className="font-semibold mb-4">Objednávky</h3>
                     <div className="space-y-2">
                         {data.orders.map((order) => (
-                            <div key={order.order_number} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm">
+                            <div key={order.order_number} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm">
                                 <div>
                                     <span className="text-slate-300 font-medium">{order.order_number}</span>
                                     <span className="text-slate-500 ml-2">({order.plan.toUpperCase()})</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-slate-400">{new Intl.NumberFormat("cs-CZ").format(order.amount)} Kč</span>
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="text-slate-400 whitespace-nowrap">{new Intl.NumberFormat("cs-CZ").format(order.amount)}&nbsp;Kč</span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "PAID" ? "bg-green-500/10 text-green-400" : order.status === "CREATED" ? "bg-amber-500/10 text-amber-400" : "bg-red-500/10 text-red-400"}`}>
                                         {order.status === "PAID" ? "Zaplaceno" : order.status === "CREATED" ? "Čeká" : order.status}
                                     </span>
@@ -927,7 +962,7 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
     return (
         <div className="space-y-3">
             {scans.map((scan, i) => {
-                const effectiveStatus = scan.deep_scan_status === "done" ? "completed" : scan.status === "completed" ? "completed" : scan.status === "running" || scan.deep_scan_status === "running" ? "running" : scan.status;
+                const effectiveStatus = scan.deep_scan_status === "done" ? "completed" : scan.status === "completed" || scan.status === "done" ? "completed" : scan.status === "running" || scan.deep_scan_status === "running" ? "running" : scan.status;
                 return (
                     <div key={scan.id} className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
                         <div className="flex flex-col items-center gap-1">
@@ -1119,7 +1154,7 @@ const DASHBOARD_PLANS = [
             "Prioritní zpracování",
             "10 hodin on-line konzultací s compliance specialistou",
             "Metodická kontrola veškeré dokumentace",
-            "2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
+            "★ 2 roky měsíčního monitoringu — automatický sken, propsání změn, hlášení a aktualizace dokumentů",
             "Dedikovaný specialista",
             "SLA 4h odezva v pracovní době",
         ],
