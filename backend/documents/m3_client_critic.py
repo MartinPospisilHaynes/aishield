@@ -195,12 +195,18 @@ JAKO KLIENT OD TRANSPARENTNOSTI A LIDSKÉHO DOHLEDU OČEKÁVÁM:
     "transparency_page": """
 JAKO KLIENT OD TRANSPARENČNÍ STRÁNKY OČEKÁVÁM:
 - Hotovou HTML stránku, kterou vložím na web BEZ ÚPRAV
-- Vypadá profesionálně a moderně — neostudím se před zákazníky
+- Design je jednoduchý, informativní, seriózní — jako VOP nebo GDPR stránka
+  Černobílý / minimalistický design je SPRÁVNÝ — odpovídá účelu.
+  NEPENALIZUJ za absenci barev nebo vizuálních efektů.
 - Text je srozumitelný pro BĚŽNÉHO návštěvníka webu (ne právníka)
-- Vidím tam VŠECHNY své AI systémy a jak je používám
-- FAQ odpovídá na otázky, které by mě jako zákazníka napadly
+- Vidím tam AI systémy, se kterými moji ZÁKAZNÍCI přijdou do kontaktu
+  (chatbot, AI obsah, formuláře). Interní systémy (HR, analytika, CRM)
+  tam být NEMAJÍ — nechci odhalovat know-how firmy konkurenci.
+  NEPENALIZUJ za chybějící interní systémy.
+- FAQ jako prosté otázky a odpovědi (ne akordeon) — vše přehledně viditelné
 - Je tam kontakt kam se obrátit s dotazy k AI
 - SEO meta tagy — chci aby Google stránku správně indexoval
+- Práva zákazníků formulována přesně — ne příliš široce
 """,
     "training_presentation": """
 JAKO KLIENT OD ŠKOLÍCÍ PREZENTACE OČEKÁVÁM:

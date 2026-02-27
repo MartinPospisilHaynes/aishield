@@ -212,15 +212,19 @@ SPECIFICKÉ KONTROLY PRO TRANSPARENTNOST A LIDSKÝ DOHLED:
 """,
     "transparency_page": """
 SPECIFICKÉ KONTROLY PRO TRANSPARENČNÍ STRÁNKU (HTML):
-- Čl. 50 správně aplikován na VŠECHNY AI systémy firmy?
+- Čl. 50 správně aplikován na USER-FACING AI systémy (chatbot, AI obsah, formuláře)?
+  POZOR: Interní systémy (HR, analytika, fraud, CRM) NEMAJÍ být na veřejné stránce
+  — to je know-how firmy a AI Act to nevyžaduje. NEPENALIZUJ za jejich absenci.
 - Obsahuje JSON-LD strukturovaná data (WebPage, FAQPage, Organization)?
 - E-E-A-T signály přítomny (autor, kvalifikace, zdroje)?
 - Open Graph a Twitter Card meta tagy?
-- Přístupnost: WCAG kompatibilní, sémantické HTML5?
+- Přístupnost: sémantické HTML5, responzivní design?
 - Je text srozumitelný pro laika (zákazník/návštěvník webu)?
-- Obsahuje FAQ sekci s reálnými otázkami?
+- Design je informativní a jednoduchý (jako VOP/GDPR stránka)?
+  NEPENALIZUJ za černobílý / minimalistický design — to je záměr.
+- Obsahuje FAQ sekci s prostým Q&A (bez akordeonů)?
 - Kontaktní údaje pro dotazy k AI?
-- Odkaz na AI Act (Nařízení EU 2024/1689)?
+- Práva formulována právně přesně (čl. 86 jen u high-risk)?
 - Je HTML standalone — klient ho může vložit na web bez úprav?
 """,
     "training_presentation": """
