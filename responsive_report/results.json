@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T22:18:52.712131",
+  "generated": "2026-02-27T22:32:35.951243",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 89.5,
+  "duration_seconds": 88.4,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -18,7 +18,7 @@
   },
   "pages_tested": 7,
   "total_tests": 21,
-  "average_score": 98.8,
+  "average_score": 99.7,
   "results": [
     {
       "page": "homepage",
@@ -86,34 +86,8 @@
       "url": "https://aishield.cz/registrace",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "3 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "−",
-              "width": 40,
-              "height": 44,
-              "element": "button"
-            },
-            {
-              "text": "+",
-              "width": 40,
-              "height": 44,
-              "element": "button"
-            },
-            {
-              "text": "Přihlaste se",
-              "width": 83,
-              "height": 17,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 91,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/registrace_mobile.png"
     },
     {
@@ -142,22 +116,8 @@
       "url": "https://aishield.cz/",
       "width": 768,
       "height": 1024,
-      "issues": [
-        {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "html",
-              "scrollWidth": 774,
-              "clientWidth": 768,
-              "diff": 6
-            }
-          ]
-        }
-      ],
-      "score": 90,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/homepage_tablet.png"
     },
     {
