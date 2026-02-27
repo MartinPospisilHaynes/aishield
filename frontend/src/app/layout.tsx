@@ -80,7 +80,7 @@ export default function RootLayout({
                     }
                 `}} />
             </head>
-            <body className="bg-dark-900 text-slate-100">
+            <body className="bg-dark-900 text-slate-100 overflow-x-hidden">
                 <Providers>
                     {/* ── Header (skrytý v dotazníku — koliduje s progress barem) ── */}
                     <HeaderVisibility />
@@ -122,23 +122,23 @@ export default function RootLayout({
                                 {/* Produkt */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Produkt</h3>
-                                    <ul className="space-y-3 text-sm text-slate-500">
-                                        <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors">Skenovat web</a></li>
-                                        <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors">AI dotazník</a></li>
-                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors">Ceník</a></li>
-                                        <li><a href="/about" className="hover:text-neon-fuchsia transition-colors">Jak to funguje</a></li>
+                                    <ul className="space-y-1 text-sm text-slate-500">
+                                        <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Skenovat web</a></li>
+                                        <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors inline-block py-2">AI dotazník</a></li>
+                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Ceník</a></li>
+                                        <li><a href="/about" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Jak to funguje</a></li>
                                     </ul>
                                 </div>
 
                                 {/* Právní */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Právní</h3>
-                                    <ul className="space-y-3 text-sm text-slate-500">
-                                        <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors">Ochrana soukromí</a></li>
-                                        <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors">Obchodní podmínky</a></li>
-                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors">GDPR</a></li>
-                                        <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors">Cookies</a></li>
-                                        <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors">AI Act souhlas</a></li>
+                                    <ul className="space-y-1 text-sm text-slate-500">
+                                        <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Ochrana soukromí</a></li>
+                                        <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Obchodní podmínky</a></li>
+                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors inline-block py-2">GDPR</a></li>
+                                        <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Cookies</a></li>
+                                        <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors inline-block py-2">AI Act souhlas</a></li>
                                     </ul>
                                 </div>
 
@@ -181,11 +181,11 @@ export default function RootLayout({
                                 {/* Kontakt */}
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Kontakt</h3>
-                                    <ul className="space-y-3 text-sm text-slate-500">
+                                    <ul className="space-y-1 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
-                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors">+420 732 716 141</a></li>
-                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors">info@aishield.cz</a></li>
+                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-2">+420 732 716 141</a></li>
+                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-2">info@aishield.cz</a></li>
                                     </ul>
                                 </div>
                             </div>

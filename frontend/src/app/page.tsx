@@ -454,7 +454,7 @@ function TestimonialCarousel() {
 
             <div
                 ref={scrollRef}
-                className="flex gap-4 overflow-x-hidden py-2"
+                className="flex gap-4 overflow-x-hidden overflow-y-visible py-2"
                 style={{ scrollBehavior: "auto" }}
             >
                 {items.map((t, i) => (

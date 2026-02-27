@@ -557,7 +557,7 @@ function ScanPageInner() {
                         required
                         disabled={loading}
                     />
-                    <button type="submit" className="btn-primary whitespace-nowrap disabled:opacity-50 gap-2" disabled={loading}>
+                    <button type="submit" className="btn-primary whitespace-normal sm:whitespace-nowrap disabled:opacity-50 gap-2" disabled={loading}>
                         {loading ? <><IconClock className="w-4 h-4 animate-pulse" /> Skenuji...</> : <><IconSearch className="w-4 h-4" /> Skenovat</>}
                     </button>
                 </form>
