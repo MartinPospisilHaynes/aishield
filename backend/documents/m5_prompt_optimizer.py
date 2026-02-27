@@ -14,9 +14,12 @@ Architekttura:
 Bezpečnostní záruky:
   - Immutable core: jádro promptu (právní fakta, formát) nelze měnit
   - Max 5 pravidel za iteraci (prevence rozpliznutí)
+  - Max 30 pravidel celkem / 5000 znaků — automatické prořezávání nejhorších
   - Konvergence check: vypne se při avg skóre ≥ 8.5
   - Verzování: každý patch je uložen, možnost rollbacku
-  - Degradation guard: pokud nový prompt zhorší skóre → automatický revert
+  - Degradation guard: pokud skóre klesne o ≥ 0.5 vs best → automatický rollback
+  - Finding rejection: M5 může explicitně odmítnout nálezy M2/M3 jako neplatné
+  - No-change-is-OK: 0 nových pravidel je validní a preferovaný výstup
 
 Model: Claude Opus 4.6 — nejsilnější model pro meta-analýzu a syntézu.
 """
@@ -51,6 +54,9 @@ MAX_ITERATIONS = 20             # nebo po 20 iteracích celkem
 # Bezpečnost
 MAX_RULES_PER_ITERATION = 5    # max pravidel přidaných za 1 iteraci
 MIN_PATTERN_OCCURRENCES = 3     # problém musí být v ≥3 dokumentech
+MAX_TOTAL_RULES = 30            # absolutní limit pravidel — pak se prořezávají nejstarší
+MAX_RULES_CHARS = 5000          # max velikost m5_rules.txt v znacích
+DEGRADATION_THRESHOLD = 0.5     # pokud avg klesne o >= 0.5 vs best → rollback
 
 # Model pro M5 — Opus pro maximální kvalitu meta-analýzy
 M5_MODEL = "claude-opus-4-6"
@@ -101,6 +107,14 @@ BEZPEČNOSTNÍ PRVKY — NIKDY:
 - Nenavrhuj obecné/vágní rady ("piš lépe", "buď konkrétnější")
 - Nenavrhuj pravidla, která by zkrátila nebo zjednodušila dokumenty pod profesionální úroveň
 
+KRITICKÝ PRINCIP — NEMĚŇ TO, CO FUNGUJE:
+- NE každý nález M2/M3 je oprávněný. Kritik může být přehnaně přísný nebo špatně interpretovat kontext.
+- Před navržením pravidla se VŽDY zeptej: "Je tento nález legitimní, nebo si kritik vykládá požadavek špatně?"
+- Pokud nález říká něco, co prompt SPRÁVNĚ dělá, ODMÍTNI ho a zdokumentuj proč.
+- 0 nových pravidel je PLATNÝ a PREFEROVANÝ výstup, pokud prompt funguje dobře.
+- NIKDY nepřidávej pravidlo jen proto, abys něco přidal. Každé pravidlo musí řešit PROKAZATELNÝ a OPAKOVANÝ problém.
+- Více pravidel = větší šance na protichůdné instrukce a "rozmazání" promptu.
+
 VÝSTUPNÍ FORMÁT:
 Odpověz VÝHRADNĚ platným JSON objektem.
 
@@ -117,9 +131,18 @@ Odpověz VÝHRADNĚ platným JSON objektem.
         "priklad_dokumentu": "compliance_report",
         "typicky_nalez": "Citace konkrétního nálezu z M2/M3"
       }
+    ],
+    "odmitnute_nalezy": [
+      {
+        "nalez": "Popis nálezu z M2/M3, který ODMÍTÁM jako neplatný",
+        "zdroj": "M2|M3",
+        "duvod_odmitnuti": "Proč je tento nález špatný — prompt dělá správně, kritik se mýlí protože...",
+        "pocet_vyskytu": 3
+      }
     ]
   },
   "doporuceni": {
+    "stav": "beze_zmeny|drobna_uprava|zasadni_zmena",
     "nova_pravidla": [
       {
         "pravidlo": "Text nového pravidla pro SYSTEM_PROMPT_M1 (max 2 věty)",
@@ -132,8 +155,17 @@ Odpověz VÝHRADNĚ platným JSON objektem.
   }
 }
 
+Pole "stav":
+- "beze_zmeny" — prompt funguje dobře, žádná pravidla nepřidávám. PREFEROVANÝ stav.
+- "drobna_uprava" — 1-2 pravidla pro drobný opakující se problém.
+- "zasadni_zmena" — 3-5 pravidel pro závažné systematické problémy.
+
+Pole "odmitnute_nalezy" — POVINNĚ vyplň, pokud jsi identifikoval nálezy,
+které jsou neplatné, přehnané, nebo kde kritik špatně interpretuje požadavek.
+Toto pole je DŮLEŽITÉ — ukazuje, že jsi kriticky zhodnotil vstupy.
+
 Pokud jsou dokumenty již kvalitní (průměr ≥ 8.5), nastav "konvergence": true
-a "nova_pravidla" nechej prázdné nebo minimální.
+a "nova_pravidla" nechej prázdné.
 """
 
 
@@ -205,6 +237,124 @@ class PromptVersionManager:
             "version": version,
             "iterations_remaining": MAX_ITERATIONS - version,
         }
+
+    def check_degradation(self) -> dict:
+        """
+        Degradation guard — detekuje, zda M5 pravidla ZHORŠUJÍ kvalitu.
+
+        Logika:
+        - Najde nejlepší historické avg_score
+        - Porovná s posledním avg_score
+        - Pokud pokles >= DEGRADATION_THRESHOLD → doporučí rollback
+        - Pokud 2 po sobě jdoucí poklesy → rollback na best verzi
+        """
+        if len(self._history) < 2:
+            return {"should_rollback": False, "reason": "Nedostatek dat"}
+
+        scores = [(h["version"], h["avg_score"]) for h in self._history]
+        best_version, best_score = max(scores, key=lambda x: x[1])
+        current_version, current_score = scores[-1]
+
+        drop = best_score - current_score
+
+        # Podmínka 1: Velký propad oproti nejlepšímu skóre
+        if drop >= DEGRADATION_THRESHOLD:
+            return {
+                "should_rollback": True,
+                "reason": f"Propad {drop:.2f} >= {DEGRADATION_THRESHOLD} vs best v{best_version}",
+                "best_score": best_score,
+                "best_version": best_version,
+                "current_score": current_score,
+                "drop": drop,
+                "rollback_to_version": best_version,
+            }
+
+        # Podmínka 2: Dva po sobě jdoucí poklesy
+        if len(scores) >= 3:
+            s1, s2, s3 = scores[-3][1], scores[-2][1], scores[-1][1]
+            if s3 < s2 < s1:
+                return {
+                    "should_rollback": True,
+                    "reason": f"Dva po sobě jdoucí poklesy: {s1:.2f} → {s2:.2f} → {s3:.2f}",
+                    "best_score": best_score,
+                    "best_version": best_version,
+                    "current_score": current_score,
+                    "drop": drop,
+                    "rollback_to_version": best_version,
+                }
+
+        return {
+            "should_rollback": False,
+            "best_score": best_score,
+            "current_score": current_score,
+            "drop": drop,
+        }
+
+    def prune_if_needed(self) -> int:
+        """
+        Prořezává pravidla pokud překročí MAX_TOTAL_RULES nebo MAX_RULES_CHARS.
+
+        Strategie: odstraní pravidla Z VERZÍ s nejhorším skóre (ty nepomáhaly).
+        Vrací počet odstraněných pravidel.
+        """
+        current_rules = self.get_current_m5_rules()
+        if not current_rules:
+            return 0
+
+        # Spočítej pravidla
+        rule_lines = [l for l in current_rules.split("\n") if l.strip().startswith("- ")]
+        total_rules = len(rule_lines)
+        total_chars = len(current_rules)
+
+        if total_rules <= MAX_TOTAL_RULES and total_chars <= MAX_RULES_CHARS:
+            return 0  # V limitu
+
+        logger.warning(f"[M5 PromptOptimizer] PRUNE: {total_rules} pravidel ({total_chars} znaků) "
+                      f"překračuje limit ({MAX_TOTAL_RULES} pravidel / {MAX_RULES_CHARS} znaků)")
+
+        # Najdi verze seřazené od nejhoršího skóre
+        if not self._history:
+            return 0
+
+        sorted_versions = sorted(self._history, key=lambda h: h["avg_score"])
+
+        pruned = 0
+        for worst_entry in sorted_versions:
+            if total_rules <= MAX_TOTAL_RULES and total_chars <= MAX_RULES_CHARS:
+                break
+
+            v = worst_entry["version"]
+            rules_in_version = worst_entry.get("rules_added", 0)
+            if rules_in_version == 0:
+                continue
+
+            # Odstraň sekci této verze z rules souboru
+            section_marker = f"# --- M5 v{v} ("
+            if section_marker in current_rules:
+                # Najdi začátek a konec sekce
+                start = current_rules.index(section_marker)
+                next_section = current_rules.find("# --- M5 v", start + 1)
+                if next_section == -1:
+                    section_text = current_rules[start:]
+                else:
+                    section_text = current_rules[start:next_section]
+
+                current_rules = current_rules.replace(section_text, "")
+                total_rules -= rules_in_version
+                total_chars = len(current_rules)
+                pruned += rules_in_version
+
+                logger.warning(f"[M5 PromptOptimizer] PRUNED v{v} ({rules_in_version} pravidel, "
+                              f"avg_score={worst_entry['avg_score']:.2f} — nejhorší)")
+
+        if pruned > 0:
+            # Ulož prořezaný soubor
+            with open(self.m5_rules_file, "w", encoding="utf-8") as f:
+                f.write(current_rules.strip() + "\n")
+            logger.info(f"[M5 PromptOptimizer] Prořezáno {pruned} pravidel. "
+                       f"Zbývá {total_rules} pravidel, {total_chars} znaků.")
+
+        return pruned
 
     def add_version(
         self,
@@ -353,6 +503,18 @@ async def analyze_and_optimize(
     logger.info(f"[M5 PromptOptimizer] Aktuální verze: v{conv_status['version']}")
     logger.info(f"[M5 PromptOptimizer] Zbývá iterací: {conv_status['iterations_remaining']}")
 
+    # ── 1b. Degradation guard — rollback pokud pravidla zhoršují skóre ──
+    degradation = manager.check_degradation()
+    if degradation["should_rollback"]:
+        rollback_to = degradation["rollback_to_version"]
+        logger.warning(f"[M5 PromptOptimizer] DEGRADATION GUARD: "
+                      f"skóre kleslo z {degradation['best_score']:.2f} na {degradation['current_score']:.2f} "
+                      f"(pokles {degradation['drop']:.2f} >= {DEGRADATION_THRESHOLD})")
+        logger.warning(f"[M5 PromptOptimizer] AUTO-ROLLBACK na v{rollback_to} (nejlepší historické skóre)")
+        manager.rollback(rollback_to)
+        # Pokračuj s analýzou, ale s varováním
+        logger.info(f"[M5 PromptOptimizer] Rollback proveden. Pokračuji s analýzou na nové baseline.")
+
     # ── 2. Agregace dat z M2+M3 ──
     aggregated = _aggregate_critiques(pipeline_log, all_critiques, post_m4_checks or {})
     logger.info(f"[M5 PromptOptimizer] Agregace: {aggregated['doc_count']} dokumentů, "
@@ -406,12 +568,29 @@ async def analyze_and_optimize(
             m5_response=m5_response,
         )
         logger.info(f"[M5 PromptOptimizer] Uloženo: v{version_entry['version']}")
+
+        # ── Prořezávání — kontrola velikosti pravidel ──
+        pruned = manager.prune_if_needed()
+        if pruned:
+            logger.info(f"[M5 PromptOptimizer] Prořezáno {pruned} starých pravidel (anti-bloat)")
     else:
-        logger.info(f"[M5 PromptOptimizer] Žádná nová pravidla — bez změny.")
+        logger.info(f"[M5 PromptOptimizer] Žádná nová pravidla — M5 zhodnotil prompt jako dostatečný.")
         version_entry = {"version": conv_status["version"], "rules_added": 0}
 
     # ── 8. Logování výsledků ──
     m5_time = time.time() - m5_start
+
+    # Logovat odmítnuté nálezy (M5 říká "kritik se mýlí")
+    rejected = analysis.get("odmitnute_nalezy", [])
+    if rejected:
+        logger.info(f"[M5 PromptOptimizer] ODMÍTNUTO {len(rejected)} nálezů jako neplatné:")
+        for rej in rejected:
+            logger.info(f"[M5 PromptOptimizer]   REJECTED [{rej.get('zdroj', '?')}]: "
+                       f"{rej.get('nalez', '?')}")
+            logger.info(f"[M5 PromptOptimizer]     Důvod odmítnutí: {rej.get('duvod_odmitnuti', '?')}")
+
+    stav = recommendations.get("stav", "neznámý")
+    logger.info(f"[M5 PromptOptimizer] Stav: {stav}")
 
     for i, rule in enumerate(new_rules, 1):
         logger.info(f"[M5 PromptOptimizer]   Pravidlo #{i}: {rule.get('pravidlo', '?')}")
@@ -426,13 +605,17 @@ async def analyze_and_optimize(
 
     return {
         "status": "optimized" if new_rules else "no_change",
+        "stav": recommendations.get("stav", "beze_zmeny" if not new_rules else "drobna_uprava"),
         "version": version_entry.get("version", conv_status["version"]),
         "rules_added": len(new_rules),
         "rules": [r.get("pravidlo", "") for r in new_rules],
+        "rejected_findings": len(rejected),
+        "rejected_details": [{"nalez": r.get("nalez", ""), "duvod": r.get("duvod_odmitnuti", "")} for r in rejected],
         "avg_score": round(avg_score, 2),
         "eu_avg": round(aggregated["eu_avg"], 2),
         "client_avg": round(aggregated["client_avg"], 2),
         "converged": is_converged,
+        "degradation_check": degradation if 'degradation' in dir() else None,
         "cost_usd": round(cost, 4),
         "time_s": round(m5_time, 1),
         "comment": recommendations.get("komentar", ""),
