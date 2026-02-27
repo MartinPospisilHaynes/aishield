@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { createGuestCheckout } from "@/lib/api";
 import { useAnalytics, useScrollTracking } from "@/lib/analytics";
 import ScrollReveal from "@/components/scroll-reveal";
 
@@ -108,24 +107,6 @@ export default function PricingPage() {
 
     async function handleCheckout(planKey: string) {
         track("plan_selected", { plan: planKey });
-        // Coffee = guest checkout, nevyžaduje přihlášení
-        if (planKey === "coffee") {
-            const emailToUse = user?.email || coffeeEmail;
-            if (!emailToUse) {
-                setShowCoffeeEmail(true);
-                return;
-            }
-            setLoading(planKey);
-            setError("");
-            try {
-                const data = await createGuestCheckout("coffee", emailToUse, "stripe");
-                window.location.href = data.gateway_url;
-            } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
-                setLoading(null);
-            }
-            return;
-        }
 
         // Pokud není přihlášen, přesměrovat na registraci
         if (!user) {

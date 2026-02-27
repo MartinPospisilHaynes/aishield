@@ -816,7 +816,7 @@ function ScanPageInner() {
                                                     Dalších {trackers.length} sledovacích {trackers.length === 1 ? "systém" : trackers.length < 5 ? "systémy" : "systémů"} (non-AI)
                                                 </span>
                                             </div>
-                                            <!-- badge removed -->
+                                            {/* badge removed */}
                                         </div>
                                         <p className="text-xs text-slate-500 mt-1.5">
                                             Tyto technologie <strong className="text-slate-400">nejsou umělou inteligencí</strong> a nevyžadují regulaci dle EU AI Act.
