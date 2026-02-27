@@ -1,0 +1,150 @@
+{
+  "version": 5,
+  "generation_id": "gen_20260226_204141",
+  "timestamp": "2026-02-26T22:13:53.638704+00:00",
+  "m5_full_response": {
+    "analyza": {
+      "prumerny_eu_score": 6.9,
+      "prumerny_client_score": 6.8,
+      "celkovy_prumer": 6.85,
+      "identifikovane_vzory": [
+        {
+          "vzor": "Systémový prompt prosakuje do výstupu dokumentu",
+          "pocet_vyskytu": 1,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "compliance_report",
+          "typicky_nalez": "V sekci 6 'Přehled dodaných dokumentů' je viditelně vložen interní systémový prompt obsahující instrukce pro generování dokumentu ('══ SPECIFICKÉ KONTROLNÍ BODY PRO TENTO TYP DOKUMENTU ══'). Tento text je součástí výstupu dodaného klientovi."
+        },
+        {
+          "vzor": "Dokumenty jsou oříznuté — chybí závěrečné sekce, tabulky nebo celé karty",
+          "pocet_vyskytu": 4,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "registr_ai_systemu",
+          "typicky_nalez": "Detailní karty jsou vyhotoveny pouze pro systémy č. 18 a č. 22–26. Karty pro systémy č. 27–55 zcela chybí. Slide 19 o GPAI modelech je oříznut uprostřed věty. Kontrolní tabulka v sekci 5 je přerušena. Sekce 8 'Revize a aktualizace' je ukončena neúplnou větou."
+        },
+        {
+          "vzor": "Chybějící konkrétní texty oznámení a hodnotící sekce pro deklarované systémy (pojišťovnictví, monitorování zaměstnanců, dynamická cenotvorba, účetní SW)",
+          "pocet_vyskytu": 7,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "dodavatelsky_checklist",
+          "typicky_nalez": "Dokument neobsahuje hodnocení systémů pro monitorování zaměstnanců, dynamickou cenotvorbu, účetní SW ani Microsoft Copilot, přestože jsou v přehledové tabulce. Texty oznámení chybí pro pojistníky, zákazníky u dynamické cenotvorby a reklamací."
+        },
+        {
+          "vzor": "Nesprávné datum účinnosti čl. 50 AI Act — uváděno 2.8.2026 místo správného 2.2.2025",
+          "pocet_vyskytu": 3,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "texty_oznameni",
+          "typicky_nalez": "V sekci 1 (warning box) je uvedeno, že povinnost dle čl. 50 odst. 1 je účinná od 2. 8. 2026. Toto je fakticky nesprávné — čl. 50 odst. 1 je účinný od 2. 2. 2025. Stejná chyba v transparenční stránce a akčním plánu."
+        },
+        {
+          "vzor": "Akční kroky jsou příliš obecné — chybí praktický návod 'jak' (měření bias skóre, technické logování, ověření klasifikace, komunikace s NÚKIB)",
+          "pocet_vyskytu": 9,
+          "zavaznost": "důležité",
+          "priklad_dokumentu": "monitoring_plan",
+          "typicky_nalez": "Některé KPI jsou příliš obecné — 'Bias skóre' bez návodu jak měřit. U 'pospa ing.' jen 'Ověřit u dodavatele' bez konkrétních otázek. U logování chybí technický příklad pro konkrétní systémy (CRIF, Guidewire)."
+        },
+        {
+          "vzor": "Transparenční stránka neobsahuje VŠECHNY deklarované AI systémy — chybí zakázané, monitorovací a další high-risk systémy",
+          "pocet_vyskytu": 3,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "transparencni_stranka",
+          "typicky_nalez": "Firma deklaruje systémy zakázané (sociální scoring, biometrie) a vysoce rizikové (monitorování zaměstnanců — GPS, kamery, analýza emailů). Tyto systémy zcela chybí v tabulce přehledu AI systémů na transparenční stránce."
+        },
+        {
+          "vzor": "Transparenční stránka označena jako 'dobrovolné prohlášení' místo zákonné povinnosti",
+          "pocet_vyskytu": 3,
+          "zavaznost": "kritické",
+          "priklad_dokumentu": "transparencni_stranka",
+          "typicky_nalez": "Podtitulek stránky zní 'Dobrovolné prohlášení o transparentním využívání AI'. Transparentnost vůči uživatelům je zákonná povinnost dle čl. 50, nikoli dobrovolný akt. Chybí odkaz na Nařízení (EU) 2024/1689."
+        }
+      ]
+    },
+    "doporuceni": {
+      "nova_pravidla": [
+        {
+          "pravidlo": "Nikdy nevkládej do výstupního dokumentu žádný text z interních instrukcí, systémového promptu, kontrolních bodů ani generovacích pokynů — výstup musí obsahovat VÝHRADNĚ obsah určený pro klienta; před finalizací dokumentu ověř, že žádná sekce neobsahuje řetězce jako '══', 'INSTRUKCE', 'KONTROLNÍ BODY', 'SPECIFICKÉ KONTROLY' ani jiné interní značky.",
+          "duvod": "V Compliance Reportu prosakoval systémový prompt přímo do sekce 6 dokumentu dodaného klientovi, což je kritická produkční chyba odhalující interní logiku systému.",
+          "ocekavany_efekt": "Eliminace úniku interních instrukcí do klientských dokumentů, zachování důvěryhodnosti výstupu."
+        },
+        {
+          "pravidlo": "Povinnosti transparentnosti dle čl. 50 AI Act (oznámení o AI chatbotech, označování syntetického obsahu, informování o high-risk systémech) vždy uváděj s datem účinnosti 2. 2. 2025 — NIKDY neuváděj datum 2. 8. 2026 pro čl. 50; datum 2. 8. 2026 je datem plné účinnosti AI Act pro high-risk systémy dle Přílohy III, nikoli pro transparenční povinnosti.",
+          "duvod": "Ve 3 dokumentech (texty oznámení, transparenční stránka, akční plán) bylo chybně uvedeno datum účinnosti čl. 50 jako 2.8.2026, což může vést klienta k závěru, že povinnost ještě neplatí, přestože je již více než rok účinná.",
+          "ocekavany_efekt": "Správné právní povědomí klienta o již platných povinnostech, eliminace rizika prodlení."
+        },
+        {
+          "pravidlo": "Pokud firma v dotazníku deklaruje AI systémy v určité kategorii (pojišťovnictví, monitorování zaměstnanců, dynamická cenotvorba, účetní SW, zákaznický support, vlastní vývoj), vždy pro KAŽDOU deklarovanou kategorii vygeneruj kompletní hodnotící sekci/kartu/text oznámení v příslušném dokumentu — nikdy neuváděj systém pouze v přehledové tabulce bez odpovídající detailní sekce; pokud hrozí překročení délky, prioritizuj high-risk a zakázané systémy.",
+          "duvod": "V 7+ dokumentech (dodavatelský checklist, texty oznámení, registr, transparenční stránka) byly systémy uvedeny v přehledových tabulkách, ale chyběly jim detailní hodnotící sekce, texty oznámení nebo karty — klient tak nedostal použitelný výstup pro tyto systémy.",
+          "ocekavany_efekt": "Kompletní pokrytí všech deklarovaných AI systémů ve všech dokumentech, eliminace mezer v compliance pokrytí."
+        },
+        {
+          "pravidlo": "Transparenční stránku (HTML) NIKDY neoznačuj jako 'dobrovolné prohlášení' — vždy uveď, že stránka plní zákonné povinnosti dle Nařízení (EU) 2024/1689 (AI Act), a v úvodu stránky vždy cituj konkrétní právní základ (čl. 50 odst. 1, 2, 4 a čl. 26 odst. 6); stránka musí obsahovat VŠECHNY AI systémy identifikované ve webovém skenu a dotazníku bez výjimky, včetně systémů vyžadujících audit.",
+          "duvod": "Transparenční stránka byla označena jako 'dobrovolné prohlášení', chyběl odkaz na AI Act a neobsahovala zakázané systémy, monitorování zaměstnanců ani další deklarované high-risk systémy — 3 kritické nálezy M2 a 2 důležité nálezy M3.",
+          "ocekavany_efekt": "Právně korektní transparenční stránka s kompletním výčtem systémů, která splňuje zákonné požadavky a nepodrývá regulatorní odpovědnost firmy."
+        },
+        {
+          "pravidlo": "Ke každému akčnímu kroku, KPI metrice nebo doporučení, které vyžaduje praktickou implementaci klientem, vždy přidej alespoň jeden konkrétní příklad postupu relevantní pro systémy firmy — například u 'bias testování' uveď konkrétní metriku (disparate impact ratio) a nástroj (Fairlearn, AI Fairness 360), u 'ověření u dodavatele' uveď 3–5 konkrétních otázek k položení, u 'technického logování' uveď příklad logovací struktury pro typ systému klienta.",
+          "duvod": "V 9+ nálezech M3 klient opakovaně kritizoval obecnost akčních kroků — 'jak měřit bias skóre?', 'co ověřit u dodavatele?', 'jak technicky zajistit logování v CRIF/Guidewire?' — bez praktických příkladů jsou dokumenty pro laika nepoužitelné.",
+          "ocekavany_efekt": "Výrazné zvýšení praktické použitelnosti dokumentů, snížení závislosti klienta na externím poradenství pro implementaci základních kroků."
+        }
+      ],
+      "konvergence": false,
+      "komentar": "Kvalita dokumentů je pod cílovým skóre (6.85 vs. 8.5) s 137 EU nálezy a 34 klientskými nálezy v draftu. M4 refiner zlepšuje skóre na průměr 7.5, ale přetrvává 42 nálezů i po úpravách — to indikuje systémové problémy v M1 promptu. Nejkritičtější jsou: únik systémového promptu do výstupu (1×, ale fatální), ořezávání dokumentů (existující pravidlo v M5 v3 zjevně nefunguje dostatečně), chybné datum účinnosti čl. 50, a systematické vynechávání detailních sekcí pro deklarované systémy. Navržená pravidla cílí na eliminaci těchto vzorů; v další iteraci bude třeba sledovat zejména kompletnost dokumentů a správnost dat účinnosti."
+    }
+  },
+  "analysis_input": {
+    "prumerny_eu_score": 6.9,
+    "prumerny_client_score": 6.8,
+    "celkovy_prumer": 6.85,
+    "identifikovane_vzory": [
+      {
+        "vzor": "Systémový prompt prosakuje do výstupu dokumentu",
+        "pocet_vyskytu": 1,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "compliance_report",
+        "typicky_nalez": "V sekci 6 'Přehled dodaných dokumentů' je viditelně vložen interní systémový prompt obsahující instrukce pro generování dokumentu ('══ SPECIFICKÉ KONTROLNÍ BODY PRO TENTO TYP DOKUMENTU ══'). Tento text je součástí výstupu dodaného klientovi."
+      },
+      {
+        "vzor": "Dokumenty jsou oříznuté — chybí závěrečné sekce, tabulky nebo celé karty",
+        "pocet_vyskytu": 4,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "registr_ai_systemu",
+        "typicky_nalez": "Detailní karty jsou vyhotoveny pouze pro systémy č. 18 a č. 22–26. Karty pro systémy č. 27–55 zcela chybí. Slide 19 o GPAI modelech je oříznut uprostřed věty. Kontrolní tabulka v sekci 5 je přerušena. Sekce 8 'Revize a aktualizace' je ukončena neúplnou větou."
+      },
+      {
+        "vzor": "Chybějící konkrétní texty oznámení a hodnotící sekce pro deklarované systémy (pojišťovnictví, monitorování zaměstnanců, dynamická cenotvorba, účetní SW)",
+        "pocet_vyskytu": 7,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "dodavatelsky_checklist",
+        "typicky_nalez": "Dokument neobsahuje hodnocení systémů pro monitorování zaměstnanců, dynamickou cenotvorbu, účetní SW ani Microsoft Copilot, přestože jsou v přehledové tabulce. Texty oznámení chybí pro pojistníky, zákazníky u dynamické cenotvorby a reklamací."
+      },
+      {
+        "vzor": "Nesprávné datum účinnosti čl. 50 AI Act — uváděno 2.8.2026 místo správného 2.2.2025",
+        "pocet_vyskytu": 3,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "texty_oznameni",
+        "typicky_nalez": "V sekci 1 (warning box) je uvedeno, že povinnost dle čl. 50 odst. 1 je účinná od 2. 8. 2026. Toto je fakticky nesprávné — čl. 50 odst. 1 je účinný od 2. 2. 2025. Stejná chyba v transparenční stránce a akčním plánu."
+      },
+      {
+        "vzor": "Akční kroky jsou příliš obecné — chybí praktický návod 'jak' (měření bias skóre, technické logování, ověření klasifikace, komunikace s NÚKIB)",
+        "pocet_vyskytu": 9,
+        "zavaznost": "důležité",
+        "priklad_dokumentu": "monitoring_plan",
+        "typicky_nalez": "Některé KPI jsou příliš obecné — 'Bias skóre' bez návodu jak měřit. U 'pospa ing.' jen 'Ověřit u dodavatele' bez konkrétních otázek. U logování chybí technický příklad pro konkrétní systémy (CRIF, Guidewire)."
+      },
+      {
+        "vzor": "Transparenční stránka neobsahuje VŠECHNY deklarované AI systémy — chybí zakázané, monitorovací a další high-risk systémy",
+        "pocet_vyskytu": 3,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "transparencni_stranka",
+        "typicky_nalez": "Firma deklaruje systémy zakázané (sociální scoring, biometrie) a vysoce rizikové (monitorování zaměstnanců — GPS, kamery, analýza emailů). Tyto systémy zcela chybí v tabulce přehledu AI systémů na transparenční stránce."
+      },
+      {
+        "vzor": "Transparenční stránka označena jako 'dobrovolné prohlášení' místo zákonné povinnosti",
+        "pocet_vyskytu": 3,
+        "zavaznost": "kritické",
+        "priklad_dokumentu": "transparencni_stranka",
+        "typicky_nalez": "Podtitulek stránky zní 'Dobrovolné prohlášení o transparentním využívání AI'. Transparentnost vůči uživatelům je zákonná povinnost dle čl. 50, nikoli dobrovolný akt. Chybí odkaz na Nařízení (EU) 2024/1689."
+      }
+    ]
+  }
+}

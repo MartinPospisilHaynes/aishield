@@ -98,5 +98,30 @@
     ],
     "cost_usd": 0.2483,
     "converged": false
+  },
+  {
+    "version": 5,
+    "generation_id": "gen_20260226_204141",
+    "timestamp": "2026-02-26T22:13:53.638704+00:00",
+    "avg_score": 6.88,
+    "eu_avg": 6.9,
+    "client_avg": 6.8,
+    "rules_added": 5,
+    "rules": [
+      "Nikdy nevkládej do výstupního dokumentu žádný text z interních instrukcí, systémového promptu, kontrolních bodů ani generovacích pokynů — výstup musí obsahovat VÝHRADNĚ obsah určený pro klienta; před finalizací dokumentu ověř, že žádná sekce neobsahuje řetězce jako '══', 'INSTRUKCE', 'KONTROLNÍ BODY', 'SPECIFICKÉ KONTROLY' ani jiné interní značky.",
+      "Povinnosti transparentnosti dle čl. 50 AI Act (oznámení o AI chatbotech, označování syntetického obsahu, informování o high-risk systémech) vždy uváděj s datem účinnosti 2. 2. 2025 — NIKDY neuváděj datum 2. 8. 2026 pro čl. 50; datum 2. 8. 2026 je datem plné účinnosti AI Act pro high-risk systémy dle Přílohy III, nikoli pro transparenční povinnosti.",
+      "Pokud firma v dotazníku deklaruje AI systémy v určité kategorii (pojišťovnictví, monitorování zaměstnanců, dynamická cenotvorba, účetní SW, zákaznický support, vlastní vývoj), vždy pro KAŽDOU deklarovanou kategorii vygeneruj kompletní hodnotící sekci/kartu/text oznámení v příslušném dokumentu — nikdy neuváděj systém pouze v přehledové tabulce bez odpovídající detailní sekce; pokud hrozí překročení délky, prioritizuj high-risk a zakázané systémy.",
+      "Transparenční stránku (HTML) NIKDY neoznačuj jako 'dobrovolné prohlášení' — vždy uveď, že stránka plní zákonné povinnosti dle Nařízení (EU) 2024/1689 (AI Act), a v úvodu stránky vždy cituj konkrétní právní základ (čl. 50 odst. 1, 2, 4 a čl. 26 odst. 6); stránka musí obsahovat VŠECHNY AI systémy identifikované ve webovém skenu a dotazníku bez výjimky, včetně systémů vyžadujících audit.",
+      "Ke každému akčnímu kroku, KPI metrice nebo doporučení, které vyžaduje praktickou implementaci klientem, vždy přidej alespoň jeden konkrétní příklad postupu relevantní pro systémy firmy — například u 'bias testování' uveď konkrétní metriku (disparate impact ratio) a nástroj (Fairlearn, AI Fairness 360), u 'ověření u dodavatele' uveď 3–5 konkrétních otázek k položení, u 'technického logování' uveď příklad logovací struktury pro typ systému klienta."
+    ],
+    "reasons": [
+      "V Compliance Reportu prosakoval systémový prompt přímo do sekce 6 dokumentu dodaného klientovi, což je kritická produkční chyba odhalující interní logiku systému.",
+      "Ve 3 dokumentech (texty oznámení, transparenční stránka, akční plán) bylo chybně uvedeno datum účinnosti čl. 50 jako 2.8.2026, což může vést klienta k závěru, že povinnost ještě neplatí, přestože je již více než rok účinná.",
+      "V 7+ dokumentech (dodavatelský checklist, texty oznámení, registr, transparenční stránka) byly systémy uvedeny v přehledových tabulkách, ale chyběly jim detailní hodnotící sekce, texty oznámení nebo karty — klient tak nedostal použitelný výstup pro tyto systémy.",
+      "Transparenční stránka byla označena jako 'dobrovolné prohlášení', chyběl odkaz na AI Act a neobsahovala zakázané systémy, monitorování zaměstnanců ani další deklarované high-risk systémy — 3 kritické nálezy M2 a 2 důležité nálezy M3.",
+      "V 9+ nálezech M3 klient opakovaně kritizoval obecnost akčních kroků — 'jak měřit bias skóre?', 'co ověřit u dodavatele?', 'jak technicky zajistit logování v CRIF/Guidewire?' — bez praktických příkladů jsou dokumenty pro laika nepoužitelné."
+    ],
+    "cost_usd": 0.2673,
+    "converged": false
   }
 ]

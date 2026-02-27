@@ -1,14 +1,38 @@
 """
 AIshield.cz — Document Generation Pipeline v3
 
-4-modulová architektura: M1 Generator → M2 EU Critic → M3 Client Critic → M4 Refiner
-Sekvenční zpracování: každý dokument projde celým pipeline před dalším.
+6-modulová architektura s dvojitou kvalitativní smyčkou:
+  M1 Generator → M2 EU Critic → M3 Client Critic → M4 Refiner → M6 Post-Check
+  + M5 Prompt Self-Optimizer (po celé generaci)
+
+Sekvenční zpracování: každý dokument projde celým pipeline (M1→M2→M3→M4→M6)
+před dalším. M5 běží jednou na konci a optimalizuje prompty pro další generaci.
 
 Model přiřazení:
-  M1: Gemini 3.1 Pro (generátor)
-  M2: Claude Sonnet 4 (EU inspektor)
-  M3: Gemini 3.1 Pro (klientský kritik)
-  M4: Claude Opus 4.6 (refiner - final coherence pass)
+  M1: Claude Sonnet 4.6 (generátor draftu), fallback Opus 4.6
+  M2: Claude Sonnet 4.6 (EU inspektor — právní audit dle AI Act)
+  M3: Gemini 3.1 Pro (klientský kritik — srozumitelnost, praktičnost)
+  M4: Claude Opus 4.6 (refiner — finální koherentní dokument)
+  M5: Claude Opus 4.6 (meta-analýza, self-improvement pravidel pro M1)
+  M6: Gemini 2.5 Flash (post-check — ověření že M4 adresoval nálezy M2+M3)
+
+Kvalitativní smyčka:
+  - M2+M3 hodnotí draft z M1 (skóre 1-10 + nálezy)
+  - M4 opraví draft na základě nálezů M2+M3
+  - M6 ověří finální verzi — dal M4 refiner svou práci dobře?
+  - M5 na konci generace extrahuje systematické chyby → pravidla pro Gen N+1
+
+Budget safety:
+  - MAX_GENERATION_COST_USD = $25 (celá generace)
+  - MAX_SINGLE_DOC_COST_USD = $4 (jeden dokument)
+
+Výstupy:
+  - PDF dokumenty → Supabase Storage
+  - PPTX prezentace → Supabase Storage
+  - HTML transparenční stránka → Supabase Storage
+  - JSON report → /opt/aishield/gen_reports/{generation_id}.json (persistentní)
+  - Email report → bc.pospa@gmail.com (HTML inspekční zpráva)
+  - Stdout logy → /var/log/aishield.log (strukturované JSON)
 """
 
 import asyncio
@@ -1284,6 +1308,62 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         "total_tokens": result.total_tokens,
         "total_time_s": round(total_time, 1),
     })
+
+    # ── Persistentní JSON report pro zpětnou analýzu a ladění ──
+    try:
+        report_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "gen_reports")
+        os.makedirs(report_dir, exist_ok=True)
+        report_path = os.path.join(report_dir, f"{generation_id}.json")
+
+        # Sestavíme kompletní report se všemi skóre
+        generation_report = {
+            "generation_id": generation_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "company_name": company_name,
+            "client_id": client_id,
+            "summary": {
+                "documents_ok": result.success_count,
+                "documents_error": result.error_count,
+                "total_cost_usd": round(result.total_cost_usd, 4),
+                "total_tokens": result.total_tokens,
+                "total_time_s": round(total_time, 1),
+                "total_time_min": round(total_time / 60, 1),
+            },
+            "quality_scores": {},
+            "m5_optimization": m5_result,
+            "pipeline_log": result.pipeline_log,
+            "errors": result.errors,
+        }
+
+        # Extrahuj skóre per dokument do přehledné tabulky
+        for entry in result.pipeline_log:
+            dk = entry.get("doc_key")
+            if dk and not entry.get("error"):
+                generation_report["quality_scores"][dk] = {
+                    "m2_eu_score": entry.get("eu_score"),
+                    "m3_client_score": entry.get("client_score"),
+                    "m6_final_score": entry.get("m6_final_score"),
+                    "draft_chars": entry.get("draft_chars"),
+                    "final_chars": entry.get("final_chars"),
+                    "cost_usd": entry.get("cost_usd"),
+                    "tokens": entry.get("tokens"),
+                    "time_s": entry.get("time_s"),
+                }
+
+        # Průměrné skóre
+        eu_scores = [v["m2_eu_score"] for v in generation_report["quality_scores"].values() if v.get("m2_eu_score")]
+        cl_scores = [v["m3_client_score"] for v in generation_report["quality_scores"].values() if v.get("m3_client_score")]
+        m6_scores = [v["m6_final_score"] for v in generation_report["quality_scores"].values() if v.get("m6_final_score")]
+        generation_report["summary"]["avg_m2_eu"] = round(sum(eu_scores) / len(eu_scores), 2) if eu_scores else None
+        generation_report["summary"]["avg_m3_client"] = round(sum(cl_scores) / len(cl_scores), 2) if cl_scores else None
+        generation_report["summary"]["avg_m6_final"] = round(sum(m6_scores) / len(m6_scores), 2) if m6_scores else None
+
+        with open(report_path, "w", encoding="utf-8") as rf:
+            json.dump(generation_report, rf, ensure_ascii=False, indent=2)
+
+        logger.info(f"[Pipeline v3] JSON report uložen: {report_path}")
+    except Exception as rep_err:
+        logger.warning(f"[Pipeline v3] JSON report save failed: {rep_err}")
 
     return result
 
