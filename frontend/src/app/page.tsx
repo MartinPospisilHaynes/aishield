@@ -553,7 +553,7 @@ export default function HomePage() {
                                     name="url"
                                     placeholder="vasefirma.cz"
                                     required
-                                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white text-lg
+                                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-4 min-h-[44px] text-white text-lg
                                     placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50
                                     focus:border-fuchsia-500/30 backdrop-blur-sm transition-all"
                                 />

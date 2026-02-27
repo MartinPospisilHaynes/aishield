@@ -123,10 +123,10 @@ export default function RootLayout({
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Produkt</h3>
                                     <ul className="space-y-1 text-sm text-slate-500">
-                                        <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Skenovat web</a></li>
-                                        <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors inline-block py-2">AI dotazník</a></li>
-                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Ceník</a></li>
-                                        <li><a href="/about" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Jak to funguje</a></li>
+                                        <li><a href="/scan" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Skenovat web</a></li>
+                                        <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors inline-block py-3">AI dotazník</a></li>
+                                        <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Ceník</a></li>
+                                        <li><a href="/about" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Jak to funguje</a></li>
                                     </ul>
                                 </div>
 
@@ -134,11 +134,11 @@ export default function RootLayout({
                                 <div>
                                     <h3 className="font-semibold text-slate-300 mb-4 text-sm uppercase tracking-wider">Právní</h3>
                                     <ul className="space-y-1 text-sm text-slate-500">
-                                        <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Ochrana soukromí</a></li>
-                                        <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Obchodní podmínky</a></li>
-                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors inline-block py-2">GDPR</a></li>
-                                        <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors inline-block py-2">Cookies</a></li>
-                                        <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors inline-block py-2">AI Act souhlas</a></li>
+                                        <li><a href="/privacy" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Ochrana soukromí</a></li>
+                                        <li><a href="/terms" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Obchodní podmínky</a></li>
+                                        <li><a href="/gdpr" className="hover:text-neon-fuchsia transition-colors inline-block py-3">GDPR</a></li>
+                                        <li><a href="/cookies" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Cookies</a></li>
+                                        <li><a href="/ai-act-souhlas" className="hover:text-neon-fuchsia transition-colors inline-block py-3">AI Act souhlas</a></li>
                                     </ul>
                                 </div>
 
@@ -184,8 +184,8 @@ export default function RootLayout({
                                     <ul className="space-y-1 text-sm text-slate-500">
                                         <li className="text-slate-400">Martin Haynes</li>
                                         <li>IČO: 17889251</li>
-                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-2">+420 732 716 141</a></li>
-                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-2">info@aishield.cz</a></li>
+                                        <li><a href="tel:+420732716141" className="hover:text-neon-cyan transition-colors inline-block py-3">+420 732 716 141</a></li>
+                                        <li><a href="mailto:info@aishield.cz" className="hover:text-neon-cyan transition-colors inline-block py-3">info@aishield.cz</a></li>
                                     </ul>
                                 </div>
                             </div>

@@ -347,7 +347,7 @@ export default function PricingPage() {
                                 <div className="mt-auto text-center">
                                     <a
                                         href="/dashboard#monitoring"
-                                        className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
+                                        className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-3 min-h-[44px] text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
                                     >
                                         Sjednat Monitoring
                                     </a>
@@ -381,7 +381,7 @@ export default function PricingPage() {
                                 <div className="mt-auto text-center">
                                     <a
                                         href="/dashboard#monitoring"
-                                        className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
+                                        className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-fuchsia-600 px-6 py-3 min-h-[44px] text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/25 hover:bg-fuchsia-500 transition"
                                     >
                                         Sjednat Monitoring Plus
                                     </a>
@@ -684,7 +684,7 @@ export default function PricingPage() {
                     <div className="mt-12 text-center">
                         <p className="text-xs text-slate-600">
                             Platby zpracovává{" "}
-                            <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline">
+                            <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-400 transition-colors underline inline-block py-3">
                                 Stripe
                             </a>
                             {" "}— globální platební brána s PCI DSS certifikací

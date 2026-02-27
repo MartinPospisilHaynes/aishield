@@ -553,7 +553,7 @@ function ScanPageInner() {
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         placeholder="vasefirma.cz"
-                        className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition-all"
+                        className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 min-h-[44px] text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition-all"
                         required
                         disabled={loading}
                     />

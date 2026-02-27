@@ -21,7 +21,7 @@ export default function AboutPage() {
                         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6">
                             <h2 className="text-xl font-semibold text-white mb-3">Co je AI Act?</h2>
                             <p className="text-slate-400 mb-3">
-                                <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 font-semibold transition-colors">AI Act (Nařízení EU 2024/1689)</a> je první komplexní zákon na světě,
+                                <a href="https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689" target="_blank" rel="noopener noreferrer" className="inline-block py-3 text-cyan-400 hover:text-cyan-300 underline underline-offset-2 font-semibold transition-colors">AI Act (Nařízení EU 2024/1689)</a> je první komplexní zákon na světě,
                                 který reguluje umělou inteligenci. Je to obdoba GDPR, ale pro AI.
                                 Platí pro <strong className="text-white">každou firmu v EU</strong>, která používá nebo
                                 nasazuje AI systémy.
@@ -117,7 +117,7 @@ export default function AboutPage() {
                             <p className="text-slate-500 text-sm mt-3">
                                 Volitelně: měsíční monitoring webu — automaticky hlídáme,
                                 zda se na vašem webu neobjevily nové AI systémy.{" "}
-                                <a href="/pricing" className="text-neon-fuchsia hover:underline">Více v ceníku →</a>
+                                <a href="/pricing" className="text-neon-fuchsia hover:underline inline-block py-3">Více v ceníku →</a>
                             </p>
                         </div>
                     </ScrollReveal>
@@ -143,7 +143,7 @@ export default function AboutPage() {
                             <p className="text-slate-500 text-sm">
                                 Samozřejmě, pokud chcete, klidně s našimi výstupy můžete navštívit
                                 právníka dle vašeho výběru. Podrobnosti v{" "}
-                                <a href="/terms" className="text-neon-fuchsia hover:underline">obchodních podmínkách</a>.
+                                <a href="/terms" className="text-neon-fuchsia hover:underline inline-block py-3">obchodních podmínkách</a>.
                             </p>
                         </div>
                     </ScrollReveal>

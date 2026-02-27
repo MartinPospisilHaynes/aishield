@@ -133,7 +133,7 @@ function LoginForm() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-2.5 -mr-1"
                                     tabIndex={-1}
                                 >
                                     {showPassword ? (
@@ -182,12 +182,12 @@ function LoginForm() {
                     <div className="mt-6 text-center space-y-3">
                         <p className="text-sm text-slate-500">
                             Nemáte účet?{" "}
-                            <a href="/registrace" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors font-medium">
+                            <a href="/registrace" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors font-medium inline-block py-3">
                                 Zaregistrujte se
                             </a>
                         </p>
                         <p className="text-sm">
-                            <a href="/zapomenute-heslo" className="text-slate-500 hover:text-slate-300 transition-colors">
+                            <a href="/zapomenute-heslo" className="text-slate-500 hover:text-slate-300 transition-colors inline-block py-3">
                                 Zapomenuté heslo?
                             </a>
                         </p>

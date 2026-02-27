@@ -409,7 +409,7 @@ function RegistraceInner() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-2.5 -mr-1"
                                     tabIndex={-1}
                                 >
                                     {showPassword ? (
@@ -441,7 +441,7 @@ function RegistraceInner() {
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-2.5 -mr-1"
                                     tabIndex={-1}
                                 >
                                     {showConfirmPassword ? (
@@ -459,7 +459,7 @@ function RegistraceInner() {
                                 type="checkbox"
                                 checked={gdprConsent}
                                 onChange={(e) => setGdprConsent(e.target.checked)}
-                                className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-fuchsia-500 
+                                className="mt-0 h-5 w-5 min-w-[44px] min-h-[44px] rounded border-white/20 bg-white/5 text-fuchsia-500 appearance-none 
                                     focus:ring-fuchsia-500/50 focus:ring-offset-0 cursor-pointer"
                             />
                             <span className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">

@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T21:45:31.729901",
+  "generated": "2026-02-27T21:54:35.274396",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 89.8,
+  "duration_seconds": 89.7,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -18,7 +18,7 @@
   },
   "pages_tested": 7,
   "total_tests": 21,
-  "average_score": 88.3,
+  "average_score": 95.0,
   "results": [
     {
       "page": "homepage",
@@ -28,41 +28,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "6 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.absolute top-[-20%] left-[10%] h-[600px] w-[600px] rounded-f",
-              "right": 638,
-              "viewportWidth": 375,
-              "overflow": 263
-            },
-            {
-              "element": "div.absolute top-[30%] left-[10%] h-[500px] w-[500px] rounded-fu",
-              "right": 538,
-              "viewportWidth": 375,
-              "overflow": 163
-            },
-            {
-              "element": "div.glass p-5 flex flex-col flex-shrink-0 w-[320px] sm:w-[360px]",
-              "right": 632,
-              "viewportWidth": 375,
-              "overflow": 257
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "+420 732 716 141",
               "width": 343,
@@ -74,11 +43,17 @@
               "width": 343,
               "height": 42,
               "element": "a"
+            },
+            {
+              "text": "INPUT",
+              "width": 234,
+              "height": 24,
+              "element": "input"
             }
           ]
         }
       ],
-      "score": 55,
+      "score": 85,
       "screenshot": "screenshots/homepage_mobile.png"
     },
     {
@@ -89,29 +64,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.absolute top-[10%] left-[20%] h-[500px] w-[500px] rounded-fu",
-              "right": 575,
-              "viewportWidth": 375,
-              "overflow": 200
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "Sjednat Monitoring",
               "width": 293,
@@ -123,11 +79,17 @@
               "width": 293,
               "height": 40,
               "element": "a"
+            },
+            {
+              "text": "Stripe",
+              "width": 35,
+              "height": 15,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 75,
+      "score": 85,
       "screenshot": "screenshots/pricing_mobile.png"
     },
     {
@@ -138,29 +100,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.absolute top-[10%] left-[30%] h-[400px] w-[400px] rounded-fu",
-              "right": 513,
-              "viewportWidth": 375,
-              "overflow": 138
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "AI Act (Nařízení EU 2024/1689)",
               "width": 244,
@@ -172,11 +115,17 @@
               "width": 270,
               "height": 37,
               "element": "a"
+            },
+            {
+              "text": "obchodních podmínkách",
+              "width": 164,
+              "height": 17,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 75,
+      "score": 85,
       "screenshot": "screenshots/about_mobile.png"
     },
     {
@@ -187,29 +136,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.absolute top-[20%] left-[40%] h-[400px] w-[400px] rounded-fu",
-              "right": 550,
-              "viewportWidth": 375,
-              "overflow": 175
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "BUTTON",
               "width": 28,
@@ -221,11 +151,17 @@
               "width": 111,
               "height": 17,
               "element": "a"
+            },
+            {
+              "text": "Zapomenuté heslo?",
+              "width": 131,
+              "height": 17,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 75,
+      "score": 85,
       "screenshot": "screenshots/login_mobile.png"
     },
     {
@@ -241,12 +177,6 @@
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
-            {
               "text": "BUTTON",
               "width": 28,
               "height": 28,
@@ -257,6 +187,12 @@
               "width": 28,
               "height": 28,
               "element": "button"
+            },
+            {
+              "text": "INPUT",
+              "width": 13,
+              "height": 16,
+              "element": "input"
             }
           ]
         }
@@ -272,29 +208,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "button.btn-primary whitespace-normal sm:whitespace-nowrap disabled:",
-              "right": 435,
-              "viewportWidth": 375,
-              "overflow": 60
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "Skenovat web",
               "width": 96,
@@ -306,11 +223,17 @@
               "width": 73,
               "height": 36,
               "element": "a"
+            },
+            {
+              "text": "Ceník",
+              "width": 38,
+              "height": 36,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 75,
+      "score": 85,
       "screenshot": "screenshots/scan_mobile.png"
     },
     {
@@ -321,29 +244,10 @@
       "height": 812,
       "issues": [
         {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "1 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.absolute top-[20%] left-[40%] h-[400px] w-[400px] rounded-fu",
-              "right": 550,
-              "viewportWidth": 375,
-              "overflow": 175
-            }
-          ]
-        },
-        {
           "type": "small_touch_target",
           "severity": "medium",
           "detail": "6 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "AIshield.cz",
-              "width": 148,
-              "height": 32,
-              "element": "a"
-            },
             {
               "text": "BUTTON",
               "width": 28,
@@ -355,11 +259,17 @@
               "width": 111,
               "height": 17,
               "element": "a"
+            },
+            {
+              "text": "Zapomenuté heslo?",
+              "width": 131,
+              "height": 17,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 75,
+      "score": 85,
       "screenshot": "screenshots/dotaznik_mobile.png"
     },
     {
@@ -368,34 +278,8 @@
       "url": "https://aishield.cz/",
       "width": 768,
       "height": 1024,
-      "issues": [
-        {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "6 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "html",
-              "scrollWidth": 774,
-              "clientWidth": 768,
-              "diff": 6
-            },
-            {
-              "element": "a.flex items-center justify-center gap-2 w-full px-4 py-3.5 ro",
-              "right": 774,
-              "viewportWidth": 768,
-              "overflow": 6
-            },
-            {
-              "element": "div.glass p-5 flex flex-col flex-shrink-0 w-[320px] sm:w-[360px]",
-              "right": 1100,
-              "viewportWidth": 768,
-              "overflow": 332
-            }
-          ]
-        }
-      ],
-      "score": 70,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/homepage_tablet.png"
     },
     {
@@ -464,34 +348,8 @@
       "url": "https://aishield.cz/",
       "width": 1440,
       "height": 900,
-      "issues": [
-        {
-          "type": "horizontal_overflow",
-          "severity": "high",
-          "detail": "6 elementů přetéká viewport",
-          "elements": [
-            {
-              "element": "div.glass p-5 flex flex-col flex-shrink-0 w-[320px] sm:w-[360px]",
-              "right": 1566,
-              "viewportWidth": 1440,
-              "overflow": 126
-            },
-            {
-              "element": "div.flex gap-0.5 mb-3",
-              "right": 1545,
-              "viewportWidth": 1440,
-              "overflow": 105
-            },
-            {
-              "element": "p.text-sm text-slate-300 leading-relaxed flex-1",
-              "right": 1545,
-              "viewportWidth": 1440,
-              "overflow": 105
-            }
-          ]
-        }
-      ],
-      "score": 70,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/homepage_desktop.png"
     },
     {

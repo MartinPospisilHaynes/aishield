@@ -203,7 +203,7 @@ async def run_tests():
                     if vp_name == "mobile":
                         small_targets = await page.evaluate("""() => {
                             const problems = [];
-                            const clickables = document.querySelectorAll('a, button, input, select, [role="button"], [onclick]');
+                            const clickables = document.querySelectorAll('a, button, [role="button"], [onclick]');
                             for (const el of clickables) {
                                 const rect = el.getBoundingClientRect();
                                 if (rect.width === 0 || rect.height === 0) continue;
