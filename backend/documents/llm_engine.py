@@ -281,6 +281,9 @@ async def call_claude(
         ]
 
     last_error = None
+    cascade_cost = 0.0      # Track ALL attempt costs (including failed cascades)
+    cascade_in_tokens = 0
+    cascade_out_tokens = 0
     for model, cost_in, cost_out, model_retries in models_to_try:
         for attempt in range(model_retries):
             try:
@@ -296,22 +299,38 @@ async def call_claude(
                 in_tok = response.usage.input_tokens if response.usage else 0
                 out_tok = response.usage.output_tokens if response.usage else 0
                 cost = (in_tok * cost_in) + (out_tok * cost_out)
+                cascade_cost += cost
+                cascade_in_tokens += in_tok
+                cascade_out_tokens += out_tok
 
                 logger.info(
-                    "[LLM Engine] %s %s: tokens=%d+%d, cost=$%.4f, len=%d",
-                    label, model, in_tok, out_tok, cost, len(text),
+                    "[LLM Engine] %s %s: tokens=%d+%d, cost=$%.4f, len=%d (cascade=$%.4f)",
+                    label, model, in_tok, out_tok, cost, len(text), cascade_cost,
                 )
 
                 meta = {
                     "provider": "claude", "model": model,
-                    "input_tokens": in_tok, "output_tokens": out_tok,
-                    "cost_usd": cost,
+                    "input_tokens": cascade_in_tokens, "output_tokens": cascade_out_tokens,
+                    "cost_usd": cascade_cost,
+                    "cascade_attempts": cascade_in_tokens - in_tok > 0,
                 }
                 return text, meta
 
             except Exception as e:
                 err = str(e)
                 status_code = getattr(e, "status_code", 0) or 0
+                # Track cost of failed attempts (Anthropic may still bill tokens)
+                err_tokens = getattr(getattr(e, "response", None), "usage", None)
+                if err_tokens:
+                    err_in = getattr(err_tokens, "input_tokens", 0) or 0
+                    err_out = getattr(err_tokens, "output_tokens", 0) or 0
+                    err_cost = (err_in * cost_in) + (err_out * cost_out)
+                    cascade_cost += err_cost
+                    cascade_in_tokens += err_in
+                    cascade_out_tokens += err_out
+                    if err_cost > 0:
+                        logger.warning("[LLM Engine] %s %s: failed attempt cost $%.4f (cascade=$%.4f)",
+                                       label, model, err_cost, cascade_cost)
                 logger.warning("[LLM Engine] %s %s attempt %d (status=%s): %s",
                                label, model, attempt + 1, status_code, err)
                 last_error = e

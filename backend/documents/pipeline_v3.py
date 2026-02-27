@@ -56,6 +56,7 @@ from backend.documents.m4_refiner import refine as m4_refine, refine_with_m6 as 
 from backend.documents.m5_prompt_optimizer import analyze_and_optimize
 from backend.documents.m6_post_check import post_m4_check
 from backend.documents.generation_report import send_generation_report
+from backend.documents.cover_generator import render_cover_page_html
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,10 @@ DOCUMENT_KEYS = [
 ]
 
 
-# Pořadí dokumentů pro číslování souborů (01-13)
+# Pořadí dokumentů pro číslování souborů:
+# 00 = obal + obsah (cover page + TOC) — generováno zvlášť
+# 01-11 = tištěné PDF dokumenty
+# A1-A2 = digitální přílohy (HTML, PPTX) — bez číslování pro tisk
 DOC_ORDER = {
     "compliance_report": "01",
     "action_plan": "02",
@@ -94,9 +98,10 @@ DOC_ORDER = {
     "vendor_checklist": "09",
     "monitoring_plan": "10",
     "transparency_human_oversight": "11",
-    "transparency_page": "12",
-    "training_presentation": "13",
 }
+
+# Dokumenty, které se NETISKNOU (nemají číslo v sešitu)
+NON_PRINT_DOCS = {"transparency_page", "training_presentation"}
 
 SECTION_SLUG = {
     "compliance_report": "compliance_report",
@@ -1250,15 +1255,16 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
 
     for doc_key, final_html in all_final_html.items():
         # Skip docs with special output format (not PDF)
-        if doc_key in ("transparency_page", "training_presentation"):
+        if doc_key in NON_PRINT_DOCS:
             continue
         doc_name = DOCUMENT_NAMES.get(doc_key, doc_key)
         slug = SECTION_SLUG.get(doc_key, doc_key)
+        prefix = DOC_ORDER.get(doc_key, "99")
 
         try:
             section_html = render_section_html(doc_key, final_html, company_name)
             pdf_bytes = html_to_pdf(section_html)
-            pdf_filename = f"{slug}_{timestamp}.pdf"
+            pdf_filename = f"{prefix}_{slug}_{timestamp}.pdf"
             pdf_url = save_to_supabase_storage(
                 pdf_bytes, pdf_filename, company_id,
                 content_type="application/pdf",
@@ -1363,6 +1369,35 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     except Exception as e:
         result.errors.append(f"vop: {str(e)}")
         logger.error(f"[Pipeline v3]   VOP CHYBA: {e}", exc_info=True)
+
+    # ── 8. Cover Page + TOC (doc #00) ──
+    logger.info(f"[Pipeline v3] ═══ KROK 7: Titulní strana + Obsah (doc #00) ═══")
+    try:
+        cover_html = render_cover_page_html(
+            company_name=company_name,
+            generation_date=datetime.now().strftime("%d. %m. %Y"),
+            generation_id=generation_id,
+        )
+        cover_pdf_bytes = html_to_pdf(cover_html)
+        cover_filename = f"00_obal_obsah_{timestamp}.pdf"
+        cover_url = save_to_supabase_storage(
+            cover_pdf_bytes, cover_filename, company_id,
+            content_type="application/pdf",
+        )
+        cover_info = {
+            "template_key": "cover_toc",
+            "template_name": "Titulní strana a obsah",
+            "filename": cover_filename, "download_url": cover_url,
+            "size_bytes": len(cover_pdf_bytes), "format": "pdf",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "doc_order": "00",
+        }
+        result.documents.insert(0, cover_info)  # First in the list
+        _save_document_record(company_id, cover_info)
+        logger.info(f"[Pipeline v3]   Cover+TOC: {len(cover_pdf_bytes):,} bytes")
+    except Exception as e:
+        result.errors.append(f"cover_toc: {str(e)}")
+        logger.error(f"[Pipeline v3]   Cover+TOC CHYBA: {e}", exc_info=True)
 
     # ── HOTOVO ──
     total_time = time.time() - pipeline_start
