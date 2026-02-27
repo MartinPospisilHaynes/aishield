@@ -1,0 +1,34 @@
+{
+  "scan": {
+    "id": "8c95873a-d358-443c-92a4-fdcff44c7c2d",
+    "url": "https://www.desperados-design.cz"
+  },
+  "findings": [
+    {
+      "name": "Google Gemini Chatbot",
+      "deployed": true,
+      "category": "chatbot",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "confidence": 0.95
+    },
+    {
+      "name": "AI API Proxy (geminiproxy)",
+      "deployed": true,
+      "category": "chatbot",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "confidence": 0.9
+    },
+    {
+      "name": "AI Transparency Notice",
+      "deployed": true,
+      "category": "content_gen",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50",
+      "confidence": 0.9
+    }
+  ],
+  "findings_count": 3,
+  "_saved_at": "2026-02-27T21:20:43.200721+00:00"
+}

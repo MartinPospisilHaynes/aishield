@@ -489,7 +489,7 @@ function RegistraceInner() {
                                     <button
                                         type="button"
                                         onClick={() => setCaptchaAnswer(String(Math.max(0, Number(captchaAnswer || 0) - 1)))}
-                                        className="w-10 h-11 rounded-l-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                        className="w-11 h-11 rounded-l-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
                                     >−</button>
                                     <input
                                         type="text"
@@ -507,7 +507,7 @@ function RegistraceInner() {
                                     <button
                                         type="button"
                                         onClick={() => setCaptchaAnswer(String(Number(captchaAnswer || 0) + 1))}
-                                        className="w-10 h-11 rounded-r-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
+                                        className="w-11 h-11 rounded-r-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all text-lg font-bold flex items-center justify-center"
                                     >+</button>
                                 </div>
                             </div>
@@ -566,7 +566,7 @@ function RegistraceInner() {
                     <div className="mt-6 text-center">
                         <p className="text-sm text-slate-500">
                             Už máte účet?{" "}
-                            <a href="/login" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors font-medium">
+                            <a href="/login" className="text-neon-fuchsia hover:text-fuchsia-300 transition-colors font-medium inline-block py-3">
                                 Přihlaste se
                             </a>
                         </p>

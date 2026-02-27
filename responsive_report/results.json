@@ -1,7 +1,7 @@
 {
-  "generated": "2026-02-27T22:13:10.959210",
+  "generated": "2026-02-27T22:18:52.712131",
   "base_url": "https://aishield.cz",
-  "duration_seconds": 89.7,
+  "duration_seconds": 89.5,
   "viewports": {
     "mobile": {
       "width": 375,
@@ -18,7 +18,7 @@
   },
   "pages_tested": 7,
   "total_tests": 21,
-  "average_score": 98.4,
+  "average_score": 98.8,
   "results": [
     {
       "page": "homepage",
@@ -30,7 +30,7 @@
         {
           "type": "small_touch_target",
           "severity": "medium",
-          "detail": "4 tlačítek/odkazů je menších než 44×44px",
+          "detail": "2 tlačítek/odkazů je menších než 44×44px",
           "elements": [
             {
               "text": "+420 732 716 141",
@@ -43,17 +43,11 @@
               "width": 343,
               "height": 42,
               "element": "a"
-            },
-            {
-              "text": "zpracováním osobních údajů",
-              "width": 169,
-              "height": 44,
-              "element": "a"
             }
           ]
         }
       ],
-      "score": 88,
+      "score": 94,
       "screenshot": "screenshots/homepage_mobile.png"
     },
     {
@@ -72,28 +66,8 @@
       "url": "https://aishield.cz/about",
       "width": 375,
       "height": 812,
-      "issues": [
-        {
-          "type": "small_touch_target",
-          "severity": "medium",
-          "detail": "2 tlačítek/odkazů je menších než 44×44px",
-          "elements": [
-            {
-              "text": "zpracováním osobních údajů",
-              "width": 169,
-              "height": 44,
-              "element": "a"
-            },
-            {
-              "text": "GDPR",
-              "width": 34,
-              "height": 44,
-              "element": "a"
-            }
-          ]
-        }
-      ],
-      "score": 94,
+      "issues": [],
+      "score": 100,
       "screenshot": "screenshots/about_mobile.png"
     },
     {
@@ -116,30 +90,30 @@
         {
           "type": "small_touch_target",
           "severity": "medium",
-          "detail": "5 tlačítek/odkazů je menších než 44×44px",
+          "detail": "3 tlačítek/odkazů je menších než 44×44px",
           "elements": [
-            {
-              "text": "zpracováním osobních údajů",
-              "width": 216,
-              "height": 35,
-              "element": "a"
-            },
-            {
-              "text": "obchodními podmínkami",
-              "width": 146,
-              "height": 15,
-              "element": "a"
-            },
             {
               "text": "−",
               "width": 40,
               "height": 44,
               "element": "button"
+            },
+            {
+              "text": "+",
+              "width": 40,
+              "height": 44,
+              "element": "button"
+            },
+            {
+              "text": "Přihlaste se",
+              "width": 83,
+              "height": 17,
+              "element": "a"
             }
           ]
         }
       ],
-      "score": 85,
+      "score": 91,
       "screenshot": "screenshots/registrace_mobile.png"
     },
     {
@@ -168,8 +142,22 @@
       "url": "https://aishield.cz/",
       "width": 768,
       "height": 1024,
-      "issues": [],
-      "score": 100,
+      "issues": [
+        {
+          "type": "horizontal_overflow",
+          "severity": "high",
+          "detail": "1 elementů přetéká viewport",
+          "elements": [
+            {
+              "element": "html",
+              "scrollWidth": 774,
+              "clientWidth": 768,
+              "diff": 6
+            }
+          ]
+        }
+      ],
+      "score": 90,
       "screenshot": "screenshots/homepage_tablet.png"
     },
     {
