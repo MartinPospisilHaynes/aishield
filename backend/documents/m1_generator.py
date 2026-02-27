@@ -1851,13 +1851,12 @@ Pouze vylepši OBSAH slidů, neměň formát.
         f"(draft: {len(draft_html)} znaků, EU: {eu_score}/10, Klient: {client_score}/10)"
     )
 
-    text, meta = await call_claude(
+    text, meta = await call_gemini(
         system=enhanced_prompt,
         prompt=prompt,
         label=label,
         temperature=0.15,
         max_tokens=10000,
-        model="claude-sonnet-4-6",
     )
 
     html = extract_html_content(text)
@@ -1868,7 +1867,7 @@ Pouze vylepši OBSAH slidů, neměň formát.
             f"[M1 Refine] {doc_key}: výrazně kratší ({len(html)} vs {len(draft_html)}), "
             f"zkouším znovu"
         )
-        text2, meta2 = await call_claude(
+        text2, meta2 = await call_gemini(
             system=enhanced_prompt,
             prompt=prompt + f"""
 
@@ -1878,7 +1877,6 @@ Zachovej VŠECHNY povinné sekce a tabulky. Zkrať redundance, ale nemaž celé 
             label=f"{label}_retry",
             temperature=0.2,
             max_tokens=10000,
-            model="claude-sonnet-4-6",
         )
         html2 = extract_html_content(text2)
         if html2 and len(html2) > len(html):

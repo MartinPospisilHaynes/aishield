@@ -75,6 +75,8 @@ async def send_email(
     from_email: str | None = None,
     from_name: str | None = None,
     attachments: list[dict] | None = None,
+    text: str | None = None,
+    sender_name: str | None = None,
 ) -> dict:
     """
     Odešle email přes Resend API.
@@ -88,7 +90,7 @@ async def send_email(
 
     # Sender — buď specifikovaný, nebo z rotace
     sender_email = from_email or settings.email_from
-    sender_name = from_name or "AIshield.cz"
+    _sender_name = sender_name or from_name or "AIshield.cz"
 
     # Reply-To na existující email (Resend odesílá, odpovědi jdou jinam)
     reply_to = "info@desperados-design.cz"
@@ -101,11 +103,12 @@ async def send_email(
                 "Content-Type": "application/json",
             },
             json={
-                "from": f"{sender_name} <{sender_email}>",
+                "from": f"{_sender_name} <{sender_email}>",
                 "to": [to],
                 "reply_to": reply_to,
                 "subject": subject,
                 "html": html,
+                **({"text": text} if text else {}),
                 "headers": {
                     "List-Unsubscribe": f"<https://aishield.cz/api/unsubscribe?email={to}>",
                     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

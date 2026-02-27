@@ -12,6 +12,7 @@ Model: Gemini 3.1 Pro — přesné hodnocení pro double M4 loop
 """
 
 import logging
+import re
 from typing import Tuple, Optional
 
 from backend.documents.llm_engine import (
@@ -116,15 +117,29 @@ async def post_m4_check(
             label=label,
             temperature=0.1,
             max_tokens=2000,
+            json_mode=True,
         )
         
         result = parse_json(text)
         if not result:
-            logger.warning(f"[M6 PostCheck] {doc_key}: JSON parsing selhal")
-            result = {
-                "finalni_skore": None,
-                "poznamka": f"JSON parsing selhal. Raw: {text[:200]}",
-            }
+            # Regex fallback — extract finalni_skore even from malformed JSON
+            score_match = re.search(r'"finalni_skore"\s*:\s*(\d+)', text)
+            if score_match:
+                extracted_score = int(score_match.group(1))
+                logger.warning(
+                    f"[M6 PostCheck] {doc_key}: JSON parsing selhal, "
+                    f"ale regex extrahoval skore={extracted_score}"
+                )
+                result = {
+                    "finalni_skore": extracted_score,
+                    "poznamka": f"Score extrahovan regex fallbackem. Raw: {text[:200]}",
+                }
+            else:
+                logger.warning(f"[M6 PostCheck] {doc_key}: JSON parsing selhal, zadne skore")
+                result = {
+                    "finalni_skore": None,
+                    "poznamka": f"JSON parsing selhal. Raw: {text[:200]}",
+                }
         
         score = result.get("finalni_skore", "?")
         hodnoceni = result.get("celkove_hodnoceni", "?")

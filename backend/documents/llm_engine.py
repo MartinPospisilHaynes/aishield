@@ -146,10 +146,11 @@ async def call_gemini(
     label: str = "gemini",
     temperature: float = 0.1,
     max_tokens: int = 16000,
-    retries: int = 4,
+    retries: int = 6,
     model: str = None,
     cost_input: float = None,
     cost_output: float = None,
+    json_mode: bool = False,
 ) -> Tuple[str, dict]:
     """
     Zavolá Gemini API. Vrací (text, metadata).
@@ -169,6 +170,8 @@ async def call_gemini(
                 "temperature": temperature,
                 "max_output_tokens": max_tokens,
             }
+            if json_mode:
+                config_kwargs["response_mime_type"] = "application/json"
             if cache_name:
                 config_kwargs["cached_content"] = cache_name
             else:
@@ -204,7 +207,7 @@ async def call_gemini(
             logger.warning("[LLM Engine] %s Gemini attempt %d: %s", label, attempt + 1, err)
             if "429" in err or "RESOURCE_EXHAUSTED" in err or "503" in err:
                 delay_match = re.search(r"retryDelay.*?(\d+\.?\d*)", err)
-                wait = float(delay_match.group(1)) + 1.0 if delay_match else min(5 * (2 ** attempt), 30)
+                wait = float(delay_match.group(1)) + 2.0 if delay_match else min(10 * (2 ** attempt), 60)
                 logger.info("[LLM Engine] %s: rate-limited, čekám %.0fs...", label, wait)
                 await asyncio.sleep(wait)
                 continue
