@@ -31,6 +31,7 @@ Výstupy:
   - PPTX prezentace → Supabase Storage
   - HTML transparenční stránka → Supabase Storage
   - JSON report → /opt/aishield/gen_reports/{generation_id}.json (persistentní)
+  - Archiv dokumentů → /opt/aishield/DOKUMENTY/{firma}/{generation_id}/ (lokální záloha)
   - Email report → bc.pospa@gmail.com (HTML inspekční zpráva)
   - Stdout logy → /var/log/aishield.log (strukturované JSON)
 """
@@ -39,6 +40,7 @@ import asyncio
 import json
 import re
 import logging
+import unicodedata
 import httpx
 import os
 import time
@@ -472,6 +474,54 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
         }).execute()
     except Exception as e:
         logger.error(f"[Pipeline] DB save failed: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════
+# ARCHIVACE — lokální záloha vygenerovaných dokumentů na disk
+# ══════════════════════════════════════════════════════════════════════
+
+ARCHIVE_BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "DOKUMENTY")
+
+
+def _slugify_company_name(name: str) -> str:
+    """Převede název firmy na bezpečný adresářový název.
+    'Škoda Auto a.s.' → 'skoda_auto_as'
+    """
+    # Remove diacritics
+    nfkd = unicodedata.normalize("NFKD", name)
+    ascii_str = nfkd.encode("ascii", "ignore").decode("ascii")
+    # Lowercase, replace non-alphanum with underscore
+    slug = re.sub(r"[^a-z0-9]+", "_", ascii_str.lower()).strip("_")
+    return slug or "unknown_company"
+
+
+def _archive_generation_to_disk(
+    all_file_bytes: dict,
+    company_name: str,
+    generation_id: str,
+) -> str:
+    """
+    Uloží všechny vygenerované soubory do:
+      /opt/aishield/DOKUMENTY/{company_slug}/{generation_id}/
+
+    Returns: cesta k archivnímu adresáři
+    """
+    company_slug = _slugify_company_name(company_name)
+    archive_dir = os.path.join(ARCHIVE_BASE_DIR, company_slug, generation_id)
+    os.makedirs(archive_dir, exist_ok=True)
+
+    saved = 0
+    for filename, file_bytes in all_file_bytes.items():
+        try:
+            filepath = os.path.join(archive_dir, filename)
+            with open(filepath, "wb") as f:
+                f.write(file_bytes)
+            saved += 1
+        except Exception as e:
+            logger.error(f"[Archive] Chyba při ukládání {filename}: {e}")
+
+    logger.info(f"[Archive] Uloženo {saved}/{len(all_file_bytes)} souborů → {archive_dir}")
+    return archive_dir
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -968,6 +1018,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     # ── 3. Per-document M1→M2→M3→M4 pipeline ──
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     all_final_html = {}   # doc_key → final HTML
+    all_file_bytes = {}   # filename → bytes (pro archivaci na disk)
     all_critiques = {}    # doc_key → {"eu": eu_critique, "client": client_critique} pro M5
     post_m4_checks = {}   # doc_key → M6 post-check result (INFO-ONLY)
 
@@ -1278,6 +1329,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             }
             result.documents.append(pdf_info)
             _save_document_record(company_id, pdf_info)
+            all_file_bytes[pdf_filename] = pdf_bytes
             logger.info(f"[Pipeline v3]   PDF: {doc_name} ({len(pdf_bytes):,} bytes)")
 
         except Exception as e:
@@ -1305,6 +1357,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             }
             result.documents.append(html_info)
             _save_document_record(company_id, html_info)
+            all_file_bytes[html_filename] = html_bytes
             logger.info(f"[Pipeline v3]   HTML: {len(html_bytes):,} bytes")
         else:
             logger.warning("[Pipeline v3]   transparency_page not in all_final_html — skipping")
@@ -1333,6 +1386,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             }
             result.documents.append(pptx_info)
             _save_document_record(company_id, pptx_info)
+            all_file_bytes[pptx_filename] = pptx_bytes
             logger.info(f"[Pipeline v3]   PPTX: {len(pptx_bytes):,} bytes")
         else:
             logger.warning("[Pipeline v3]   training_presentation not in all_final_html — skipping")
@@ -1363,6 +1417,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             }
             result.documents.append(vop_info)
             _save_document_record(company_id, vop_info)
+            all_file_bytes[vop_filename] = vop_pdf_bytes
             logger.info(f"[Pipeline v3]   VOP PDF: {len(vop_pdf_bytes):,} bytes (statický dokument)")
         else:
             logger.warning(f"[Pipeline v3]   VOP šablona nenalezena: {vop_html_path}")
@@ -1394,10 +1449,28 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         }
         result.documents.insert(0, cover_info)  # First in the list
         _save_document_record(company_id, cover_info)
+        all_file_bytes[cover_filename] = cover_pdf_bytes
         logger.info(f"[Pipeline v3]   Cover+TOC: {len(cover_pdf_bytes):,} bytes")
     except Exception as e:
         result.errors.append(f"cover_toc: {str(e)}")
         logger.error(f"[Pipeline v3]   Cover+TOC CHYBA: {e}", exc_info=True)
+
+    # ── 9. Archivace na disk ──
+    logger.info(f"[Pipeline v3] ═══ KROK 8: Archivace dokumentů na disk ═══")
+    try:
+        archive_dir = _archive_generation_to_disk(
+            all_file_bytes=all_file_bytes,
+            company_name=company_name,
+            generation_id=generation_id,
+        )
+        result.pipeline_log.append({
+            "step": "archive_to_disk",
+            "archive_dir": archive_dir,
+            "files_count": len(all_file_bytes),
+        })
+        logger.info(f"[Pipeline v3]   Archivováno {len(all_file_bytes)} souborů → {archive_dir}")
+    except Exception as e:
+        logger.error(f"[Pipeline v3]   Archivace CHYBA (nekritická): {e}", exc_info=True)
 
     # ── HOTOVO ──
     total_time = time.time() - pipeline_start
