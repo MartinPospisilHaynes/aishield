@@ -25,6 +25,15 @@ from backend.database import get_supabase
 from backend.api.auth import AuthUser, get_optional_user
 
 logger = logging.getLogger(__name__)
+
+# KLIENTI folder hooks (P5.3)
+try:
+    from backend.klienti.client_folder_manager import (
+        ensure_client_folder, save_questionnaire, save_client_profile, slugify_company_name
+    )
+    KLIENTI_Q_AVAILABLE = True
+except ImportError:
+    KLIENTI_Q_AVAILABLE = False
 router = APIRouter()
 
 
@@ -1280,6 +1289,40 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
                 # await regenerate_documents(submission.company_id)
         except Exception as e:
             logger.error(f"[Questionnaire] Chyba při odesílání notifikace: {e}")
+
+    # ── KLIENTI: uložit dotazník do klientské složky (P5.3) ──
+    if KLIENTI_Q_AVAILABLE:
+        try:
+            comp = supabase.table("companies").select("name, url, email, ico, phone").eq("id", submission.company_id).limit(1).execute()
+            company_data = comp.data[0] if comp.data else {}
+            company_slug = slugify_company_name(company_data.get("url") or company_data.get("name") or submission.company_id)
+            ensure_client_folder(company_slug)
+
+            # Save profile
+            save_client_profile(company_slug, {
+                "id": submission.company_id,
+                "name": company_data.get("name", ""),
+                "url": company_data.get("url", ""),
+                "email": company_data.get("email", ""),
+                "ico": company_data.get("ico", ""),
+                "phone": company_data.get("phone", ""),
+            })
+
+            # Save questionnaire responses
+            responses = [
+                {
+                    "section": a.section,
+                    "question_key": a.question_key,
+                    "answer": a.answer,
+                    "details": a.details,
+                    "tool_name": a.tool_name,
+                }
+                for a in submission.answers
+            ]
+            save_questionnaire(company_slug, responses)
+            logger.info(f"[Questionnaire] KLIENTI: dotazník uložen do {company_slug}/dotaznik/")
+        except Exception as e:
+            logger.warning(f"[Questionnaire] KLIENTI hook failed (non-critical): {e}")
 
     return {
         "status": "saved",

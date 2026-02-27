@@ -7,6 +7,15 @@ Orchestrátor celého procesu skenování:
 """
 
 import json
+
+# KLIENTI folder hooks (P5.3)
+try:
+    from backend.klienti.client_folder_manager import (
+        ensure_client_folder, save_scan_results, save_client_profile, slugify_company_name
+    )
+    KLIENTI_AVAILABLE = True
+except ImportError:
+    KLIENTI_AVAILABLE = False
 import logging
 from datetime import datetime, timezone
 
@@ -196,7 +205,43 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
             "last_scanned_at": finished,
         }).eq("id", company_id).execute()
 
-        # Deep scan se nyní spouští manuálně přes POST /api/scan/{scan_id}/deep
+        # ── 7b. KLIENTI: uložit scan výsledky do klientské složky (P5.3) ──
+        if KLIENTI_AVAILABLE:
+            try:
+                # Fetch company info for slug
+                comp = supabase.table("companies").select("name, url, email, ico, phone").eq("id", company_id).limit(1).execute()
+                company_data = comp.data[0] if comp.data else {}
+                company_slug = slugify_company_name(company_data.get("url") or company_data.get("name") or company_id)
+                ensure_client_folder(company_slug)
+
+                # Save profile
+                save_client_profile(company_slug, {
+                    "id": company_id,
+                    "name": company_data.get("name", ""),
+                    "url": company_data.get("url", ""),
+                    "email": company_data.get("email", ""),
+                    "ico": company_data.get("ico", ""),
+                    "phone": company_data.get("phone", ""),
+                })
+
+                # Save scan results
+                findings_data = [
+                    {
+                        "name": f.name,
+                        "deployed": f.deployed,
+                        "category": f.category,
+                        "risk_level": f.risk_level,
+                        "ai_act_article": f.ai_act_article,
+                        "confidence": f.confidence,
+                    }
+                    for f in deployed
+                ]
+                save_scan_results(company_slug, scan_id, findings_data)
+                logger.info(f"[Scan] KLIENTI: scan uložen do {company_slug}/scan/")
+            except Exception as e:
+                logger.warning(f"[Scan] KLIENTI hook failed (non-critical): {e}")
+
+                # Deep scan se nyní spouští manuálně přes POST /api/scan/{scan_id}/deep
 
         return {
             "status": "done",
