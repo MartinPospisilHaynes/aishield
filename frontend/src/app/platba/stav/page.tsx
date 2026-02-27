@@ -168,12 +168,12 @@ function PaymentStatusContent() {
     return (
         <section className="py-20 relative">
             <div className="absolute inset-0 -z-10">
-                <div className={`absolute top-[30%] left-[40%] h-[400px] w-[400px] rounded-full bg-${stateInfo.color}-500/5 blur-[120px]`} />
+                <div className={`absolute top-[30%] left-[40%] h-[400px] w-[400px] rounded-full blur-[120px] ${({red:"bg-red-500/5",yellow:"bg-yellow-500/5",cyan:"bg-cyan-500/5"})[stateInfo.color] || "bg-yellow-500/5"}`} />
             </div>
             <div className="mx-auto max-w-md px-6 text-center">
                 <div className="glass py-12">
-                    <div className={`mx-auto mb-4 w-16 h-16 rounded-2xl bg-${stateInfo.color}-500/10 border border-${stateInfo.color}-500/20 flex items-center justify-center`}>
-                        <svg className={`w-8 h-8 text-${stateInfo.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className={`mx-auto mb-4 w-16 h-16 rounded-2xl flex items-center justify-center ${({red:"bg-red-500/10 border border-red-500/20",yellow:"bg-yellow-500/10 border border-yellow-500/20",cyan:"bg-cyan-500/10 border border-cyan-500/20"})[stateInfo.color] || "bg-yellow-500/10 border border-yellow-500/20"}`}>
+                        <svg className={`w-8 h-8 ${({red:"text-red-400",yellow:"text-yellow-400",cyan:"text-cyan-400"})[stateInfo.color] || "text-yellow-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>

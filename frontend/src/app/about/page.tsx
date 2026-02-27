@@ -1,10 +1,14 @@
 export default function AboutPage() {
     return (
-        <section className="py-20">
+        <section className="py-20 relative">
+            {/* BG glow */}
+            <div className="absolute inset-0 -z-10">
+                <div className="absolute top-[10%] left-[30%] h-[400px] w-[400px] rounded-full bg-fuchsia-500/5 blur-[130px]" />
+            </div>
             <div className="mx-auto max-w-3xl px-6">
-                <h1 className="text-3xl font-bold text-gray-900">Jak to funguje</h1>
+                <h1 className="text-3xl font-extrabold">Jak to funguje</h1>
 
-                <div className="mt-8 prose prose-gray max-w-none">
+                <div className="mt-8 prose prose-invert max-w-none prose-headings:text-white prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white prose-a:text-neon-fuchsia">
                     <h2>Co je AI Act?</h2>
                     <p>
                         AI Act (Nařízení EU 2024/1689) je první komplexní zákon na světě,

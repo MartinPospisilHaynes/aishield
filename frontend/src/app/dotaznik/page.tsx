@@ -429,7 +429,7 @@ export default function QuestionnairePage() {
                     </p>
 
                     {/* Metriky */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.75rem", marginBottom: "1.5rem" }}>
                         {[
                             { value: result.ai_systems_declared, label: "AI systémů", color: tokens.primary },
                             { value: highCount, label: "Vysoce rizikové", color: "#f87171" },
@@ -520,7 +520,7 @@ export default function QuestionnairePage() {
                     </p>
 
                     {/* Features */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2.5rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
                         {[
                             { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Hotovo za 5 minut" },
                             { icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", label: `${sections.length} krátkých sekcí` },

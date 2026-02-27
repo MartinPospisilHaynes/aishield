@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIshield.cz — Responsive Audit Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        .header { text-align: center; margin-bottom: 3rem; padding: 2rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .header h1 span { background: linear-gradient(135deg, #e879f9, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header .meta { color: #94a3b8; font-size: 0.875rem; }
+        
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat { background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.5rem; text-align: center; }
+        .stat .value { font-size: 2rem; font-weight: 800; }
+        .stat .label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+        
+        .viewport-section { margin-bottom: 3rem; }
+        .viewport-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        
+        .page-card { background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; margin-bottom: 1rem; overflow: hidden; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; cursor: pointer; }
+        .page-header:hover { background: rgba(255,255,255,0.03); }
+        .page-name { font-weight: 600; }
+        .score-badge { padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.875rem; font-weight: 700; }
+        
+        .page-details { padding: 0 1.5rem 1.5rem; }
+        .issue { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.2); }
+        .issue-type { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .issue-detail { font-size: 0.875rem; color: #cbd5e1; }
+        
+        .screenshot { margin-top: 1rem; }
+        .screenshot img { max-width: 100%; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.1); }
+        .screenshot-label { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+        
+        .no-issues { color: #4ade80; font-size: 0.875rem; padding: 0.75rem; }
+        
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] .chevron { transform: rotate(180deg); }
+        .chevron { transition: transform 0.2s; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AIshield.cz — <span>Responsive Audit</span></h1>
+            <p class="meta">27.02.2026 20:41 • 93.0s • 21 testů</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="value" style="color: #facc15">77%</div>
+                <div class="label">Průměrné skóre</div>
+            </div>
+            <div class="stat">
+                <div class="value" style="color: #f87171">21</div>
+                <div class="label">Celkem problémů</div>
+            </div>
+            <div class="stat">
+                <div class="value" style="color: #22d3ee">21</div>
+                <div class="label">Testovaných kombinací</div>
+            </div>
+        </div>
+
+        <div class="viewport-section">
+            <div class="viewport-title">
+                📱 MOBILE (375×812) — 
+                <span style="color: #facc15">66% průměr</span>
+            </div>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">homepage <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">55/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">6 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/homepage_mobile.png" alt="homepage mobile" loading="lazy" />
+                        <div class="screenshot-label">homepage — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">pricing <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/pricing)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">65/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">2 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/pricing_mobile.png" alt="pricing mobile" loading="lazy" />
+                        <div class="screenshot-label">pricing — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">about <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/about)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">65/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">2 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/about_mobile.png" alt="about mobile" loading="lazy" />
+                        <div class="screenshot-label">about — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">login <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/login)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">65/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">2 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/login_mobile.png" alt="login mobile" loading="lazy" />
+                        <div class="screenshot-label">login — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">registrace <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/registrace)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">85/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/registrace_mobile.png" alt="registrace mobile" loading="lazy" />
+                        <div class="screenshot-label">registrace — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">scan <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/scan)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">65/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">2 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/scan_mobile.png" alt="scan mobile" loading="lazy" />
+                        <div class="screenshot-label">scan — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">dotaznik <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/dotaznik)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">2 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">65/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">2 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="issue">
+                        <span style="color: #eab308; font-size: 1.1rem;">🟡</span>
+                        <div>
+                            <div class="issue-type" style="color: #eab308">small touch target</div>
+                            <div class="issue-detail">6 tlačítek/odkazů je menších než 44×44px</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/dotaznik_mobile.png" alt="dotaznik mobile" loading="lazy" />
+                        <div class="screenshot-label">dotaznik — mobile (375×812)</div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <div class="viewport-section">
+            <div class="viewport-title">
+                📋 TABLET (768×1024) — 
+                <span style="color: #facc15">70% průměr</span>
+            </div>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">homepage <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">6 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/homepage_tablet.png" alt="homepage tablet" loading="lazy" />
+                        <div class="screenshot-label">homepage — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">pricing <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/pricing)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/pricing_tablet.png" alt="pricing tablet" loading="lazy" />
+                        <div class="screenshot-label">pricing — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">about <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/about)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/about_tablet.png" alt="about tablet" loading="lazy" />
+                        <div class="screenshot-label">about — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">login <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/login)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/login_tablet.png" alt="login tablet" loading="lazy" />
+                        <div class="screenshot-label">login — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">registrace <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/registrace)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/registrace_tablet.png" alt="registrace tablet" loading="lazy" />
+                        <div class="screenshot-label">registrace — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">scan <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/scan)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/scan_tablet.png" alt="scan tablet" loading="lazy" />
+                        <div class="screenshot-label">scan — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">dotaznik <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/dotaznik)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">4 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/dotaznik_tablet.png" alt="dotaznik tablet" loading="lazy" />
+                        <div class="screenshot-label">dotaznik — tablet (768×1024)</div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <div class="viewport-section">
+            <div class="viewport-title">
+                🖥️ DESKTOP (1440×900) — 
+                <span style="color: #4ade80">96% průměr</span>
+            </div>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">homepage <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #94a3b8; font-size: 0.8rem;">1 issues</span>
+                        <span class="score-badge" style="background: #facc1520; color: #facc15;">70/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+
+                    <div class="issue">
+                        <span style="color: #f97316; font-size: 1.1rem;">🟠</span>
+                        <div>
+                            <div class="issue-type" style="color: #f97316">horizontal overflow</div>
+                            <div class="issue-detail">6 elementů přetéká viewport</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/homepage_desktop.png" alt="homepage desktop" loading="lazy" />
+                        <div class="screenshot-label">homepage — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">pricing <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/pricing)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/pricing_desktop.png" alt="pricing desktop" loading="lazy" />
+                        <div class="screenshot-label">pricing — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">about <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/about)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/about_desktop.png" alt="about desktop" loading="lazy" />
+                        <div class="screenshot-label">about — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">login <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/login)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/login_desktop.png" alt="login desktop" loading="lazy" />
+                        <div class="screenshot-label">login — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">registrace <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/registrace)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/registrace_desktop.png" alt="registrace desktop" loading="lazy" />
+                        <div class="screenshot-label">registrace — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">scan <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/scan)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/scan_desktop.png" alt="scan desktop" loading="lazy" />
+                        <div class="screenshot-label">scan — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="page-card">
+                <summary class="page-header">
+                    <span class="page-name">dotaznik <span style="color: #64748b; font-weight: 400; font-size: 0.8rem;">(https://aishield.cz/dotaznik)</span></span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: #4ade80; font-size: 0.8rem;">OK</span>
+                        <span class="score-badge" style="background: #4ade8020; color: #4ade80;">100/100</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </summary>
+                <div class="page-details">
+                    <div class="no-issues">✅ Žádné problémy nenalezeny</div>
+
+                    <div class="screenshot">
+                        <img src="screenshots/dotaznik_desktop.png" alt="dotaznik desktop" loading="lazy" />
+                        <div class="screenshot-label">dotaznik — desktop (1440×900)</div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+    </div>
+</body>
+</html>

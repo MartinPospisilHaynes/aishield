@@ -189,7 +189,7 @@ export default function AdminPage() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6 border-b border-white/10 pb-4">
+                <div className="flex gap-2 mb-6 border-b border-white/10 pb-4 overflow-x-auto">
                     {([
                         { id: "prehled" as Tab, label: "📊 Přehled" },
                         { id: "emaily" as Tab, label: "📧 Emaily" },
@@ -325,7 +325,7 @@ export default function AdminPage() {
                 )}
 
                 {tab === "emaily" && (
-                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-white/5">
                                 <tr>
@@ -361,7 +361,7 @@ export default function AdminPage() {
                 )}
 
                 {tab === "firmy" && (
-                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-white/5">
                                 <tr>
@@ -399,7 +399,7 @@ export default function AdminPage() {
                 )}
 
                 {tab === "logy" && stats && (
-                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-white/5">
                                 <tr>
@@ -483,7 +483,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Alerty */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                             <div className="p-4 border-b border-white/10">
                                 <h2 className="text-lg font-semibold text-cyan-400">🔔 Poslední alerty</h2>
                             </div>
@@ -536,7 +536,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Diffy */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                             <div className="p-4 border-b border-white/10">
                                 <h2 className="text-lg font-semibold text-cyan-400">🔄 Změny ve skenech (Diffy)</h2>
                             </div>
@@ -676,7 +676,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Seznam klientů agentury */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-x-auto">
                             <div className="p-4 border-b border-white/10">
                                 <h2 className="text-lg font-semibold text-cyan-400">🤝 Klienti agentury ({agencyClients.length})</h2>
                             </div>
