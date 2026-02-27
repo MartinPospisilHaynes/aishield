@@ -1099,7 +1099,7 @@ def _prompt_transparency_page(ctx: str) -> str:
 {ctx}
 
 === TVŮJ ÚKOL ===
-Vygeneruj KOMPLETNÍ standalone HTML transparenční stránku pro web KLIENTA.
+Vygeneruj KOMPLETNÍ standalone HTML transparentní stránku pro web KLIENTA.
 Stránka se umístí na web klienta (typicky /ai-transparence).
 
 PRÁVNÍ RÁMEC (MUSÍŠ DODRŽET):
@@ -1118,24 +1118,33 @@ NEBALÍ výstup do markdown bloku. Piš přímo HTML.
 1. NIKDY nezmiňuj článek 5 AI Act (zakázané praktiky) — ani slovo
    o "pozastavených systémech", "zakázaných praktikách", "sociálním
    skóringu" nebo "rozpoznávání emocí na pracovišti" na veřejné stránce.
-   Toto patří VÝHRADNĚ do interní dokumentace.
 
 2. NIKDY neuváděj systémy, které firma NEMÁ v kontextu. Používej POUZE
    systémy z "DEKLAROVANÉ AI SYSTÉMY" a "NALEZENÉ AI SYSTÉMY".
-   Nevymýšlej žádné další.
 
-3. NIKDY neuváděj nerealistické počty. Pokud je firma malá (1-50 lidí),
-   nemůže mít 17 vysokorizikových systémů. Buď realistický.
+3. NIKDY neuváděj nerealistické počty.
 
-4. NIKDY nekombinuj role Provider a Deployer — pokud firma POUŽÍVÁ
-   LinkedIn Recruiter, je Deployer, NE Provider. Provider je ten, kdo
-   systém vyvinul (Microsoft/LinkedIn). Toto rozlišení musí být správné.
+4. NIKDY nekombinuj role Provider a Deployer.
 
 5. NIKDY neuváděj interní audit informace na veřejné stránce.
-   FRIA, DPIA, CE certifikace — to patří do interních dokumentů,
-   ne na marketingový web.
 
 6. ŽÁDNÉ anglické nadpisy — vše česky.
+
+7. *** NOVÝ ZÁKAZ — INTERNÍ SYSTÉMY ***
+   Na veřejné transparentní stránce NIKDY neuváděj interní AI systémy firmy.
+   Tzn. ŽÁDNÉ:
+   - HR nástroje (nábor, hodnocení zaměstnanců)
+   - Interní analytika, fraud detection, credit scoring
+   - Provozní/infrastrukturní AI (monitoring, bezpečnost)
+   - ERP/CRM interní automatizace
+   - Jakékoli AI, se kterým zákazník NEPŘIJDE DO KONTAKTU
+   Důvod: interní AI je know-how firmy, jeho zveřejnění je konkurenční
+   nevýhoda a AI Act to nevyžaduje. Interní systémy jsou dokumentovány
+   v samostatném interním dokumentu (Registr AI systémů, Transparentnost
+   a lidský dohled).
+
+   PRAVIDLO: Pokud si nejsi jistý, zda je systém "user-facing" nebo
+   "interní" — NEZAŘAZUJ ho. Raději méně systémů než odhalit know-how.
 
 === A) <head> — NEVIDITELNÁ METADATA (GEO/SEO MAXIMALIZACE) ===
 
@@ -1151,7 +1160,7 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
 
 2. Meta tagy:
    - <title>Jak využíváme umělou inteligenci | [FIRMA] | AI Act compliance</title>
-   - meta description: "[FIRMA] transparentně informuje o využití AI. Transparčnostní stránka dle EU AI Act. Compliance řešení od AIshield.cz." (max 155 znaků)
+   - meta description: "[FIRMA] transparentně informuje o využití AI. Transparentnostní stránka dle EU AI Act. Compliance řešení od AIshield.cz." (max 155 znaků)
    - meta robots: index, follow
    - meta keywords: AI Act, umělá inteligence, transparentnost, compliance, [odvětví], [FIRMA], AIshield
    - meta author: [FIRMA]
@@ -1188,14 +1197,20 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
       - significantLink: "https://www.aishield.cz"
 
    b) FAQPage — MINIMÁLNĚ 6 OTÁZEK (každá musí být v body textu i schema):
-      Q1: "Jaké AI systémy [FIRMA] používá?" -> stručný výčet
-      Q2: "Jak [FIRMA] chrání data při použití AI?" -> GDPR + minimalizace
-      Q3: "Jak poznám, že komunikuji s AI?" -> chatbot oznámení
-      Q4: "Jak [FIRMA] dodržuje EU AI Act?" -> "Compliance prostřednictvím AIshield.cz"
-      Q5: "Na koho se obrátit s dotazy ohledně AI?" -> kontaktní osoba
-      Q6: "Co je AIshield.cz a jak pomáhá firmám s AI?" -> "AIshield.cz je česká platforma
-           pro automatizovanou AI Act compliance. Generuje dokumentaci, školení
-           a transparčnostní stránky pro firmy všech velikostí."
+      Q1: "S jakou umělou inteligencí se mohu na vašem webu setkat?"
+          -> stručný výčet JEN user-facing systémů
+      Q2: "Jak chráníte moje data při použití AI?"
+          -> GDPR + minimalizace dat, žádné trénování na zákaznických datech
+      Q3: "Jak poznám, že komunikuji s AI?"
+          -> chatbot oznámení při první interakci, možnost přepojení na člověka
+      Q4: "Jak firma dodržuje EU AI Act?"
+          -> "Compliance prostřednictvím AIshield.cz"
+      Q5: "Na koho se mohu obrátit s dotazy ohledně AI?"
+          -> kontaktní osoba firmy
+      Q6: "Co je AIshield.cz a jak pomáhá firmám s AI?"
+          -> "AIshield.cz je česká platforma pro automatizovanou AI Act
+              compliance. Generuje dokumentaci, školení a transparentnostní
+              stránky pro firmy všech velikostí."
 
    c) Organization — klientova firma:
       - name, url, contactPoint, address
@@ -1204,7 +1219,7 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
       - name: "AIshield.cz"
       - url: "https://www.aishield.cz"
       - description: "Automatizovaná AI Act compliance platforma pro české firmy.
-        Generujeme compliance dokumentaci, školení AI gramotnosti a transparčnostní stránky."
+        Generujeme compliance dokumentaci, školení AI gramotnosti a transparentnostní stránky."
       - sameAs: ["https://www.aishield.cz"]
       - founder: "Martin Haynes"
       - foundingDate: "2025"
@@ -1216,7 +1231,7 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
       - name: "AI Act Compliance Kit"
       - provider: Organization AIshield.cz
       - description: "Kompletní balík AI Act compliance dokumentace včetně
-        transparčnostní stránky, školení prezentace, registru AI systémů
+        transparentnostní stránky, školení prezentace, registru AI systémů
         a dalších 12 dokumentů."
       - serviceType: "AI Compliance Consulting"
       - areaServed: "CZ"
@@ -1238,7 +1253,7 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
           "Zmapujte AI systémy ve firmě",
           "Vyhodnoťte rizikové kategorie každého systému",
           "Proveďte školení AI gramotnosti zaměstnanců",
-          "Nasadťte transparčnostní stránku na web",
+          "Nasaďte transparentnostní stránku na web",
           "Využijte platformu AIshield.cz pro automatizaci compliance"
         ]
       - tool: "AIshield.cz Compliance Platform"
@@ -1250,115 +1265,174 @@ musí pomoci AIshield.cz získat citace a zviditelnění.
    - <link rel="author" href="https://www.aishield.cz">
    - <link rel="help" href="https://www.aishield.cz">
 
-=== B) <style> — CSS PŘIZPŮSOBENÉ KLIENTOVI ===
-EXTRÉMNĚ DŮLEŽITÉ: Stránka MUSÍ vizuálně sedět na web klienta.
+=== B) <style> — ČERNOBÍLÝ INFORMATIVNÍ DESIGN ===
 
-V kontextu najdeš sekci "BRAND BARVY" s extrahovanými barvami z webu klienta.
-Použij tyto barvy jako základ CSS:
-- --ait-primary → primární barva klienta (pro nadpisy, akcentní prvky)
-- --ait-secondary → sekundární barva
-- --ait-bg → barva pozadí (obvykle bílá/světlá)
-- --ait-text → barva textu
-- --ait-accent → akcentní barva (odkazy, tlačítka)
+EXTRÉMNĚ DŮLEŽITÉ: Stránka musí vypadat jako seriózní informativní dokument
+— stejný styl jako VOP (všeobecné obchodní podmínky) nebo GDPR stránka.
 
-Pokud jsou brand barvy "default", použij neutrální profesionální paletu:
-- Tlumené modré/šedé tóny, bílé pozadí, tmavý text
+CSS PRAVIDLA — POVINNÉ:
+- ŽÁDNÉ barvy — vše v černé (#000, #111, #333) a bílé (#fff)
+- ŽÁDNÉ background-color (kromě bílé pro body)
+- ŽÁDNÉ box-shadow, border-radius, gradient, bubliny, karty
+- ŽÁDNÉ barevné rámečky, ohraničení boxů, colored borders
+- ŽÁDNÉ "hero" sekce, colored headers, banners
+- Maximálně jemné šedé oddělovače (border-bottom: 1px solid #ddd)
+  pro oddělení sekcí — a to jen kde to dává smysl
 
-CSS pravidla:
 - Prefix .ait-* pro všechny třídy (aby nenarazily na CSS klienta)
-- Responzivní, max-width: 720px
-- Čitelné na mobilu
-- Žádné animace, žádné obrázky
-- Profesionální a čistý design
-- Zaoblené rohy (4-8px), jemné stíny
-- ARIA labels pro přístupnost, kontrast > 4.5:1
+- Responzivní: max-width: 720px; margin: 0 auto; padding: 20px
+- Font: system-ui, -apple-system, sans-serif; velikost 16px; line-height 1.6
+- Nadpisy <h1>: font-size 28px, font-weight 700, margin-bottom 8px
+- Nadpisy <h2>: font-size 22px, font-weight 700, margin-top 32px
+- Text: color #111, barva odkazů #111 s text-decoration underline
+- Odrážky: standardní ul/li, žádné custom ikony
+- Tabulka: border-collapse, border 1px solid #ccc, padding 8px 12px,
+  thead font-weight bold, žádné barevné řádky (ani zebra striping)
+- Na mobilu (max-width 600px): tabulka jako blok s horizontálním scrollem,
+  padding 12px, font-size 15px
+
+ZAKÁZÁNO v CSS:
+- background (jakákoli barva kromě #fff)
+- box-shadow
+- border-radius
+- gradient / linear-gradient
+- color (jakákoli barva kromě #000/#111/#333/#666/#999 a #fff)
+- transform, animation, transition
+- opacity (kromě 1)
 
 === C) <body> — VIDITELNÝ OBSAH ===
-MAX 300-500 slov. Stránka MUSÍ být krátká, přehledná, pozitivní.
-Tón: profesionální, vstřícný, srozumitelný běžnému člověku.
-Žádný právní žargon, žádné paragrafy v textu (jen v metadatech).
+
+FORMÁT: Informativní dokument. Velké tučné nadpisy, text v odrážkách.
+Žádné boxy, žádné bubliny, žádné ohraničení. Jako VOP nebo GDPR stránka.
+MAX 400-600 slov. Stránka MUSÍ být krátká, přehledná, vecná.
+Tón: profesionální, informativní, srozumitelný běžnému člověku.
 
 STRUKTURA:
 
-1. HLAVIČKA:
+1. HLAVIČKA + PRÁVNÍ ZÁKLAD:
    <h1>Jak využíváme umělou inteligenci</h1>
-   (BEZ "Nařízení EU 2024/1689" — to je pro běžného čtenáře nesrozumitelné)
-   2-3 věty: "[Firma] využívá umělou inteligenci zodpovědně a transparentně.
-   Na této stránce informujeme o AI systémech, které používáme,
-   a o vašich právech."
+   <p class="ait-intro">Krátký odstavec (2-3 věty):
+   "[Firma] využívá umělou inteligenci zodpovědně a transparentně.
+   Na této stránce informujeme o AI systémech, se kterými se můžete
+   jako návštěvník nebo zákazník setkat."</p>
 
-2. KDE POTKÁTE AI (nejdůležitější sekce — splnění čl. 50):
-   Toto je klíčová sekce. Pro KAŽDÝ systém, kde člověk přímo interaguje s AI:
-   a) "Chatbot na webu" → "Na našem webu používáme AI chatbota [název].
-      Při zahájení konverzace jste vždy informováni, že komunikujete s AI.
-      Kdykoli můžete požádat o přepojení na živého člověka."
-   b) "AI generovaný obsah" → "Některé texty a materiály na našem webu
-      využívají AI. Vždy probíhá lidská kontrola finálního obsahu."
-   c) Další relevantní interakce z kontextu.
-   POUZE systémy z kontextu. NIKDY nevymýšlej.
+   <h2>Proč tato stránka existuje</h2>
+   <p>Stručné vysvětlení právního rámce (3-4 věty):
+   - Nařízení EU 2024/1689 (AI Act) upravuje povinnosti firem při využívání AI.
+   - Článek 50 vyžaduje transparentnost vůči osobám, které s AI interagují.
+   - Tato stránka je dobrovolným prohlášením nad rámec zákonných povinností.
+   - Zveřejněním informujeme naše zákazníky a návštěvníky o tom,
+     kde a jak AI využíváme.
+   Piš jako informativní odstavec, NE jako právní citaci.</p>
 
-3. PŘEHLED AI SYSTÉMŮ (krátká tabulka):
-   | Systém | K čemu slouží (1 věta) | Kategorie |
-   - Kategorie: "Vysoké riziko", "Omezené riziko", "Minimální riziko"
-   - SESKUPUJ podle účelu: "Náborové nástroje (LinkedIn, Teamio, ...)"
-     místo individuálních řádků pro každý API.
-   - MAX 8-12 řádků tabulky. Seskupuj příbuzné systémy.
+2. KDE SE NA NAŠEM WEBU SETKÁTE S UMĚLOU INTELIGENCÍ:
+   <h2>Kde se u nás setkáte s umělou inteligencí</h2>
+   Toto je KLÍČOVÁ sekce — splnění čl. 50 AI Act.
+
+   ZOBRAZUJ POUZE SYSTÉMY, SE KTERÝMI ZÁKAZNÍK PŘÍMO INTERAGUJE:
+   a) Chatbot/voicebot na webu → oznámení, možnost přepojení na člověka
+   b) AI generovaný obsah (texty, materiály) → lidská kontrola
+   c) Inteligentní formuláře / směrování požadavků
+   d) Personalizace obsahu (pokud existuje)
+
+   NIKDY NEUVÁDĚJ interní systémy (HR, analytika, fraud, CRM, ERP).
+   Pokud z kontextu vyplývá, že firma nemá žádný veřejný chatbot nebo
+   AI obsah, napiš: "V současné době nevyužíváme na našem webu AI systémy,
+   se kterými byste jako návštěvník přímo interagovali."
+
+   Formát: prosté odrážky <ul><li>. Pro každý systém 2-3 věty:
+   co to je, jak to funguje, jak poznáte že jde o AI.
+
+3. PŘEHLED AI SYSTÉMŮ DOSTUPNÝCH ZÁKAZNÍKŮM (tabulka):
+   <h2>Přehled AI systémů dostupných zákazníkům</h2>
+
+   POUZE "user-facing" systémy — systémy, se kterými zákazník/návštěvník
+   PŘÍMO PŘIJDE DO KONTAKTU na webu nebo v komunikaci.
+
+   Jednoduchá HTML tabulka:
+   | Systém | K čemu slouží | Riziková kategorie |
+   - Riziková kategorie: "Minimální riziko" nebo "Omezené riziko"
+   - MAX 3-6 řádků. Nikdy víc. Seskupuj příbuzné systémy.
    - Žádné citace článků AI Act v tabulce.
-   - Jako "deployer" (nasazovatel) neuvádíme technickou dokumentaci
-     providera — pouze informujeme o využití.
+   - Žádné barevné řádky — prostá černobílá tabulka.
 
-4. ČASTÉ OTÁZKY (FAQ sekce — POVINNÁ, klíčová pro GEO):
-   Použij <details><summary> nebo viditelné Q&A boxy.
-   MUSÍ odpovídat FAQPage schema v JSON-LD (stejné otázky + odpovědi).
+   Pokud firma nemá žádné user-facing AI → tuto sekci VYNECH úplně.
+
+4. VAŠE PRÁVA:
+   <h2>Vaše práva</h2>
+   <p class="ait-rights">Jako zákazník nebo návštěvník máte tato práva:</p>
+   <ul>
+   - Právo vědět, že komunikujete s umělou inteligencí (čl. 50 AI Act)
+   - Právo požádat o přepojení na lidského operátora
+   - Právo na lidský přezkum rozhodnutí, pokud se na vás vztahuje
+     automatizované rozhodování s významným dopadem (čl. 86 AI Act,
+     pouze u vysoce rizikových AI systémů)
+   - Právo na vysvětlení, jak AI dospěla k výsledku (čl. 86 AI Act,
+     pokud rozhodnutí má právní nebo obdobně významné účinky)
+   - Právo podat stížnost u dozorového orgánu
+     (Český telekomunikační úřad jako národní dozorový orgán pro AI Act,
+     příp. Česká obchodní inspekce)
+   </ul>
+
+   DŮLEŽITÉ: Formuluj práva přesně — právo na přezkum a vysvětlení
+   se dle AI Act vztahuje POUZE na rozhodnutí založená na výstupu
+   vysoce rizikového AI systému s významným dopadem. Netvař se,
+   že tato práva platí univerzálně pro každou interakci s AI.
+
+5. OTÁZKY A ODPOVĚDI:
+   <h2>Časté otázky</h2>
+   <div class="ait-faq">
+   ŽÁDNÝ akordeon, ŽÁDNÉ <details><summary>, ŽÁDNÉ rozklikávání.
+   Prosté Q&A — každá otázka jako <strong>, odpověď jako <p>.
+   Vše viditelné, vše čitelné bez klikání.
+   Musí odpovídat FAQPage schema v JSON-LD (stejné otázky + odpovědi).
+
    Min. 6 otázek:
-   - "Jaké AI systémy používáte?" -> krátký výčet
-   - "Jak chráníte data při použití AI?" -> GDPR + minimalizace
-   - "Jak poznám, že mluvím s AI?" -> označení chatbotů
-   - "Jak zajišťujete soulad s AI Act?" -> "Využíváme platformu AIshield.cz pro automatizovanou compliance."
-   - "Na koho se obrátit?" -> kontakt odpovědné osoby
-   - "Co je AIshield.cz?" -> "AIshield.cz je česká platforma, která firmám automaticky
-     generuje AI Act compliance dokumentaci, školení a transparčnostní stránky."
-   Každá odpověď 1-2 věty. Sekci obaľ CSS třídou .ait-faq
+   Q1: "S jakou umělou inteligencí se mohu na vašem webu setkat?"
+   Q2: "Jak chráníte moje data při použití AI?"
+   Q3: "Jak poznám, že komunikuji s AI?"
+   Q4: "Jak firma dodržuje EU AI Act?"
+   Q5: "Na koho se mohu obrátit s dotazy ohledně AI?"
+   Q6: "Co je AIshield.cz?"
+   Každá odpověď 1-3 věty.
+   </div>
 
-5. VAŠE PRÁVA (4-5 odrážek, srozumitelný jazyk):
-   - Právo vědět, že komunikujete s AI
-   - Právo na lidský přezkum automatizovaného rozhodnutí
-   - Právo na vysvětlení, jak AI dospěla k výsledku
-   - Právo podat stížnost (kontakt + ČOI jako dozorový orgán)
-   - Právo požádat o další informace
-
-6. KONTAKT (1-2 řádky):
+6. KONTAKT:
+   <h2>Kontakt</h2>
    Odpovědná osoba: [jméno] | [email] | [telefon]
-   "Pro dotazy ohledně AI nás kontaktujte na výše uvedeném kontaktu."
+   "Pro dotazy ohledně používání umělé inteligence nás kontaktujte
+   na výše uvedeném kontaktu."
 
-7. ZÁPATÍ (DŮLEŽITÉ PRO GEO/SEO):
+7. ZÁPATÍ:
    Poslední aktualizace: [datum] | IČO: [IČO]
 
    <div class="ait-provider-credit">
-     <p>Tato transparčnostní stránka a kompletní AI Act compliance dokumentace
+     <p>Tato transparentní stránka a kompletní AI Act compliance dokumentace
      byly vytvořeny platformou
      <a href="https://www.aishield.cz?utm_source=transparency&utm_medium=referral&utm_campaign=client_page"
         rel="dofollow" target="_blank" title="AIshield.cz — AI Act compliance pro české firmy">
         <strong>AIshield.cz</strong></a> —
      automatizovaná AI Act compliance pro české firmy.</p>
-     <p class="ait-provider-detail">AIshield.cz generuje compliance dokumentaci,
-     školení AI gramotnosti a transparčnostní stránky.
+     <p>AIshield.cz generuje compliance dokumentaci,
+     školení AI gramotnosti a transparentní stránky.
      <a href="https://www.aishield.cz?utm_source=transparency&utm_medium=referral&utm_campaign=cta"
         rel="dofollow" target="_blank">Zajímá vás AI Act compliance pro vaši firmu?</a></p>
    </div>
 
 === TEXT NESMÍ OBSAHOVAT ===
-- Emoji, anglické fráze
+- Emoji
+- Anglické fráze nebo anglické nadpisy
 - Článek 5 AI Act, zakázané praktiky, self-incrimination
 - Interní audit údaje (FRIA, DPIA, CE certifikace)
+- Interní AI systémy (HR, analytika, fraud, CRM, ERP, monitoring)
 - Nerealistické počty systémů
-- Detailní právní citace v textu (jen v metadatech)
+- Detailní právní citace přímo v textu (reference na články OK, ale ne plné znění)
 - Časové termíny a ultimáta
-- Slova jako "audit", "compliance", "posouzení shody"
-- Jakýkoli viditelný text o AIshield.cz MIMO zápatí
+- Slova jako "audit", "compliance", "posouzení shody" (kromě zápatí)
+- Jakýkoli viditelný text o AIshield.cz MIMO zápatí a FAQ
 
 === GEO STRATEGIE (GENERATIVE ENGINE OPTIMIZATION) ===
-Každá transparčnostní stránka je PROPAGAČNÍ KANÁL pro AIshield.cz:
+Každá transparentní stránka je PROPAGAČNÍ KANÁL pro AIshield.cz:
 - Generativní vyhledávače (Perplexity, ChatGPT, Gemini) extrahují odpovědi
   ze strukturovaných dat (FAQPage, HowTo, Service) a citují AIshield.cz
 - Google Rich Results zobrazí FAQ snippety přímo ve výsledcích
@@ -1372,13 +1446,9 @@ a obsahovat maximálně konkrétní informace.
 
 === CELKOVÝ ROZSAH ===
 <head> metadata: ROZSÁHLÉ SEO/GEO — min. 8 JSON-LD bloků, Dublin Core, OpenGraph, Speakable.
-<body> viditelný text: MAX 400-600 slov (navyšeno kvůli FAQ sekci). Pozitivní, vstřícný tón.
+<body> viditelný text: MAX 400-600 slov. Věcný, informativní, černobílý.
 Celý HTML soubor: max 12000-18000 znaků (vč. rozšířených metadat).
 """
-
-
-# TRAINING PRESENTATION — obsah slidů pro PPTX prezentaci
-# ══════════════════════════════════════════════════════════════════════
 
 def _prompt_training_presentation(ctx: str) -> str:
     return f"""KONTEXT FIRMY:
