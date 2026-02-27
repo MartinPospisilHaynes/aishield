@@ -1049,7 +1049,7 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
                 if m6_result:
                     m6_score_val = m6_result.get("finalni_skore")
                     m6_issues = m6_result.get("pretrvavajici_problemy", [])
-                    if m6_score_val is not None and m6_score_val < 8 and len(m6_issues) > 0:
+                    if m6_score_val is not None and m6_score_val < 8:
                         logger.info(f"[Pipeline v3]   M4b DOUBLE REFINE: M6={m6_score_val}/10, "
                                    f"{len(m6_issues)} přetrvávajících problémů → opravuji")
                         m4b_start = time.time()

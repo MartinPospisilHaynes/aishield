@@ -1,467 +1,239 @@
-<h1>Texty oznámení pro AI systémy — Martin Haynes</h1>
+<h1>Texty oznámení pro AI systémy</h1>
 
 <h2>1. Právní základ — povinnost transparentnosti</h2>
-
-<p>Nařízení (EU) 2024/1689 o umělé inteligenci (AI Act) ukládá provozovatelům AI systémů povinnost informovat uživatele o tom, že interagují s umělou inteligencí nebo že jim je předkládán obsah generovaný AI. Tato povinnost se vztahuje na firmu Martin Haynes jako na nasazovatele (deployer) AI systémů ve smyslu čl. 3 odst. 4 AI Act.</p>
+<p>Nařízení o umělé inteligenci (AI Act) ukládá nasazovatelům (deployerům) povinnost zajistit, aby fyzické osoby vždy věděly, že interagují s AI nebo konzumují AI-generovaný obsah. Povinnosti definuje článek 50 nařízení s plnou účinností od 2. 8. 2026.</p>
 
 <ul>
-  <li><strong>Čl. 50 odst. 1</strong> — Chatboty, voiceboty, virtuální asistenti: uživatel musí být informován, že komunikuje s AI, a to jasně a srozumitelně před zahájením nebo na začátku interakce.</li>
-  <li><strong>Čl. 50 odst. 2</strong> — Systémy detekující emoce nebo provádějící biometrickou kategorizaci: dotčené osoby musí být informovány o nasazení takového systému.</li>
-  <li><strong>Čl. 50 odst. 4</strong> — AI-generovaný obsah (syntetický text, obraz, audio, video): obsah musí být strojově čitelně označen a uživatel musí být informován o jeho umělém původu.</li>
-  <li><strong>Čl. 86</strong> — Právo na vysvětlení: fyzické osoby dotčené rozhodnutím vysoce rizikového AI systému mají právo na srozumitelné vysvětlení tohoto rozhodnutí.</li>
-  <li><strong>Čl. 26 odst. 7</strong> — Nasazovatel vysoce rizikového AI systému musí informovat dotčené fyzické osoby o tom, že jsou předmětem rozhodování takového systému.</li>
+<li><strong>Čl. 50 odst. 1:</strong> Systémy určené k přímé interakci s fyzickými osobami — ve vaší firmě zejména Google Gemini Chatbot a systémy zákaznické podpory (Freshdesk AI, Zendesk AI).</li>
+<li><strong>Čl. 50 odst. 2:</strong> Systémy detekující emoce nebo provádějící biometrickou kategorizaci. Na pracovišti a ve vzdělávacích institucích je rozpoznávání emocí striktně zakázáno dle čl. 5 odst. 1 písm. f) AI Act (s výjimkou zdravotních/bezpečnostních důvodů). Pokud váš systém „vlastní kód" provádí tyto operace na pracovišti, jde o zakázanou praktiku — viz sekce 3.5.</li>
+<li><strong>Čl. 50 odst. 4:</strong> Generování syntetického obsahu (text, obraz, audio, video). Vztahuje se na vaše využívání nástrojů Midjourney, DALL-E, HeyGen a Synthesia. Kromě viditelného označení vyžaduje AI Act také strojově čitelné označení (metadata), je-li to technicky proveditelné.</li>
 </ul>
 
-<div class='warning'>
-  <strong>Zákonná povinnost — chatboty a virtuální asistenti:</strong> Firma Martin Haynes provozuje AI chatboty (Google Gemini Chatbot, Freshdesk AI, Zendesk AI, Intercom a další). Každý z těchto systémů MUSÍ informovat uživatele, že komunikuje s umělou inteligencí. Tato povinnost je účinná od <strong>2. 2. 2025</strong> dle čl. 50 odst. 1 AI Act (viz čl. 113 písm. b) — přechodná ustanovení). Povinnost již platí — oznámení je nutné nasadit neprodleně.
-</div>
+<div class='warning'>Váš AI chatbot MUSÍ informovat uživatele, že komunikují s umělou inteligencí. Toto je zákonná povinnost dle čl. 50 odst. 1 AI Act s účinností od 2. 8. 2026.</div>
 
 <h2>2. Přehled AI systémů vyžadujících oznámení</h2>
 
 <table>
-  <thead>
-    <tr>
-      <th>AI systém</th>
-      <th>Účel oznámení</th>
-      <th>Povinné / Doporučené</th>
-      <th>Článek AI Act</th>
-      <th>Kde umístit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Google Gemini Chatbot</td>
-      <td>Uživatel musí vědět, že komunikuje s AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 1</td>
-      <td>První zpráva chatbotu, web banner</td>
-    </tr>
-    <tr>
-      <td>Freshdesk AI / Zendesk AI / Intercom</td>
-      <td>Zákazník musí vědět, že odpovídá AI, ne člověk</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 1</td>
-      <td>Úvodní zpráva chatu, email footer</td>
-    </tr>
-    <tr>
-      <td>DALL-E / Midjourney / Synthesia / HeyGen / ElevenLabs</td>
-      <td>Příjemce musí vědět, že obsah vytvořila AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 4</td>
-      <td>Popisek u obsahu, metadata souboru</td>
-    </tr>
-    <tr>
-      <td>ChatGPT (Sora) / Gemini VEO3</td>
-      <td>Příjemce musí vědět, že video/audio je syntetické</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 4</td>
-      <td>Titulky videa, popisek, metadata</td>
-    </tr>
-    <tr>
-      <td>Vzdělávací chatbot / virtuální asistent (e-learning)</td>
-      <td>Student/uživatel musí vědět, že komunikuje s AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 1</td>
-      <td>Splash screen, úvodní obrazovka kurzu</td>
-    </tr>
-    <tr>
-      <td>Kamerový dohled s AI / Sledování obrazovky / Analýza emailů</td>
-      <td>Zaměstnanec musí vědět, že je monitorován AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 2, čl. 26 odst. 7, GDPR čl. 13</td>
-      <td>Pracovní smlouva, interní směrnice, cedule na pracovišti</td>
-    </tr>
-    <tr>
-      <td>CRIF / Bisnode / Scoring Solutions (kreditní scoring)</td>
-      <td>Žadatel musí vědět, že ho hodnotí AI, a má právo na přezkum</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 86, čl. 26 odst. 7, GDPR čl. 22</td>
-      <td>Formulář žádosti, emailové oznámení o rozhodnutí</td>
-    </tr>
-    <tr>
-      <td>LinkedIn Recruiter AI / Teamio / LMC AI</td>
-      <td>Uchazeč musí vědět, že jeho profil hodnotí AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 1, čl. 26 odst. 7</td>
-      <td>Inzerát, potvrzení přijetí přihlášky, email kandidátovi</td>
-    </tr>
-    <tr>
-      <td>Guidewire / NESS-Allianz AI / ČPP-ČSOB interní AI (pojišťovnictví)</td>
-      <td>Pojistník musí vědět, že jeho žádost hodnotí AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 86, čl. 26 odst. 7, Příloha III bod 5a</td>
-      <td>Formulář žádosti o plnění, emailové oznámení o výsledku</td>
-    </tr>
-    <tr>
-      <td>AI rozhodující o reklamacích / přístupu ke službám</td>
-      <td>Zákazník musí vědět, že o jeho žádosti rozhoduje AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 86, čl. 50</td>
-      <td>Formulář reklamace, emailové oznámení o výsledku</td>
-    </tr>
-    <tr>
-      <td>Prisync / Competera / Dynamic Yield (dynamická cenotvorba)</td>
-      <td>Zákazník by měl vědět, že ceny upravuje AI</td>
-      <td><span class='badge-limited'>DOPORUČENÉ</span></td>
-      <td>čl. 50</td>
-      <td>Obchodní podmínky, patička webu, produktová stránka</td>
-    </tr>
-    <tr>
-      <td>ChatGPT / Claude / Gemini / Copilot (interní použití)</td>
-      <td>Zaměstnanci musí znát pravidla bezpečného používání AI</td>
-      <td><span class='badge-limited'>DOPORUČENÉ</span></td>
-      <td>čl. 4, čl. 26</td>
-      <td>Intranet, interní směrnice, onboarding</td>
-    </tr>
-    <tr>
-      <td>Doporučovací systém obsahu</td>
-      <td>Uživatel by měl vědět, že obsah personalizuje AI</td>
-      <td><span class='badge-limited'>DOPORUČENÉ</span></td>
-      <td>čl. 50</td>
-      <td>Obchodní podmínky, patička webu</td>
-    </tr>
-    <tr>
-      <td>Vlastní HTML chatbot</td>
-      <td>Návštěvník musí vědět, že komunikuje s AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 50 odst. 1</td>
-      <td>Úvodní zpráva chatbotu, web banner</td>
-    </tr>
-    <tr>
-      <td>Pospa ing. (AI v kritické infrastruktuře)</td>
-      <td>Dotčené osoby musí být informovány o nasazení AI</td>
-      <td><span class='badge-high'>POVINNÉ</span></td>
-      <td>čl. 26 odst. 7, Příloha III bod 2</td>
-      <td>Provozní dokumentace, oznámení dotčeným osobám</td>
-    </tr>
-  </tbody>
+<thead>
+<tr>
+<th>AI systém</th>
+<th>Typ oznámení</th>
+<th>Povinné / Doporučené</th>
+<th>Článek AI Act</th>
+<th>Kde umístit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google Gemini Chatbot / AI Chatbot</td>
+<td>Upozornění na interakci s AI</td>
+<td><span class='badge-high'>POVINNÉ</span></td>
+<td>Čl. 50 odst. 1</td>
+<td>Úvodní zpráva chatu</td>
+</tr>
+<tr>
+<td>Freshdesk AI / Zendesk AI</td>
+<td>Upozornění na automatizovanou podporu</td>
+<td><span class='badge-high'>POVINNÉ</span></td>
+<td>Čl. 50 odst. 1</td>
+<td>Patička e-mailu / Auto-reply</td>
+</tr>
+<tr>
+<td>HeyGen / Synthesia / Midjourney / DALL-E</td>
+<td>Označení syntetického obsahu (viditelné + metadata)</td>
+<td><span class='badge-high'>POVINNÉ</span></td>
+<td>Čl. 50 odst. 4</td>
+<td>Vodoznak / Popisek + metadata souboru</td>
+</tr>
+<tr>
+<td>Teamio / LinkedIn Recruiter AI</td>
+<td>Informace o zpracování profilu pomocí AI</td>
+<td><span class='badge-limited'>DOPORUČENÉ</span></td>
+<td>Čl. 50 v návaznosti na GDPR</td>
+<td>Kariérní stránky / Formulář</td>
+</tr>
+<tr>
+<td>AI monitoring zaměstnanců (kamery, produktivita, e-maily, GPS)</td>
+<td>Informace o AI zpracování na pracovišti</td>
+<td><span class='badge-high'>POVINNÉ</span></td>
+<td>Čl. 26 odst. 7 AI Act + GDPR čl. 13-14</td>
+<td>Interní směrnice / Dodatek k pracovní smlouvě</td>
+</tr>
+<tr>
+<td>„vlastní html" (sociální scoring)</td>
+<td colspan='4'><strong>ZAKÁZANÝ SYSTÉM — text oznámení se neposkytuje. Viz sekce 3.5.</strong></td>
+</tr>
+<tr>
+<td>„vlastní kód" (rozpoznávání emocí / biometrie)</td>
+<td colspan='4'><strong>ZAKÁZANÝ SYSTÉM — text oznámení se neposkytuje. Viz sekce 3.5.</strong></td>
+</tr>
+</tbody>
 </table>
 
 <h2>3. Hotové texty oznámení</h2>
+<p>Texty jsou připraveny k okamžitému použití (copy-paste). U každého textu doporučujeme vložit hypertextový odkaz na vaši transparenční stránku (<code>/ai-transparence</code>).</p>
 
-<div class='info'>
-  <strong>Jak texty používat:</strong> Každý text je připraven ke zkopírování a nasazení. Místa označená <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM]</span> musíte vyplnit vlastními kontaktními údaji. Pokud používáte AI systém, který zde není uveden, použijte univerzální šablonu v sekci 3.13.
-</div>
-
-<h3>3.1 Google Gemini Chatbot — oznámení pro web a chatbot</h3>
+<h3>3.1 Oznámení pro Google Gemini Chatbot a AI Chatbot</h3>
+<p>Uživatel musí toto oznámení vidět jako první zprávu v okně chatu, ještě před zahájením konverzace.</p>
 
 <div class='callout'>
-  <strong>TEXT — úvodní zpráva chatbotu (web):</strong><br>
-  „Dobrý den, jsem virtuální asistent poháněný umělou inteligencí (Google Gemini). Komunikujete s AI systémem, nikoli s živým člověkem. Mohu vám pomoci s dotazy ohledně našich produktů a služeb. Pokud si přejete mluvit s naším týmem, napište „Chci mluvit s člověkem" nebo nás kontaktujte na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon]</span>. Více informací o tom, jak používáme AI, najdete na naší <a href='/ai-transparence'>stránce o umělé inteligenci</a>."
+<strong>Úvodní zpráva chatbotu:</strong><br>
+„Dobrý den! Jsem virtuální asistent poháněný umělou inteligencí (Google Gemini). Rád vám pomohu s vašimi dotazy. Upozorňujeme, že mé odpovědi jsou generovány automaticky. Více informací o tom, jak využíváme AI, najdete na naší <a href='/ai-transparence'>stránce o transparentnosti</a>."
 </div>
+
+<h3>3.2 Oznámení pro zákaznickou podporu (Freshdesk AI, Zendesk AI)</h3>
+<p>Pokud AI systémy automaticky odpovídají na e-maily zákazníků nebo sumarizují tikety, musí být zákazník informován.</p>
 
 <div class='callout'>
-  <strong>TEXT — web banner (krátká verze):</strong><br>
-  „Tento chat je provozován umělou inteligencí. Více informací: <a href='/ai-transparence'>Jak používáme AI</a>."
+<strong>Text pro automatickou odpověď / patičku e-mailu:</strong><br>
+„Tato zpráva byla předběžně zpracována s pomocí umělé inteligence pro urychlení vaší podpory. V případě potřeby je váš požadavek kontrolován naším lidským operátorem. <a href='/ai-transparence'>Více o AI transparentnosti</a>"
 </div>
 
-<h3>3.2 Freshdesk AI / Zendesk AI / Intercom — zákaznická podpora</h3>
+<h3>3.3 Oznámení pro AI generovaný obsah (HeyGen, Synthesia, Midjourney, DALL-E)</h3>
+<p>Při publikování marketingových materiálů, videí nebo obrázků vygenerovaných AI je nutné obsah označit dvěma způsoby:</p>
+<ol>
+<li><strong>Viditelné označení</strong> — text v popisku, vodoznak nebo titulky.</li>
+<li><strong>Strojově čitelné označení</strong> — metadata v souboru (např. standard C2PA, EXIF tagy). Čl. 50 odst. 4 AI Act vyžaduje strojově čitelné označení, je-li to technicky proveditelné. Nástroje jako Midjourney a DALL-E již metadata vkládají automaticky — neodstraňujte je při dalším zpracování.</li>
+</ol>
 
 <div class='callout'>
-  <strong>TEXT — úvodní zpráva zákaznického chatu:</strong><br>
-  „Vítejte v zákaznické podpoře. Vaši zprávu zpracovává AI asistent. Pokud vaši žádost nedokáže vyřešit automaticky, bude předána živému operátorovi. Komunikujete s umělou inteligencí."
+<strong>Text pro popisek obrázku / patičku článku:</strong><br>
+„Ilustrační obrázek / text byl vytvořen s využitím nástrojů umělé inteligence."
+<br><br>
+<strong>Text pro video obsah (popisek na YouTube + závěrečné titulky ve videu):</strong><br>
+„Toto video obsahuje synteticky generované audiovizuální prvky vytvořené umělou inteligencí."
 </div>
+
+<div class='info'><strong>Kde přesně označit video ze Synthesia / HeyGen?</strong> Označení umístěte na obě místa: (1) do popisku videa na platformě (YouTube, web) a (2) přímo do videa — buď jako trvalý vodoznak v rohu, nebo jako závěrečný titulek. Samotný popisek na YouTube nestačí, protože video může být sdíleno mimo platformu.</div>
+
+<h3>3.4 Oznámení pro HR systémy (Teamio, LMC, LinkedIn Recruiter)</h3>
+<p>Jako nasazovatel byste měli kandidáty informovat, že při výběrovém řízení využíváte AI asistenci.</p>
 
 <div class='callout'>
-  <strong>TEXT — email footer automatické odpovědi:</strong><br>
-  „Tato odpověď byla vygenerována systémem umělé inteligence. Pokud máte další dotazy nebo si přejete odpověď od člověka, odpovězte na tento email nebo nás kontaktujte telefonicky na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: telefon]</span>."
+<strong>Text pro kariérní stránky / formulář pro uchazeče:</strong><br>
+„V rámci našeho náborového procesu využíváme asistenční nástroje umělé inteligence pro efektivnější zpracování přihlášek. Konečné rozhodnutí o přijetí vždy činí náš HR specialista. Vaše práva tím nejsou dotčena. <a href='/ai-transparence'>Více o AI transparentnosti</a>"
 </div>
 
-<h3>3.3 DALL-E / Midjourney / Synthesia / HeyGen / ElevenLabs — AI-generovaný obsah</h3>
+<div class='warning'><strong>Upozornění pro implementaci:</strong> Větu „Konečné rozhodnutí vždy činí náš HR specialista" smíte použít pouze tehdy, pokud máte procesně zajištěno, že žádný uchazeč není automaticky vyřazen bez lidského přezkumu. Pokud AI systém (např. LinkedIn Recruiter) automaticky filtruje kandidáty, musí existovat postup, kdy HR pracovník výsledky kontroluje před odesláním zamítnutí.</div>
 
-<div class='callout'>
-  <strong>TEXT — popisek u AI-generovaného obrázku nebo grafiky:</strong><br>
-  „Tento obrázek byl vytvořen pomocí nástroje umělé inteligence (AI-generovaný obsah)."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — titulky nebo popis AI-generovaného videa / audia:</strong><br>
-  „Toto video / audio bylo vytvořeno nebo upraveno pomocí nástrojů umělé inteligence (Synthesia / HeyGen / ElevenLabs). Hlas a/nebo vizuální podoba jsou syntetické."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — sociální sítě / publikovaný obsah:</strong><br>
-  „#AIgenerováno — Tento obsah byl vytvořen pomocí umělé inteligence."
-</div>
-
-<div class='info'>
-  <strong>Technický požadavek čl. 50 odst. 4:</strong> Kromě viditelného popisku musí být AI původ obsahu označen i strojově čitelně — vložte do metadat souboru (EXIF, XMP) informaci o AI generování. Většina nástrojů (DALL-E, Midjourney) toto dělá automaticky — neodstraňujte metadata při publikaci.
-</div>
-
-<h3>3.4 Vzdělávací chatbot / virtuální asistent (e-learning, mobilní aplikace)</h3>
-
-<div class='callout'>
-  <strong>TEXT — splash screen nebo úvodní obrazovka aplikace / kurzu:</strong><br>
-  „Tato aplikace / kurz využívá umělou inteligenci pro personalizaci obsahu a interaktivní asistenci. Komunikujete s AI systémem. Vaše odpovědi a výsledky jsou zpracovávány automatizovaně. Více informací: <a href='/ai-transparence'>Jak používáme AI</a>."
-</div>
-
-<h3>3.5 Kamerový dohled s AI / Sledování obrazovky / Analýza emailů — oznámení pro zaměstnance</h3>
-
-<div class='callout'>
-  <strong>TEXT — písemné oznámení zaměstnancům (součást pracovní dokumentace):</strong><br>
-  „Společnost Martin Haynes využívá systémy umělé inteligence pro účely bezpečnosti pracoviště a řízení pracovního výkonu. Tyto systémy mohou zahrnovat: kamerový dohled s AI analýzou, sledování aktivity na pracovních zařízeních a analýzu pracovní komunikace. Zpracování probíhá v souladu s GDPR a AI Act. Máte právo na informace o zpracování vašich osobních údajů, právo vznést námitku a právo na vysvětlení rozhodnutí AI systému dle čl. 86 AI Act. Kontaktní osoba: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: jméno a kontakt odpovědné osoby]</span>."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — viditelné oznámení na pracovišti (cedule / plakát):</strong><br>
-  „Na tomto pracovišti jsou provozovány systémy umělé inteligence pro účely bezpečnosti a řízení výkonu. Podrobné informace obdržíte od svého nadřízeného nebo HR oddělení."
-</div>
+<h3>3.5 Zakázané systémy — „vlastní html" a „vlastní kód"</h3>
 
 <div class='warning'>
-  <strong>Upozornění — rozpoznávání emocí:</strong> Pokud firma provozuje systém rozpoznávání emocí (identifikován jako „vlastní kód"), je tato praktika dle čl. 5 odst. 1 písm. f) AI Act zakázána na pracovišti a ve vzdělávání. Před jakýmkoli nasazením konzultujte s právníkem. Pokud systém přesto legálně provozujete (mimo zakázané oblasti), přidejte oznámení: „Tento systém provádí analýzu emočních stavů. Jste o tom informováni v souladu s čl. 50 odst. 2 AI Act."
-</div>
-
-<h3>3.6 Kreditní scoring (CRIF / Bisnode / Scoring Solutions) — oznámení o automatizovaném rozhodování</h3>
-
-<div class='callout'>
-  <strong>TEXT — formulář žádosti o úvěr / službu:</strong><br>
-  „Vaše žádost bude vyhodnocena automatizovaným systémem hodnocení úvěruschopnosti (AI scoring). Máte právo na vysvětlení rozhodnutí dle čl. 86 AI Act (právo dotčené osoby na srozumitelné vysvětlení rozhodnutí vysoce rizikového AI systému) a právo na přezkum automatizovaného rozhodnutí dle čl. 22 GDPR (právo nebýt předmětem čistě automatizovaného rozhodování s právními účinky). Pro uplatnění těchto práv kontaktujte: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon odpovědné osoby]</span>."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — emailové oznámení o výsledku hodnocení:</strong><br>
-  „Vaše žádost byla vyhodnocena automatizovaným systémem. Pokud nesouhlasíte s výsledkem nebo si přejete vysvětlení, máte právo požádat o přezkum člověkem. Kontaktujte nás na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email]</span>."
-</div>
-
-<h3>3.7 LinkedIn Recruiter AI / Teamio / LMC AI — oznámení pro uchazeče o zaměstnání</h3>
-
-<p>Povinnost informovat uchazeče plyne z čl. 26 odst. 7 AI Act — jako nasazovatel vysoce rizikového AI systému (Příloha III bod 4) musíte informovat dotčené fyzické osoby.</p>
-
-<div class='callout'>
-  <strong>TEXT — součást inzerátu nebo potvrzení přijetí přihlášky:</strong><br>
-  „V rámci náborového procesu využíváme nástroje umělé inteligence pro předvýběr životopisů a hodnocení uchazečů. Konečné rozhodnutí o postupu do dalšího kola přijímá vždy člověk. Máte právo požádat o vysvětlení, jak byl váš profil hodnocen (čl. 86 AI Act). Kontakt: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon odpovědné osoby]</span>."
-</div>
-
-<h3>3.8 Interní použití ChatGPT / Claude / Gemini / Copilot — oznámení pro zaměstnance</h3>
-
-<div class='callout'>
-  <strong>TEXT — interní upozornění (intranet, email, onboarding):</strong><br>
-  „Při práci s nástroji umělé inteligence (ChatGPT, Claude, Gemini, Copilot a dalšími) dodržujte interní pravidla: nevkládejte osobní údaje zákazníků ani zaměstnanců, obchodní tajemství ani důvěrné finanční informace. Výstupy AI vždy ověřte před použitím. Podrobná pravidla jsou součástí Interní AI politiky."
-</div>
-
-<div class='info'>
-  <strong>Co by měla obsahovat Interní AI politika:</strong> Šablona Interní AI politiky je součástí Compliance Kitu. Klíčové body, které musí pokrývat:
-  <ul>
-    <li>Seznam povolených AI nástrojů a jejich účel</li>
-    <li>Zakázané vstupy — osobní údaje, obchodní tajemství, zdravotní data, finanční údaje klientů</li>
-    <li>Povinnost ověřit výstupy AI před použitím (zejména u kódu, právních textů, finančních výpočtů)</li>
-    <li>Kdo je odpovědný za dodržování (Martin Haynes — jednatel)</li>
-    <li>Postup při incidentu — komu hlásit chybu AI, únik dat přes AI nástroj</li>
-    <li>Povinnost logovat použití AI u rozhodnutí s dopadem na zákazníky nebo zaměstnance</li>
-  </ul>
-</div>
-
-<h3>3.9 Pojišťovací AI systémy (Guidewire / NESS-Allianz AI / ČPP-ČSOB interní AI) — oznámení pro pojistníky</h3>
-
-<p>AI systémy v pojišťovnictví spadají pod Přílohu III bod 5a AI Act jako vysoce rizikové. Pojistníci dotčení rozhodnutím těchto systémů mají právo na vysvětlení dle čl. 86 AI Act.</p>
-
-<div class='callout'>
-  <strong>TEXT — formulář žádosti o pojistné plnění / sjednání pojistné smlouvy:</strong><br>
-  „Vaše žádost o pojistné plnění / pojistná smlouva je vyhodnocována systémem umělé inteligence. Máte právo požádat o srozumitelné vysvětlení hodnocení a o přezkum rozhodnutí člověkem dle čl. 86 AI Act. Kontakt: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon odpovědné osoby]</span>."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — emailové oznámení o výsledku pojistného hodnocení:</strong><br>
-  „Vaše žádost byla vyhodnocena automatizovaným systémem. Pokud si přejete vysvětlení nebo nesouhlasíte s výsledkem, máte právo na přezkum člověkem. Kontaktujte nás na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email]</span>."
-</div>
-
-<h3>3.10 AI rozhodující o reklamacích, slevách a přístupu ke službám — oznámení pro zákazníky</h3>
-
-<div class='callout'>
-  <strong>TEXT — formulář reklamace / žádosti o službu:</strong><br>
-  „Vaše žádost je zpracovávána automatizovaným systémem umělé inteligence. Máte právo požádat o přezkum rozhodnutí člověkem a právo na vysvětlení dle čl. 86 AI Act. Kontakt: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon odpovědné osoby]</span>."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — emailové oznámení o výsledku reklamace / žádosti:</strong><br>
-  „O vaší žádosti bylo rozhodnuto s využitím systému umělé inteligence. Pokud nesouhlasíte s výsledkem, máte právo na přezkum člověkem. Kontaktujte nás na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email]</span>."
-</div>
-
-<h3>3.11 Dynamická cenotvorba (Prisync / Competera / Dynamic Yield) — oznámení pro zákazníky</h3>
-
-<div class='callout'>
-  <strong>TEXT — produktová stránka / košík / obchodní podmínky:</strong><br>
-  „Ceny produktů na tomto webu mohou být dynamicky upravovány na základě systémů umělé inteligence. Zobrazená cena je platná v okamžiku zobrazení. Více informací: <a href='/ai-transparence'>Jak používáme AI</a>."
-</div>
-
-<h3>3.12 Vlastní HTML chatbot a Pospa ing. (kritická infrastruktura) — oznámení</h3>
-
-<div class='callout'>
-  <strong>TEXT — vlastní HTML chatbot (úvodní zpráva):</strong><br>
-  „Komunikujete s virtuálním asistentem poháněným umělou inteligencí. Nejste v kontaktu s živým člověkem. Pokud si přejete mluvit s člověkem, napište „člověk" nebo nás kontaktujte na <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon]</span>."
-</div>
-
-<div class='callout'>
-  <strong>TEXT — Pospa ing. (AI v kritické infrastruktuře — oznámení dotčeným osobám):</strong><br>
-  „Tento systém využívá umělou inteligenci pro řízení a monitoring kritické infrastruktury. Dotčené osoby mají právo na informace o fungování systému a právo na vysvětlení rozhodnutí dle čl. 86 AI Act. Kontakt: <span style='color:red; font-weight:bold;'>[DOPLŇTE PŘED NASAZENÍM: email/telefon odpovědné osoby]</span>."
-</div>
-
-<h3>3.13 Univerzální šablona — pro AI systémy neuvedené výše</h3>
-
-<div class='info'>
-  <strong>Kdy použít:</strong> Pokud nasadíte nový AI systém, který není v tomto dokumentu uveden, použijte jednu z následujících šablon podle typu systému. Šablonu upravte — doplňte název systému a jeho účel.
-</div>
-
-<div class='callout'>
-  <strong>ŠABLONA A — AI systém komunikující s uživatelem (chatbot, voicebot, asistent):</strong><br>
-  „Komunikujete s umělou inteligencí ([název systému]). Nejste v kontaktu s živým člověkem. Pro spojení s člověkem nás kontaktujte na <span style='color:red; font-weight:bold;'>[DOPLŇTE: email/telefon]</span>. Více informací: <a href='/ai-transparence'>Jak používáme AI</a>."
-</div>
-
-<div class='callout'>
-  <strong>ŠABLONA B — AI systém rozhodující o právech nebo žádostech osob:</strong><br>
-  „Vaše žádost je zpracovávána systémem umělé inteligence ([název systému]). Máte právo na vysvětlení rozhodnutí a právo na přezkum člověkem. Kontakt: <span style='color:red; font-weight:bold;'>[DOPLŇTE: email/telefon]</span>."
-</div>
-
-<div class='callout'>
-  <strong>ŠABLONA C — AI-generovaný obsah:</strong><br>
-  „Tento obsah byl vytvořen pomocí umělé inteligence ([název nástroje])."
-</div>
-
-<h2>4. Postup při žádosti o lidský přezkum</h2>
-
-<p>Pokud uživatel, zákazník, uchazeč nebo zaměstnanec požádá o lidský přezkum rozhodnutí AI systému, postupujte takto:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Krok</th>
-      <th>Popis</th>
-      <th>Odpovědnost</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1. Přijetí žádosti</td>
-      <td>Potvrďte přijetí žádosti do 3 pracovních dnů. Informujte žadatele, že jeho případ bude přezkoumán člověkem.</td>
-      <td>Zákaznická podpora / HR</td>
-    </tr>
-    <tr>
-      <td>2. Přezkum člověkem</td>
-      <td>Pověřený zaměstnanec nezávisle posoudí případ bez spoléhání na původní AI rozhodnutí. Dokumentuje důvody svého rozhodnutí.</td>
-      <td>Odpovědný manažer daného oddělení</td>
-    </tr>
-    <tr>
-      <td>3. Sdělení výsledku</td>
-      <td>Informujte žadatele o výsledku přezkumu a srozumitelně vysvětlete, jak bylo rozhodnutí přijato.</td>
-      <td>Zákaznická podpora / HR</td>
-    </tr>
-    <tr>
-      <td>4. Evidence</td>
-      <td>Zaznamenejte žádost, průběh přezkumu a výsledek do interního logu (uchovávejte min. 6 měsíců dle čl. 26 odst. 1 písm. f) AI Act).</td>
-      <td>Odpovědná osoba za AI (Martin Haynes)</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>5. Transparenční stránka — odkaz</h2>
-
-<div class='info'>
-  <strong>Kompletní HTML transparenční stránka je součástí Compliance Kitu.</strong> Stránku stačí umístit na URL <strong>/ai-transparence</strong> vašeho webu. Všechna výše uvedená oznámení obsahují odkaz na tuto stránku — po nasazení budou odkazy funkční bez dalších úprav.
-</div>
-
-<p>Každé oznámení by mělo obsahovat odkaz: „Více informací o tom, jak používáme AI: <em>www.vasedomena.cz/ai-transparence</em>."</p>
-
-<h2>6. Implementační průvodce</h2>
-
-<h3>6.1 Kde oznámení umístit</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>Typ systému</th>
-      <th>Umístění oznámení</th>
-      <th>Kdy zobrazovat</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Web chatbot (Gemini, Intercom, vlastní HTML)</td>
-      <td>První zpráva konverzace + malý banner u ikony chatu</td>
-      <td>Při každém zahájení nové konverzace</td>
-    </tr>
-    <tr>
-      <td>Email automatická odpověď</td>
-      <td>Patička každého automaticky generovaného emailu</td>
-      <td>Trvale, u každé zprávy</td>
-    </tr>
-    <tr>
-      <td>AI-generovaný obsah (obrázky, videa, audio)</td>
-      <td>Popisek pod obsahem + metadata souboru</td>
-      <td>Trvale u každého publikovaného kusu obsahu</td>
-    </tr>
-    <tr>
-      <td>E-learning / mobilní aplikace</td>
-      <td>Splash screen při prvním spuštění + sekce „O aplikaci"</td>
-      <td>Při prvním spuštění, trvale dostupné v nastavení</td>
-    </tr>
-    <tr>
-      <td>Kamerový dohled / monitoring zaměstnanců</td>
-      <td>Pracovní smlouva, intranet, fyzická cedule na pracovišti</td>
-      <td>Trvale, před zahájením monitorování</td>
-    </tr>
-    <tr>
-      <td>Kreditní scoring / pojišťovnictví / automatizované rozhodování</td>
-      <td>Formulář žádosti, emailové oznámení o výsledku</td>
-      <td>Před podáním žádosti a při sdělení výsledku</td>
-    </tr>
-    <tr>
-      <td>Nábor (LinkedIn AI, Teamio)</td>
-      <td>Text inzerátu, potvrzovací email uchazeči</td>
-      <td>Při zveřejnění inzerátu a potvrzení přihlášky</td>
-    </tr>
-    <tr>
-      <td>Reklamace / přístup ke službám</td>
-      <td>Formulář reklamace, emailové oznámení o výsledku</td>
-      <td>Před podáním žádosti a při sdělení výsledku</td>
-    </tr>
-    <tr>
-      <td>Dynamická cenotvorba</td>
-      <td>Produktová stránka, košík, obchodní podmínky</td>
-      <td>Trvale na webu</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>6.2 Technické požadavky na oznámení</h3>
-
+<strong>ZAKÁZANÉ PRAKTIKY — texty oznámení se neposkytují</strong><br><br>
+Analýza rizik identifikovala tyto systémy jako zakázané dle čl. 5 AI Act:
 <ul>
-  <li><strong>Viditelnost:</strong> Oznámení musí být čitelné bez scrollování nebo klikání — minimální velikost písma 12px, dostatečný kontrast s pozadím.</li>
-  <li><strong>Jazyk:</strong> Oznámení v jazyce komunikace s uživatelem — pro české uživatele česky, pro anglicky komunikující anglicky.</li>
-  <li><strong>Přístupnost:</strong> Splňte WCAG 2.1 AA — sémantické HTML elementy, čitelnost pro čtečky obrazovky.</li>
-  <li><strong>Nezávislost na cookies:</strong> Oznámení nesmí být skryto za souhlasem s cookies — musí být zobrazeno před nebo při první interakci.</li>
-  <li><strong>Strojově čitelné označení:</strong> U AI-generovaného obsahu (čl. 50 odst. 4) zachovejte metadata souboru (EXIF, XMP) s informací o AI původu.</li>
+<li><strong>„vlastní html"</strong> — identifikován jako sociální scoring (čl. 5 odst. 1 písm. c) AI Act). Sociální scoring je absolutně zakázán bez výjimek.</li>
+<li><strong>„vlastní kód"</strong> — identifikován jako rozpoznávání emocí na pracovišti (čl. 5 odst. 1 písm. f) AI Act). Na pracovišti a ve vzdělávání je tato praktika striktně zakázána.</li>
 </ul>
+<strong>Transparentní oznámení nemůže legalizovat zakázaný systém.</strong> Tyto systémy musí být ukončeny. Za provoz zakázaného AI systému hrozí pokuta až 35 mil. EUR nebo 7 % celosvětového ročního obratu. Doporučujeme konzultaci s právníkem ohledně dalšího postupu.
+</div>
 
-<h3>6.3 Kontrolní seznam pro ověření nasazení</h3>
+<h3>3.6 Oznámení pro zaměstnance — AI monitoring na pracovišti</h3>
+<p>Vaše firma využívá AI systémy pro sledování zaměstnanců (sledování obrazovky, měření produktivity, GPS sledování, kamerový dohled s AI, analýza e-mailů). Čl. 26 odst. 7 AI Act vyžaduje, aby zaměstnanci a jejich zástupci byli informováni o nasazení vysoce rizikových AI systémů na pracovišti. Současně platí povinnosti dle GDPR čl. 13-14.</p>
+
+<div class='callout'>
+<strong>Text pro interní směrnici / dodatek k pracovní smlouvě:</strong><br>
+„Informace o využívání systémů umělé inteligence na pracovišti<br><br>
+Společnost Martin Haynes využívá následující AI systémy pro řízení pracovních procesů:<br>
+— Sledování obrazovky a měření produktivity s podporou AI<br>
+— GPS sledování služebních vozidel s AI analýzou tras<br>
+— Kamerový systém s AI detekcí (bezpečnost a ochrana majetku)<br>
+— AI analýza e-mailové komunikace<br><br>
+Účelem těchto systémů je zajištění bezpečnosti práce, ochrana majetku a optimalizace pracovních procesů. Žádné rozhodnutí o vašem pracovním poměru (hodnocení, odměňování, ukončení) není činěno výhradně na základě výstupů AI — vždy rozhoduje váš nadřízený.<br><br>
+Máte právo na vysvětlení fungování těchto systémů, přístup ke svým datům a námitku proti zpracování. Kontaktní osoba: Martin Haynes (jednatel). Podrobnosti naleznete v interní směrnici o ochraně osobních údajů."
+</div>
+
+<div class='info'><strong>Jak tento text doručit zaměstnancům?</strong> Doporučujeme tři kroky: (1) Zařadit text do interní směrnice o používání AI. (2) Předat zaměstnancům jako dodatek k pracovní smlouvě nebo informační dopis s potvrzením o převzetí. (3) Prokazatelně informovat zástupce zaměstnanců (odbory, rada zaměstnanců), pokud existují.</div>
+
+<h2>4. Transparenční stránka — odkaz</h2>
+<div class='info'>Kompletní HTML transparenční stránka pro váš web je dodána jako samostatný dokument v Compliance Kitu (Transparenční stránka). Stránku nasaďte na URL <code>/ai-transparence</code> na vašem webu.</div>
+
+<p>Výše uvedené krátké texty slouží jako první vrstva informace (tzv. just-in-time notice). Každé oznámení musí obsahovat proklik na hlavní transparenční stránku, kde najdou uživatelé detailní informace. Nereplikujte dlouhé právní texty do oken chatbotů.</p>
+
+<h2>5. Implementační průvodce</h2>
 
 <table>
-  <thead>
-    <tr>
-      <th>Kontrolní bod</th>
-      <th>Jak ověřit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Chatbot zobrazuje AI oznámení jako první zprávu</td>
-      <td>Otevřete chat v anonymním okně prohlížeče a ověřte první zprávu</td>
-    </tr>
-    <tr>
-      <td>Oznámení je viditelné na mobilním zařízení</td>
-      <td>Otevřete web na telefonu — text musí být čitelný bez zoomování</td>
-    </tr>
-    <tr>
-      <td>Email footer obsahuje AI oznámení</td>
-      <td>Odešlete testovací dotaz a zkontrolujte automatickou odpověď</td>
-    </tr>
-    <tr>
-      <td>AI-generovaný obsah má popisek</td>
-      <td>Projděte poslední publikované obrázky/videa na webu a sociálních sítích</td>
-    </tr>
-    <tr>
-      <td>Formuláře žádostí obsahují AI oznámení</td>
-      <td>Projděte formuláře pro úvěr, pojištění, reklamaci — ověřte přítomnost textu</td>
-    </tr>
-    <tr>
-      <td>Cedule na pracovišti jsou umístěny</td>
-      <td>Fyzická kontrola prostor s kamerovým dohledem / AI monitor
+<thead>
+<tr>
+<th>Kanál</th>
+<th>Pravidlo umístění</th>
+<th>Technická poznámka</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Chatbot (Gemini)</strong></td>
+<td>Oznámení jako první zpráva v okně chatu, viditelné ihned bez scrollování</td>
+<td>Nastavte jako systémovou zprávu v konfiguraci chatbotu</td>
+</tr>
+<tr>
+<td><strong>E-mail (Freshdesk/Zendesk)</strong></td>
+<td>Vložte do globální šablony auto-responderu, pod podpis, nad disclaimer</td>
+<td>Nastavte v administraci helpdesku jako footer template</td>
+</tr>
+<tr>
+<td><strong>Obrázky (Midjourney/DALL-E)</strong></td>
+<td>Text v popisku (caption) pod obrázkem</td>
+<td>Neodstraňujte C2PA/EXIF metadata ze souborů při exportu</td>
+</tr>
+<tr>
+<td><strong>Videa (Synthesia/HeyGen)</strong></td>
+<td>Popisek na platformě + vodoznak nebo závěrečné titulky přímo ve videu</td>
+<td>Samotný popisek na YouTube nestačí — video může být sdíleno mimo platformu</td>
+</tr>
+<tr>
+<td><strong>HR systémy (Teamio/LinkedIn)</strong></td>
+<td>Text na kariérních stránkách a v potvrzovacím e-mailu uchazeči</td>
+<td>Zajistěte skutečný lidský přezkum před zamítnutím kandidáta</td>
+</tr>
+<tr>
+<td><strong>Monitoring zaměstnanců</strong></td>
+<td>Interní směrnice + dodatek k pracovní smlouvě</td>
+<td>Uchovejte potvrzení o převzetí informace zaměstnancem</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Přístupnost:</strong> Všechny texty musí být ve stejném jazyce jako zbytek komunikace (čeština) a musí být vizuálně čitelné — dostatečný kontrast, přiměřená velikost písma.</p>
+
+<h2>6. Příklady nesprávného a správného oznámení</h2>
+
+<table>
+<thead>
+<tr>
+<th>Nesprávná praxe (riziko nesouladu)</th>
+<th>Správná praxe (soulad s AI Act)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Informace o AI je skryta na straně 15 obchodních podmínek.</td>
+<td>Informace je zobrazena přímo v okně chatu při první interakci.</td>
+</tr>
+<tr>
+<td>Chatbot se jmenuje „Karel z podpory" bez deklarace AI původu.</td>
+<td>Chatbot se jmenuje „Karel (AI Asistent)" a v první zprávě uvádí, že jde o AI.</td>
+</tr>
+<tr>
+<td>Video z HeyGen nemá žádné označení původu.</td>
+<td>Video má v popisku i v závěrečných titulcích: „Vytvořeno s využitím AI." Metadata souboru obsahují C2PA značku.</td>
+</tr>
+<tr>
+<td>E-mail od Zendesk AI obsahuje pouze: „Vygenerováno automaticky."</td>
+<td>E-mail obsahuje: „Tato odpověď byla připravena umělou inteligencí. <a href='/ai-transparence'>Více info</a>"</td>
+</tr>
+<tr>
+<td>Zaměstnanci nejsou informováni o AI kamerách a sledování produktivity.</td>
+<td>Zaměstnanci obdrželi písemnou informaci s potvrzením o převzetí. Text je součástí interní směrnice.</td>
+</tr>
+<tr>
+<td>Zakázaný AI systém (sociální scoring) je provozován s transparentním oznámením.</td>
+<td>Zakázaný systém je ukončen. Transparentní oznámení nemůže legalizovat zakázanou praktiku.</td>
+</tr>
+</tbody>
+</table>
+
+<div class='sig-block'>
+  <div class='sig-field'>Za firmu Martin Haynes</div>
+  <div class='sig-field'>Za AIshield.cz</div>
+</div>
