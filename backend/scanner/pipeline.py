@@ -236,7 +236,7 @@ async def run_scan_pipeline(scan_id: str, url: str, company_id: str) -> dict:
                     }
                     for f in deployed
                 ]
-                save_scan_results(company_slug, scan_id, findings_data)
+                save_scan_results(company_slug, {"id": scan_id, "url": url}, findings_data)
                 logger.info(f"[Scan] KLIENTI: scan uložen do {company_slug}/scan/")
             except Exception as e:
                 logger.warning(f"[Scan] KLIENTI hook failed (non-critical): {e}")
