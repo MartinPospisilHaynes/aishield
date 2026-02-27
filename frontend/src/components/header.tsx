@@ -52,7 +52,7 @@ export default function Header() {
     return (
         <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-dark-900/80 backdrop-blur-xl">
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                <a href="/" className="flex items-center gap-2 group">
+                <a href="/" className="flex items-center gap-2 group min-h-[44px]">
                     <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 1.5C16 1.5 4 6 4 6v10.5c0 4.2 1.8 8.2 4.8 11.1C11.5 30.2 13.9 31.5 16 32c2.1-.5 4.5-1.8 7.2-4.4C26.2 24.7 28 20.7 28 16.5V6L16 1.5z" fill="url(#shield-grad-h)" fillOpacity="0.25" stroke="url(#shield-grad-h)" strokeWidth="2" strokeLinejoin="round" />
                         <path d="M16 5C16 5 7 9 7 9v7.5c0 3.3 1.4 6.5 3.8 8.8C12.9 27.3 14.7 28.3 16 28.7c1.3-.4 3.1-1.4 5.2-3.4C23.6 22.9 25 19.8 25 16.5V9L16 5z" fill="none" stroke="url(#shield-grad-h)" strokeWidth="0.8" opacity="0.4" strokeLinejoin="round" />
@@ -134,7 +134,7 @@ export default function Header() {
                             </svg>
                             HELPLINKA
                         </a>
-                        <a href="/scan" className="btn-primary cta-pulse text-sm px-5 py-2.5 whitespace-nowrap">
+                        <a href="/scan" className="btn-primary cta-pulse text-sm px-5 py-2.5 min-h-[44px] flex items-center whitespace-nowrap">
                             Skenovat ZDARMA
                         </a>
                     </div>

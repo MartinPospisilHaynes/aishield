@@ -547,7 +547,7 @@ function ScanPageInner() {
                 </div>
 
                 {/* Formulář */}
-                <form onSubmit={handleSubmit} className="mt-8 flex gap-3 max-w-xl mx-auto">
+                <form onSubmit={handleSubmit} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
                     <input
                         type="text"
                         value={url}
