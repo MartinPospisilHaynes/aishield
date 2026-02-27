@@ -335,6 +335,126 @@ async def match_and_confirm_payments():
 
     logger.info(f"Matched {matched} payments out of {len(transactions)} transactions")
 
+    # ════════════════════════════════════════════════════════════
+    # P6: FIO Subscription matching (trvalé příkazy)
+    # ════════════════════════════════════════════════════════════
+    try:
+        # Načti subscriptions čekající na platbu nebo aktivní (FIO)
+        pending_subs = supabase.table("subscriptions").select("*").eq(
+            "payment_gateway", "bank_transfer"
+        ).in_("status", ["pending_first_payment", "active"]).execute()
+
+        if pending_subs.data:
+            vs_to_sub: dict[str, dict] = {}
+            for sub in pending_subs.data:
+                vs = sub.get("variable_symbol", "")
+                if vs:
+                    vs_to_sub[vs] = sub
+
+            sub_matched = 0
+            for tx in transactions:
+                vs = tx["variable_symbol"]
+                if vs in vs_to_sub:
+                    sub = vs_to_sub[vs]
+                    expected = sub.get("amount", 0)
+                    actual = tx["amount"]
+
+                    # Tolerance ±1 Kč
+                    if abs(actual - expected) > 1:
+                        logger.warning(
+                            f"Subscription amount mismatch: expected {expected}, got {actual} (VS={vs})"
+                        )
+                        continue
+
+                    from backend.payments.subscription_manager import (
+                        activate_fio_subscription,
+                        extend_fio_subscription,
+                    )
+
+                    if sub["status"] == "pending_first_payment":
+                        # První platba → aktivace
+                        await activate_fio_subscription(sub["id"], int(actual))
+                        logger.info(f"✅ Subscription ACTIVATED via FIO: {sub['id']} (VS={vs})")
+
+                        # Workflow na firmě
+                        if sub.get("company_id"):
+                            supabase.table("companies").update({
+                                "workflow_status": "monitoring_active",
+                            }).eq("id", sub["company_id"]).execute()
+
+                    else:
+                        # Opakovaná platba → prodloužení
+                        await extend_fio_subscription(sub["id"], int(actual))
+                        logger.info(f"✅ Subscription EXTENDED via FIO: {sub['id']} (VS={vs})")
+
+                    # Generovat fakturu
+                    try:
+                        from backend.outbound.invoice_pdf import generate_invoice_pdf, build_invoice_email_html
+                        import base64 as b64mod, os as os_mod
+                        from datetime import datetime as dt_mod
+
+                        pdf_bytes, inv_number = generate_invoice_pdf(
+                            order_number=sub.get("order_number", ""),
+                            plan=sub["plan"],
+                            amount=int(actual),
+                            buyer_email=sub["email"],
+                            paid_at=dt_mod.utcnow().isoformat(),
+                            variable_symbol=vs,
+                        )
+                        inv_html = build_invoice_email_html(
+                            invoice_number=inv_number,
+                            order_number=sub.get("order_number", ""),
+                            plan=sub["plan"], amount=int(actual),
+                        )
+                        pdf_b64 = b64mod.b64encode(pdf_bytes).decode("ascii")
+                        pdf_filename = f"faktura-{inv_number}.pdf"
+
+                        await send_email(
+                            to=sub["email"],
+                            subject=f"AIshield.cz — Faktura {inv_number} (monitoring)",
+                            html=inv_html,
+                            from_email="info@aishield.cz",
+                            from_name="AIshield.cz",
+                            attachments=[{"filename": pdf_filename, "content": pdf_b64}],
+                        )
+                        # Save locally
+                        year = dt_mod.utcnow().strftime("%Y")
+                        local_dir = f"/opt/aishield/invoices/{year}"
+                        os_mod.makedirs(local_dir, exist_ok=True)
+                        with open(f"{local_dir}/{pdf_filename}", "wb") as f:
+                            f.write(pdf_bytes)
+
+                        # DB
+                        supabase.table("invoices").insert({
+                            "invoice_number": inv_number,
+                            "order_number": sub.get("order_number", ""),
+                            "company_id": sub.get("company_id"),
+                            "email": sub["email"],
+                            "plan": sub["plan"],
+                            "amount": int(actual),
+                            "pdf_filename": pdf_filename,
+                        }).execute()
+
+                        # Copy to admin
+                        await send_email(
+                            to="info@aishield.cz",
+                            subject=f"[KOPIE] Faktura {inv_number} — monitoring {sub['email']}",
+                            html=inv_html,
+                            from_email="info@aishield.cz",
+                            attachments=[{"filename": pdf_filename, "content": pdf_b64}],
+                        )
+
+                        logger.info(f"Subscription invoice {inv_number} sent to {sub['email']}")
+                    except Exception as inv_err:
+                        logger.error(f"Subscription invoice failed: {inv_err}", exc_info=True)
+
+                    sub_matched += 1
+
+            logger.info(f"Matched {sub_matched} subscription payments via FIO")
+    except Exception as sub_err:
+        logger.error(f"FIO subscription matching failed: {sub_err}", exc_info=True)
+
+
 
 def main():
     """Entry point pro cron."""

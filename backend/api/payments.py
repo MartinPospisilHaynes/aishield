@@ -8,7 +8,7 @@ Comgate — odstraněno (žádost zamítnuta).
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 import logging
 import random
@@ -57,6 +57,16 @@ PLANS = {
         "name": "Kafé",
         "description": "Pozvi nás na kafé ☕",
         "price_field": "price_coffee",
+    },
+    "monitoring": {
+        "name": "Monitoring",
+        "description": "1× měsíčně 24h hloubkový sken webu + compliance report",
+        "price_field": "price_monitoring",
+    },
+    "monitoring_plus": {
+        "name": "Monitoring Plus",
+        "description": "2× měsíčně 24h hloubkový sken + aktualizace dokumentů + implementace změn",
+        "price_field": "price_monitoring_plus",
     },
 }
 
@@ -731,6 +741,304 @@ async def check_monitoring_eligibility(user: AuthUser = Depends(get_current_user
     """
     return await _check_monitoring_eligibility(user.email)
 
+# ════════════════════════════════════════════════════════════
+# P6: MONITORING SUBSCRIPTIONS (Stripe + FIO trvalý příkaz)
+# ════════════════════════════════════════════════════════════
+
+from backend.payments.subscription_manager import (
+    MONITORING_PLANS,
+    create_subscription as _create_sub,
+    cancel_subscription as _cancel_sub,
+    generate_monitoring_vs,
+    get_scan_days_for_plan,
+)
+
+
+class SubscribeRequest(BaseModel):
+    """Request pro aktivaci měsíčního monitoringu."""
+    plan: str  # "monitoring" nebo "monitoring_plus"
+    email: str
+    gateway: Literal["stripe", "bank_transfer"] = "stripe"
+    billing: BillingInfo | None = None
+
+
+class SubscribeCancelRequest(BaseModel):
+    subscription_id: str
+
+
+@router.post("/subscribe")
+async def create_monitoring_subscription(req: SubscribeRequest, user: AuthUser = Depends(get_current_user)):
+    """
+    Aktivace měsíčního monitoringu.
+    GUARD: Vyžaduje zaplacený balíček + sken + dotazník + dokumenty.
+    Gateway: stripe (karta) nebo bank_transfer (FIO trvalý příkaz).
+    Min. doba: 3 měsíce.
+    """
+    if req.plan not in MONITORING_PLANS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Neznámý monitoring plán: {req.plan}. Dostupné: {', '.join(MONITORING_PLANS.keys())}",
+        )
+
+    # Eligibility check
+    eligibility = await _check_monitoring_eligibility(req.email)
+    if not eligibility["eligible"]:
+        raise HTTPException(status_code=403, detail=f"Monitoring nelze aktivovat: {eligibility['reason']}")
+
+    settings = get_settings()
+    plan_info = MONITORING_PLANS[req.plan]
+    amount = getattr(settings, plan_info["price_field"])
+
+    # Resolve company_id
+    _company_id = None
+    try:
+        _sb = get_supabase()
+        _comp = _sb.table("companies").select("id").eq("email", req.email).limit(1).execute()
+        if _comp.data:
+            _company_id = _comp.data[0]["id"]
+    except Exception:
+        pass
+
+    if req.gateway == "bank_transfer":
+        # ── FIO trvalý příkaz flow ──
+        sub_result = await _create_sub(
+            email=req.email,
+            plan=req.plan,
+            gateway="bank_transfer",
+            company_id=_company_id,
+        )
+
+        # Poslat email s instrukcemi pro trvalý příkaz
+        vs = sub_result["variable_symbol"]
+        min_end = sub_result["min_end_date"]
+
+        html = f"""
+        <div style="font-family:system-ui;max-width:600px;margin:0 auto;padding:24px;">
+            <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:32px;border-radius:16px;color:#f1f5f9;">
+                <h1 style="color:#e879f9;margin:0 0 8px;">AIshield.cz</h1>
+                <h2 style="color:#fff;margin:0 0 20px;">Nastavte si trvalý příkaz pro monitoring</h2>
+
+                <p style="color:#cbd5e1;line-height:1.6;">
+                    Děkujeme za objednání monitoringu <strong style="color:#22d3ee;">{plan_info['name']}</strong>.
+                    Pro aktivaci služby si prosím nastavte trvalý příkaz v internetovém bankovnictví:
+                </p>
+
+                <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:20px;margin:20px 0;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr><td style="padding:8px 0;color:#94a3b8;">Číslo účtu:</td>
+                            <td style="padding:8px 0;color:#fff;font-weight:700;">2503446206/2010</td></tr>
+                        <tr><td style="padding:8px 0;color:#94a3b8;">Banka:</td>
+                            <td style="padding:8px 0;color:#fff;">Fio banka</td></tr>
+                        <tr><td style="padding:8px 0;color:#94a3b8;">Částka:</td>
+                            <td style="padding:8px 0;color:#22c55e;font-weight:800;font-size:18px;">{amount} Kč</td></tr>
+                        <tr><td style="padding:8px 0;color:#94a3b8;">Variabilní symbol:</td>
+                            <td style="padding:8px 0;color:#e879f9;font-weight:800;font-size:18px;">{vs}</td></tr>
+                        <tr><td style="padding:8px 0;color:#94a3b8;">Periodicita:</td>
+                            <td style="padding:8px 0;color:#fff;">Měsíčně</td></tr>
+                        <tr><td style="padding:8px 0;color:#94a3b8;">IBAN:</td>
+                            <td style="padding:8px 0;color:#fff;font-size:12px;">CZ8720100000002503446206</td></tr>
+                    </table>
+                </div>
+
+                <p style="color:#94a3b8;font-size:13px;line-height:1.5;">
+                    Minimální doba: 3 měsíce (do {min_end}). Výpověď: 1 měsíc.<br>
+                    Monitoring se aktivuje automaticky po přijetí první platby.
+                </p>
+            </div>
+        </div>
+        """
+
+        try:
+            await send_email(
+                to=req.email,
+                subject=f"AIshield.cz — Monitoring {plan_info['name']} — platební údaje",
+                html=html,
+                from_email="info@aishield.cz",
+                from_name="AIshield.cz",
+            )
+        except Exception as e:
+            logger.error(f"[Subscribe] Failed to send FIO instructions: {e}")
+
+        # Notifikace adminovi
+        await _notify_new_order(
+            order_number=sub_result["order_number"],
+            plan=req.plan, amount=amount, email=req.email,
+            gateway="bank_transfer", status="PENDING_FIRST_PAYMENT",
+            order_type="subscription",
+            billing=req.billing.model_dump() if req.billing else None,
+        )
+
+        return {
+            "subscription_id": sub_result["subscription_id"],
+            "order_number": sub_result["order_number"],
+            "variable_symbol": vs,
+            "gateway": "bank_transfer",
+            "status": "pending_first_payment",
+            "message": "Nastavte si trvalý příkaz. Monitoring se aktivuje po přijetí platby.",
+        }
+
+    elif req.gateway == "stripe":
+        # ── Stripe Subscription flow ──
+        stripe_client = get_stripe()
+        if not stripe_client.is_configured:
+            raise HTTPException(status_code=503, detail="Stripe není nakonfigurován.")
+
+        import stripe
+        stripe.api_key = settings.stripe_secret_key
+
+        frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
+
+        # Create Stripe Checkout Session with mode=subscription
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "czk",
+                    "product_data": {
+                        "name": f"AIshield.cz — {plan_info['name']}",
+                        "description": plan_info["description"],
+                    },
+                    "unit_amount": amount * 100,  # CZK → haléře
+                    "recurring": {"interval": "month"},
+                },
+                "quantity": 1,
+            }],
+            mode="subscription",
+            customer_email=req.email,
+            metadata={
+                "plan": req.plan,
+                "email": req.email,
+                "company_id": _company_id or "",
+                "type": "monitoring_subscription",
+            },
+            success_url=f"{frontend_url}/platba/stav?session_id={{CHECKOUT_SESSION_ID}}&gateway=stripe&type=subscription",
+            cancel_url=f"{frontend_url}/dashboard#monitoring",
+        )
+
+        # Pre-create subscription record (will be activated by webhook)
+        sub_result = await _create_sub(
+            email=req.email,
+            plan=req.plan,
+            gateway="stripe",
+            company_id=_company_id,
+            stripe_subscription_id=session.id,  # Will be updated by webhook
+        )
+        # Override status to pending (activated by webhook)
+        supabase = get_supabase()
+        supabase.table("subscriptions").update({
+            "status": "pending_stripe",
+        }).eq("id", sub_result["subscription_id"]).execute()
+
+        # Notifikace
+        await _notify_new_order(
+            order_number=sub_result["order_number"],
+            plan=req.plan, amount=amount, email=req.email,
+            gateway="stripe", status="CREATED",
+            order_type="subscription",
+            billing=req.billing.model_dump() if req.billing else None,
+        )
+
+        return {
+            "subscription_id": sub_result["subscription_id"],
+            "order_number": sub_result["order_number"],
+            "gateway_url": session.url,
+            "gateway": "stripe",
+            "status": "pending_stripe",
+        }
+
+    else:
+        raise HTTPException(status_code=400, detail="Nepodporovaná brána. Použijte 'stripe' nebo 'bank_transfer'.")
+
+
+@router.post("/subscribe/cancel")
+async def cancel_monitoring_subscription(req: SubscribeCancelRequest, user: AuthUser = Depends(get_current_user)):
+    """Zruší monitoring subscription. Min. 3 měsíce, výpověď 1 měsíc."""
+    supabase = get_supabase()
+
+    # Verify ownership
+    sub = supabase.table("subscriptions").select("*").eq(
+        "id", req.subscription_id
+    ).limit(1).execute()
+    if not sub.data:
+        raise HTTPException(status_code=404, detail="Subscription nenalezena")
+    if sub.data[0]["email"] != user.email:
+        raise HTTPException(status_code=403, detail="Nemáte oprávnění")
+
+    s = sub.data[0]
+
+    # If Stripe, also cancel in Stripe
+    if s.get("stripe_subscription_id") and s.get("payment_gateway") == "stripe":
+        try:
+            import stripe
+            stripe.api_key = get_settings().stripe_secret_key
+            # Cancel at period end (not immediately)
+            stripe.Subscription.modify(
+                s["stripe_subscription_id"],
+                cancel_at_period_end=True,
+            )
+        except Exception as e:
+            logger.error(f"[Subscribe] Stripe cancel failed: {e}")
+
+    result = await _cancel_sub(req.subscription_id)
+    return result
+
+
+@router.get("/monitoring-status")
+async def get_monitoring_status(user: AuthUser = Depends(get_current_user)):
+    """Vrátí stav monitoring subscription pro přihlášeného uživatele."""
+    supabase = get_supabase()
+
+    subs = supabase.table("subscriptions").select("*").eq(
+        "email", user.email
+    ).in_("status", ["active", "pending_first_payment", "pending_stripe", "suspended"]).order(
+        "created_at", desc=True
+    ).limit(1).execute()
+
+    if not subs.data:
+        # Check enterprise
+        enterprise = supabase.table("orders").select("paid_at").eq(
+            "email", user.email
+        ).eq("plan", "enterprise").eq("status", "PAID").limit(1).execute()
+
+        if enterprise.data:
+            from datetime import timedelta
+            paid_at = datetime.fromisoformat(enterprise.data[0]["paid_at"].replace("Z", "+00:00"))
+            expires_at = paid_at + timedelta(days=730)
+            remaining = (expires_at - datetime.now(timezone.utc)).days
+
+            if remaining > 0:
+                return {
+                    "active": True,
+                    "plan": "enterprise_included",
+                    "plan_name": "ENTERPRISE (monitoring v ceně)",
+                    "remaining_days": remaining,
+                    "expires_at": expires_at.isoformat(),
+                    "scans_per_month": 1,
+                }
+
+        return {"active": False, "plan": None}
+
+    sub = subs.data[0]
+    plan_info = MONITORING_PLANS.get(sub["plan"], {})
+
+    return {
+        "active": sub["status"] == "active",
+        "subscription_id": sub["id"],
+        "plan": sub["plan"],
+        "plan_name": plan_info.get("name", sub["plan"]),
+        "status": sub["status"],
+        "gateway": sub.get("payment_gateway"),
+        "amount": sub["amount"],
+        "next_scan_at": sub.get("next_scan_at"),
+        "next_charge_at": sub.get("next_charge_at"),
+        "scans_this_period": sub.get("scans_this_period", 0),
+        "scans_per_month": plan_info.get("scans_per_month", 1),
+        "last_diff_has_changes": sub.get("last_diff_has_changes", False),
+        "min_end_date": sub.get("min_end_date"),
+        "created_at": sub.get("created_at"),
+    }
+
+
 
 # ========================================================
 # SUBSCRIPTIONS + REFUNDACE — ZAKOMENTOVANO (vyzaduje GoPay)
@@ -1344,6 +1652,144 @@ async def stripe_webhook(request: Request):
         }).eq("gopay_payment_id", session_id).execute()
 
         logger.info(f"[Stripe Webhook] Session expired: {session_id}")
+
+    # ── Subscription events (P6) ──
+    elif event_type == "customer.subscription.created":
+        subscription_obj = event.get("data", {}).get("object", {}) if isinstance(event, dict) else event.data.object
+        stripe_sub_id = subscription_obj.get("id", "") if isinstance(subscription_obj, dict) else subscription_obj.id
+        customer_email = subscription_obj.get("customer_email", "") if isinstance(subscription_obj, dict) else getattr(subscription_obj, "customer_email", "")
+        metadata = subscription_obj.get("metadata", {}) if isinstance(subscription_obj, dict) else (subscription_obj.metadata or {})
+        plan = metadata.get("plan", "monitoring")
+        email = metadata.get("email", customer_email)
+        company_id = metadata.get("company_id", "")
+
+        supabase = get_supabase()
+        # Find pending subscription and activate it
+        pending = supabase.table("subscriptions").select("id").eq(
+            "email", email
+        ).eq("status", "pending_stripe").order("created_at", desc=True).limit(1).execute()
+
+        if pending.data:
+            from datetime import timedelta
+            now = datetime.utcnow()
+            supabase.table("subscriptions").update({
+                "status": "active",
+                "stripe_subscription_id": stripe_sub_id,
+                "activated_at": now.isoformat(),
+                "last_charged_at": now.isoformat(),
+                "next_charge_at": (now + timedelta(days=30)).strftime("%Y-%m-%d"),
+                "updated_at": now.isoformat(),
+            }).eq("id", pending.data[0]["id"]).execute()
+            logger.info(f"[Stripe Webhook] Subscription activated: {stripe_sub_id} for {email}")
+        else:
+            logger.warning(f"[Stripe Webhook] No pending subscription for {email}")
+
+    elif event_type == "invoice.paid":
+        invoice_obj = event.get("data", {}).get("object", {}) if isinstance(event, dict) else event.data.object
+        stripe_sub_id = invoice_obj.get("subscription", "") if isinstance(invoice_obj, dict) else getattr(invoice_obj, "subscription", "")
+        amount_paid = (invoice_obj.get("amount_paid", 0) if isinstance(invoice_obj, dict) else getattr(invoice_obj, "amount_paid", 0)) // 100
+        customer_email = invoice_obj.get("customer_email", "") if isinstance(invoice_obj, dict) else getattr(invoice_obj, "customer_email", "")
+
+        if stripe_sub_id:
+            supabase = get_supabase()
+            sub = supabase.table("subscriptions").select("*").eq(
+                "stripe_subscription_id", stripe_sub_id
+            ).limit(1).execute()
+            if sub.data:
+                s = sub.data[0]
+                from datetime import timedelta
+                now = datetime.utcnow()
+                supabase.table("subscriptions").update({
+                    "last_charged_at": now.isoformat(),
+                    "next_charge_at": (now + timedelta(days=30)).strftime("%Y-%m-%d"),
+                    "total_charged": (s.get("total_charged") or 0) + amount_paid,
+                    "scans_this_period": 0,  # Reset for new month
+                    "reminder_sent_at": None,
+                    "updated_at": now.isoformat(),
+                }).eq("id", s["id"]).execute()
+
+                # Generate monthly invoice
+                try:
+                    email = s.get("email", customer_email)
+                    from backend.outbound.invoice_pdf import generate_invoice_pdf, build_invoice_email_html
+                    from backend.outbound.payment_emails import generate_variable_symbol
+                    import base64, os
+
+                    pdf_bytes, inv_number = generate_invoice_pdf(
+                        order_number=s.get("order_number", ""),
+                        plan=s["plan"],
+                        amount=amount_paid or s["amount"],
+                        buyer_email=email,
+                        paid_at=now.isoformat(),
+                    )
+                    inv_html = build_invoice_email_html(
+                        invoice_number=inv_number, order_number=s.get("order_number", ""),
+                        plan=s["plan"], amount=amount_paid or s["amount"],
+                    )
+                    pdf_b64 = base64.b64encode(pdf_bytes).decode("ascii")
+                    pdf_filename = f"faktura-{inv_number}.pdf"
+
+                    await send_email(
+                        to=email,
+                        subject=f"AIshield.cz — Faktura {inv_number} (monitoring)",
+                        html=inv_html,
+                        from_email="info@aishield.cz", from_name="AIshield.cz",
+                        attachments=[{"filename": pdf_filename, "content": pdf_b64}],
+                    )
+                    # Save locally
+                    year = now.strftime("%Y")
+                    local_dir = f"/opt/aishield/invoices/{year}"
+                    os.makedirs(local_dir, exist_ok=True)
+                    with open(f"{local_dir}/{pdf_filename}", "wb") as f:
+                        f.write(pdf_bytes)
+
+                    # DB record
+                    supabase.table("invoices").insert({
+                        "invoice_number": inv_number,
+                        "order_number": s.get("order_number", ""),
+                        "company_id": s.get("company_id"),
+                        "email": email,
+                        "plan": s["plan"],
+                        "amount": amount_paid or s["amount"],
+                        "pdf_filename": pdf_filename,
+                    }).execute()
+
+                    logger.info(f"[Stripe Webhook] Monthly invoice {inv_number} sent for subscription {stripe_sub_id}")
+                except Exception as e:
+                    logger.error(f"[Stripe Webhook] Monthly invoice failed: {e}", exc_info=True)
+
+    elif event_type == "invoice.payment_failed":
+        invoice_obj = event.get("data", {}).get("object", {}) if isinstance(event, dict) else event.data.object
+        stripe_sub_id = invoice_obj.get("subscription", "") if isinstance(invoice_obj, dict) else getattr(invoice_obj, "subscription", "")
+        customer_email = invoice_obj.get("customer_email", "") if isinstance(invoice_obj, dict) else getattr(invoice_obj, "customer_email", "")
+
+        if stripe_sub_id:
+            supabase = get_supabase()
+            sub = supabase.table("subscriptions").select("*").eq(
+                "stripe_subscription_id", stripe_sub_id
+            ).limit(1).execute()
+            if sub.data:
+                s = sub.data[0]
+                await send_email(
+                    to=s.get("email", customer_email),
+                    subject="AIshield.cz — Platba za monitoring selhala",
+                    html=f"<p>Platba za monitoring selhala. Prosím aktualizujte platební údaje v <a href='https://aishield.cz/dashboard#monitoring'>dashboardu</a>.</p>",
+                    from_email="info@aishield.cz", from_name="AIshield.cz",
+                )
+                logger.warning(f"[Stripe Webhook] Payment failed for subscription {stripe_sub_id}")
+
+    elif event_type == "customer.subscription.deleted":
+        subscription_obj = event.get("data", {}).get("object", {}) if isinstance(event, dict) else event.data.object
+        stripe_sub_id = subscription_obj.get("id", "") if isinstance(subscription_obj, dict) else subscription_obj.id
+
+        supabase = get_supabase()
+        supabase.table("subscriptions").update({
+            "status": "cancelled",
+            "cancelled_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat(),
+        }).eq("stripe_subscription_id", stripe_sub_id).execute()
+        logger.info(f"[Stripe Webhook] Subscription deleted: {stripe_sub_id}")
+
 
     return {"status": "ok"}
 

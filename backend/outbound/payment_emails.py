@@ -39,6 +39,8 @@ PLAN_NAMES = {
     "pro": "PRO — Compliance Kit + implementace na klíč",
     "enterprise": "ENTERPRISE — Komplexní řešení + 2 roky péče",
     "coffee": "Kafé &#9749;",
+    "monitoring": "MONITORING — 1× měsíčně 24h hloubkový sken",
+    "monitoring_plus": "MONITORING PLUS — 2× sken + aktualizace dokumentů",
 }
 
 

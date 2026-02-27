@@ -39,12 +39,16 @@ PLAN_NAMES = {
     "pro": "PRO",
     "enterprise": "ENTERPRISE",
     "coffee": "Kafe",
+    "monitoring": "MONITORING",
+    "monitoring_plus": "MONITORING PLUS",
 }
 
 PLAN_DESCRIPTIONS = {
     "basic": "Sada dokumentace pro soulad s EU AI Act (Compliance Kit) \u2014 BASIC",
     "pro": "Sada dokumentace pro soulad s EU AI Act s implementac\u00ed na kl\u00ed\u010d \u2014 PRO",
     "enterprise": "Komplexn\u00ed \u0159e\u0161en\u00ed souladu s EU AI Act v\u010d. 2 let p\u00e9\u010de \u2014 ENTERPRISE",
+    "monitoring": "M\u011bs\u00ed\u010dn\u00ed monitoring a deep scan webu \u2014 MONITORING",
+    "monitoring_plus": "M\u011bs\u00ed\u010dn\u00ed monitoring, deep scan, aktualizace dokumentace \u2014 MONITORING PLUS",
     "coffee": "Dobrovoln\u00fd p\u0159\u00edsp\u011bvek na provoz slu\u017eby",
 }
 

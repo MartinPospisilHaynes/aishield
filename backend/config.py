@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     price_enterprise: int = 39999
     price_coffee: int = 50
 
+    # ── Ceny monitoringu (CZK/měsíc) ──
+    price_monitoring: int = 299
+    price_monitoring_plus: int = 599
+    monitoring_min_months: int = 3  # Minimální doba předplatného
+
     # ── Resend ──
     resend_api_key: str = ""
     email_from: str = "info@aishield.cz"

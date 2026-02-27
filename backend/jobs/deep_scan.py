@@ -499,6 +499,31 @@ async def deep_scan_job(ctx: dict, scan_id: str, url: str, company_id: str):
             logger.error(f"[DeepScan] Chyba auto-generování dokumentů: {gen_err}", exc_info=True)
             # Nesmí zabít návratovou hodnotu deep scanu
 
+        # ── P6: Trigger post-scan job for monitoring scans ──
+        try:
+            _scan_record = supabase.table("scans").select("scan_type, subscription_id").eq(
+                "id", scan_id
+            ).limit(1).execute()
+            _scan_type = ""
+            _subscription_id = ""
+            if _scan_record.data:
+                _scan_type = _scan_record.data[0].get("scan_type", "")
+                _subscription_id = _scan_record.data[0].get("subscription_id", "") or ""
+
+            if _scan_type in ("monitoring_deep", "enterprise_monitoring"):
+                from arq import create_pool as _create_pool
+                from arq.connections import RedisSettings as _RS
+                _redis = await _create_pool(_RS(host="localhost", port=6379))
+                await _redis.enqueue_job(
+                    "monitoring_post_scan_job",
+                    scan_id, company_id, _subscription_id,
+                    _job_id=f"postscan_{scan_id[:8]}",
+                )
+                await _redis.close()
+                logger.info(f"[DeepScan] Post-scan job enqueued for monitoring scan {scan_id}")
+        except Exception as _hook_err:
+            logger.error(f"[DeepScan] Failed to enqueue post-scan: {_hook_err}")
+
         return {
             "status": "done",
             "total_unique_findings": total_unique,
