@@ -31,7 +31,7 @@ Výstupy:
   - PPTX prezentace → Supabase Storage
   - HTML transparenční stránka → Supabase Storage
   - JSON report → /opt/aishield/gen_reports/{generation_id}.json (persistentní)
-  - Archiv dokumentů → /opt/aishield/DOKUMENTY/{firma}/{generation_id}/ (lokální záloha)
+  - Archiv klienta → /opt/aishield/KLIENTI/{firma}/ (profil + scan + dotazník + dokumenty)
   - Email report → bc.pospa@gmail.com (HTML inspekční zpráva)
   - Stdout logy → /var/log/aishield.log (strukturované JSON)
 """
@@ -40,7 +40,6 @@ import asyncio
 import json
 import re
 import logging
-import unicodedata
 import httpx
 import os
 import time
@@ -59,6 +58,14 @@ from backend.documents.m5_prompt_optimizer import analyze_and_optimize
 from backend.documents.m6_post_check import post_m4_check
 from backend.documents.generation_report import send_generation_report
 from backend.documents.cover_generator import render_cover_page_html
+from backend.klienti.client_folder_manager import (
+    ensure_client_folder,
+    save_client_profile,
+    save_scan_results,
+    save_questionnaire,
+    save_generation_files,
+    slugify_company_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -477,51 +484,9 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════
-# ARCHIVACE — lokální záloha vygenerovaných dokumentů na disk
+# ARCHIVACE — delegováno na backend.klienti.client_folder_manager
 # ══════════════════════════════════════════════════════════════════════
-
-ARCHIVE_BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "DOKUMENTY")
-
-
-def _slugify_company_name(name: str) -> str:
-    """Převede název firmy na bezpečný adresářový název.
-    'Škoda Auto a.s.' → 'skoda_auto_as'
-    """
-    # Remove diacritics
-    nfkd = unicodedata.normalize("NFKD", name)
-    ascii_str = nfkd.encode("ascii", "ignore").decode("ascii")
-    # Lowercase, replace non-alphanum with underscore
-    slug = re.sub(r"[^a-z0-9]+", "_", ascii_str.lower()).strip("_")
-    return slug or "unknown_company"
-
-
-def _archive_generation_to_disk(
-    all_file_bytes: dict,
-    company_name: str,
-    generation_id: str,
-) -> str:
-    """
-    Uloží všechny vygenerované soubory do:
-      /opt/aishield/DOKUMENTY/{company_slug}/{generation_id}/
-
-    Returns: cesta k archivnímu adresáři
-    """
-    company_slug = _slugify_company_name(company_name)
-    archive_dir = os.path.join(ARCHIVE_BASE_DIR, company_slug, generation_id)
-    os.makedirs(archive_dir, exist_ok=True)
-
-    saved = 0
-    for filename, file_bytes in all_file_bytes.items():
-        try:
-            filepath = os.path.join(archive_dir, filename)
-            with open(filepath, "wb") as f:
-                f.write(file_bytes)
-            saved += 1
-        except Exception as e:
-            logger.error(f"[Archive] Chyba při ukládání {filename}: {e}")
-
-    logger.info(f"[Archive] Uloženo {saved}/{len(all_file_bytes)} souborů → {archive_dir}")
-    return archive_dir
+# Viz: save_generation_files() — ukládá do KLIENTI/{slug}/dokumenty/{gen_id}/
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -1455,20 +1420,52 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         result.errors.append(f"cover_toc: {str(e)}")
         logger.error(f"[Pipeline v3]   Cover+TOC CHYBA: {e}", exc_info=True)
 
-    # ── 9. Archivace na disk ──
-    logger.info(f"[Pipeline v3] ═══ KROK 8: Archivace dokumentů na disk ═══")
+    # ── 9. Archivace do KLIENTI/{slug}/dokumenty/{gen_id}/ ──
+    logger.info(f"[Pipeline v3] ═══ KROK 8: Archivace do klientské složky ═══")
     try:
-        archive_dir = _archive_generation_to_disk(
-            all_file_bytes=all_file_bytes,
+        # Zajistit klientskou složku + uložit profil
+        ensure_client_folder(company_name)
+
+        # Uložit scan data
+        try:
+            scan_raw = _load_scan_data(company_id)
+            findings_raw = scan_raw.get("findings", [])
+            scan_meta = {"company_id": company_id, "findings_count": len(findings_raw)}
+            save_scan_results(company_name, scan_meta, findings_raw)
+        except Exception as scan_err:
+            logger.warning(f"[Pipeline v3]   Scan backup skip: {scan_err}")
+
+        # Uložit dotazník
+        try:
+            from backend.database import get_supabase as _get_sb
+            _sb = _get_sb()
+            qr_res = _sb.table("questionnaire_responses").select("*").eq("client_id", client_id).execute()
+            if qr_res.data:
+                save_questionnaire(company_name, qr_res.data)
+        except Exception as q_err:
+            logger.warning(f"[Pipeline v3]   Questionnaire backup skip: {q_err}")
+
+        # Uložit profil klienta
+        try:
+            profile = {**company_data}
+            if questionnaire_data.get("q_company_legal_name"):
+                profile["name"] = questionnaire_data["q_company_legal_name"]
+            save_client_profile(company_name, profile)
+        except Exception as prof_err:
+            logger.warning(f"[Pipeline v3]   Profile backup skip: {prof_err}")
+
+        # Uložit dokumenty generace
+        archive_dir = save_generation_files(
             company_name=company_name,
             generation_id=generation_id,
+            all_file_bytes=all_file_bytes,
         )
         result.pipeline_log.append({
-            "step": "archive_to_disk",
+            "step": "archive_to_klienti",
             "archive_dir": archive_dir,
             "files_count": len(all_file_bytes),
         })
-        logger.info(f"[Pipeline v3]   Archivováno {len(all_file_bytes)} souborů → {archive_dir}")
+        logger.info(f"[Pipeline v3]   KLIENTI archiv: {len(all_file_bytes)} souborů → {archive_dir}")
     except Exception as e:
         logger.error(f"[Pipeline v3]   Archivace CHYBA (nekritická): {e}", exc_info=True)
 

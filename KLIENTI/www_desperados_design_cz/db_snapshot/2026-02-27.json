@@ -1,0 +1,4466 @@
+{
+  "companies": [
+    {
+      "id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "ico": "gAAAAABpob12WZ3HCNEDMkFvfqqZMVF1HIK2k0jIUthhZApcVjsFz2c_XK-opCXNuIJjH7nV3hI14WwdKhJ0UEnG1Qrm9C_0VA==",
+      "name": "gAAAAABpob12lZSPNxtIbGZa_qH2m9HLGCTUcOqVT4UM-uc__2Wltis2-3hv9rbv30c6InzGJZQBBQmW0YfW_xvUkO-MlPIQVhEfKomPcSxKz8xb6aQbfxU=",
+      "url": "https://www.desperados-design.cz",
+      "email": "gAAAAABpob12ztZYu_jJu4DoK6MRrOoIYqR7441SF5QPH8EuzO0-mjeJXQffdW9dDZSuksxENph5rVIWv-1xpjErIvW-H5OyRsxqsTA9qqNeBZBY3gQPDb4=",
+      "phone": null,
+      "nace_code": null,
+      "address": null,
+      "employee_count": null,
+      "source": "manual",
+      "last_scanned_at": "2026-02-24T15:03:19.479313+00:00",
+      "outbound_email_sent_at": null,
+      "outbound_email_count": 0,
+      "notes": null,
+      "created_at": "2026-02-24T14:57:53.892396+00:00",
+      "updated_at": "2026-02-24T15:23:06.547083+00:00",
+      "scan_status": null,
+      "prospecting_status": null,
+      "last_scan_id": null,
+      "scanned_at": null,
+      "total_findings": 0,
+      "category": null,
+      "description": null,
+      "nace_codes": null,
+      "region": null,
+      "legal_form": null,
+      "email_valid": true,
+      "email_source": null,
+      "email_confidence": null,
+      "emails_sent": 0,
+      "last_email_at": null,
+      "heureka_rating": null,
+      "heureka_reviews": null,
+      "lead_score": null,
+      "lead_tier": null,
+      "partner": null,
+      "partner_notes": null,
+      "contact_name": null,
+      "workflow_status": "new",
+      "payment_status": "none",
+      "assigned_to": null,
+      "priority": "normal",
+      "last_contact_at": null,
+      "next_action": null,
+      "next_action_at": null,
+      "dic": null,
+      "founded_date": null,
+      "action_plan_resolved": [
+        "std-Jmenovat odpovědnou ",
+        "32b60d5d-e2a0-42c2-baea-ad28271b5c9f",
+        "1455aac7-1711-4192-b35b-d9041e153d8c"
+      ],
+      "_encrypted_fields": [
+        "ico",
+        "name",
+        "email"
+      ],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "clients": [
+    {
+      "id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "auth_user_id": null,
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "plan": "basic",
+      "email": "gAAAAABpob12TXOBROT-lfFwHvTuXTr23jzKX5P3p7ozOzLYhbpoTA2hWyUhShzAFZ-JoYuUx3dETcBfPR62mSTba7o4uKcGWjxnYsPiHRHgUqRuwg9o1Io=",
+      "contact_name": "gAAAAABpob12_EwwVva4Tz62wOmFaW0jn5x6J6vMCg-tpTohWBnQllB1-Ul0HUxnnjpnQWLumy0Hi5HT-uCfdHMtTOoXBLGm63pKRvu-4jq73n7Vt5Nk7RU=",
+      "contact_role": "gAAAAABpob12yUy4iRs026C9NtcRGJEnixKNAcDmlz2WdqueeRlhby0KjumDQU1qMmBClny2WtF-_QS7E3oELdC8xg-n2tvWDg==",
+      "scan_frequency": 30,
+      "widget_installed": false,
+      "widget_version": null,
+      "partner_ref": null,
+      "is_active": true,
+      "created_at": "2026-02-24T15:48:21.077584+00:00",
+      "updated_at": "2026-02-24T15:48:21.077584+00:00",
+      "source": "unknown",
+      "_encrypted_fields": [
+        "email",
+        "contact_name",
+        "contact_role"
+      ],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "scans": [
+    {
+      "id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "triggered_by": "client",
+      "url_scanned": "https://www.desperados-design.cz",
+      "status": "done",
+      "started_at": "2026-02-24T14:57:54.109325+00:00",
+      "finished_at": "2026-02-24T15:03:19.479313+00:00",
+      "duration_seconds": 25,
+      "total_findings": 5,
+      "raw_html_hash": "f641aebb176f2fb1c5597229f9cb5416f924ab9a38000e8993d6e51132b25d2a",
+      "screenshot_full_url": null,
+      "error_message": null,
+      "created_at": "2026-02-24T14:57:53.981811+00:00",
+      "url": null,
+      "scan_type": "quick",
+      "parent_scan_id": null,
+      "deep_scan_status": "done",
+      "deep_scan_started_at": "2026-02-24T15:47:09.708263+00:00",
+      "deep_scan_finished_at": "2026-02-24T16:14:05.525661+00:00",
+      "deep_scan_total_findings": 5,
+      "geo_countries_scanned": [
+        "gb",
+        "us",
+        "br",
+        "cz",
+        "au",
+        "jp",
+        "za"
+      ],
+      "trackers_json": "[{\"name\": \"Google Tag Manager\", \"category\": \"tracking\", \"description_cs\": \"Správce tagů pro marketing a analytiku. Koordinuje ostatní sledovací skripty na webu.\", \"icon\": \"🏷️\", \"evidence\": [\"HTML: ...\\\"\\\" src=\\\"https://www.googletagmanager.com/gtm.js?id=GTM-M5ZCB04G\\\"></scr...\", \"HTML: ...oogletagmanager.com/gtm.js?id=GTM-M5ZCB04G\\\"></script><sc...\", \"HTML: ...nager.com/gtm.js?id=GTM-M5ZCB04G\\\"></script><script src...\"], \"matched_count\": 4}, {\"name\": \"Google Analytics 4\", \"category\": \"analytics\", \"description_cs\": \"Webová analytika od Google — sleduje návštěvnost, chování uživatelů a konverze.\", \"icon\": \"📊\", \"evidence\": [\"HTML: ....hero-bg-network {\\n                disp...\"], \"matched_count\": 1}, {\"name\": \"Meta Pixel (Facebook)\", \"category\": \"advertising\", \"description_cs\": \"Sledovací pixel Facebooku — měří konverze z reklam na Facebooku a Instagramu.\", \"icon\": \"📘\", \"evidence\": [\"HTML: ...vents.js');\\n        fbq('init', '1398322108343426');...\", \"HTML: ...script src=\\\"https://connect.facebook.net/signals/config/13983221083434...\", \"HTML: ...src=\\\"https://www.facebook.com/tr?id=1398322108343426&ev=PageVi...\"], \"matched_count\": 5}, {\"name\": \"Cookie Consent Banner\", \"category\": \"consent\", \"description_cs\": \"Obecný cookie consent banner pro správu souhlasu dle GDPR.\", \"icon\": \"🍪\", \"evidence\": [\"HTML: ...// Cookie-Banner\\n                cookie_banner...\", \"HTML: ...<label for=\\\"gdpr-consent\\\" class=\\\"flex items-center gap...\"], \"matched_count\": 2}]",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "findings": [
+    {
+      "id": "32b60d5d-e2a0-42c2-baea-ad28271b5c9f",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12jzz39qBDTualrs2w4eP8uRdMLk5WH5W-Ap9CBuKGebt6hUyqkauKCpBxbEl97QfnmAyV__XJ-nHQ8QDHYHKrIU9KpQ34Vo_p6-ZoFUrJL7Q=",
+      "category": "chatbot",
+      "signature_matched": "html:gemini_proxy, html:geminiProxyUrl, inline:gemini_proxy",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "action_required": "AI chatbot poháněný Google Gemini musí být transparentně označen. Uživatel musí vědět, že komunikuje s AI.",
+      "ai_classification_text": "Google Gemini — AI chatbot využívající Google Gemini API.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: ...const geminiProxyUrl = \"gemini_proxy.php\";         // Global langu...\nHTML: ...->     <script>         const geminiProxyUrl = \"gemini_proxy.php\";...\nInline JS: ...const geminiProxyUrl = \"gemini_proxy.php\";         // Global langu...",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "ai_classified",
+      "created_at": "2026-02-24T15:03:18.822786+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "76a9a7b0-fa77-49fa-92c8-9b4daa2b7e19",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob1284fHLX7Opnyg1Ozc3cUHVR_3VJ-8-UTDk7l5ULloTVVDYexTQBaa4J1vwQdgg_-M7UEWRC7oLXkjC63AYKj0-4hJ2amKG5Fr1RevX-r7tM0=",
+      "category": "chatbot",
+      "signature_matched": "jsonld:ai chatbot",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "action_required": "Web v structured data deklaruje AI službu. Dle čl. 50 AI Act musí být AI systém transparentně oznámen uživatelům.",
+      "ai_classification_text": "V JSON-LD structured data nalezena AI služba 'AI Chatbot'. Web provozuje AI systém, který musí být označen.",
+      "screenshot_url": null,
+      "evidence_html": "JSON-LD Service: \"@type\": \"Service\",\n                        \"name\": \"AI Chatbot\"",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "ai_classified",
+      "created_at": "2026-02-24T15:03:18.930447+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1455aac7-1711-4192-b35b-d9041e153d8c",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12tSXFXDlJ7BKJLwrUQFYy3OLSa_imLMaVHI7MX9rv5V-gZilppQSj97bG4cdQ7S76yce14xKf8y0jV0AVpGQTaht2CRcipioYX18JWY4yrXI=",
+      "category": "content_gen",
+      "signature_matched": "transparency:(?:vytvořen[aoáé]?|generován[aoáé]?|asistován[aoáé]?).*(?:umělou? inteligenc|ai|artificial intelligence)",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 2 — transparenční povinnost (SPLNĚNA)",
+      "action_required": "✅ Váš web již splňuje čl. 50 AI Act — transparenční oznámení o používání AI je aktivně nasazeno a informuje návštěvníky. Žádná další akce není potřeba.",
+      "ai_classification_text": "Na webu nalezeno aktivní transparenční oznámení o používání AI. Web informuje návštěvníky, že využívá umělou inteligenci — tím splňuje transparenční povinnost dle čl. 50 AI Act.",
+      "screenshot_url": null,
+      "evidence_html": "Text: ...(chatbot, texty, grafika) je vytvořena nebo asistována <strong style=\"color:#e879f9\">umělou inteligencí</strong> v souladu s <a href=\"/klient/\" style=\"color:#22d3ee;text-decoration:underline\">EU AI Act</a>.',                 cookie_accept: 'Souhlasím',                 // AI Ch...",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "ai_classified",
+      "created_at": "2026-02-24T15:03:19.007291+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c9e4ed30-8336-4627-94ab-081dda9c4d09",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12LhhdMmlP9yqaIH1ZLCUc0ec_ysMjci83rlGOi-RnOBX00J1nAaSYzB0NU8GJkJXmqFhzpXaQsV10NNOAoTwsQUR3KhN4NqRzyHedf8unFNk=",
+      "category": "analytics",
+      "signature_matched": "html:GA4, inline:GA4",
+      "risk_level": "none",
+      "ai_act_article": "",
+      "action_required": "Automaticky vyřazeno: Google Analytics 4 není AI systém.",
+      "ai_classification_text": "FALSE POSITIVE: Google Analytics 4 — webová analytika s volitelnými AI predikcemi.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: ...extra_analytics_desc: 'GA4, Tag Manager, konverze, dashb...\nInline JS: ...extra_analytics_desc: 'GA4, Tag Manager, konverze, dashb...",
+      "position_on_page": null,
+      "confirmed_by_client": "rejected",
+      "confirmed_at": null,
+      "source": "ai_classified_fp",
+      "created_at": "2026-02-24T15:03:19.169849+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6332cdd4-6e91-4356-92d8-375e3db64ce3",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12Fyyrf9VDKRyzpIsmPybzuU5Fw5TD6Gx2Cjm1ckddwPV5GpxzKjwBSovv_niAZd8lz4adPZukhoCH1ii7iPnpCg==",
+      "category": "analytics",
+      "signature_matched": "html:fbq(, html:facebook.com/tr, script:connect.facebook.net, inline:fbq(, inline:Meta Pixel",
+      "risk_level": "none",
+      "ai_act_article": "",
+      "action_required": "Automaticky vyřazeno: Meta Pixel není AI systém.",
+      "ai_classification_text": "FALSE POSITIVE: Meta Pixel — sledování konverzí pro reklamu. AI zpracování probíhá na straně Meta, ne na vašem webu.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: .../en_US/fbevents.js');         fbq('init', '1398322108343426');...\nHTML: ...src=\"https://www.facebook.com/tr?id=1398322108343426&ev=PageVi...\nScript: https://connect.facebook.net/signals/config/1398322108343426?v=2.9.269&r=stable&domain=www.desperados-design.cz&hme=2a949fef19078bf9d01413935bc9a87431\nScript: https://connect.facebook.net/en_US/fbevents.js\nInline JS: .../en_US/fbevents.js');         fbq('init', '1398322108343426');...",
+      "position_on_page": null,
+      "confirmed_by_client": "rejected",
+      "confirmed_at": null,
+      "source": "ai_classified_fp",
+      "created_at": "2026-02-24T15:03:19.328927+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ef061d14-f5d5-45d0-ba8a-d1d64152246c",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12CW0CXgSrLUQK4tLaUcmuv26_HgQw0ReAyE7-7gbktGWH_J8_i6H_STX7GsmRDd6Db7nI6dEqJ7suUSpgp5p82HFPR6zeEZ-4aJuuqnBEMfc=",
+      "category": "chatbot",
+      "signature_matched": "proxy_heuristic:gemini[_-]?proxy",
+      "risk_level": "none",
+      "ai_act_article": "",
+      "action_required": "⚠️ AI klasifikace selhala (LLM failed: Cannot parse Claude response as JSON. Raw text: [\n  {\n    \"name\": \"Google Gemini Chatbot\",\n    \"deployed\": true,\n    \"category\": \"chatbot\",\n    \"risk_level\": \"limited\",\n    \"ai_act_article\": \"čl. 50 odst. 1\",\n    \"action_required\": \"Zajistěte, aby ...: line 1 column 1 (char 0)). Vyřazeno na základě confidence=0.50 (threshold=0.8).",
+      "ai_classification_text": "FALSE POSITIVE: Na webu detekován AI proxy endpoint 'geminiproxy'. Typicky slouží jako prostředník mezi frontendem a AI API (GPT, Gemini, Claude). Chatbot musí být označen dle čl. 50.",
+      "screenshot_url": null,
+      "evidence_html": "Kód: ...pi logic -->     <script>         const geminiproxyurl = \"gemini_proxy.php\";         // global language variabl...",
+      "position_on_page": null,
+      "confirmed_by_client": "rejected",
+      "confirmed_at": null,
+      "source": "ai_classified_fp",
+      "created_at": "2026-02-24T15:03:19.095902+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "52d22378-3328-4df3-9ce4-80c6a26386a2",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob125kUyUPtHaOHFQ612rl1yFJSiKu9vg1acLlmBv08RaOG-X7VIoZ1YqzePLLrdLRcBDfozR-YbTMyz-vMv1AQ1NdTITAowehhgiT2X1R_BhRI=",
+      "category": "analytics",
+      "signature_matched": "html:GTM-, html:googletagmanager, script:googletagmanager.com/gtm.js, inline:GTM-",
+      "risk_level": "none",
+      "ai_act_article": "",
+      "action_required": "Automaticky vyřazeno: Google Tag Manager není AI systém.",
+      "ai_classification_text": "FALSE POSITIVE: Google Tag Manager — správce tagů, může obsahovat AI trackery.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: ...oogletagmanager.com/gtm.js?id=GTM-M5ZCB04G\"></script><script src...\nHTML: ...ipt async=\"\" src=\"https://www.googletagmanager.com/gtm.js?id=GTM-M5ZCB04G\"><...\nScript: https://www.googletagmanager.com/gtm.js?id=GTM-M5ZCB04G\nInline JS: ...ment, 'script', 'dataLayer', 'GTM-M5ZCB04G');...",
+      "position_on_page": null,
+      "confirmed_by_client": "rejected",
+      "confirmed_at": null,
+      "source": "ai_classified_fp",
+      "created_at": "2026-02-24T15:03:19.248918+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "cbf92863-9ba1-4d95-8132-af67cc731018",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12bgcKADelOz-tkOf3cj6Rc9oUFhuG_Yyhdzjwj4pxNQCofgWBgEtZTLUBGfQAcuAOKmDnfNGleeHi5ebj-JUQdA==",
+      "category": "analytics",
+      "signature_matched": "html:heureka, inline:heureka",
+      "risk_level": "none",
+      "ai_act_article": "",
+      "action_required": "Automaticky vyřazeno: Heureka není AI systém.",
+      "ai_classification_text": "FALSE POSITIVE: Heureka — měření konverzí a recenze.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: ...eshop_feeds_heureka: 'Heureka',                 eshop_feeds...\nInline JS: ...eshop_feeds_heureka: 'Heureka',                 eshop_feeds...",
+      "position_on_page": null,
+      "confirmed_by_client": "rejected",
+      "confirmed_at": null,
+      "source": "ai_classified_fp",
+      "created_at": "2026-02-24T15:03:19.433248+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "97db45f7-8198-4697-9c9e-9c556bba999c",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob123mPK4pCDqpGHWuRXn-qpX3ciD7dSVKEufHgoNCD1XRcONaRBmKxP-0Pd1cOt1NrZnB2-JnalwCDfCpVG45qx3g3aoAT8DUtWWhjg_EWwGgE=",
+      "category": "chatbot",
+      "signature_matched": "html:gemini_proxy, html:geminiProxyUrl, inline:gemini_proxy",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "action_required": "AI chatbot poháněný Google Gemini musí být transparentně označen. Uživatel musí vědět, že komunikuje s AI.",
+      "ai_classification_text": "Google Gemini — AI chatbot využívající Google Gemini API.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: ...const geminiProxyUrl = \"gemini_proxy.php\";         // Global langu...\nHTML: ...->     <script>         const geminiProxyUrl = \"gemini_proxy.php\";...\nInline JS: ...const geminiProxyUrl = \"gemini_proxy.php\";         // Global langu...",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "deep_scan_gb_us_br_cz_au_jp_za",
+      "created_at": "2026-02-24T16:14:05.166188+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "50d25955-5dd9-466b-b0ec-1414aeb59ce1",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12VrNY9he-1GDVofFPJy4jkzsrjiF650E4xfYE86xXROpFc2FIFCtwKQ7h5SfQ4BDP2JPsui76XVfh7Kiwlj4HG7KE6k8-TMhNmQ4aPhbm9WU=",
+      "category": "chatbot",
+      "signature_matched": "proxy_heuristic:gemini[_-]?proxy",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "action_required": "Detekován AI proxy endpoint — web pravděpodobně používá AI chatbot přes vlastní backend. AI systém musí být transparentně označen uživatelům.",
+      "ai_classification_text": "Na webu detekován AI proxy endpoint 'geminiproxy'. Typicky slouží jako prostředník mezi frontendem a AI API (GPT, Gemini, Claude). Chatbot musí být označen dle čl. 50.",
+      "screenshot_url": null,
+      "evidence_html": "Kód: ...pi logic -->     <script>         const geminiproxyurl = \"gemini_proxy.php\";         // global language variabl...",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "deep_scan_gb_us_br_cz_au_jp_za",
+      "created_at": "2026-02-24T16:14:05.281781+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "409c8240-3200-48fc-afc9-1516d31677ab",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12Ge4YIeC7ZVCNmHPPFc7O37PoXNKgcbwyDceIR3QI6ZVr6OsiojXEhHmtnZcR8E3W2rT_QvG5xb3ClC3uoIm4nQSevetfJ5UAXcXC90KWarw=",
+      "category": "chatbot",
+      "signature_matched": "jsonld:ai chatbot",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 1",
+      "action_required": "Web v structured data deklaruje AI službu. Dle čl. 50 AI Act musí být AI systém transparentně oznámen uživatelům.",
+      "ai_classification_text": "V JSON-LD structured data nalezena AI služba 'AI Chatbot'. Web provozuje AI systém, který musí být označen.",
+      "screenshot_url": null,
+      "evidence_html": "JSON-LD Service: \"@type\": \"Service\",\n                        \"name\": \"AI Chatbot\"",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "deep_scan_gb_us_br_cz_au_jp_za",
+      "created_at": "2026-02-24T16:14:05.349586+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "204728e1-a662-402b-b7fb-b3415464c591",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob12M_KhvpoDTihx-J-5p3XcELMGN3cNp-OmkCKlNHPWXB0OKfSXx4ith3OKJOVm5JyvP9LckRBV32fyGDzy0IO7I1fg7Sofk6AwnHn_KNHf4Ls=",
+      "category": "content_gen",
+      "signature_matched": "transparency:(?:vytvořen[aoáé]?|generován[aoáé]?|asistován[aoáé]?).*(?:umělou? inteligenc|ai|artificial intelligence)",
+      "risk_level": "limited",
+      "ai_act_article": "čl. 50 odst. 2 — transparenční povinnost (SPLNĚNA)",
+      "action_required": "✅ Váš web již splňuje čl. 50 AI Act — transparenční oznámení o používání AI je aktivně nasazeno a informuje návštěvníky. Žádná další akce není potřeba.",
+      "ai_classification_text": "Na webu nalezeno aktivní transparenční oznámení o používání AI. Web informuje návštěvníky, že využívá umělou inteligenci — tím splňuje transparenční povinnost dle čl. 50 AI Act.",
+      "screenshot_url": null,
+      "evidence_html": "Text: ...(chatbot, texty, grafika) je vytvořena nebo asistována <strong style=\"color:#e879f9\">umělou inteligencí</strong> v souladu s <a href=\"/klient/\" style=\"color:#22d3ee;text-decoration:underline\">EU AI Act</a>.',                 cookie_accept: 'Souhlasím',                 // AI Ch...",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "deep_scan_gb_us_br_cz_au_jp_za",
+      "created_at": "2026-02-24T16:14:05.423962+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0c14ec2d-b191-467b-8e18-7558143ea56c",
+      "scan_id": "66623d90-eeac-44c1-b85f-99ff07efbe1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "name": "gAAAAABpob126Y5S7iydOM7Wyy147CZwmYXMgUcuJI1W7Bzv6a2r6SlnHK2q7PKCWe-3v3AEoeJLknRFid7HVem_8INxRYBF9Q==",
+      "category": "analytics",
+      "signature_matched": "html:fbq(, html:facebook.com/tr, script:connect.facebook.net, inline:fbq(, inline:Meta Pixel",
+      "risk_level": "minimal",
+      "ai_act_article": "minimální riziko — Meta Pixel není AI systém dle AI Act",
+      "action_required": "Meta Pixel je reklamní tracker, nikoli AI systém. AI cílení provádí Meta na své platformě — vaše firma žádný AI systém nenasazuje. Spadá pod GDPR/ePrivacy (souhlas s cookies), nikoli pod AI Act.",
+      "ai_classification_text": "Meta Pixel — sledování konverzí pro reklamu. AI zpracování probíhá na straně Meta, ne na vašem webu.",
+      "screenshot_url": null,
+      "evidence_html": "HTML: .../en_US/fbevents.js');         fbq('init', '1398322108343426');...\nHTML: ...src=\"https://www.facebook.com/tr?id=1398322108343426&ev=PageVi...\nScript: https://connect.facebook.net/signals/config/1398322108343426?v=2.9.269&r=stable&domain=www.desperados-design.cz&hme=2a949fef19078bf9d01413935bc9a87431",
+      "position_on_page": null,
+      "confirmed_by_client": "confirmed",
+      "confirmed_at": null,
+      "source": "deep_scan_gb_us_br_cz_au_jp_za",
+      "created_at": "2026-02-24T16:14:05.497781+00:00",
+      "status": "open",
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "questionnaire_responses": [
+    {
+      "id": "a37a1ecf-a31c-4122-bbd0-429839f17b20",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "internal_ai",
+      "question_key": "uses_copilot",
+      "answer": "yes",
+      "details": {
+        "copilot_code_type": [
+          "Webové aplikace",
+          "Mobilní aplikace",
+          "Backend/API",
+          "Data/ML",
+          "Automatizace"
+        ],
+        "copilot_tool_name": [
+          "GitHub Copilot",
+          "Cursor",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Codeium",
+          "Amazon CodeWhisperer"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.05809+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c720aa12-4ea9-4280-9fcc-c8d073022c77",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "internal_ai",
+      "question_key": "uses_ai_content",
+      "answer": "yes",
+      "details": {
+        "content_published": [
+          "Web / sociální sítě",
+          "Interní materiály",
+          "E-maily zákazníkům",
+          "Reklamní kampaně",
+          "Jiné"
+        ],
+        "content_tool_name": [
+          "ChatGPT / GPT-4o",
+          "Gemini (Google)",
+          "Claude (Anthropic)",
+          "DALL-E",
+          "Midjourney",
+          "Stable Diffusion",
+          "Canva AI",
+          "Adobe Firefly",
+          "Jasper",
+          "Copy.ai",
+          "Suno AI",
+          "Jiný"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.125819+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "97517aaa-5f23-4815-81a4-1941730ae8dd",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "internal_ai",
+      "question_key": "uses_deepfake",
+      "answer": "yes",
+      "details": {
+        "deepfake_tool_name": [
+          "ChatGPT (Sora)",
+          "Gemini / VEO3 (Google)",
+          "HeyGen",
+          "Synthesia",
+          "ElevenLabs",
+          "D-ID",
+          "Murf AI",
+          "Jiný"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.201519+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6de3ed9e-ff7c-461e-bf8b-26c2fa2af85a",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "customer_service",
+      "question_key": "uses_ai_chatbot",
+      "answer": "yes",
+      "details": {
+        "chatbot_tool_name": [
+          "Smartsupp",
+          "Tidio",
+          "Intercom",
+          "Drift",
+          "ChatGPT API",
+          "Claude API",
+          "Gemini API",
+          "Chatbot.cz",
+          "Jiné"
+        ],
+        "chatbot_tool_name_other": "vlastní html "
+      },
+      "tool_name": "vlastní html ",
+      "submitted_at": "2026-02-24T16:41:40.271694+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1cd3425f-dffe-4a9b-b42e-1aef680ad097",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_legal_name",
+      "answer": "Martin Haynes",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T15:48:21.27188+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "756f934b-1e5e-42db-aef8-4d26b6efef8e",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_ico",
+      "answer": "17889251",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T15:48:21.384167+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "132813a9-b0a7-4413-ad16-201a9b19606f",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_address",
+      "answer": "mlýnská || 53 || Velká Bystřice || 78353",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T15:48:21.479995+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ee1473a3-4040-4f4e-87bd-7f79a3343bb6",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_contact_email",
+      "answer": "info@desperados-design.cz",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T15:48:21.555637+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8fad2832-2573-4331-aaf1-66e0dfc4bcea",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_phone",
+      "answer": "732716141",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.541856+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "04818a3f-c0f1-4a35-8443-3c644b04087e",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_industry",
+      "answer": "E-shop / Online obchod, Účetnictví / Finance, Zdravotnictví, Vzdělávání / Školství, Výroba / Průmysl, IT / Technologie, Stavebnictví, Doprava / Logistika, Restaurace / Gastronomie, Kadeřnictví / Kosmetika, Právní služby, Nemovitosti / Reality, Zemědělství, Jiné",
+      "details": {
+        "company_industry_other": "pornografie"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.624332+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "63a93695-f548-4343-a8ec-f2f299fabd03",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "eshop_platform",
+      "answer": "Shoptet, Shopify, WooCommerce (WordPress), PrestaShop, Magento / Adobe Commerce, Upgates, Shopsys, OpenCart, Jiné",
+      "details": {
+        "eshop_platform_other": "vlastní kód"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.697248+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "787a2286-fbec-4727-96a5-809a7794354b",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_size",
+      "answer": "250+ zaměstnanců",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.76454+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7df891ee-4acf-4edc-a1b4-e9056ef520fd",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "company_annual_revenue",
+      "answer": "Nad 1 mld. Kč",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.829497+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6714dffe-2364-4ae8-aa2b-6bd40d30beda",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "industry",
+      "question_key": "develops_own_ai",
+      "answer": "yes",
+      "details": {
+        "ai_role": [
+          "Vyvíjíme AI (provider)",
+          "Nasazujeme AI od jiných (deployer)",
+          "Importujeme AI do EU (importer)",
+          "Distribuujeme AI (distributor)"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.9022+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "da0ba71f-406c-4e14-9353-08197cff72cd",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "internal_ai",
+      "question_key": "uses_chatgpt",
+      "answer": "yes",
+      "details": {
+        "chatgpt_purpose": [
+          "Psaní textů",
+          "Překlady",
+          "Emaily",
+          "Analýza dat",
+          "Programování",
+          "Zákaznický servis"
+        ],
+        "chatgpt_data_type": [
+          "Pouze veřejná data",
+          "Interní dokumenty",
+          "Osobní údaje zákazníků",
+          "Finanční data",
+          "Zdrojový kód / obchodní tajemství",
+          "Jiné"
+        ],
+        "chatgpt_tool_name": [
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Copilot",
+          "Perplexity"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:39.969361+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "15cfa837-9d65-4c1f-b9c9-cfc540643202",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "customer_service",
+      "question_key": "uses_ai_email_auto",
+      "answer": "yes",
+      "details": {
+        "email_tool": [
+          "Freshdesk AI",
+          "Zendesk AI",
+          "Intercom",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiné"
+        ],
+        "email_tool_other": "claude opus"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.340001+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4a9786c8-ecdd-416c-b3bf-a92f4cb3cc84",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "customer_service",
+      "question_key": "uses_ai_decision",
+      "answer": "yes",
+      "details": {
+        "decision_scope": [
+          "Reklamace",
+          "Slevy / ceny",
+          "Schvalování žádostí",
+          "Přístup ke službám"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.408422+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f960423c-79ec-4962-bbd5-5707978ebfff",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "customer_service",
+      "question_key": "uses_dynamic_pricing",
+      "answer": "yes",
+      "details": {
+        "pricing_tool": [
+          "Prisync",
+          "Competera",
+          "Dynamic Yield",
+          "ChatGPT",
+          "Claude",
+          "Gemini"
+        ],
+        "pricing_basis": [
+          "Historie nákupů",
+          "Lokace zákazníka",
+          "Čas / sezóna",
+          "Profil zákazníka",
+          "Poptávka"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T16:41:40.474948+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ed3c677d-71ed-42e2-9cdc-54ffb3becc30",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "customer_service",
+      "question_key": "uses_ai_for_children",
+      "answer": "yes",
+      "details": {
+        "children_ai_context": [
+          "Vzdělávání / e-learning",
+          "Mobilní aplikace / hry",
+          "Doporučování obsahu",
+          "Chatbot / virtuální asistent",
+          "Filtrování / moderování obsahu",
+          "Jiné"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:16.939251+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ebb48e28-1dfc-4716-b431-92aaa2f6ff9f",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "hr",
+      "question_key": "uses_ai_recruitment",
+      "answer": "yes",
+      "details": {
+        "recruitment_tool": [
+          "LinkedIn Recruiter",
+          "Teamio",
+          "LMC/Jobs.cz AI",
+          "Prace.cz AI",
+          "Sloneek",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiné"
+        ],
+        "recruitment_autonomous": "Ano, automaticky filtruje",
+        "recruitment_tool_other": "vlastní kód"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.041202+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "476fca75-d5a3-44b1-811e-23516d42097e",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "hr",
+      "question_key": "uses_ai_employee_monitoring",
+      "answer": "yes",
+      "details": {
+        "monitoring_type": [
+          "Sledování obrazovky",
+          "Měření produktivity",
+          "GPS sledování",
+          "Kamerový dohled s AI",
+          "Analýza emailů",
+          "Jiné"
+        ],
+        "monitoring_type_other": "vlastní kód"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.184452+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c864bfbe-bc51-4588-b2e9-795198a99d04",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "hr",
+      "question_key": "uses_emotion_recognition",
+      "answer": "yes",
+      "details": {
+        "emotion_context": [
+          "Pracovní prostředí",
+          "Zákaznický servis",
+          "Vzdělávání",
+          "Bezpečnost",
+          "Jiné"
+        ],
+        "emotion_tool_name": [
+          "Kamerový systém",
+          "Call centrum analýza",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiný"
+        ],
+        "emotion_context_other": "vlastní kód ",
+        "emotion_tool_name_other": "vlastní kód"
+      },
+      "tool_name": "vlastní kód",
+      "submitted_at": "2026-02-24T17:17:17.341539+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "47641353-b670-4137-bd26-93e5c3733eab",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "finance",
+      "question_key": "uses_ai_creditscoring",
+      "answer": "yes",
+      "details": {
+        "credit_tool": [
+          "CRIF – Czech Credit Bureau",
+          "Bisnode / Dun & Bradstreet",
+          "Scoring Solutions",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiný"
+        ],
+        "credit_impact": "Ano, přímo rozhoduje",
+        "credit_tool_other": "vlastní program "
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.617907+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "087dbde1-00f1-4938-80b1-7c1c218b2f96",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "prohibited_systems",
+      "question_key": "uses_social_scoring",
+      "answer": "yes",
+      "details": {
+        "scoring_scope": [
+          "Zaměstnanci",
+          "Zákazníci"
+        ],
+        "scoring_tool_name": [
+          "Salesforce",
+          "HubSpot",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiný CRM",
+          "Jiný"
+        ],
+        "scoring_tool_name_other": "vlastní html "
+      },
+      "tool_name": "vlastní html ",
+      "submitted_at": "2026-02-24T17:17:17.836238+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "e72ae800-7b84-42ff-a6fb-996e16064571",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "prohibited_systems",
+      "question_key": "uses_realtime_biometric",
+      "answer": "yes",
+      "details": {
+        "biometric_purpose": [
+          "Docházka zaměstnanců",
+          "Kontrola přístupu",
+          "Identifikace zákazníků",
+          "Bezpečnost",
+          "Jiné"
+        ],
+        "biometric_tool_name": [
+          "Kamerový systém",
+          "Docházkový systém",
+          "Přístupový systém",
+          "Jiný"
+        ],
+        "biometric_purpose_other": "vlastní kód",
+        "biometric_tool_name_other": "vlastní kód"
+      },
+      "tool_name": "vlastní kód",
+      "submitted_at": "2026-02-24T17:17:18.026882+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "96313ddb-8e5b-4b60-a0cd-a854c8943c96",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "infrastructure_safety",
+      "question_key": "uses_ai_safety_component",
+      "answer": "yes",
+      "details": {
+        "safety_ce_mark": "Ano",
+        "safety_product": [
+          "Zdravotnický přístroj",
+          "Průmyslový stroj",
+          "Automobil / dopravní prostředek",
+          "Bezpečnostní systém",
+          "Jiný"
+        ],
+        "safety_product_other": "robertek"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.189779+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "a37cb3df-92f1-4eae-a026-4fad9c54988c",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "data_protection",
+      "question_key": "ai_data_stored_eu",
+      "answer": "yes",
+      "details": {
+        "data_location_hint": [
+          "ChatGPT (OpenAI — USA)",
+          "Google Gemini (USA/EU)",
+          "Microsoft Copilot (EU i USA)"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.373165+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "566f28c7-b906-429e-a08e-243eadca0619",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "ai_literacy",
+      "question_key": "has_ai_training",
+      "answer": "yes",
+      "details": {
+        "training_attendance": "Ano",
+        "training_audience_size": "100+ osob",
+        "training_audience_level": "Mix — různé úrovně"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.549863+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "83cce668-d45b-4010-91e9-c8291cf0d69f",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "human_oversight",
+      "question_key": "has_oversight_person",
+      "answer": "yes",
+      "details": {
+        "oversight_role": "Jednatel / majitel (dohlížím osobně)",
+        "oversight_scope": [
+          "Chatbot na webu",
+          "Interní AI nástroje (ChatGPT, Copilot apod.)",
+          "AI analytiku a doporučovací systémy",
+          "AI v zákaznickém servisu",
+          "AI v HR / náboru",
+          "AI v účetnictví / financích",
+          "Vše — zastřešuje kompletní AI governance"
+        ],
+        "oversight_person_name": "Martin Haynes",
+        "oversight_person_email": "info@desperados-design.cz",
+        "oversight_person_phone": "7327161"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.722652+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "89cd07cd-8a6d-496e-9410-ab1de37b36e9",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "human_oversight",
+      "question_key": "ai_decision_logging",
+      "answer": "yes",
+      "details": {
+        "logging_method": [
+          "Logy v aplikaci (automatické)",
+          "Export do SIEM / centrálního logu",
+          "Excel / tabulka",
+          "Ticketovací systém (Jira, Freshdesk)",
+          "Jiný systém"
+        ],
+        "logging_retention": "Nevím"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.885227+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7bf527d8-a9d4-4501-a709-e035696de01a",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "ai_role",
+      "question_key": "modifies_ai_purpose",
+      "answer": "yes",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.076423+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "730ee66c-0a06-46d8-8eb7-a9d6335c4331",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "incident_management",
+      "question_key": "has_incident_plan",
+      "answer": "yes",
+      "details": {
+        "incident_plan_scope": [
+          "Postup při chybné AI odpovědi zákazníkovi",
+          "Eskalační proces (kdo rozhoduje o dalších krocích)",
+          "Okamžité odstavení AI systému",
+          "Hlášení incidentu dozorové autoritě",
+          "Informování dotčených osob",
+          "Záznamy a dokumentace incidentu"
+        ],
+        "incident_communication": [
+          "E-mail",
+          "Telefon / krizová linka",
+          "Interní chat (Teams, Slack apod.)",
+          "Ticketovací systém (Jira, Freshdesk apod.)",
+          "Nemáme definovaný kanál"
+        ],
+        "incident_escalation_chain": [
+          "Operátor / zaměstnanec, který incident zjistí",
+          "Vedoucí oddělení / manažer",
+          "IT oddělení / správce systému",
+          "Jednatel / vedení firmy",
+          "DPO / Compliance officer",
+          "Externí právní poradce"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.251486+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f50e2f82-1994-4eb8-b206-962782fcfd71",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "incident_management",
+      "question_key": "tracks_ai_changes",
+      "answer": "yes",
+      "details": {
+        "changes_tracking_method": [
+          "Verze v Git / repozitáři",
+          "Interní tabulka / evidence",
+          "Ticketovací systém (Jira)",
+          "Changelog v dokumentaci",
+          "Jiný způsob"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.492684+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f91c4fef-2d1c-404e-8d54-ef612fef2423",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "implementation",
+      "question_key": "transparency_page_implementation",
+      "answer": "Chci implementaci od AIshield",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.78669+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "109f4ad7-e481-4331-83fb-1bd5949fb708",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "finance",
+      "question_key": "uses_ai_accounting",
+      "answer": "yes",
+      "details": {
+        "accounting_tool": [
+          "Fakturoid",
+          "Money S5",
+          "ABRA",
+          "Pohoda",
+          "iDoklad",
+          "Helios",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiné"
+        ],
+        "accounting_decisions": "Ne, pouze asistuje"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.499844+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b42198b3-d50c-42ae-a631-2e6b950dd0e7",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "finance",
+      "question_key": "uses_ai_insurance",
+      "answer": "yes",
+      "details": {
+        "insurance_tool": [
+          "Guidewire",
+          "NESS / Allianz AI",
+          "ČPP / ČSOB interní AI",
+          "ChatGPT",
+          "Claude",
+          "Gemini",
+          "Jiný"
+        ],
+        "insurance_impact": "Ano",
+        "insurance_tool_other": "Vlastní aplikace "
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.727198+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5f7e9ed5-cc2a-49b9-82d9-628cd7034f8b",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "prohibited_systems",
+      "question_key": "uses_subliminal_manipulation",
+      "answer": "yes",
+      "details": null,
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:17.941749+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "2d0bdef0-78eb-4d44-b416-575e1b6c8efd",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "infrastructure_safety",
+      "question_key": "uses_ai_critical_infra",
+      "answer": "yes",
+      "details": {
+        "infra_sector": [
+          "Energetika",
+          "Doprava",
+          "Vodohospodářství",
+          "Telekomunikace",
+          "Zdravotnictví",
+          "Jiné"
+        ],
+        "infra_tool_name": [
+          "Siemens MindSphere",
+          "ABB Ability",
+          "Honeywell Forge",
+          "Jiný"
+        ],
+        "infra_tool_name_other": "pospa ing. "
+      },
+      "tool_name": "pospa ing. ",
+      "submitted_at": "2026-02-24T17:17:18.108467+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4e8e3c64-ccf2-4774-ba0c-bd661afb771f",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "data_protection",
+      "question_key": "ai_processes_personal_data",
+      "answer": "yes",
+      "details": {
+        "dpia_done": "Ano",
+        "personal_data_types": [
+          "Jména a kontakty",
+          "Rodná čísla / OP",
+          "Zdravotní údaje",
+          "Finanční údaje",
+          "Fotografie / video",
+          "Lokační data"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.276846+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "59314a1c-ddbd-4464-ba41-5065d550f05e",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "data_protection",
+      "question_key": "has_ai_vendor_contracts",
+      "answer": "yes",
+      "details": {
+        "vendor_contract_scope": [
+          "DPA (zpracování osobních údajů)",
+          "SLA (dostupnost a kvalita služby)",
+          "Odpovědnost za škody způsobené AI",
+          "Práva k datům a výstupům",
+          "Podmínky ukončení spolupráce",
+          "Audit / kontrola dodavatele"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.457946+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c7e72d3d-7352-4c47-9992-2b7f7c85dfec",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "ai_literacy",
+      "question_key": "has_ai_guidelines",
+      "answer": "yes",
+      "details": {
+        "guidelines_scope": [
+          "Které AI nástroje smí zaměstnanci používat",
+          "Jaká data se smí do AI vkládat",
+          "Kdo schvaluje nové AI nástroje",
+          "Pravidla pro AI generovaný obsah",
+          "Ochrana osobních údajů při práci s AI",
+          "Postup při AI incidentu"
+        ],
+        "guidelines_format": "Písemná směrnice / interní předpis"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.634195+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "10fa843d-5a4b-48b9-9f49-5adce7e270b9",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "human_oversight",
+      "question_key": "can_override_ai",
+      "answer": "yes",
+      "details": {
+        "override_scope": [
+          "Vždy — AI jen doporučuje, člověk rozhoduje",
+          "Při reklamacích a stížnostech",
+          "Při HR rozhodnutích",
+          "Při finančních rozhodnutích",
+          "Jen výjimečně / eskalace",
+          "Jiné"
+        ],
+        "override_scope_other": "nevím "
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.800069+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "142b2bb5-965e-465f-bf12-c0798cd61d3f",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "human_oversight",
+      "question_key": "has_ai_register",
+      "answer": "yes",
+      "details": {
+        "register_contents": [
+          "Název AI systému",
+          "Dodavatel / poskytovatel",
+          "Kategorie rizika dle AI Act",
+          "Účel použití",
+          "Odpovědná osoba",
+          "Datum nasazení",
+          "Typ zpracovávaných dat"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:18.967338+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "bf94616b-7747-4857-802f-35c58424ca12",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "ai_role",
+      "question_key": "uses_gpai_api",
+      "answer": "yes",
+      "details": {
+        "gpai_provider": [
+          "OpenAI (GPT-4/4o)",
+          "Anthropic (Claude)",
+          "Google (Gemini)",
+          "Mistral",
+          "Vlastní model",
+          "Jiné",
+          "Meta (Llama)"
+        ],
+        "gpai_customer_facing": "Ano, zákazníci vidí AI výstupy přímo"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.163832+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c8e9f3eb-3dd4-4804-b1be-9ec1bfc69025",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "incident_management",
+      "question_key": "monitors_ai_outputs",
+      "answer": "yes",
+      "details": {
+        "monitoring_frequency": "Nepřípravidělně / ad hoc"
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.376601+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "231731ec-85ab-4081-9bad-d07cfab6e6ff",
+      "client_id": "950c79fa-28a1-42d0-9e27-3c998ca9bc11",
+      "section": "incident_management",
+      "question_key": "has_ai_bias_check",
+      "answer": "yes",
+      "details": {
+        "bias_check_method": [
+          "Manuální kontrola výstupů na vzorku dat",
+          "Automatizované testy férovosti",
+          "Porovnání výstupů pro různé skupiny (pohlaví, věk, etnicita)",
+          "Zpětná vazba od uživatelů / zákazníků",
+          "Externí audit"
+        ]
+      },
+      "tool_name": null,
+      "submitted_at": "2026-02-24T17:17:19.66355+00:00",
+      "_encrypted_fields": [],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "documents": [
+    {
+      "id": "758706ad-940e-47d5-83c9-e9fc09052ba8",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12XZjqd_wxwttt0zHADq38kgd16kfJODmJU5jSHlCtBsAoiWuS_1CY9PE036AlpKu1l5nxH8xC5UNQ5u3_wyHnKdjoiEWKDXGPzMSDHytpzIc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 98838,
+      "created_at": "2026-02-25T09:48:52.322513+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8f206a51-3a6c-462c-8ae1-9ee97a0b2fa7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12QiwgD1eQLAJk2qHRRoGSDJ4xFDj3i-KYo5epnpputNY9wr7yjf0BOl6iJ45qGOwucNaah5wJY0P6EOsLmECYzhB686DgE76Pqy868fmP97U=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 92658,
+      "created_at": "2026-02-25T09:49:00.549258+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b6659da4-fbef-4a7f-83ba-562e9d30a834",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12h6DPPD0pbLpI0TDgnxVs0sn6P6IAR7jlqwOxWHszLeUzEUJdxxCVjPWsM2OP1K9VEdIMgFYhgakczYGdFTGB9A==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 69048,
+      "created_at": "2026-02-25T09:49:07.773409+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0416e42d-660f-4ef1-b730-b327008a56e0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12_AzELzkzlFSwUjdqJckfozBseCNuI1UEpYx4_t6QG-hghnPUehm7pztRMdHa7OlICVIUkiwdacKc9akEDEUiLJzecy2zy0CcBwNddxyKU5o=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 64803,
+      "created_at": "2026-02-25T09:49:16.600172+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "2a6528dd-b632-4ae4-bfce-218ed7797fd4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12v1kANdmktfU5_eHy_XQZH8AUfiC8Psb1mFJwGJSWMXzjzMczRdF8zujl-m6R1Ll4YP_cpfnGFzahh77znrO0iJfpy6-loBKPMT3GDLR_7Lw=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 62096,
+      "created_at": "2026-02-25T09:49:25.725913+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "af43a804-592b-4033-a212-c65df37ddba5",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12nDuCRmG4rb6zuf6H8Tn9ihKXKEwchoaKhBdpzKD3DHrRJ-RVQVlhB7QL3-JEGK3QPZezi_m_U-nSfyesDc5Igd3wTCqH4hYVVjJEBFqyC1Y=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 74875,
+      "created_at": "2026-02-25T09:49:30.356646+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1460dce3-b2dd-453f-81b9-0799c5b61020",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12T9-BcdmkDLsXgU_8auCCmXy7c16MZKhRyqWnAY62C2ywRSSRF1gza57A-37EO5TeVsUOIKiUOz-w3LhrMR5vEebLLa2aSOM7n2NU9Hpiyc8=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 63389,
+      "created_at": "2026-02-25T09:49:39.4204+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f540a0ff-0824-46b7-bbbf-3b25276704ac",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12emhwtQnTG_vGo5eA_CtQMMI2BH_0m0YHbG9LoB-Lw-2L59MPduBZKfGOHgFTmcWoE9z0keujo89h5VPf_pQKraCRw2HAVBCyVH-SeplN-t63HGOBUApcTjBYmReNwkAD",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_093716.pptx?",
+      "format": "pptx",
+      "size_bytes": 48814,
+      "created_at": "2026-02-25T09:49:40.87033+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "37a9e9c3-90b8-4166-9caf-fcf0b95ac115",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12scx2Lp3H-_9luhARGBoPDI3kWtGHrbKlKB6WDHHNKCYZNeU7dI1pTrfIv3urrCtYvFkDsfbfGgKFdWvPDyO1ZFTRw7vq5GP-loEuljeMdlI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 71494,
+      "created_at": "2026-02-25T12:18:32.21778+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "a7bbc95c-ea77-49f7-abd8-9b840ac81361",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12FVi0a8Hfez7jQPch3KOD1t8V04O_nNZfD93Q0kqzsRJPkUCp4u_quWX8R8Ee0bWy4cAnafCrw-2FMyudQMdhQFTGH853xj3WgPAZu3LJOZA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 35526,
+      "created_at": "2026-02-25T12:18:43.015885+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "fc26e69d-ab64-4d19-b3b6-ff5ebabe0cb2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12jIF_rEaJ2sNeCRAFmGnF3moTU8SO7vFoSDYTY3w_FwjFeJu5syMU0n3TusJFLhno5my79Gv392bV5uPHuzVhVw==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 48653,
+      "created_at": "2026-02-25T12:18:46.169953+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "590e3e6c-45fe-47ae-bd10-3430ed410dd7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12P3hd-y23nVHYVrndwYX0_CRNgSpiAu78SgxJRgkEmE83-Xib6mno0khm3nWuove2tpz7TnLCmn_RFpr3FmqwDN_zoQgu7Joi_8knNxcq3MI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 39309,
+      "created_at": "2026-02-25T12:18:52.1717+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "68fff935-bf0d-40b7-b979-9562d2ff8824",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12OW9c1gt8tHDuIME2ioPp9ddY1tilmBkFchc2NoOdVBVZ9L1r7iCIjgXR5KkpfiQ-_tdL2-nCJK79_MkgUbqiWGGY7DDlqNHw8_PQXnGvAoE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 39590,
+      "created_at": "2026-02-25T12:18:58.821193+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "334fa7a3-e3ff-466d-b4c5-b4ba29966c7e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12j7_AKJ5ETiK3KS9-bj13_Y8th0XQMW8aYPJTOeJeJiIGtxER6W0RUNKKpnKig3L1PRFNittcphcnAVd7HuKdr7zp_BjEtP25aLytO-3F_ZY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 37337,
+      "created_at": "2026-02-25T12:19:07.615011+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "563c7592-f215-49eb-8c85-fe04d410c287",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12MZN4cYZyS_W1R2NhtURdTuN30h2KvdfQOD971eJAGO9FffasYYydIvACGJ01LCKMsmEYO5v03kjRPZdkE8au-zvIiJF9ap2LA8owIGaCEss=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260225_120603.html?",
+      "format": "html",
+      "size_bytes": 26163,
+      "created_at": "2026-02-25T12:19:11.989281+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "873b0946-9562-45a4-9471-0c321247abca",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12vfkVfE9kYt5ObijDeNyagJCU92NIjaTlmee1DxApKDZiG3iuArdLAio_aJr3t_7U_sJzzVS7CDs4ZqAmwxINjyz1DzMzMLdBJRSV0WvKc60=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 42184,
+      "created_at": "2026-02-25T13:41:00.803306+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b702a5ee-a589-4775-956a-15e9e4a418a8",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob121tUKI5uyRIB1dM5JbzQJ0YUz_qcN7SU3w9xjurYHxVA0MIs2q5pRSQI65zb-BuTSQtb9nt3k25nYxlnpSN42bji5sI_JvJNCnqaZ5EVvBlI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 34729,
+      "created_at": "2026-02-25T13:41:06.677441+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1d2056e8-e93c-4871-af61-85138bc7f0af",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12yD8TexJaIaB15ModPtJ2KTClSFW4CpXTMw1mSZALhJirdT_8UvVdce6sDK35UElGMyFNFpYyMTHqEBaYIWOkrsH9prYUVgk0qB8x1fn3qhA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 41052,
+      "created_at": "2026-02-25T13:41:14.43504+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "822717f6-4cd8-4c75-9b6b-ff9a0df99910",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12SrYbetBnlRnMN_J2haEsRWfnd-aQW2XStxlGWch0e1S1aJgmqFEjSnMX-x7u37ryfBHQVRLq9MOp6EJVT5M5motTbNC6MX9sHlqOfe5ycrU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 41468,
+      "created_at": "2026-02-25T13:41:22.164018+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "3a89427d-d9c5-4a6a-8f9a-dacb190bea63",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob123nHQWIaFyUrZGMEyx-FoDDiTDTtcuTGocrKAki6WQztqBS5mE_vb2QbXHobCtFF6smddvXphvtKTHDQtSVht4zu7oJGIWFIMh3UZ0vTRUby10ctpQt7xvi2SWBqY-Tzg",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_132104.pptx?",
+      "format": "pptx",
+      "size_bytes": 48941,
+      "created_at": "2026-02-25T13:41:23.415226+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8f9f49d5-13a3-4f0a-b371-0a586fd2733c",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "unified_compliance_kit",
+      "name": "gAAAAABpob12tw5LNjZd-PM2XieHYPKKu1aeEmnDYhgLzeIPaqx5NWogiJTiLYkzdYqY2DwhCMJ9L1IfVVkqiSd9QsJOPbGYok3lbulRJG4nOOVevGHlzU8TN7Hjnhvl76mj9CK5xCFT",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_kit_komplet_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 420663,
+      "created_at": "2026-02-25T20:48:03.02472+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1a4aae19-f8a7-4000-8909-e03afcbc6da4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12Z8Rxhsjw4_oQLEt5l3gzsq3mzCkNsrSEPGU6_DsQ_VYnKy3-gW5q5G1ZHungA3u-zfjVbclGAiEjU7H4QSy5kWRw8TdchxtAwpgvvMkfu6EH9aexIO9i1fEgi_VRgnFT",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_194520.pptx?",
+      "format": "pptx",
+      "size_bytes": 53928,
+      "created_at": "2026-02-25T20:48:04.452936+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "78585c22-6c2a-4e64-b894-8dfd7578da04",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12HKTnuABnSB_WJ5HEBup7yW-UYHBY8NEP0eL4OrHLHpYh7YX0UTyTodqwkBkqjSUzi75BQlHHoENnIH1KQDMzYIGRj4l64usbn8vA-EWREHo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 96844,
+      "created_at": "2026-02-26T14:05:54.881384+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "cc718e43-40a0-4b1b-ac52-75e38e878af5",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12S45gDKb47E79OFRCmNzv1IAhOQDzyi0Z8pgzqM0eO9JLzjdG71t0nT92s6GZX0vxRfT1enY3z0cLUpX14KPTc0LmqDQbByB2yWN4k6tfeeU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 103813,
+      "created_at": "2026-02-24T20:37:38.878214+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "88bb62b0-f5da-48e2-8c9f-2cda8a598e1e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12shNUzYj-xUW8mOcl1Q-igl6jVG6zSIUG-BWXU1sq9CLG84Ncz9OIFqB_HEgJ6xUhcqnRSrI9cqsz3Fa8oIVOSykwDE2PSmmQEVkGIyASCPA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 100993,
+      "created_at": "2026-02-24T20:37:47.618939+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b593ac1b-1aa9-4ff6-bdcc-b008d248275b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12sYDic7tetPE52cHgOSMFEBzgeHgi88G5_uANvu14htH9et_bEXuAZWirf3-5Ha8UkQ1BB1JI_drAepvpuqv7EBbbSqs__fX1qFvDDEC8ESg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 44946,
+      "created_at": "2026-02-24T20:37:50.638397+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5c87b89d-2cc6-4719-8428-d3f04017f848",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob1231vBR9rBeV1rGBBW2IphSbcOaHWcJY9XY4uny5luGmcKC7N_nFDtesAgMitaVlII8kPNl2-nlKyFNFVbh0pUxA==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 76441,
+      "created_at": "2026-02-24T20:37:55.844485+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1c6cc83b-5ed8-4e0f-beb6-70db24523aae",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12wz6o9J-U9xlWxQEofdiAUNXeRlhc4y_ZJBrC6BqL748LO9h7v7O3rNp25dwW9d1wXXRcAXHVToErusPNCDZPAAdsIfYNZcJTmqVeI27KW-A=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 64046,
+      "created_at": "2026-02-24T20:37:59.685105+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f882687d-f322-4e21-b28a-9967e8027454",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12_sdtn5Kx3-6O5Lz-W3SbcvjEAEFIwqxyrrcHJuMlp1p465bKiNTteYz-f-xbCS5SRMfZaeRoF7IpaYmdvI3UrDC15mkkpkvViVw-iN5HpTU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 64540,
+      "created_at": "2026-02-24T20:38:05.486945+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8fef1727-4067-4d52-8365-d12843658304",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12EeKFwwhAIa4uCQbkYgcOyCEK0f8J_MohsCSZS0Da3bKnZzmnBaoQgsqN9Efzhy3CKWP-m8tYoIUcRHonnFwcjPNd037yQ0VGHYIJqTJqHGM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 61020,
+      "created_at": "2026-02-24T20:38:10.302701+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ad5ba726-1c43-493b-9d5f-d5c401b6c53b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12SJckUIu7AVx1dJLDS6-cE9qyikf1lZt4QJEIhrDLmoYa5UJnsEHz_d1m5_ewSlISH_NqBTTe23R6iKS-W29BGvtgzLiReefahF0xF14CG0E=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 67383,
+      "created_at": "2026-02-24T20:38:16.016041+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6a9f71e5-a57b-4cd3-905e-dfb763ec01c6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12Me5fah0nZUtI4ROA-YoCRsFtyDzo13BVK16uU0Fj4C0fLzkbobm25W1C2j10Oq8ssqlngUqTx4FlfUQQ3FBIOFtAb-rNb0_BWQYFglBifCM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 75425,
+      "created_at": "2026-02-24T20:38:20.998711+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8238f15b-91c8-43d4-b8fe-127f0b3c75e0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12eBGPPnAG3ONVSaz8sbqChSewqtqFGD1ktu-Rrb_YCucJPsEUtpZE2q_2XZRzk8LKkOgjGQwM-d5hJpFq6wRTOi0E64_E1KKrsDl5a0qsq5c=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 59522,
+      "created_at": "2026-02-24T20:38:25.913564+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "3dc8ee75-7507-4674-b1f2-1a7a87e88481",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12-bpn9a47zE23sLVZX7WYxpZPDQ8iDTE6Uezrq1m7E8mq2dhoYXn83J5oxNRNiO68-_crtnjQde-UP6slTpQDf8ipJor0umzPqdeRMpTVjBY61qM3RTBz0WMXB4oHDopA",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260224_202803.pdf?",
+      "format": "pdf",
+      "size_bytes": 60795,
+      "created_at": "2026-02-24T20:38:31.236023+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6e2d8339-72bb-4da6-aead-ab8bfd660407",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12US5UPTTtEKaWho82fsg9BOty2dOEcYPyQW-ujyYKVs2NCjOjr1nelHre_2R28uoaT3MdqRh6O7msU87zlhmrk9k6HvXivTJkAT4KZ2gVxss=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260224_202803.html?",
+      "format": "html",
+      "size_bytes": 30475,
+      "created_at": "2026-02-24T20:38:31.635585+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "40580574-8bde-44e2-b82b-1b61339ce922",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob127qHrBTJsApqNC2FPR_GBkh6f7eGRsxInhCedH5OVevlJzphVHprXbLdvLg246i9ReadJVDRn3pKIapkyAMRqIKhW3pH5c_meWaRwL7JdFdZW6FIN54mWXDi98mk1hJ0L",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260224_202803.pptx?",
+      "format": "pptx",
+      "size_bytes": 47769,
+      "created_at": "2026-02-24T20:38:32.576222+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9de60326-1279-4ae6-be8d-a6e2774cd287",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12LtD8oKw_3xsI6YE7T8SOYIt80st9Jx56zy58_DhvESWsw4V5DO8fxGHCn1_m437hznHuHBttPbFQvYncrtYzm_6lSMEgZ_Kfu-Cg80C-ZyU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 44761,
+      "created_at": "2026-02-25T09:49:03.421251+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "285d7a91-d4b8-49de-b486-311843cc1d61",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12U5henyxjnbj_FajziTzIsgZ2ayCJ7cWhz57113AeoncT4fr67WRpLYAXMrJrFH36DZt5Z5c_MfDKI3OeRL7_qRxpR_KNLnHWRogn4-d0RAw=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 63826,
+      "created_at": "2026-02-25T09:49:11.632014+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1be380db-e4f7-4651-a202-92d95f86aae9",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12VLs3dBUP7_wtaH8m62dHSG-bdo3KvzHzAsqaYOL651I4gm0T7t6RdnXB9JCmVz9BIHkHeUE9b6EKTlfuN3QSZ_u_lHojiUZ__7yVOktJ4Sk=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 60202,
+      "created_at": "2026-02-25T09:49:20.923436+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0e29d914-ebec-4a1e-8319-ac2f367011c7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12cFPYDsjIibbUXLGQlTi4oGELdj9fTkQ1TAIeqRThLACfHlaIqwNOP0zXrrBQpAml5vwyROkApw6ZwRrHC9kcy1ppYDbXduV9Ka8du3NYcsc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260225_093716.pdf?",
+      "format": "pdf",
+      "size_bytes": 57136,
+      "created_at": "2026-02-25T09:49:34.778008+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "d5650174-f544-4bb8-a41d-4c39f96f30f6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12vU4E4vqlSc4z4PLN-yPl8YLiGFdEQrQ554h1Lg-zmMMFwJSQ5RSVODwAAk_Wp4Acr7YiIwfYt031-xC3BxhOwnATCTMJlgJRFrJZFQmaROo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260225_093716.html?",
+      "format": "html",
+      "size_bytes": 26163,
+      "created_at": "2026-02-25T09:49:39.789975+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6dd5535e-b470-4e01-b22f-f5accba82485",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12We1PGQ0K201G8rW-UPccTCNh45JV4Y_ehYGoQoUWgjKEL2YvbSqOLdt3dYaIrSVN_4M87L6hzhbVXxfYb_brtPQOvgt-H-ViAU-XuzSHcIw=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 60748,
+      "created_at": "2026-02-25T12:18:40.123401+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9b239ba8-5341-47a4-927c-69f110786d1c",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12Dtao-xNFbOc49COXJSwXz3cT007JZc3NaiAzwfw0WzIVMPMAVVEtKiODMrJqyPOYo3FK_iwIq60_vf9Iap5d_bU1NHoRZPO8Z-0wOZIqT6A=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 42707,
+      "created_at": "2026-02-25T12:18:49.152588+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0e9ff934-21e7-43d8-a474-20d0f76c408b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12-VJdnEkdPrET6i6ptqsTuCH5VwOywCvcAqHp_UHr0Ass2u7HNlj2gSHy7fn7-8xQxndoaVsUh4pHDRTn8JuIswJR658vNsp26Uh-cvGsbPw=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 34936,
+      "created_at": "2026-02-25T12:18:55.013756+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c0862a8e-1133-4c03-b8c7-d79c403dc2cd",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12GB9XglbRTuIlF71cje9ehvp4sW3at9OSHrcQk5F8LaaGNC4MmdErrpRWMKVvrxnMNQFLKmnaaMpaevLQRWjxpdOgTlt7kAC90OLhHkdWAb0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 40933,
+      "created_at": "2026-02-25T12:19:04.319884+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f0069ba6-5504-41c5-b371-d73af70157ee",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12So0KuudNkvd-f2JTX_s9ltHpCQV8gWMi3R4V7rrMp9xr2U5GLCAtzS_XodU9bB-2KylIDAUzi_bnJspFhA73f4BZXCoKFgXP4q9ewCyUK2g=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260225_120603.pdf?",
+      "format": "pdf",
+      "size_bytes": 41352,
+      "created_at": "2026-02-25T12:19:11.586552+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "586fe351-6557-4f79-8486-70d15d5368fb",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12BOjaYdi53bB8y7psK7XpY2nagK8EO4N08UYLC-Qb0kcE-bqBLtI1GyDaM4JX2DQbp8VIGp2RraRel1MiCrXUWesszMMaU2bfIuXlmp2vEg1VJeylgdFAi9iyv6LH9jlS",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_120603.pptx?",
+      "format": "pptx",
+      "size_bytes": 48941,
+      "created_at": "2026-02-25T12:19:13.068939+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b4ab063b-6a83-4c68-acac-7e21c27487f8",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12ap0ftQmuX2c5N3vZUl6zO9XCkpg2uvdn9fLkJZIQ5xPi1IURua9EoocJa36cK5ioo6eiyKU4ZDejOncz6Piiich7k920EjrYNedxbe0T52c=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 69065,
+      "created_at": "2026-02-25T20:46:46.1436+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "03c8d87e-fb14-4191-bfa3-a14253f8d906",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12Llhnzx1IBNrbWjXzQ4r54I8rSflfoQf4KOgEGYQOFWakOY_ZtvpGLqJi1C7ExNXtY7A0Ho7rdduga0uI51U3Yw==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 58158,
+      "created_at": "2026-02-25T20:46:50.380397+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "3b804f2a-7035-47bd-8306-b154171a1d05",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12KbLRLG4sZ0kNxJeUhy41ntXSrMZBrbpnaqxQfGSAfKcSHBO12L7NASyd4P5FpFHpAuqjpUKnIqvWMi9INIzYw41zUFKuZFjGRfu-NrrsJ8Q=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 76087,
+      "created_at": "2026-02-25T20:46:56.088527+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f8b546db-effe-476e-a80a-6c367a28aadf",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12Vkj-LeDtjFSbZgvLDPdtadBM-MTMEUAWnBmE5gymj3QkpvBb_zSn8hi5-UfJkc9NJ6yInWqFPlxqhNUrWXRtNQ==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 64766,
+      "created_at": "2026-02-25T20:47:00.355584+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "57a88015-01c2-47c4-a922-7f08a75671a3",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12RWuS-QNct_1M0y-Q1bh2YgT03OHdgfoEEUNWkZ_qTLQi4asYRRkczq5D_W2bgIBgVZHHdc3RBKPzKjSVCx_8EK_L_l3bqozdVQTFXj5HRjY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 107415,
+      "created_at": "2026-02-24T21:15:31.958365+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c9103fdb-2add-4190-a7b8-4e18f438224d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12p4VaTzMbJNrGAj2WPzLK6huqJTgqDqqYVScANRC8bNnOpDwuD-YfYw7aetNsznk8F37OAJTj56GbB-OmGTf2IIPx1mONT2OU87UJqvUiACM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 47028,
+      "created_at": "2026-02-24T21:15:46.193452+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "e8139d84-fd3d-43d6-a530-fb007c833e09",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12vNlt-q0OL7_9ffOvCzih5hbrlHrplRLEtgpyPCu-GZweYUiI9jpm-ENLqo2dSVMbsrL_iTt6WutOKiIrX9n_bbO6O-SnzCFoO5y5JLxKBSc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 64530,
+      "created_at": "2026-02-24T21:15:55.478089+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "2df69fe4-5c72-483a-b6d2-cfb7e85f2036",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12kf4k1lwiiNxi_kvgkfeI13bNCSovOu0JBCMFnfkwenttjaq88oImcSQWhDcHFhebZcq1ubOnWFzhbrQk69_jMM3LramEI-smGLX88hMC8kg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 62247,
+      "created_at": "2026-02-24T21:16:05.887011+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f4657d6a-9fc5-446e-93c0-dd809179f127",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12FKOCwWfF05RqK3Sn_jDa3i3ljnukBXHoSYt8_Pa_Y8aDg5tlNZxmk0Wa1Um7V7FT-shAG0czb3ZZREFc3X44rDMO07KgDBahu-Q3fnPd-oQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 76301,
+      "created_at": "2026-02-24T21:16:17.043999+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "03be78d6-cda5-4a54-b7ad-10e4ceafa60c",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12eN64JuenVDe051pcBA9Y-wsGHubYBIBNl9_iAko8l7g8YCNJrLOF1F8MQM4GT7TAHerErVuQNwMnrb8MJHXbwHWWRpZ5OBwggjuImbTU_eh3Pey4ekJvHinYAvJR20rZ",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 61480,
+      "created_at": "2026-02-24T21:16:27.507891+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "aa1403bb-106e-4980-acb6-d2c56c6d7868",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12kGUOGFTYNS9ThOe69Edao73zYjLoLtnhhYieBlD4RKrrI5PHjF1XPrNQAtvtHwFMWJqyIzgdjySjQJ3_qXn_MmBe6lICBJnCQrNqEwkWCtlqLLBL3CmGRv8UC0gL0Hjr",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260224_210627.pptx?",
+      "format": "pptx",
+      "size_bytes": 47791,
+      "created_at": "2026-02-24T21:16:28.758782+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "e7d2f36f-8e2f-49fa-8e98-71159adba04f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12BOnwJEsGWnEogVK4PeTB7mRxACIkE2PdzPmWRNrUj73ia2E-TkwgXL_l6QAdSGGeUmOcJLty_jRJoq2SkhO_5AVCVfrvYOkNOWN2OJmy914=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Zprava o souladu s AI Act - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 103998,
+      "created_at": "2026-02-25T07:30:22.531011+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "df4d844b-b427-47a2-8920-b11eee7384c2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12ZJffGCLQbumPRG-TVSwxc3S6voGmFbQRy4XMo0andOqDWpo9DW2lfzwA5_B7VIyyUMc288kyEUvorhJ85ZHZ7qLfwxEihyjeUfSpC1mXHZI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Skoleni AI gramotnosti - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 37537,
+      "created_at": "2026-02-25T07:30:34.790205+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6a729bb3-0e09-44f3-9035-84a837b96d3e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12nsijTcyiHhLaG329RLLlj3DpdnlpyZju6_Qj6DMrGN2YqjgWLp_c8chAqu7fg0d_MUV0naDW8waaCYoflOzPKjy4kgvskq7Kfo_g3sc7dM0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Oznameni o AI - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 57371,
+      "created_at": "2026-02-25T07:30:43.575304+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "48cbff44-b8f5-4ae7-8928-281056f6e9ba",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12xCNTKGUUi_-57xQZlrZwwS_EACCt068SzdUGnF5K1mgw1nl8ry4cspsOIgGStRei9kmYuH_MymTlQcJKQprgIONH66XSawu1aTl9Vg702PM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Plan rizeni incidentu - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 51688,
+      "created_at": "2026-02-25T07:30:53.136836+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ca41c575-5f70-42c4-90f7-00d73dbcf2a2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12GuRPTly_IrE1PDPvVhbxa_gujOQ0DTcQhsWbz66O3yDmwvSIhG4v_c-v41Sll7gi9kOTKmdLuiFsp2_PBLipahcxLYJwAPCmjovOYchcOdY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Kontrolni seznam dodavatelu - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 71324,
+      "created_at": "2026-02-25T07:31:04.385702+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "16d246fc-b579-46f7-9a6f-5df8de404f35",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob121fSYjbiJDgweXT760CnL00vHoz1mkmdMaNjGlidVdRwETINs8TeOFVrpNJ-V7U79_RHap45_4Abra54sn4VKfefoR3fxAAbD-uqLua861dumXw-m4iieVdYNMAem36rc",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Transparentnost a lidsky dohled - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 62797,
+      "created_at": "2026-02-25T07:31:15.128837+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "997116aa-5445-42bf-a8b0-a870b199c546",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12Wv_ThcMwFGEV_IxXMhyuUn4f0M5FdCwLW7nmVLRYHh0JFsWPIXbYxO-oSEVVT7NAGvqzvS7yUVJw9parZpawwNmfYP6Ry3f_RUrA7SY6HJDYZ3QZyOLZDg3U_Wf1xH16",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Skoleni AI gramotnosti - Martin Haynes.pptx?",
+      "format": "pptx",
+      "size_bytes": 47791,
+      "created_at": "2026-02-25T07:31:16.32461+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f7d873a3-2ab1-4bf6-9ee4-e7108c5746fb",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob120MiaLvMU8eTN93xFct2lM27l6SXtgItvBKWvnZxGo_flm2TYm5VJO3oRkNvsElpv4IMQ0HHcu6sd4xZh6A2TqiyROGeHJHUi__fxwLb892o=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 99984,
+      "created_at": "2026-02-25T10:11:23.579611+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "fc7622a5-605c-4f69-a1b7-ad1982f57b24",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob127lRPp57oMP6VAQfTG9-pFVM4pJuQOyAR8TnGCGmc4i1BwRv0dcl0g4AJkvnkSPZQCHOVkp08QR53sHOLwc-_f91A-hiexecijRErqsH7O5I=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 92142,
+      "created_at": "2026-02-25T10:11:32.581731+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "69d747de-7afa-4b87-8b43-dbce25e563d9",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12IqhqTYSETCGRshPSpg32FoLVuEr-RzZ4cCVxLyDFLMvzMCKJWWJrjXYEdVxgjmXFyY95uXP9YF9VHOXv8GvSQ0EjICu5d199ju9L8NSceCo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 46602,
+      "created_at": "2026-02-25T10:11:35.596984+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "97bff5eb-a7a5-4b83-9800-ef1eb1f72a16",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12CqivgNr6PpY-MvC8GkKWws1SqUbR8PinXTvp27ONsdly9-54lngMbbNUQnCsmdFHfqdHN_s_KBirL6Q8hi3N9Q==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 69058,
+      "created_at": "2026-02-25T10:11:39.88062+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "29b9d02c-f6df-4491-8c5c-fb6e65f19ba3",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12JzvDPqMQvBBpgnSfETc31slE9-fVXmSYruFDTrVgFl0AIKgJFJOqm7OePTbxZdjOBqi9krp9rEWY1gUZdN9pnG16wc0cj-FkC4S9DuV83Fg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 64933,
+      "created_at": "2026-02-25T10:11:43.902971+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "69c027d8-4489-4304-84e0-39a2a8c858f1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12pYDv-Gn7UUr1aU09I0u6I5t-J4gpflKyw2H_MTlTBXGvYtJ0gMTxAvLd_w6QE5QSGx-zlGNJnlJ69U8GUerQbZlso44YNGbvt4CgZNwmTZE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 64458,
+      "created_at": "2026-02-25T10:11:48.729527+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b1d4b88e-689f-4dc7-bf71-443a251e69d2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12gsE78tsZ_mLPikdAFs19Ha-AF3_q4p--nVBjjfJM-V2fCXqYmdVxCreXX2krDdPLIWUsQ7HJtPhr2fgYXdXTjIrQ1FPgyDZ9z2T1V8dqAuY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 60926,
+      "created_at": "2026-02-25T10:11:53.248055+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "89e23b97-1204-425a-8b59-58cbfbee8596",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12w2LS2JNCLrsZVJmD2svPSuCmfxB7dCT4xesRjtG1UcPG-WCI_Wt5sLf5g3qmvU4SMq2y6GzpkPOYBhwlGGBRL8tXaT77WPeCf_-BWHmNLSM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 64578,
+      "created_at": "2026-02-25T10:11:58.251858+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9b3c602e-0ae4-4ea8-934e-28a346197d23",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12D-3Bedcx0ukhODiaTNjQB3owP4rxqY63RRL6jzQ9D86j62fuc81YJiPa1DE3DGYLgWRhsAG-PGZvggOAUHJWTWZwcTFIaXcDj43nw4x_KZU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 74506,
+      "created_at": "2026-02-25T10:12:03.086355+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6a9ceae2-4a85-4e9f-ad74-dd5feaff15dd",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob128F4b5HH3cK5xuDoFmZivE8zaaU1ebnD72y-M6iyYj32mnam6A6ZOPtoHBWAoTOf5a5UFpqRXMr9Y9A8BVdGBFHpYXyCoNd0_W96cTzsAza0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 58672,
+      "created_at": "2026-02-25T10:12:07.904577+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "35a74464-6c24-4ec0-b25b-b6602fa9f43b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12HVIr4k8ubid3eDQXY35-C-kXOq-pBP5uP2F0I3TQ8BoJ5xHYYc5taD_wmWNJUI7Z-CxyEdmxV9yw1E5BMjtxLp-_grNAzpZRzXiu7JzmNEI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260225_095905.pdf?",
+      "format": "pdf",
+      "size_bytes": 64423,
+      "created_at": "2026-02-25T10:12:12.943681+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6b540c2d-5541-4839-bb7a-347c2b9182c6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12PZUjLbhlbIoSYeNW1isq3r-nWDWB3XPd7wHK6iwVdCQBDRIAHYLX9U9U51AdHCovM3shHwG0KyrVTddls5Z85lzKzdjACNS8C_v6oOhgZHI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260225_095905.html?",
+      "format": "html",
+      "size_bytes": 26163,
+      "created_at": "2026-02-25T10:12:13.277851+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6da1a030-9966-4ea2-8283-9bcadb9777ed",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12XzcMlzVnPd2Hu34g6Mq0_x9Tz8julDcT6JBAZnqUUzdg6ivTFdcZONJSe-Z_9hQ3TY-EQaN5zZ_U4Ut4lfuuVdiXprMjuG3ChpT-M-0ZGBM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 70836,
+      "created_at": "2026-02-25T13:40:44.391429+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5c654d3b-3e91-45f3-8bd0-0278b7bf731f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12UI6XhpfFh1q3NXgGJhEGNnYtzUiYzWAmHEFsYt7oeZ5kVXwQJFp97S_f-R68faAk7XDQNQO-8pzlCGu1sVJOgedIbhkMiHIBMn-ZRHjrd-U=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 34028,
+      "created_at": "2026-02-25T13:40:54.778857+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c2f0e89a-5189-4c42-98b7-4652214bf7ab",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12LqBk3mjD4fhU6kD7JdqdYaaXBVYWu5M0-7W7NsrDzADXrj6XDM5vqCuoyE-qD4iyTtsWwcq7PBF3SC334ncNvclQIz6tcnssrfHgBLSgv5Y=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 103508,
+      "created_at": "2026-02-24T21:15:43.024874+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f535b2c2-3571-44a8-9249-6f2fb7d7c535",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12AJzkvDyWiNFW9j_3cPp8_gEQAn-Z260mfxnr9de-YpglVqNBSmQtO3QBFzYv5Ssmn8lCbhP6rFvh3HVXXmvLvw==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 76539,
+      "created_at": "2026-02-24T21:15:51.475175+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9fed229c-3afe-4e75-89b6-a798b3539355",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12ZPUOBqX70lZEiyd4cSRpFzVJs1GBlwcLyIjh-QEPs7_Nf71BDtiKuZwNjIERqhauCEDRpi_9egorJjx_TxAbA2AsIo5JLr_aTn2J_Ld7_CE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 64342,
+      "created_at": "2026-02-24T21:16:00.872614+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "641b32f8-dc41-4a3c-8467-f8131dc51faf",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12U46Tm5n2p-_IqQ6b3ysm6BL9efz9zUYRSByr9dkL2dEb0euYC3h5_jJfxzdyyBZVVOFc1iBhWGJQdY3wAhrWaU_v0-fk27yzX94ardgA36M=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Registr AI systemu - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 95155,
+      "created_at": "2026-02-25T07:30:31.917763+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "32c1cabc-4f07-4f06-a5d8-0b0e29eb0867",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12UjM812o1R4DR8KE6uKPFQUe07xjoAp_eXbskFF2Chu0472v-kopCDP2P0ebZZjYR-9k4Huh13mlWyDBEIlCI2A==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Akcni plan - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 70020,
+      "created_at": "2026-02-25T07:30:39.837731+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "ecf01296-4195-4d5e-a773-ab66dbafcdc4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12VXZIveBxTiMOhRUho9QycxZQqYhJh24Gx80MahEwDcSaDnE1yRuFf_QHRX-vxGmFw-9OZsAYSbZCA0gXaXB7LyNN-pJBRWxNH1Bb5RKuF-E=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Interni AI politika - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 57508,
+      "created_at": "2026-02-25T07:30:48.738519+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b7715c15-add6-40ea-afdf-9c0114f98bcd",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12WJrkQvRvthtg0D8GRo0cUZQoXq7bbq-aXzAhSAHdW6DLTe3xgAvjYYACmlhA6_UMXTw2-g6LXnDrRIESYCfMpskTO7Abes05Y78dfpVe9DQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Posouzeni vlivu na prava - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 56789,
+      "created_at": "2026-02-25T07:30:58.511645+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "81d6c63e-4a4c-4819-9e1f-87c130a4dbd6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12fvnsxxNr0EC6e-byu3FXOBERBfrYKGOlLb2mgJt_v-ZgwZwnd2N2iBop0vHwSVjKxP4XlFgM7HL8RYeTCY0khVQcC699H9l1p_loRevJPus=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Plan monitoringu AI - Martin Haynes.pdf?",
+      "format": "pdf",
+      "size_bytes": 53538,
+      "created_at": "2026-02-25T07:31:09.091932+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "26235521-4207-43a9-8196-73286d8132b0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12knpFH2FDmJD7iWfUy-eHW30I3Y7vvuVYER25b65VdKwsaSsX5Qei6vWTawQDyuXfJ3Pgxf3I5ywozPTNkq4Ff_HXgbDggDDtG3hmstu-FPs=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 64703,
+      "created_at": "2026-02-24T21:16:11.467218+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "cb8b9ec4-b8c9-41e3-9b89-09d251079906",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12_yb29nDxVD-J7ZxsHJlHclG-q91bi_ERD9-mXWWTiR4O6qAL4lbXHjQH8m8_fb1IynAWxUS6YIVwk2n4ClFEmYbf6oDnwCMYLUpI8EPew8I=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260224_210627.pdf?",
+      "format": "pdf",
+      "size_bytes": 60358,
+      "created_at": "2026-02-24T21:16:22.363927+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "86a1b5eb-58a7-44c6-964d-b10473718819",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12aBPYHnHgbxEpVStMXnFxaPr9g7b7nUa2cB6uEIHisjR4up16SvekLCkA1ODewHIORENZP9n7Tyvk2oPuBIcsv3mUrdouoI8pDa-DRqcZ7BY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260224_210627.html?",
+      "format": "html",
+      "size_bytes": 30595,
+      "created_at": "2026-02-24T21:16:27.839987+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5539614c-c460-4670-a83a-046e50e0d732",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12sK20pmmoSl-BwGUvUy4_90JdnqfpdnJLNkEKGvdeo0sBMcQieNgcLEoU64DLNOe-g-Gom_LAtwaZ518j4y5_TruQ3_UQfWrcRqgkPGDNqYY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/Transparentni stranka - Martin Haynes.html?",
+      "format": "html",
+      "size_bytes": 30666,
+      "created_at": "2026-02-25T07:31:15.47471+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b0ba75a0-fae5-4a43-ab3d-cb9883a1ba5f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12dagN7K7cytNfsRZUxGx4WI8u_TQAGD_3rsaNUm6y2onjPSJqCLNz1-6e63ZfcCdL7mQeHW6TGZhGVJVlb232V3eFmmhdw8TlatLllVuDfQBP-GnJm3eXUIpexCpi64G3",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260225_095905.pptx?",
+      "format": "pptx",
+      "size_bytes": 48814,
+      "created_at": "2026-02-25T10:12:14.164952+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5ce24d48-4a81-43a8-9cdb-cc4a9cb6674d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12DOjSF9hLytxGamk0bFxU2238v2tLHDVjncVgf_fbgJw_Q-MEp-9QxcYkUqfetmfAj81_41nd-7Wr-nvx41cR05LHl6My92QGxQ1gjE4PkqE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 60908,
+      "created_at": "2026-02-25T13:40:52.131248+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7525096f-0586-41b0-abd6-508e7a6fe80a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob120XF035Z1wPcC2ypzZ_mtuATQI8rKYqikJ3CXcqPnv1XkL6Mjq-Xd86JtwVAJtKUGno590S0c3alw_C9lyimmtA==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 48236,
+      "created_at": "2026-02-25T13:40:57.888464+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "12c20359-6c1a-4e83-bbc7-10b38a4a45b0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12KjmjPtEEIEbuHlTYyHfvXSNEf-5kd0zfWMvYuUVVWGUmiOx70uaTIH9SApLcMWjTaMb0MDaAn2Y_Ago0XtDXILGwxrbhoDz0oc60a4f7Bs4=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 39220,
+      "created_at": "2026-02-25T13:41:04.06763+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "93ca4df9-4083-4cc3-8d87-d6dd8b63b431",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12QhlHx9xml30HmLQ6Wmelyhpqo8EUr4fle0OfWf0kMtKwC6xIp_lLYEBxI65EKeRqSQIr4fpzpvpAk72Rz_vfiTs76NgLeqKwGO9L2JnPIfM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 39847,
+      "created_at": "2026-02-25T13:41:10.410437+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "823723ec-1556-41e1-a7f7-e1808713e58d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12xdEBp9A3n3wESHrhtw6xImloJJnk4lofCyPbKnlRhF4GiOE1grC4XSK4r_MNeH1mSwkM_6boXzTSdNp-tWzV70ODXHIEeXbCn56_B1e-vIY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260225_132104.pdf?",
+      "format": "pdf",
+      "size_bytes": 37660,
+      "created_at": "2026-02-25T13:41:18.150543+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "81d0a101-5e48-4644-a2b4-b8e449e96e82",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12R9AsJE4muZRbMfxszrEB78U4g7n1It5kQ-lwXxLDYbhWoztaTedOHcBhahoTNbFZjUx4NTCjSpdgErJybFttXSvFbIuerfx0ziK_9dxdiX4=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260225_132104.html?",
+      "format": "html",
+      "size_bytes": 26163,
+      "created_at": "2026-02-25T13:41:22.547064+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f1871db2-2f6f-4a7d-b226-f29e6e5c2449",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12lNT8_0iINeiw-HCeafs1Bqx_mwoq8EQKw6YqNRXhketdTpVOy0rqVNBGhMRczEm_uUfZsFFN-spN5yDCoyPr-6FmOmNcnI1yl6id1AiQ4XI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 52756,
+      "created_at": "2026-02-25T20:47:03.873312+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "e54b1c06-70fc-4ec8-830c-6ad77c9bc2e8",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob128C4rxOgxXSQTf3XCT3NdNv9WLGp93SyZJ1MfzCbd_gTVMuFZmbU6D4n6o4Gdg8KOPOnMIFbuC9j9B_8Yp91chq6m1FgJlASXAUUb0d3qhhc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 65657,
+      "created_at": "2026-02-25T20:47:08.08042+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "cd218c5a-ec8c-4926-ba4a-84d1931d0c9d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12Ui6EOgE2xyCCIUHGTOXflmD-hP06tNgs5sao8cnXttmll9bsu6eptjp5ZhXCRGpnN5OxGxckxEKTaaeBGA5cgbrPOdBnkG7ui-7IVjckec0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 67735,
+      "created_at": "2026-02-25T20:47:12.907388+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "55c55423-133a-4d57-9efc-1e817ccc66e0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12pemsr5Dba3mL32049juwTujcM8A9hISYeNnPif12SCTiNSPzPizMJSGImIyRLXOGCFJ7d79yPsavIREDrmrGTNLb1OuJaFOeJEeYIH-EIpQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 65553,
+      "created_at": "2026-02-25T20:47:16.86607+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "60b676fd-de89-435f-8fcc-ffbd965c2a6b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12RLCqTfs0Op7McVB0Ep7zLSGEjQd7IZkWm2fQaQ9iSheOBXAwvRUrJhpVEuZ6DNtc77z_aomYKF0bwh4q48JNL1TjIwz-ujJqxJlP_FAKL-U=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 67586,
+      "created_at": "2026-02-25T20:47:22.08219+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b10e13b7-2982-4c27-956b-f999fb3cbd88",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12_fDlqiOqn1nme6rQLUWJHkLMMGedEgqIu5iqvbDYBYLpIVSQI6ktDqvB4hmYvTlqRL05NEkeJYl7yITfpr4GZEyVJDzouUlPu_URNGtItQk=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 63366,
+      "created_at": "2026-02-25T20:47:26.357696+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "93a5e99d-2c4d-4fcd-929c-6297e86928c1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12vlkJafkbI9522eKUjbgPS-dAYIg5KmzF6Ox7Y6lPfPx4AAHebUljutaggtfomy43VQmydBaaw1Kuv-7exqJXeL628mPjP2QZ5n1Io1yHu8SZT8QHDC2kv0WC6VmzvXG7",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260225_194520.pdf?",
+      "format": "pdf",
+      "size_bytes": 62958,
+      "created_at": "2026-02-25T20:47:30.36139+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c15550f8-6f07-4f55-ac8e-ad3258b03dca",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12gfMKcp8i9X1HdKN53SyAUKJSbcRc0kJQGM0ERNjO57d02zxPLCeooG2wPvTdiR_jIT_DC9erd3EWyAZP4rtDQQ==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 91745,
+      "created_at": "2026-02-26T14:06:01.488926+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0dda9bc1-2bc3-4e25-92e7-c49a60a517ef",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12LqC7jIQlV0zea4ieyZsmCHsvv7nICffOTbX7f8PIvcomr6QH5zwUhGu2x8MJASPJ8qKJh5AXO8_Tu2k8vwjW8AHty8C0wEUQa4OAg_hQ6JY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 96310,
+      "created_at": "2026-02-26T14:06:10.815886+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6aa7e63a-3bae-4bf8-8287-2ab69820dd05",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12Y2AAoFLBhAolHzXGy1SuH8yHIIkXAaUjyHmJ8I4xYr_d8qcSzwwAlon3ExiWSKmDSh6K4tKIhxF-Mjj8LAgJPg==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 87748,
+      "created_at": "2026-02-26T14:06:16.390165+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c89824bc-58fd-4686-9fad-7e0cb12ed27b",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12Q8u7UKRX5Ca8nqQ2bL2SEQ-Qn92wkS3taril0fQuYUWTnxxLpY_Oq5jMCm34_JnawuA-gcXuzI6zYbnK9PXfCD6WqUZtmfycImTWA7Q7QkE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 101375,
+      "created_at": "2026-02-26T14:06:23.171232+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "597e7404-3724-4776-bdf2-f6d29fe911eb",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12b8BZqjYQ3fetsZcwlcVBWuKvbY1K7GuP2s2pZVzCu6JVwcoIFibtGT9dWPKNVnEyKBPHps17eZGsFxiX1U82WSo63hL1dgLElxlb3DyeqY0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 90829,
+      "created_at": "2026-02-26T14:06:28.886063+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "097913c8-d761-4b9d-b63a-021126a3c8e7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob128_Nzqa-bCu6YhyF9Nu4W2zUalCM990h7XzNJ9NFpzbZvPs2EPNM_cIj7NO3rVl8-26aTQwTCpnEsVY9UgusCiOjEZzWNYQfjFHF0P1jBt8M=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 88499,
+      "created_at": "2026-02-26T14:06:35.462646+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4b8cf1fb-e7cd-4bfa-8196-95593cd514c7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12o_fw0wqHbVVC8C7yck078kK82TzKnlRR-2bqoBDZd-XjSufg9yC6D8TTt4xujbc_oreIeDspcv6VKmqsf3l1dYHB9NGXBvT-sC1bOqPIdlY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 93152,
+      "created_at": "2026-02-26T14:06:42.548995+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "2ed5a55a-5b26-4296-9d12-9ef341c78189",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12u0ku-JL2eZXB--VjVuTxqrR30MYAUFmxuEbDQqYAyfAR0kg6Hi-ozi1QqOHeBx9FbY8rkb1NgESlxOjahbDNiE-rzFklI_9xU4kbrxmyXLs=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 110357,
+      "created_at": "2026-02-26T14:06:49.871554+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1250ce04-9bd7-4dab-9907-f4736554435d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12OTmgbhxOvLyxBctXVl8wC84wPQJidHFcYe7Om-0tal8VZhm7PU0CGHdV0Hpj9e0RaaXXHa-LD457MBr1ZbPdr1-eHQjpBghGL4CfSNv6vLU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 95659,
+      "created_at": "2026-02-26T14:06:58.208636+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b91bbb95-b0e2-4939-8839-f08fddc6ffb8",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob128Ux_71jdshaIkC7aBNIUcLi4uwUNiVuA2y8kd8GJ_vCcGaUoJT6yEZpp_rRFN3Dfn2nVDO7pacs1JbXKrz1esg0vesqXY6wnlkDf4PH_3_Lcl0yOFnNknN_dCNp1Xtah",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 89251,
+      "created_at": "2026-02-26T14:07:04.631422+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "d84f18cc-ae2d-4230-b7f4-b6218bb219d1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12_VWEdHVsUl5nAQw8QumukEKAscdBLTo_qDRPmM6izGjZeGzfLBLuDFnBkC70LNkPGnuMB_ve4OlfUK_yCGioJEffmt8_vwvfr3es7D2xWAQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260226_112920.html?",
+      "format": "html",
+      "size_bytes": 269,
+      "created_at": "2026-02-26T14:07:05.061235+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "09d75cf8-a49d-43a8-a19b-641320c47ea7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12ezp4dDT3NfUNuKMoNbkGqVxLelbSr-ne5aMBURwcUzFWHjquKlPHI5nB0ysBhqK6V2d-EzEeUXOodyJoZKoBr4DDZgAW1y4k3i3cYon-HVKZTg8dZdDlD-vqDdg4sqRg",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_112920.pptx?",
+      "format": "pptx",
+      "size_bytes": 97717,
+      "created_at": "2026-02-26T14:07:06.578708+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "203fef94-b268-49b1-944b-2bd2d47f11d7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12u12a7Qc8L8Al9i7PiO1iYSHujmNwF_yB2CifleMWiMqO4aSDayJyF_57HPeP2pVS5f8C7d5nv1aonr6O8xoPwERrKum7jH8wFLSSWBK7GHSGAByajuR_6oimu5Vy2Vsc",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260226_112920.pdf?",
+      "format": "pdf",
+      "size_bytes": 43738,
+      "created_at": "2026-02-26T14:07:08.545838+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "60b16fb0-e172-4f69-899e-04642f6e976d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob1266jNhtuLi2f6wJdVzaoGmoKd7yp8NKtyKVEfGeaKX4moq-UpVFbonmwTAjeP9CfvL9M_eoSZvOc3IzowYUbriQ0ICvito5JbJP1i90bG1qc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 88850,
+      "created_at": "2026-02-26T18:50:35.910628+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "235ec874-ad13-4cec-be19-06f063ca5904",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob123lsOrJqHzouKZEAUxzizVbG5Mbhky6O-HBL9XGLU92TNvM-ESvGx1PMuvsPDb90-WFvcFBgPwUNMY4TgPKYtHw==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 76200,
+      "created_at": "2026-02-26T18:50:42.133884+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "208b67ef-3df2-448e-8a1a-6c5d32d4fa96",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12C_OEt6YHfe2TZK6B5HNLcrEoQRhJc3oCcvt6QfzeDOZp4CzzXJSo-62x6M9A7a0uzksV_s5_FGC1oPlP2JH6RsULujXveD9oui1sutc3VE8=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 86063,
+      "created_at": "2026-02-26T18:50:50.613679+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "3b966c0f-96f9-4254-a559-83159ea355b6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob126ijhiK2GcJAMbjrxEY6ic2kMw_TCnotobHkUwHsSTdbhIR5zdslkOuW2paiT1UbL3w55scIPN07mBsJJw6ALMA==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 70259,
+      "created_at": "2026-02-26T18:50:56.073775+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "60efe719-0ce4-4e3f-9059-7578283b9a2d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob123-skAlXTBJDKSlOQyw5NeBfhc969imNYrRGttIn7Dsc8Z6x9BUUBIqXCncNukjrE2cfSZJ9aX59exiXLY_06KcPoqqpvaD3NYivXPblfy0I=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 77323,
+      "created_at": "2026-02-26T18:51:02.007222+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c39314be-71f1-406c-bb83-f1ee15497113",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12gtOxHPsrHNmYnTQfBNyL1vsuOuJZ4i-K_fSqFV1lWYpIhxF5uRCzurqQmdokx-BqqUd-9UqrEuQ9jKZgONEZuYjG-lG47y48zgkTbwsALEg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 78461,
+      "created_at": "2026-02-26T18:51:07.040231+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4b38fef0-cd3e-4739-8f79-5ade35bb9a7f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12ET2ts-RFo4ytQ-t-axeSb4OcOj-qGvHac3a5CI4IwEoF-FicJn6UPS9YfIHlu89gEoCXzomjoGts-5ALA-vOEY5kRbiQTn5JE-UwF7HFrFA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 77434,
+      "created_at": "2026-02-26T18:51:13.660096+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "a04e878e-c7e6-4091-ab1d-4dfa6217756e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12iQeQqKElBq3RzYpG9wmWRBIM76sETpvprSq0QVsO6BCFM-_kIMo586l1h3esS7mUJyDmsH--OFfbZC_rBu2pWAKDPPKMoq6PUSeCXFOY7u0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 97410,
+      "created_at": "2026-02-26T18:51:22.995124+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f6f6dab5-71c9-46f4-98c2-eaf831d2cf2e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12bND3AF0uJnSVHKohrvnZLqp1zOb4BfAFsCs80TNzhvyQx0UagiyB7XsOgj-px5I8YP-jEZVHbMfUugxnrewGTUADUXP38tclmDbZrJhca4I=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 97337,
+      "created_at": "2026-02-26T18:51:30.938909+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1495be28-f174-457a-af51-a905274a2381",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12AHaWmFcHDCrhCr7S00sjIy4KZUZ_eBCDo07MV-igRKHUaizDWWPgezZ3mlMoSI_gOqOCH63-u4TT1E-JRSqFqCRHLGEXt-akCTmOoX6RvJI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 88425,
+      "created_at": "2026-02-26T18:51:38.447541+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "427db050-999c-4aa1-b503-1766e3e744d4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12eeLnGt_Cv09meaqdropa_pLviY59kRzO9NT1AhJfB57kSSLtEdzpKW0P0Z8XZdSoUbJP3KQHBwzF6lPuq4baaBIuSe2FzA3EBCJG3Ityuh6cB0CTE7e8bZgWmlqbEDuE",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 81231,
+      "created_at": "2026-02-26T18:51:44.341142+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "58cea0e6-9456-4274-8678-243a43b30093",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12oj7pCx_jCIs0yv7hbi3_w-WxMZhDluLfydbqwu1h4EnRVdOPJiYzVs3DGGdzVb-_3gfiG8Vc05oCJZDTYsx9JlLV26TsZrHBmhd-O3rm_tU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260226_164138.html?",
+      "format": "html",
+      "size_bytes": 46084,
+      "created_at": "2026-02-26T18:51:44.754775+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "52a72f88-64a8-4861-98ea-16b84e846aa3",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12x1rjpryV0xP3HhU7i39YMtDbXBSkJz3jbfYRp4FZ4Yzx3CQulCXbSqguNSFy35Q14yQsZn6JGv4S3P8PCXPAfb6aZ_VNBCjgs5bfsjFvD8YFwwqwfNeaho3xT6dKRHcO",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_164138.pptx?",
+      "format": "pptx",
+      "size_bytes": 95869,
+      "created_at": "2026-02-26T18:51:46.155353+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b4add15a-f00f-4d09-91a2-f6771498f2a0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12CoIpiR-NaP0_4oy8NoTTgB-qngStfXSDrdNm0r45MR-Lrg1vloWeuNXGJnUiqJEuXyF5QJOUQvooWWob31KuhtYwLrKEM3FHRJGH9J4DsKF2IPMjTCP22hBR4cKjKk-B",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260226_164138.pdf?",
+      "format": "pdf",
+      "size_bytes": 43738,
+      "created_at": "2026-02-26T18:51:47.730981+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c9e5c696-4620-46a6-9f15-da43c931dd87",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12Lt_BuwATTTOavEn1rFgNKtW72C0QwMnnFt9rL8aAXYZXI9BFI8bDEzvPIdquwEfbaulbpUwJKT77AG-4PqGjlH_UPH8k8DIFN49-2wHCygk=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 63737,
+      "created_at": "2026-02-26T22:14:01.669665+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f258b73b-9a3c-4d6d-93bb-473857e89ba4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12Ujx7ff3l_Yd3stLsofDp2USJgVtyJitmHFJ6g3-1p0yQKl87lyFWxfiIOeC3yIZPCS09LyaoOW3NElgsGxq9Bg==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 59065,
+      "created_at": "2026-02-26T22:14:06.150165+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "20413881-5de2-459c-b775-1f80c1486ab3",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12CUCwU6v7EsrNwZUrgXTAq3oyB-eMYqaVucx26nEtRaS0zXxLRo4seEk4u9K2dsDcIrFoTA8JcXpoERuARjgGM9FQg1NCnymPWZm0A9uC4R8=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 55212,
+      "created_at": "2026-02-26T22:14:13.024998+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6296f7ae-924f-4afa-9c7c-0db37b1b9bbc",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12vnVa9EokAtm6znUp829yaTcI7n5f2PJpYYk6s8sThsqRVpxkH_bauuLmgnLMCglwnJxFwvaSHtIcNiYVJCFv7w==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 55780,
+      "created_at": "2026-02-26T22:14:18.582319+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8eaf7b38-c209-462c-b971-e357c311e7a1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12_2kfWln4lS0HpfxpPLstkqIvLTMMPiswf5XkTUv71qC2Z0TDYP-e5FnvBtF0Kg3upebAo3_0tXXXnxlrOUUsqQ2211FT3tFY6LlxM0Ge85k=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 64658,
+      "created_at": "2026-02-26T22:14:23.225125+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f2b3175e-4d3e-4e7a-a0fa-122e7a16de17",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12Ovgm9YdD1xzG1XMcT5LAwpOeN5ylKX52oP6HO-_orGw-CGykYLKfm_VOnOMVk9gu_SlXPWdwc9U0xBveJrl4wkUYG4oE-vjFVFc86aKo1sE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 58570,
+      "created_at": "2026-02-26T22:14:27.8361+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5475a19c-0032-4d38-accc-84f63248275a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12_tgdXEjo9BgjJLKmAESTU6Q42swK3T68vvb4Gbg226n8mNcWeUMcoQQON0RlJgizxOZyMSexdKZ6VXwGA12rVnDhDXITcxrMhzmy8q4i0hs=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 61440,
+      "created_at": "2026-02-26T22:14:32.522818+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c4fe3241-b699-42a7-a61c-977bd287354d",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob128_30cd8uws_PcERSPcBZvocHUi7WTb6wIP3wI7I77epB-T3bJjiDSkK4m9ZElN74RKIoUIhueNWsaUCd9_u4Dls2T1CSmKNMw3aSvRgSvNE=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 72927,
+      "created_at": "2026-02-26T22:14:39.837548+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "530f0721-b86f-45fe-8737-379367794ee0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12ti9aw7FMEc6rgHqdzZCqzpQPO2oMuzGZm7GOXY4cCX0Q6MWd7QrWIJnI01rrJgwJHJmIzoGpYf0VoAbgrL3zJtl6H88g1SUbw3Nis2P-L2M=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 65910,
+      "created_at": "2026-02-26T22:14:45.939671+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8820c11d-b1ea-444f-ad7d-c85a851876fb",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob122qIsyATJS-dlGgX67OXq9yQLpooH-xRWFUr2i01LGbI7H-M8py4NBgr8r6PNy9RnWEGPX5pBZx-_RVbkPa9xGsNdKEMmrwX7VHDiPGoIS3c=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 60598,
+      "created_at": "2026-02-26T22:14:52.108997+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0fe0cfa3-5a45-417c-b093-217b45707238",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12hiqf4WEYMtgWJYVqoRJ4-a1pbwpght5t4B0rWdC8tUrNnUQaE9JHroJEAP9szH7x-x2lwkb2ooBuaaKzorTBwy150GQZDbY5B1Xgy7qdDGkxYhXihENnm1lr_-pud_ze",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 67452,
+      "created_at": "2026-02-26T22:14:57.921277+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1d5099f5-af6d-4d27-8a73-8a455a3d89b7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12uT3j-FkDcwmgvX99oMEoC6n0AJUyZZaR0tcPIUChcBnfUMwUA2tu9MDWmW5RcGcdDZhHHhlbIICOuAoDGgYL2HSc6XNU6Qjq5qMhFrHWsdA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260226_204141.html?",
+      "format": "html",
+      "size_bytes": 22852,
+      "created_at": "2026-02-26T22:14:58.273692+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "d7999963-524d-4ea1-ac2b-e2494ce73294",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12AhPzcSTr_3BagcQGDrcHBWw-Z4QfAOJkL6zin-TmsmeQkXqegSbQHEYkDXNnS79qKN5bGTf8oNOMtB4wvhm-4Dp2wK-m5ruV1PyeJj1a4-dz_sSlyib5O0DBaUDiGJik",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260226_204141.pptx?",
+      "format": "pptx",
+      "size_bytes": 92838,
+      "created_at": "2026-02-26T22:14:59.580881+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "c5a59053-c8f7-4929-8506-93fef9c82f6e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12Ff4Uga3yZw2U6C33CRGkaqXs7TlooP-XdehPf9FCxqjNHGo4w7On3N_bQ3Jg9V0Z9rOaatLjxObMjxv-VTr48lPzn28ShcymT3N70XHnFzMCXpt4Jk1PwjBLSKK34aDQ",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260226_204141.pdf?",
+      "format": "pdf",
+      "size_bytes": 43738,
+      "created_at": "2026-02-26T22:15:01.342148+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9cee793d-f26d-4467-aaa1-32f2f41e761a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12i94-YosGtoFbxQvTmtFM4yPq1ZXb_kxcG59P3hfcIhzFu37UuAvYBfrhJO3ktl62iQ3LrlwPEKcv7UQewmQ_i0LbDFJjfbyup8CLh60g6ko=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 60531,
+      "created_at": "2026-02-27T07:50:22.052014+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "d2d0638b-a744-4fef-a563-a22f8798b1da",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12LYcnsHgUSqFQZ1HH3DFaXB92toulUoRJ4JaNX_GHet3lfLuXytIy7JIC1pd1FRiOW3vKMdlz52vyhFLsQk8Abg==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 52487,
+      "created_at": "2026-02-27T07:50:26.268733+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "78dc9424-f901-4840-837d-16bd460af91a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12Pl2y0fjAw53MwMQkHHKeGbzyv0a0d68szG3zO8cfCNHthFAmPq_OxEyu6bfdIQBa5Czgd6gBCQFrO3gKmy8HvxGaDuAVsdQQ-pUlyVNaliU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 64235,
+      "created_at": "2026-02-27T07:50:32.376829+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "81415e1c-b434-4663-ba80-172d1c71f337",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12ksb2mNlTB389ZSmm5ecy_Snxf6DkO_QdWiri_Itd5ZeEaRmYOByYcxe_UghPHiq0pt6Mjl2G1gMpdFPtrfnMQg==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 46772,
+      "created_at": "2026-02-27T07:50:35.599218+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "5b9748ea-ecf4-4c84-9784-8c081156c263",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12lddxpw4fVCQNRRTbRrZRKp79VpMt2LTQ4udt06XetUVrczviJzxgq1naRUoiQQvG7S0sLTlwXp4InEf81SL-TcNQPWfLxMUsw_4OKOJBIrI=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 44529,
+      "created_at": "2026-02-27T07:50:38.886549+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "de06e1ff-70ac-459d-a7b2-f75cc1fd77f0",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12_8LIaE4MT22xXHsl7JUu5UORXzvIawgyl4xLF4ANS-kz17xg9r5yjI4cHIjJh_bQt32bgGRXJ-ShjKoM2gOQaly_lRwMXuqw58Cs9HSARz4=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 60196,
+      "created_at": "2026-02-27T07:50:43.799174+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "1eb69d0f-6852-4ab9-a8ff-491c6edb31c6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob125uw8DqdFpbRltmj9vwQeAGQNNrkA6lGZPhuf_xjE-Y9-ytXmiGuFgwCR9axLJw-5OGOGSA3cxSE-14fwZoPPm1YgwRQSr7heFfMHw9OaWWo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 43691,
+      "created_at": "2026-02-27T07:50:47.238262+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "758f023c-e650-4258-94ca-4907a53c6e44",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12fhHP-225V1Bqhwxf2CV23GHD-YwFLWwF44pqMFc5Vo424v_PBrFQzyF84zdtEFs3UIzHT2fJhyRUEFfbLvCLaP3vvjnSNpQPQFqQ4cLPpCo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 67641,
+      "created_at": "2026-02-27T07:50:52.09741+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "be22368a-3329-42b3-957f-606aecc417a1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12OS3cOLHO80mi_cG9xBYQlJYPXh9_yQHUubh_scLL72KEw-eVWhxjZdHAMihEwLnpix3-0xTPVwY1a6Hg92zaDI4xbYsGPMOT64TA7NkVYBA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 59851,
+      "created_at": "2026-02-27T07:50:57.026757+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "8c3c252a-0526-4ec7-af66-d824943d43f5",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob124uCUwZyySZpzSPv5ca7Pu8Tsubom7hMYc8rZlAYcUSnX8SYdKbozXZI7v0U_CJfxMLTiQzhrOAlfy9jTo89moTVnRDsN6FIe-I587H498Fg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 64208,
+      "created_at": "2026-02-27T07:51:02.676343+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7f70aafa-4e47-4af2-a529-123bea322ac7",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12B_EzRUARP2HXHYXYPZYTyKK2XgJ1raxxS44mHXuZF3ToxRYbfAR_rvJTQTbQUtVuPmpNexOwAyxJ4RpdpNOcxsEiAQ8vj9foeySXaE9NqGfjzec4BlUH_w7dzsQpMsot",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 53698,
+      "created_at": "2026-02-27T07:51:06.041473+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "da8a88bc-2f3b-4020-9e3a-8e68f8aa61c9",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob124dvhElhUKYkkN_15MprERZaMmRR8SLt8uAh9rCcLcMsi9BJSiLrUTECxaUY3fn0pjE4FUa_Sxq7ImwaIfgWP2IrvCKb8mthRGaXMi-LJVRQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260227_063137.html?",
+      "format": "html",
+      "size_bytes": 26850,
+      "created_at": "2026-02-27T07:51:06.412198+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "08d35682-3f8a-4f56-932b-0b8182e7d65e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12OQOv4xxGwSkYEaxH75A-Xm7Lfd3zqbsrPBkFAhqlqpzr0bk1mZd6GDkrAwxBIJLjAZoQjYgdVxhVU5Fjs195k7ThGnGuKAIVSQWHmOtk1doYuBCeuVaFGlsrIAZvyrBb",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260227_063137.pptx?",
+      "format": "pptx",
+      "size_bytes": 94056,
+      "created_at": "2026-02-27T07:51:08.096336+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "d007d5f4-b6af-4b47-9667-93c9863da70e",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12Z6qdbBsrQcB649sKU7sjwvVjVLujo5W2dhxsx1vT1rL2uxIS1hF9jlGdFAlBKr7Np4R1GRzCiTC0-WjR_8heC1qsOtSUuxOJ718iz0PhKbwMLFx1XmJJVetitfISA1OC",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260227_063137.pdf?",
+      "format": "pdf",
+      "size_bytes": 43739,
+      "created_at": "2026-02-27T07:51:10.087463+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "0244a26a-679c-4a3c-85c1-a352149c7129",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob1219aFIdSX79wtI94fbWEYwQJiyrw1NA9KD06UF7RV9oxfyXzJWZZxuEPkQWyo07BbqDsJhyoUBL1mbOkNLJG_qpc9TLRpGmYAhUf-aiAuLlc=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/compliance_report_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 59581,
+      "created_at": "2026-02-27T10:58:14.890116+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "07671975-4f47-48e8-b70a-188ef040998a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob12hmqH8vIlF0l-l5xgdJeUYeS15ZVrLc5xvWsoKuwKNKoQWPI1s9DRdZNl_6dI6Jid-5KdeXqK0ODehOUvVYl-Rw==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/akcni_plan_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 48930,
+      "created_at": "2026-02-27T10:58:18.787592+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "cf066916-ade4-482c-b4f3-103e6ff4df97",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12JGRy3H5-ktue12h2hXJPmIS9hJVT-U6dNcsbIPtaX-3Cnnz4pbQRBdLsU04tBjS_n8BaUNkXstbcDDKTj1_N4JfzX2fFPiPavKdcEwCc5pQ=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/registr_ai_systemu_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 64209,
+      "created_at": "2026-02-27T10:58:24.635851+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b200d1fa-b140-4b39-8884-466ea0c2a1d1",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12882L4AU6m2YGKP93xij7hYAYbmuy72ObvWsezZU6rSC8rxpK-9co2K5yBmuLXxP-W5zKQ8gp5qTWaqDwePuFOA==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 70912,
+      "created_at": "2026-02-27T10:58:31.08039+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "04e34e7e-8870-4040-a591-b772fc51c6f6",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12D7Z9Z-hc_oVtbVxNqOpIRlqHuVKordcH8Y5GJ0COqIp7ylCpaIPYPpU4TbBJsUq5jS3HoO0vYDMhNfCPbGRe4WqHqREMtotF4n114mY6140=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/oznameni_ai_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 46806,
+      "created_at": "2026-02-27T10:58:34.66346+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7cb895d2-9533-4470-bfb8-bb95071361a4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob129A4QWNNHuvBNjfHUGTPB1vNYZfYQ3VZKxW18j92N4nWzwtDSWU26vX61qwrq99hjkSzwMx8pOQq4iWtwNNFs49hhqdX4_yudwXWti6Lp-ic=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/interni_ai_politika_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 59278,
+      "created_at": "2026-02-27T10:58:38.859101+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "de078839-45a7-4b22-8200-2b6f7cbd2fb9",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12dBowHKgTYLcPrzsPjCfuNf5LpaxipAh57ZUwF-Qa3MKLyAtjdReLkchvqQnJIAo7q98y-1xw0Ji9Byu-aOQNft-_hT7HecpDXsEMGEX6PRg=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/plan_rizeni_incidentu_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 49756,
+      "created_at": "2026-02-27T10:58:42.393169+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "064863eb-fd29-4bbc-a9b7-d6ad5a8a65ac",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12nb6KnTZy72aTdKVqjBZg6GZ9v6XPOCj8364GQ00-UfcaP6KNVu4SXDc5LnqB-_Vr8avpzJxkOECtUvksDeSD2uD2Vn4FoVXq_-N4bKYYsXA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dpia_posouzeni_vlivu_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 56278,
+      "created_at": "2026-02-27T10:58:47.050172+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b2d92598-365a-4a00-a627-f5d08fc365b5",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12vkX7rWI7YCi_nHMggCs4AVzJ3Mc0VVn7S4hPSH0jA3b0u-h00nkRHzaH4RxweNHEXNGkRYaofuF0wcHR4nVOTiubFMklrzT5Y2PQGdQxKK0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/dodavatelsky_checklist_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 51230,
+      "created_at": "2026-02-27T10:58:51.23483+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "a5a54611-8f57-4e63-9f64-9935837367aa",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12lD-mDN3MxSxgrIqCBlCB6rB_14xFb5kN7Dpfk22Jg9TKgkcTYMWZdd3BWpPpA2lBAq1_anqnooCcrHxZiFsTynaOexC9Y-mhUFFNJWJVaEo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/monitoring_plan_ai_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 63765,
+      "created_at": "2026-02-27T10:58:56.042336+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "e0e08600-98c5-4b04-ad2e-7856bf9c57ec",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12-A0E6O1xgadZ5JtJUQU5qtNFWR2wUBjxEJ3NOMQFWvIkrZpnMSvBK675SLywMBRstR99b5sNk9reLV4gamf3Gf_kWNJc43EMOL6paX6xs3FdnUY6F8iXCx6M6Yctl_UT",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparentnost_lidsky_dohled_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 56359,
+      "created_at": "2026-02-27T10:58:59.609791+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b7c6e59b-fae7-4e67-83e6-a1144bcba6ed",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12OOVF5V6knd5FJn7INigK2FzRvT5PAFz9S5-Y9xr_w52r_CnkeB0TEbe7DkV8qcSbvxKksU-VXmmRwdAE74LO8UpQ8w2PLuljvkeaOkiTlgo=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260227_094410.html?",
+      "format": "html",
+      "size_bytes": 25748,
+      "created_at": "2026-02-27T10:58:59.932271+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "6a74dd9c-7061-492e-9843-5e61244757c4",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob124cQ7N5A_n0NpVQncvVB_YtVMEGmwe-y3VaqB6lgxzG1b0uOHa0sC3FQIicEt6eYC9C7tUL5M_X4jYelYb30TrqJ2kvToT0KIX6Mwqr-A_zrB7DwX6ozE98VNrMXS2Nm9",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260227_094410.pptx?",
+      "format": "pptx",
+      "size_bytes": 93984,
+      "created_at": "2026-02-27T10:59:03.054751+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "029ccdd7-0597-48d9-8985-746d9d5f9c8a",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12h9d4KQoRo9l_8DezXFWW1-HM7q-UFV3pXgLRdUttaG-BaVL4M7yrMHEcJsHFuYp_OisUhEXMeJMTnPwoQ_v4cB0OhvKWSu8OyyJIRT3cM84uGUKA7jdtUR_K_AZm4V3s",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260227_094410.pdf?",
+      "format": "pdf",
+      "size_bytes": 43739,
+      "created_at": "2026-02-27T10:59:04.683546+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4438a01e-8668-4c0f-8b94-0ccde824a673",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "compliance_report",
+      "name": "gAAAAABpob12TF-o3voTPwfjrjkhcVCEKi0KRTWZDs2PNTFQGc8TC_UrKkBKLFMIhu7SAjribLsFTsBx_ojcAQg8UJsG1pY7qy9HtLncy3M3nZYxtsrf-g0=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/01_compliance_report_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 69897,
+      "created_at": "2026-02-27T14:20:14.218058+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7b540333-3de0-44d3-a5d9-dca06aa86425",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "action_plan",
+      "name": "gAAAAABpob126oIuOdw_mWS_7etX_bbmfzX6OPvHPOtl1aCXIGmUYhRcpVjcs7_u55vOwBw0_okT5luJFRoRMrAkM8gfITOy4w==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/02_akcni_plan_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 54972,
+      "created_at": "2026-02-27T14:20:18.278298+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "2489f72a-b3bb-46ed-85b0-37c2a365d05f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_register",
+      "name": "gAAAAABpob12ddycG4M_N743SiltZFE1Y9fiD9LrMs5uNHpQs2_u6FiTIROk3DkRvVtA9Pbv3F2UDmeEIAuq1Dj70ZhwpSRUDibAxktlxG1Rq6NyAHsPnlk=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/03_registr_ai_systemu_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 61477,
+      "created_at": "2026-02-27T14:20:24.233204+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "f7bdd317-2c39-4b0a-9a16-ab2597da59ef",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_outline",
+      "name": "gAAAAABpob12jOTguJ0Gh9dSBAuTg6UF2ZQmUvOY198XlalHts2VXim-Twm0KSOt1Iec2Xk4HVjio-ziAidPsIeTco476h5MMA==",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/04_skoleni_ai_literacy_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 53327,
+      "created_at": "2026-02-27T14:20:28.667947+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "4981e5fe-027e-4cb1-a165-e049f9ac0851",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "chatbot_notices",
+      "name": "gAAAAABpob12YoILdZzzDUMIYCXeC_rcIZw9eajNJm5OpmkfVKiKGHBIlw8o1T365yFODfa21NSWpEgPfXQzTimANUDQbScbxNjcXrFqDjv0C2vk1Oc1CRs=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/05_oznameni_ai_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 61696,
+      "created_at": "2026-02-27T14:20:32.720315+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "fa264d44-4a80-4b13-9583-5160a64ff005",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "ai_policy",
+      "name": "gAAAAABpob12Vyyfbc0Xi197nJIHIJQK8G-QFEOxRw93wMt7ZA9V7urN-z8z6LKnqFYU10TZ-ZqeWuxrJNmjSWKUF-vELolDL_S9_zCkv1ovh21cNUdmSj4=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/06_interni_ai_politika_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 61964,
+      "created_at": "2026-02-27T14:20:37.32813+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "7faff49c-81de-49c7-bda1-37bc1c1299fb",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "incident_response_plan",
+      "name": "gAAAAABpob12Ucg6kNaKO8VU4dTPo5hnbNX0AAoEizEmyQyAOfwXKgkUlqXxxYiH9kNs3vBguxTmAKwYJF16MpaQY_1trlPAQsQvMsyDo7Zb3QhJjjjJIuY=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/07_plan_rizeni_incidentu_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 45153,
+      "created_at": "2026-02-27T14:20:41.512223+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "067a1879-ce4d-48b5-826e-cb416c4695d2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "dpia_template",
+      "name": "gAAAAABpob12_sBF4FP-mB6un4BrbvZ5PsrFQ-JMg9KOi5OnSRW_dAgARdp9pUXe6ZCtc00gRS4sa-FUJCqBDm3dgC7Ov3xO5zj_wGfE4DEyr4pExPpH4iA=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/08_dpia_posouzeni_vlivu_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 58848,
+      "created_at": "2026-02-27T14:20:46.314023+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "a29661e8-dbb1-4d79-a2eb-84a5b95e4b61",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vendor_checklist",
+      "name": "gAAAAABpob12OQ2iAKYziJmLg75U5U2RQ9n7HBsZlOj6hLmRpTGyKgvRQfY-grEC6qzPpx6YZgDIrZlOfjt4N7jIBn1jOJMJBdI-FSlhBcnWr-L1zkuKMA4=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/09_dodavatelsky_checklist_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 51587,
+      "created_at": "2026-02-27T14:20:50.171852+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "b5e65930-8e11-43fd-bcbc-88d0ea8b9aa2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "monitoring_plan",
+      "name": "gAAAAABpob12FEtM5J1JAo7wPXgt6FNgnO7NhtxJspDwB0FRe7PbBYtkBLr7lJ8HIGJ-D7UNNimw5cqNZjZVVcST4EYfgA9jT7cy3GH_XZaCIaOa24SRLIs=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/10_monitoring_plan_ai_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 57732,
+      "created_at": "2026-02-27T14:20:54.60216+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "049f6262-f606-4ffd-8cf2-ccc30a3f1102",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_human_oversight",
+      "name": "gAAAAABpob12TKSjB1tPHnxEn7E_YbxKAvHwxbT09ZoZCULfZGpOYnHZRwfsRa8ShSVJ0W-UEc9YdTTiLDp8oOp1_674NXqUghzjyax4Fgq1qX4frNPBCu5BdyyQllkbEPwC4mpMFZGG",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/11_transparentnost_lidsky_dohled_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 56198,
+      "created_at": "2026-02-27T14:20:58.561096+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "9eb4f09a-8508-4c8c-8cdc-81b7a03adc19",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "transparency_page",
+      "name": "gAAAAABpob12QpP0JmV2Fc4wvJ92TvsCm-Snv6glUEN0DeYcvQH8l_DLG99gawzRrqSNtiFRvW0QkxJXmC6OMRHlt01EQE1e0GKTEG5FnR65vhAtKJHQkiM=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/transparencni_stranka_20260227_121803.html?",
+      "format": "html",
+      "size_bytes": 23576,
+      "created_at": "2026-02-27T14:20:58.905071+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "3e4c57d8-695a-4b40-94a7-c20d36df93e2",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "training_presentation",
+      "name": "gAAAAABpob12IDQDthem1fPTtMyoWcXbyUT_okgGttIRPb8ZAC2EB7-4yv0EakE8eNuHPXAQBbu7okp3_ITKsN3qY0lTWFa8hhsjZ47rVWlgeGd1onND1usbXu8hzGASf68JLz2ij8C_",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/skoleni_ai_literacy_20260227_121803.pptx?",
+      "format": "pptx",
+      "size_bytes": 98454,
+      "created_at": "2026-02-27T14:21:00.460494+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "314dedaf-eaac-4e93-ba1c-c837f9765b4f",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "vop",
+      "name": "gAAAAABpob12mpL1oKndhDUJ5Frp30XVxcFP0rJSUuOZnnlu4cwzACZ2Ok_TCunKSDEMa2DEfKIq24wkaL-oVJFbN8H7IYJCi5p8QIyOz4gUzgoiHO4_knPTBkQ9ZAaAzZo1jvMTbZBl",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/vop_aishield_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 43742,
+      "created_at": "2026-02-27T14:21:02.195702+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    },
+    {
+      "id": "13c9775f-1ac6-40e1-a1ae-203fc17d13ef",
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "type": "cover_toc",
+      "name": "gAAAAABpob12jbH9ZtrexzLSUNrbDzGFh0UGmkhDel3LeZRDGTmRkPAVyuo8SsLpfviNszIlz0o6Q19knXQ_5CupsDw2OaAub_QpvqPVqoTP-lQeCzkbfQU=",
+      "url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/62e22b1d-dbc3-486d-8aad-c495732049c8/00_obal_obsah_20260227_121803.pdf?",
+      "format": "pdf",
+      "size_bytes": 26619,
+      "created_at": "2026-02-27T14:21:04.326928+00:00",
+      "archived": null,
+      "archived_at": null,
+      "_encrypted_fields": [
+        "name"
+      ],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "orders": [
+    {
+      "id": "3054d701-df1e-476e-b179-1616ca9cbc1f",
+      "order_number": "AS-ENTERPRISE-C7B89183",
+      "gopay_payment_id": "BT-3350761859",
+      "plan": "enterprise",
+      "amount": 39999,
+      "email": "gAAAAABpob12RBaKKQtuE4T0ybAr8xTIIm5gS6Oy24hdGCcPQw47e0hGfyqokxtGvUgqIv_QhBP8XR4yT0aho_-7XdtHrDCJSot_b7-CUWlH6LaRrF_dlBI=",
+      "user_email": "gAAAAABpob12BwfMCy1V6yVxjMGr8U6Si0aWFr4f1EmeOuhRp7WyuM8I-cQzHHsc9OdDSNce4KdIVzAYVl8A6g39Rz5bxDxU0H9tYNQp_ejF9RW94vlJlLE=",
+      "status": "PAID",
+      "paid_at": "2026-02-24T17:24:44.196264+00:00",
+      "activated": true,
+      "created_at": "2026-02-24T17:19:13.167284+00:00",
+      "order_type": "one_time",
+      "subscription_id": null,
+      "refunded_at": null,
+      "refund_amount": null,
+      "refund_reason": null,
+      "payment_gateway": "bank_transfer",
+      "billing_data": "gAAAAABpob12dHSTNQPfod41GmZddO4qafn5-3m8ysqPr83DscNW-OWV1GV9AVBTzbv8YfxFs0Eh8LkN6nZPLW0JdoSmzituiisnmkuMA_PYkCTOqr83NTNsZeW-ohjzMBedQUQ-Uc1u2KfiPJTzunhZQSuM2HhZo_WILDWsomS2x3s9_wmScPmXARcdD6D5LHkjIkVsaK1CJ77jSkLZzcneoUJdT4f0GkpDavlg1oDN0YTk_d0PQQUJQr9z5CHs_e6ZS0hahqqaAR9f77dVmIhE1jajd-tV8iPAYENtHnLfi1d44reFG_I=",
+      "admin_email_sent": null,
+      "company_id": "62e22b1d-dbc3-486d-8aad-c495732049c8",
+      "updated_at": "2026-02-24T20:38:32.624171+00:00",
+      "workflow_status": "documents_ready",
+      "_encrypted_fields": [
+        "email",
+        "user_email",
+        "billing_data"
+      ],
+      "_encryption": "fernet-aes128"
+    }
+  ],
+  "_saved_at": "2026-02-27T15:51:18.798805+00:00",
+  "_encryption": "fernet-aes128"
+}
