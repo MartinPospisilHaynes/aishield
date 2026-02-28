@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Hlavní gradient: fuchsia → violet → cyan -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d946ef"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <!-- Vnitřní glow -->
+    <linearGradient id="innerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#d946ef" stop-opacity="0.3"/>
+    </linearGradient>
+    <!-- Glow efekt -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Neon glow pro circuit linie -->
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Štít - hlavní tvar -->
+  <path d="M256 36 L440 120 L440 260 Q440 380 256 476 Q72 380 72 260 L72 120 Z"
+        fill="none" stroke="url(#shieldGrad)" stroke-width="8"
+        stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Vnitřní štít -->
+  <path d="M256 60 L420 136 L420 256 Q420 368 256 456 Q92 368 92 256 L92 136 Z"
+        fill="url(#innerGrad)" opacity="0.4"/>
+
+  <!-- Circuit pattern uvnitř štítu (neural network / AI motiv) -->
+  <g stroke="#06b6d4" stroke-width="2.5" fill="none" filter="url(#neonGlow)" opacity="0.9">
+    <!-- Horizontální linie -->
+    <line x1="140" y1="200" x2="200" y2="200"/>
+    <line x1="312" y1="200" x2="372" y2="200"/>
+    <line x1="140" y1="280" x2="200" y2="280"/>
+    <line x1="312" y1="280" x2="372" y2="280"/>
+
+    <!-- Diagonály ke středu -->
+    <line x1="200" y1="200" x2="240" y2="240"/>
+    <line x1="312" y1="200" x2="272" y2="240"/>
+    <line x1="200" y1="280" x2="240" y2="240"/>
+    <line x1="312" y1="280" x2="272" y2="240"/>
+
+    <!-- Vertikální centrální linie -->
+    <line x1="256" y1="140" x2="256" y2="220"/>
+    <line x1="256" y1="260" x2="256" y2="360"/>
+  </g>
+
+  <!-- Uzly (nodes) - circuit body -->
+  <g filter="url(#neonGlow)">
+    <!-- Centrální AI "mozek" -->
+    <circle cx="256" cy="240" r="22" fill="#0f172a" stroke="#d946ef" stroke-width="3"/>
+    <circle cx="256" cy="240" r="12" fill="#d946ef" opacity="0.6"/>
+    <circle cx="256" cy="240" r="6" fill="#fff" opacity="0.9"/>
+
+    <!-- Horní uzel -->
+    <circle cx="256" cy="140" r="8" fill="#06b6d4"/>
+    <circle cx="256" cy="140" r="4" fill="#fff" opacity="0.7"/>
+
+    <!-- Spodní uzel -->
+    <circle cx="256" cy="360" r="8" fill="#06b6d4"/>
+    <circle cx="256" cy="360" r="4" fill="#fff" opacity="0.7"/>
+
+    <!-- Levé uzly -->
+    <circle cx="140" cy="200" r="7" fill="#7c3aed"/>
+    <circle cx="140" cy="200" r="3" fill="#fff" opacity="0.7"/>
+    <circle cx="140" cy="280" r="7" fill="#7c3aed"/>
+    <circle cx="140" cy="280" r="3" fill="#fff" opacity="0.7"/>
+
+    <!-- Pravé uzly -->
+    <circle cx="372" cy="200" r="7" fill="#7c3aed"/>
+    <circle cx="372" cy="200" r="3" fill="#fff" opacity="0.7"/>
+    <circle cx="372" cy="280" r="7" fill="#7c3aed"/>
+    <circle cx="372" cy="280" r="3" fill="#fff" opacity="0.7"/>
+
+    <!-- Meziuzly -->
+    <circle cx="200" cy="200" r="5" fill="#06b6d4"/>
+    <circle cx="312" cy="200" r="5" fill="#06b6d4"/>
+    <circle cx="200" cy="280" r="5" fill="#06b6d4"/>
+    <circle cx="312" cy="280" r="5" fill="#06b6d4"/>
+  </g>
+</svg>

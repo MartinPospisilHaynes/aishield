@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gradient rotující kolem středu -->
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d946ef"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#d946ef"/>
+    </linearGradient>
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d946ef" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Clip pro hexagonální tvar -->
+    <clipPath id="hexClip">
+      <polygon points="256,42 442,148 442,364 256,470 70,364 70,148"/>
+    </clipPath>
+  </defs>
+
+  <!-- Pozadí glow -->
+  <circle cx="256" cy="256" r="180" fill="url(#coreGlow)" filter="url(#softGlow)"/>
+
+  <!-- Vnější hexagon (ochranný tvar - štít abstrakce) -->
+  <polygon points="256,52 432,152 432,360 256,460 80,360 80,152"
+           fill="none" stroke="url(#grad1)" stroke-width="4"
+           filter="url(#glow)" opacity="0.6"/>
+
+  <!-- Vnitřní hexagon -->
+  <polygon points="256,82 402,170 402,342 256,430 110,342 110,170"
+           fill="none" stroke="url(#grad2)" stroke-width="2" opacity="0.3"/>
+
+  <!-- Abstraktní AI "oko" / neural hub -->
+  <g filter="url(#glow)">
+    <!-- Vnější orbit -->
+    <ellipse cx="256" cy="256" rx="130" ry="80" fill="none"
+             stroke="#06b6d4" stroke-width="2" opacity="0.5"
+             transform="rotate(-30, 256, 256)"/>
+    <ellipse cx="256" cy="256" rx="130" ry="80" fill="none"
+             stroke="#d946ef" stroke-width="2" opacity="0.5"
+             transform="rotate(30, 256, 256)"/>
+    <ellipse cx="256" cy="256" rx="130" ry="80" fill="none"
+             stroke="#7c3aed" stroke-width="2" opacity="0.5"
+             transform="rotate(90, 256, 256)"/>
+
+    <!-- Neural spoje - radiální paprsky -->
+    <g stroke="url(#grad1)" stroke-width="1.5" opacity="0.6">
+      <line x1="256" y1="256" x2="256" y2="100"/>
+      <line x1="256" y1="256" x2="391" y2="178"/>
+      <line x1="256" y1="256" x2="391" y2="334"/>
+      <line x1="256" y1="256" x2="256" y2="412"/>
+      <line x1="256" y1="256" x2="121" y2="334"/>
+      <line x1="256" y1="256" x2="121" y2="178"/>
+    </g>
+
+    <!-- Vnější uzly na hexagonu -->
+    <circle cx="256" cy="100" r="6" fill="#06b6d4"/>
+    <circle cx="391" cy="178" r="6" fill="#d946ef"/>
+    <circle cx="391" cy="334" r="6" fill="#7c3aed"/>
+    <circle cx="256" cy="412" r="6" fill="#06b6d4"/>
+    <circle cx="121" cy="334" r="6" fill="#d946ef"/>
+    <circle cx="121" cy="178" r="6" fill="#7c3aed"/>
+
+    <!-- Střední prstenec -->
+    <circle cx="256" cy="256" r="45" fill="none" stroke="url(#grad1)" stroke-width="3"/>
+    <circle cx="256" cy="256" r="35" fill="none" stroke="url(#grad2)" stroke-width="1.5" opacity="0.5"/>
+
+    <!-- Data proudy (tečkované) -->
+    <circle cx="256" cy="256" r="90" fill="none"
+            stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="4 8" opacity="0.4"/>
+
+    <!-- AI jádro -->
+    <circle cx="256" cy="256" r="22" fill="#0f172a" stroke="#d946ef" stroke-width="3"/>
+    <circle cx="256" cy="256" r="14" fill="#d946ef" opacity="0.4"/>
+    <circle cx="256" cy="256" r="8" fill="#7c3aed" opacity="0.6"/>
+    <circle cx="256" cy="256" r="4" fill="#fff" opacity="0.95"/>
+  </g>
+
+  <!-- "AI" text ve středu - velmi subtilní -->
+  <text x="256" y="266" text-anchor="middle" dominant-baseline="central"
+        font-family="'Inter', 'SF Pro Display', sans-serif"
+        font-size="18" font-weight="700" letter-spacing="4"
+        fill="#ffffff" opacity="0" filter="url(#glow)">AI</text>
+</svg>

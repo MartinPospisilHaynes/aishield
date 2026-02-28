@@ -683,9 +683,42 @@ export default function HomePage() {
                         </div>
                     </div>
 
+                    {/* Proč by vás to mělo zajímat – posunuto nahoru */}
+                    <ScrollReveal variant="fade-up">
+                        <div className="text-center mt-12 mb-6">
+                            <div className="neon-divider mb-6" />
+                            <h2 className="text-3xl font-extrabold sm:text-4xl">
+                                Proč by vás to mělo <span className="neon-text">zajímat</span>?
+                            </h2>
+                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
+                                Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
+                                A týká se i VAŠÍ firmy.
+                            </p>
+                        </div>
+                    </ScrollReveal>
+
+                    {/* First in CZ panel */}
+                    <ScrollReveal variant="scale-up" delay={1}>
+                        <div className="mx-auto max-w-3xl mb-8 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
+                            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
+                                <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
+                            <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                                Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
+                                přes kompletní dokumentaci, až po průběžný monitoring.
+                                Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
+                                My Vám pomůžeme splnit zákon jednoduše a bez stresu.
+                                Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
+                                než je byrokracie z Bruselu. Jako je například Vaše podnikání.
+                            </p>
+                        </div>
+                    </ScrollReveal>
+
                     {/* Warning box */}
                     <ScrollReveal variant="scale-up">
-                        <div className="mx-auto mt-8 max-w-2xl">
+                        <div className="mx-auto max-w-2xl">
                             <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 sm:px-6 py-4 sm:py-5 glow-border">
                                 <div className="flex items-start gap-3">
                                     <svg className="w-6 h-6 text-fuchsia-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -987,41 +1020,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="border-t border-white/[0.06] py-12 sm:py-20">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                    <ScrollReveal variant="fade-up">
-                        <div className="text-center mb-10 sm:mb-12">
-                            <div className="neon-divider mb-6" />
-                            <h2 className="text-3xl font-extrabold sm:text-4xl">
-                                Proč by vás to mělo <span className="neon-text">zajímat</span>?
-                            </h2>
-                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                                Od 2. srpna 2026 platí EU AI Act — nejtvrdší regulace umělé inteligence na světě.
-                                A týká se i VAŠÍ firmy.
-                            </p>
-                        </div>
-                    </ScrollReveal>
 
-                    {/* First in CZ panel */}
-                    <ScrollReveal variant="scale-up" delay={1}>
-                        <div className="mx-auto max-w-3xl mb-16 rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/5 via-purple-500/5 to-cyan-500/5 p-5 sm:p-8 text-center glow-border">
-                            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-3 sm:px-4 py-1.5 mb-4">
-                                <svg className="w-4 h-4 text-neon-fuchsia flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                                <span className="text-xs sm:text-sm font-semibold text-neon-fuchsia text-center">My jsme průkopníci a lídři AI Act compliance v ČR</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-3">Nabízíme nejkomplexnější AI Act řešení na českém trhu</h3>
-                            <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                                Kromě nás v Česku neposkytuje nikdo tak ucelený servis — od automatického skenu webu,
-                                přes kompletní dokumentaci, až po průběžný monitoring.
-                                Od OSVČ a živnostníků, přes e-shopy a střední firmy, až po velké korporáty.
-                                My Vám pomůžeme splnit zákon jednoduše a bez stresu.
-                                Veškerou dokumentaci a implementaci zařídíme za vás, ať se můžete věnovat dál důležitějším věcem,
-                                než je byrokracie z Bruselu. Jako je například Vaše podnikání.
-                            </p>
-                        </div>
-                    </ScrollReveal>
-                </div>
-            </section>
 
             {/* ══════ TESTIMONIALS ══════ */}
             <section className="border-t border-white/[0.06] py-12 sm:py-20">
