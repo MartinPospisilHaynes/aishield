@@ -1,0 +1,590 @@
+[
+    {
+        "slug": "ai-act-co-musi-splnit-ceske-firmy",
+        "title": "AI Act: Co musí splnit české firmy do roku 2026",
+        "keywords": "AI Act, české firmy, compliance, povinnosti, 2026",
+        "context": "Přehled hlavních povinností pro české společnosti vyplývajících z AI Actu. Zaměř se na časovou osu, kategorie podniků a praktické kroky."
+    },
+    {
+        "slug": "zakazy-ai-systemu-clanek-5",
+        "title": "Zakázané AI systémy podle článku 5 AI Actu",
+        "keywords": "zakázané AI systémy, článek 5, AI Act, social scoring, manipulace",
+        "context": "Detailní rozbor článku 5 AI Actu — AI systémy které jsou v EU kompletně zakázané. Social scoring, manipulace, biometrické kategorizace."
+    },
+    {
+        "slug": "vysoko-rizikove-ai-systemy-priloha-iii",
+        "title": "Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena",
+        "keywords": "vysoce rizikové AI, příloha III, AI Act, high-risk, kategorie",
+        "context": "Co jsou vysoce rizikové AI systémy dle přílohy III. 8 oblastí, příklady z praxe, povinnosti provozovatelů."
+    },
+    {
+        "slug": "transparencni-povinnosti-clanek-50",
+        "title": "Transparenční povinnosti AI: Článek 50 v praxi",
+        "keywords": "transparence, článek 50, chatboty, deepfake, označování AI",
+        "context": "Článek 50 ukládá povinnost informovat uživatele o AI. Týká se chatbotů, deepfake obsahu a generativní AI."
+    },
+    {
+        "slug": "pokuty-za-poruseni-ai-actu",
+        "title": "Pokuty za porušení AI Actu: Až 35 milionů EUR",
+        "keywords": "pokuty, AI Act, sankce, článek 99, penále",
+        "context": "Systém pokut v AI Actu: 3 úrovně (35M/15M/7.5M EUR). Kdo je vyšetřuje, jak se počítají, příklady situací."
+    },
+    {
+        "slug": "ai-act-a-gdpr-jak-spolu-souvisi",
+        "title": "AI Act a GDPR: Jak spolu souvisí a co to znamená",
+        "keywords": "AI Act, GDPR, osobní údaje, AI systémy, compliance",
+        "context": "Vztah AI Actu a GDPR. Kde se překrývají, kde doplňují. Praktický dopad na firmy, které už GDPR řeší."
+    },
+    {
+        "slug": "ai-act-pro-e-shopy-prakticke-kroky",
+        "title": "AI Act pro e-shopy: 5 praktických kroků ke compliance",
+        "keywords": "e-shop, AI Act, chatbot, personalizace, compliance, Shoptet",
+        "context": "E-shopy často používají AI chatboty, personalizaci a dynamické ceny. Co AI Act vyžaduje a jak se připravit."
+    },
+    {
+        "slug": "ai-act-casova-osa-2024-2027",
+        "title": "AI Act: Kompletní časová osa platnosti 2024–2027",
+        "keywords": "AI Act, časová osa, platnost, deadline, implementace",
+        "context": "Přehled data nabytí účinnosti AI Actu: srpen 2024 vstup v platnost, únor 2025 zákazy, srpen 2025 GPAI, srpen 2026 většina povinností."
+    },
+    {
+        "slug": "co-je-ai-system-definice-ai-actu",
+        "title": "Co je AI systém? Definice podle AI Actu (článek 3)",
+        "keywords": "AI systém, definice, článek 3, machine learning, AI Act",
+        "context": "Definice AI systému dle čl. 3(1): strojově založený systém navržený s různým stupněm autonomie. Co spadá a co ne."
+    },
+    {
+        "slug": "general-purpose-ai-gpai-povinnosti",
+        "title": "General Purpose AI (GPAI): Povinnosti dle AI Actu",
+        "keywords": "GPAI, general purpose AI, ChatGPT, AI Act, systémové riziko",
+        "context": "GPAI modely jako ChatGPT, Gemini, Claude. Články 51-56: transparence, technická dokumentace, copyright compliance, systémové riziko."
+    },
+    {
+        "slug": "ai-act-a-chatboty-co-musim-oznacit",
+        "title": "AI Act a chatboty: Co musíte označit a jak",
+        "keywords": "chatbot, AI Act, označování, transparence, SmartSupp, interkom",
+        "context": "Chatboty na webu musí dle čl. 50 informovat uživatele o AI. Jak implementovat, příklady oznámení, výjimky."
+    },
+    {
+        "slug": "ai-act-regulacni-sandbox",
+        "title": "Regulační sandbox pro AI: Šance pro české inovátory",
+        "keywords": "regulační sandbox, AI Act, inovace, testování, Česko",
+        "context": "AI Act zavádí regulační sandboxes (čl. 57-62). Co to je, jak se přihlásit, výhody pro české startupy."
+    },
+    {
+        "slug": "ai-act-a-zdravotnictvi",
+        "title": "AI ve zdravotnictví a AI Act: Co se mění",
+        "keywords": "zdravotnictví, AI Act, diagnostika, medical AI, vysoké riziko",
+        "context": "AI diagnostické systémy jsou vysoce rizikové (příloha III bod 5). Povinnosti nemocnic, výrobců software, CE značení."
+    },
+    {
+        "slug": "ai-act-a-financni-sektor",
+        "title": "AI Act a finanční sektor: Banky, pojišťovny, fintech",
+        "keywords": "finance, banky, pojišťovny, AI Act, credit scoring, vysoce rizikové",
+        "context": "Credit scoring, pojistné hodnocení jsou vysoce rizikové AI systémy. Povinnosti bank a fintechů dle AI Actu."
+    },
+    {
+        "slug": "ai-act-a-hr-recruitment",
+        "title": "AI v HR a náboru: Nová pravidla dle AI Actu",
+        "keywords": "HR, nábor, recruitment, AI Act, vysoce rizikové, uchazeči",
+        "context": "AI v náboru (CV screening, video analýza) je vysoce rizikové (příloha III bod 4). Povinnosti zaměstnavatelů."
+    },
+    {
+        "slug": "ce-oznaceni-pro-ai-systemy",
+        "title": "CE označení pro AI systémy: Kdy a jak ho získat",
+        "keywords": "CE označení, conformity assessment, AI Act, certifikace, notifikovaná osoba",
+        "context": "Vysoce rizikové AI systémy potřebují CE mark (čl. 48-49). Posouzení shody, notifikované osoby, self-assessment vs third-party."
+    },
+    {
+        "slug": "jak-provest-impact-assessment-ai",
+        "title": "Jak provést Impact Assessment pro AI systém",
+        "keywords": "impact assessment, FRIA, AI Act, posouzení dopadu, základní práva",
+        "context": "Fundamental Rights Impact Assessment (FRIA) dle čl. 27. Kdo ho musí dělat, jak postupovat, šablona."
+    },
+    {
+        "slug": "ai-act-vs-americka-regulace",
+        "title": "AI Act vs americká regulace AI: Srovnání přístupů",
+        "keywords": "AI Act, USA, regulace, srovnání, Executive Order, EU",
+        "context": "Srovnání EU AI Actu s americkým přístupem (Executive Order). Risk-based vs innovation-first. Dopad na globální firmy."
+    },
+    {
+        "slug": "open-source-ai-a-ai-act",
+        "title": "Open-source AI modely a AI Act: Výjimky a povinnosti",
+        "keywords": "open source, AI Act, GPAI, LLaMA, výjimky, free licence",
+        "context": "AI Act má speciální pravidla pro open-source AI (čl. 53 odst. 2). Jaké výjimky platí, co musí i open-source splnit."
+    },
+    {
+        "slug": "ai-act-a-biometricke-systemy",
+        "title": "Biometrické AI systémy: Co AI Act zakazuje a povoluje",
+        "keywords": "biometrie, rozpoznávání obličeje, AI Act, real-time, zákon",
+        "context": "Biometrické identifikace v reálném čase jsou zakázané (čl. 5). Post-remote s povolením soudu povolené. Kamerové systémy a AI."
+    },
+    {
+        "slug": "ai-literacy-povinnost-pro-firmy",
+        "title": "AI Literacy: Nová povinnost pro firmy od února 2025",
+        "keywords": "AI literacy, článek 4, školení, zaměstnanci, AI Act",
+        "context": "Článek 4 AI Actu vyžaduje AI gramotnost zaměstnanců. Už od února 2025! Co to znamená, jak splnit, školení."
+    },
+    {
+        "slug": "ai-act-narizeni-vs-smernice",
+        "title": "AI Act jako nařízení: Proč je přímo účinný v Česku",
+        "keywords": "nařízení, směrnice, AI Act, přímý účinek, Česko, legislativa",
+        "context": "AI Act je nařízení EU — platí přímo bez české transpozice. Rozdíl od směrnic GDPR. Co to prakticky znamená."
+    },
+    {
+        "slug": "ai-act-a-google-analytics",
+        "title": "Používáte Google Analytics s AI? Co říká AI Act",
+        "keywords": "Google Analytics, AI Act, GA4, prediktivní metriky, profiling",
+        "context": "GA4 má prediktivní metriky (purchase probability). Je to AI systém? Jak klasifikovat, jaké povinnosti."
+    },
+    {
+        "slug": "ai-act-a-meta-pixel-reklamy",
+        "title": "Meta Pixel a AI reklamy: Compliance dle AI Actu",
+        "keywords": "Meta Pixel, Facebook, AI reklamy, targeting, AI Act, transparence",
+        "context": "Meta/Facebook AI targeting je AI systém dle AI Actu. Jaké povinnosti má inzerent? Článek 50, transparence."
+    },
+    {
+        "slug": "ai-act-a-smlouvy-s-dodavateli",
+        "title": "AI Act a smlouvy s dodavateli: Co musí obsahovat",
+        "keywords": "smlouvy, dodavatel, AI Act, SLA, compliance, odpovědnost",
+        "context": "Pokud kupujete AI řešení od dodavatele, smlouva musí reflektovat AI Act. Klíčové klauzule, odpovědnost, SLA."
+    },
+    {
+        "slug": "ai-act-a-generativni-ai-obsah",
+        "title": "Generativní AI obsah: Pravidla označování dle AI Actu",
+        "keywords": "generativní AI, AI obsah, označování, watermark, deepfake, AI Act",
+        "context": "AI Act vyžaduje označení AI generovaného obsahu (čl. 50). Články, obrázky, videa, audio. Jak označit, výjimky."
+    },
+    {
+        "slug": "ai-act-a-autonomni-vozidla",
+        "title": "AI Act a autonomní vozidla: Speciální režim",
+        "keywords": "autonomní vozidla, AI Act, doprava, safety, vysoce rizikové",
+        "context": "Autonomní auta a AI v dopravě mají speciální režim v AI Actu (příloha III bod 2). Bezpečnost, testování, dohled."
+    },
+    {
+        "slug": "ai-act-a-vzdelavani",
+        "title": "AI ve vzdělávání a AI Act: Školy a univerzity",
+        "keywords": "vzdělávání, školy, AI Act, hodnocení studentů, vysoce rizikové",
+        "context": "AI systémy pro hodnocení a přijímání studentů jsou vysoce rizikové (příloha III bod 3). Povinnosti škol."
+    },
+    {
+        "slug": "jak-klasifikovat-ai-system-riziko",
+        "title": "Jak klasifikovat riziko AI systému: Praktický návod",
+        "keywords": "klasifikace, riziko, AI systém, AI Act, minimální, vysoké, zakázané",
+        "context": "Krok za krokem: jak zjistit do jaké kategorie rizika váš AI systém spadá. Rozhodovací strom, příklady."
+    },
+    {
+        "slug": "ai-act-a-cesky-urad",
+        "title": "Český úřad pro AI: Kdo bude dohlížet na AI Act",
+        "keywords": "dohledový úřad, ČR, AI Act, regulace, market surveillance",
+        "context": "Česko musí určit národní dohledový úřad pro AI Act. Kdo to bude, jaké pravomoci, stav příprav."
+    },
+    {
+        "slug": "ai-act-technical-documentation",
+        "title": "Technická dokumentace AI systému: Co musí obsahovat",
+        "keywords": "technická dokumentace, AI Act, příloha IV, dokumentace, compliance",
+        "context": "Příloha IV AI Actu specifikuje obsah technické dokumentace pro vysoce rizikové AI. Co vše zahrnout, šablony."
+    },
+    {
+        "slug": "ai-act-human-oversight",
+        "title": "Human Oversight v AI Actu: Proč je lidský dohled klíčový",
+        "keywords": "human oversight, lidský dohled, AI Act, článek 14, kontrola",
+        "context": "Článek 14 vyžaduje lidský dohled nad vysoce rizikovými AI. Co to prakticky znamená, kdo musí dohlížet, nástroje."
+    },
+    {
+        "slug": "ai-act-databaze-eu",
+        "title": "EU databáze AI systémů: Registrační povinnost",
+        "keywords": "EU databáze, registrace, AI Act, článek 71, veřejný přehled",
+        "context": "AI Act zavádí EU databázi vysoce rizikových AI systémů (čl. 71). Kdo se musí registrovat, co uvést, jak."
+    },
+    {
+        "slug": "ai-act-a-kyberbezpecnost-nis2",
+        "title": "AI Act a NIS2: Dvojí compliance pro technologické firmy",
+        "keywords": "NIS2, kyberbezpečnost, AI Act, compliance, dvojí regulace",
+        "context": "Firmy v kritické infrastruktuře řeší AI Act i NIS2 současně. Jak se překrývají, synergy v compliance."
+    },
+    {
+        "slug": "ai-act-a-data-governance",
+        "title": "Data Governance pro AI: Požadavky AI Actu na data",
+        "keywords": "data governance, AI Act, tréninková data, kvalita dat, bias",
+        "context": "AI Act klade důraz na kvalitu dat (čl. 10). Tréninková, validační a testovací data. Bias, reprezentativnost."
+    },
+    {
+        "slug": "ai-act-pro-startupy",
+        "title": "AI Act a startupy: Jak přežít regulaci bez velkého rozpočtu",
+        "keywords": "startupy, AI Act, SME, malé firmy, úlevy, sandbox",
+        "context": "AI Act obsahuje úlevy pro malé firmy a startupy (čl. 62). Sandbox, nižší poplatky, přechodná období."
+    },
+    {
+        "slug": "ai-act-a-emotion-recognition",
+        "title": "Rozpoznávání emocí pomocí AI: Omezení dle AI Actu",
+        "keywords": "rozpoznávání emocí, emotion recognition, AI Act, práce, škola, zákaz",
+        "context": "AI Act zakazuje rozpoznávání emocí na pracovišti a ve školách (čl. 5). Co je povoleno, kde je hranice."
+    },
+    {
+        "slug": "ai-act-konformitni-posouzeni",
+        "title": "Posouzení shody AI systému: Krok za krokem",
+        "keywords": "posouzení shody, conformity assessment, AI Act, certifikace, annexes",
+        "context": "Kompletní průvodce posouzením shody (conformity assessment) dle AI Actu. Self-assessment vs notifikovaná osoba."
+    },
+    {
+        "slug": "ai-act-monitoring-po-uvedeni",
+        "title": "Post-Market Monitoring AI systémů: Co AI Act vyžaduje",
+        "keywords": "post-market monitoring, AI Act, sledování, incidenty, článek 72",
+        "context": "Po uvedení AI systému na trh musí firma zajistit monitoring (čl. 72). Hlášení incidentů, aktualizace, stažení."
+    },
+    {
+        "slug": "ai-act-a-cloud-computing",
+        "title": "AI v cloudu a AI Act: AWS, Azure, GCP compliance",
+        "keywords": "cloud, AWS, Azure, GCP, AI Act, provider, deployer",
+        "context": "Kdo je odpovědný za AI compliance v cloudu? Vztah provider-deployer, SLA, shared responsibility."
+    },
+    {
+        "slug": "ai-act-a-pojisteni-odpovednosti",
+        "title": "Pojištění odpovědnosti za AI: Nový trh s příležitostmi",
+        "keywords": "pojištění, odpovědnost, AI Act, AI liability, škody",
+        "context": "AI Liability Directive doplňuje AI Act. Pojištění AI rizik, odpovědnost výrobce vs provozovatele, škody."
+    },
+    {
+        "slug": "jak-pripravit-firmu-na-ai-act",
+        "title": "5 kroků jak připravit firmu na AI Act ještě dnes",
+        "keywords": "příprava, AI Act, compliance, konání, audit, firma",
+        "context": "Praktický článek: inventory AI systémů, klasifikace, gap analýza, implementace, dokumentace. Akční plán."
+    },
+    {
+        "slug": "ai-act-a-copyright",
+        "title": "AI Act a autorská práva: Co musí GPAI dodržet",
+        "keywords": "copyright, autorská práva, AI Act, training data, opt-out",
+        "context": "GPAI modely musí respektovat autorská práva (čl. 53). Text and data mining, opt-out, summary, compliance."
+    },
+    {
+        "slug": "ai-act-a-real-estate",
+        "title": "AI Act a reality: AI v oceňování nemovitostí",
+        "keywords": "reality, nemovitosti, oceňování, AI Act, vysoce rizikové",
+        "context": "AI systémy pro oceňování nemovitostí a hypotéky spadají pod vysoce rizikové (příloha III). Povinnosti realitních kanceláří."
+    },
+    {
+        "slug": "ai-act-whistleblowing",
+        "title": "AI Act a whistleblowing: Ochrana oznamovatelů",
+        "keywords": "whistleblowing, oznamovatel, AI Act, článek 87, ochrana",
+        "context": "AI Act chrání osoby hlásící porušení (čl. 87). Jak funguje, kdo je chráněn, kam nahlásit."
+    },
+    {
+        "slug": "ai-act-a-automatizovane-rozhodovani",
+        "title": "Automatizované rozhodování a AI Act: Práva občanů",
+        "keywords": "automatizované rozhodování, AI Act, GDPR čl. 22, práva, vysvětlení",
+        "context": "AI Act a GDPR čl. 22 společně chrání občany před plně automatizovanými rozhodnutími. Právo na vysvětlení."
+    },
+    {
+        "slug": "ai-act-labelling-requirements",
+        "title": "Požadavky AI Actu na označování AI produktů",
+        "keywords": "označování, labelling, AI Act, CE mark, informace, uživatel",
+        "context": "Jaké informace musí doprovázet AI produkt (čl. 13). Návod k použití, rizika, omezení, kontakt."
+    },
+    {
+        "slug": "ai-act-a-justični-system",
+        "title": "AI v justici: Vysoce rizikové systémy v soudnictví",
+        "keywords": "justice, soud, AI Act, vysoce rizikové, rozhodování, příloha III",
+        "context": "AI systémy asistující soudcům jsou vysoce rizikové (příloha III bod 8). Prediktivní policing, bail scoring."
+    },
+    {
+        "slug": "ai-act-compliance-audit-checklist",
+        "title": "AI Act Compliance Audit: Kompletní checklist 2025",
+        "keywords": "audit, checklist, AI Act, compliance, kontrola, 2025",
+        "context": "Kompletní checklist pro interní audit AI Act compliance. 50+ bodů v kategoriích: governance, technické, dokumentační."
+    },
+    {
+        "slug": "ai-act-a-supply-chain",
+        "title": "AI Act v dodavatelském řetězci: Odpovědnost a smlouvy",
+        "keywords": "supply chain, dodavatel, AI Act, odpovědnost, deployment",
+        "context": "AI Act definuje role: provider, deployer, distributor, importer. Kdo za co odpovídá v řetězci."
+    },
+    {
+        "slug": "ai-act-a-marketing-automatizace",
+        "title": "Marketingová automatizace a AI Act: Co se mění",
+        "keywords": "marketing, automatizace, AI Act, personalizace, targeting",
+        "context": "AI v marketingu (HubSpot, Mailchimp AI, programmatic ads). Klasifikace rizika, transparence, personalizace."
+    },
+    {
+        "slug": "ai-act-a-ucetnictvi-dane",
+        "title": "AI v účetnictví a daních: Regulace dle AI Actu",
+        "keywords": "účetnictví, daně, AI Act, automatizace, fakturace",
+        "context": "AI systémy pro automatické účetnictví a daňové přiznání. Spadají pod AI Act? Klasifikace a povinnosti."
+    },
+    {
+        "slug": "ai-act-testing-validation",
+        "title": "Testování a validace AI systémů dle AI Actu",
+        "keywords": "testování, validace, AI Act, accuracy, robustness, bias",
+        "context": "AI Act vyžaduje testování přesnosti, robustnosti a absence bias (čl. 9, 15). Metodiky, metriky, best practices."
+    },
+    {
+        "slug": "ai-act-a-media-zpravodajstvi",
+        "title": "AI Act a média: Generativní AI ve zpravodajství",
+        "keywords": "média, zpravodajství, AI Act, generativní obsah, deepfake, transparence",
+        "context": "AI generovaný obsah v médiích musí být označen (čl. 50). Dopady na redakce, news agencies, deepfake videa."
+    },
+    {
+        "slug": "ai-act-jak-cist-narizeni",
+        "title": "Jak číst AI Act: Průvodce strukturou nařízení",
+        "keywords": "AI Act, struktura, kapitoly, články, přílohy, čtení",
+        "context": "AI Act má 113 článků, 13 příloh, 180 recitálů. Jak se v tom orientovat, co číst jako první, klíčové části."
+    },
+    {
+        "slug": "ai-act-a-robotika",
+        "title": "AI Act a robotika: Průmysloví roboti pod regulací",
+        "keywords": "robotika, průmyslový robot, AI Act, bezpečnost, safety component",
+        "context": "Roboti s AI jsou regulováni jako safety component of product. Vztah k Machinery Directive, CE mark."
+    },
+    {
+        "slug": "ai-act-a-hry-gaming",
+        "title": "AI v gaming průmyslu: Dopadne AI Act na hry?",
+        "keywords": "gaming, hry, AI Act, NPC, generativní obsah, minimální riziko",
+        "context": "AI v hrách (NPC, procedural generation, anti-cheat). Většinou minimální riziko, ale jsou výjimky?"
+    },
+    {
+        "slug": "ai-act-plneni-pro-municipality",
+        "title": "AI Act pro obce a města: Povinnosti samospráv",
+        "keywords": "obce, města, samospráva, AI Act, veřejná správa, deployer",
+        "context": "Obce jako deployers AI systémů (chatboty, dopravní AI, social services). FRIA povinnost, transparence."
+    },
+    {
+        "slug": "ai-act-role-dpo",
+        "title": "Role DPO v éře AI Actu: Nové odpovědnosti",
+        "keywords": "DPO, pověřenec, AI Act, GDPR, odpovědnosti, AI officer",
+        "context": "DPO (Data Protection Officer) dostává nové povinnosti s AI Actem. Potřeba AI Officer role? Synergie s GDPR."
+    },
+    {
+        "slug": "ai-act-a-telekomunikace",
+        "title": "AI Act a telekomunikace: Dopady na české operátory",
+        "keywords": "telekomunikace, operátor, AI Act, customer service, network AI",
+        "context": "Telco firmy používají AI pro zákaznický servis, network optimization, fraud detection. Klasifikace dle AI Actu."
+    },
+    {
+        "slug": "ai-act-a-pojistovna-praxe",
+        "title": "AI Act v praxi pojišťoven: Risk scoring a automatizace",
+        "keywords": "pojišťovna, risk scoring, AI Act, automatizované rozhodování, vysoce rizikové",
+        "context": "Pojišťovny používají AI pro risk scoring, claim processing, fraud detection. Vysoce rizikové systémy dle přílohy III."
+    },
+    {
+        "slug": "ai-act-env-sustainability",
+        "title": "AI Act a udržitelnost: Environmentální aspekty AI",
+        "keywords": "udržitelnost, ESG, environment, AI Act, energetická náročnost, reporting",
+        "context": "AI Act zmiňuje energetickou náročnost AI systémů. Resource consumption reporting, ESG alignment."
+    },
+    {
+        "slug": "ai-act-a-autonomni-zbrane",
+        "title": "AI Act a vojenské systémy: Co regulace (ne)pokrývá",
+        "keywords": "vojenské, obrana, AI Act, výjimka, autonomní zbraně, national security",
+        "context": "AI Act má výjimky pro vojenské a národní bezpečnostní systémy (čl. 2). Co je vyloučeno, co ne."
+    },
+    {
+        "slug": "ai-act-extrateritorialni-pusobnost",
+        "title": "AI Act platí i mimo EU: Extrateritoriální působnost",
+        "keywords": "extrateritoriální, mimo EU, AI Act, třetí země, dopad, output",
+        "context": "AI Act se vztahuje i na firmy mimo EU, pokud jejich AI output je používán v EU (čl. 2). Dopady na globální firmy."
+    },
+    {
+        "slug": "ai-act-provozovatel-vs-vyrobce",
+        "title": "AI Act: Provozovatel vs výrobce — kdo je odpovědný",
+        "keywords": "provozovatel, deployer, provider, výrobce, AI Act, odpovědnost",
+        "context": "AI Act rozlišuje provider (výrobce) a deployer (provozovatel). Jasné vysvětlení rolí, příklady, přenos odpovědnosti."
+    },
+    {
+        "slug": "ai-act-a-recommendation-systemy",
+        "title": "Recommendation systémy a AI Act: Netflix, Spotify, e-shopy",
+        "keywords": "recommendation, doporučovací systémy, AI Act, personalizace, transparence",
+        "context": "Doporučovací algoritmy (Netflix, Spotify, e-shopy). Jsou AI systém? Minimální vs limitované riziko."
+    },
+    {
+        "slug": "ai-act-a-agriculture-zemedelstvi",
+        "title": "AI v zemědělství: Dopad AI Actu na agro-tech",
+        "keywords": "zemědělství, agro-tech, AI Act, precision farming, minimální riziko",
+        "context": "AI v zemědělství (precision farming, crop monitoring, drony). Většinou minimální riziko, ale drony?"
+    },
+    {
+        "slug": "ai-act-incident-reporting",
+        "title": "Hlášení AI incidentů: Povinnosti dle AI Actu",
+        "keywords": "incident, reporting, AI Act, článek 73, hlášení, serious incident",
+        "context": "Při závažném incidentu s AI systémem musíte hlásit úřadům (čl. 73). Co je serious incident, lhůty, kam hlásit."
+    },
+    {
+        "slug": "ai-act-a-accessibility",
+        "title": "AI Act a přístupnost: Požadavky pro hendikepované",
+        "keywords": "přístupnost, accessibility, AI Act, disability, handicap",
+        "context": "AI Act obsahuje požadavky na přístupnost AI systémů pro osoby se zdravotním postižením. Co implementovat."
+    },
+    {
+        "slug": "ai-act-standardizace-en-norms",
+        "title": "Harmonizované normy pro AI Act: CEN/CENELEC standardy",
+        "keywords": "normy, standardy, CEN, CENELEC, harmonizované, AI Act, ISO",
+        "context": "EU připravuje harmonizované normy pro AI Act (CEN/CENELEC). Které normy jsou klíčové, stav vývoje, ISO/IEC."
+    },
+    {
+        "slug": "ai-act-a-digital-services-act",
+        "title": "AI Act vs Digital Services Act: Překrývající se regulace",
+        "keywords": "DSA, Digital Services Act, AI Act, platformy, překryv",
+        "context": "DSA a AI Act se překrývají u platform používajících AI. Recommender systémy, content moderation, compliance."
+    },
+    {
+        "slug": "ai-act-pro-pravniky",
+        "title": "AI Act pro právníky: Nová oblast praxe",
+        "keywords": "právník, advokát, AI Act, regulace, právní praxe, poradenství",
+        "context": "AI Act otevírá novou oblast právní praxe. Co by měl každý právník vědět, jak nabízet AI compliance služby."
+    },
+    {
+        "slug": "ai-act-a-chatgpt-v-praci",
+        "title": "Používáte ChatGPT v práci? AI Act říká toto",
+        "keywords": "ChatGPT, práce, zaměstnanci, AI Act, GPAI, firemní politika",
+        "context": "Zaměstnanci masivně používají ChatGPT. Jaké povinnosti má firma? AI Act, interní politiky, bezpečnost dat."
+    },
+    {
+        "slug": "ai-act-a-credit-scoring",
+        "title": "Credit scoring a AI Act: Změny pro banky a spotřebitele",
+        "keywords": "credit scoring, banka, spotřebitel, AI Act, vysoce rizikové, transparence",
+        "context": "AI credit scoring je explicitně vysoce rizikový (příloha III). Povinnosti bank, práva spotřebitelů, alternatívy."
+    },
+    {
+        "slug": "ai-act-implementace-it-perspektiva",
+        "title": "AI Act implementace: IT perspektiva a architektura",
+        "keywords": "implementace, IT, architektura, AI Act, logging, monitoring, MLOps",
+        "context": "Technický pohled na AI Act implementaci: logging, monitoring, bias testing, model governance, MLOps pipeline."
+    },
+    {
+        "slug": "ai-act-a-deepfake-legislativa",
+        "title": "Deepfake regulace v AI Actu: Co musíte vědět",
+        "keywords": "deepfake, AI Act, články 50, fake video, syntetický obsah, označování",
+        "context": "AI Act reguluje deepfake obsah (čl. 50 odst. 4). Povinnost označení, výjimky pro umění, sankce."
+    },
+    {
+        "slug": "ai-act-risk-management-system",
+        "title": "Risk Management System pro AI: Požadavky článku 9",
+        "keywords": "risk management, řízení rizik, AI Act, článek 9, systém",
+        "context": "Článek 9 vyžaduje risk management system pro vysoce rizikové AI. Iterativní proces, identifikace, mitigace, monitoring."
+    },
+    {
+        "slug": "ai-act-a-automotive-adas",
+        "title": "ADAS a AI Act: Pokročilé asistenční systémy v autech",
+        "keywords": "ADAS, automotive, AI Act, asistenční systémy, auto, bezpečnost",
+        "context": "Advanced Driver Assistance Systems (ADAS) a AI Act. Lane keep, emergency braking, parking AI. Safety component regulace."
+    },
+    {
+        "slug": "ai-act-a-energetika",
+        "title": "AI v energetice: Smart grids a AI Act compliance",
+        "keywords": "energetika, smart grid, AI Act, optimalizace, infrastruktura",
+        "context": "AI v energetice (smart grids, demand prediction, trading). Kritická infrastruktura = vysoce rizikové? Analýza."
+    },
+    {
+        "slug": "ai-act-sandbox-cesko-jak-podat",
+        "title": "AI regulační sandbox v Česku: Jak podat žádost",
+        "keywords": "sandbox, Česko, žádost, AI Act, inovace, pilotní projekt",
+        "context": "Praktický návod: jak podat žádost do AI regulačního sandboxu v ČR. Podmínky, proces, přínosy, příklady."
+    },
+    {
+        "slug": "ai-act-a-telemedicina",
+        "title": "Telemedicína a AI: Diagnostické systémy pod AI Actem",
+        "keywords": "telemedicína, diagnostika, AI Act, eHealth, medical device",
+        "context": "AI v telemedicíně: diagnostické algoritmy, triage, monitoring pacientů. Vysoce rizikové dle AI Actu + MDR regulace."
+    },
+    {
+        "slug": "ai-act-a-prediktivni-udrzba",
+        "title": "Prediktivní údržba pomocí AI: Regulace a příležitosti",
+        "keywords": "prediktivní údržba, AI Act, průmysl, IoT, maintenance",
+        "context": "AI prediktivní údržba v průmyslu, budovách, dopravě. Klasifikace rizika, safety component analysis."
+    },
+    {
+        "slug": "ai-act-a-fraud-detection",
+        "title": "AI Fraud Detection: Compliance v boji proti podvodům",
+        "keywords": "fraud detection, podvody, AI Act, banky, pojišťovny, AML",
+        "context": "AI systémy detekce podvodů v bankách a pojišťovnách. Jak klasifikovat riziko, transparence, bias v modelech."
+    },
+    {
+        "slug": "ai-act-dokumentace-pro-maly-podnik",
+        "title": "AI Act dokumentace pro malý podnik: Zjednodušený návod",
+        "keywords": "malý podnik, dokumentace, AI Act, zjednodušené, SME, šablona",
+        "context": "SME-friendly průvodce AI Act dokumentací. Minimální nutné dokumenty, šablony, kde ušetřit, co nehrozí."
+    },
+    {
+        "slug": "ai-act-a-virtualni-asistenti",
+        "title": "Virtuální asistenti (Siri, Alexa) a AI Act",
+        "keywords": "virtuální asistent, Siri, Alexa, AI Act, transparence, chatbot",
+        "context": "Virtuální asistenti jako AI systémy dle AI Actu. Transparence (čl. 50), limitované riziko, povinnosti výrobců."
+    },
+    {
+        "slug": "ai-act-a-migracni-systemy",
+        "title": "AI v migraci a hranicích: Kontroverzní regulace AI Actu",
+        "keywords": "migrace, hranice, AI Act, vysoce rizikové, příloha III, polygraf",
+        "context": "AI na hranicích EU (příloha III bod 7): screening, risk assessment, polygraph-like detectors. Vysoce rizikové, kontroverzní."
+    },
+    {
+        "slug": "ai-act-ai-office-brusel",
+        "title": "AI Office v Bruselu: Kdo řídí enforcement AI Actu",
+        "keywords": "AI Office, enforcement, Brusel, EU, dohled, Komise",
+        "context": "EU AI Office v rámci Komise dohlíží na GPAI modely. Struktura, pravomoci, rozhodování, code of practice."
+    },
+    {
+        "slug": "ai-act-2025-co-plati-od-unora",
+        "title": "AI Act 2025: Co platí od února (první vlna povinností)",
+        "keywords": "únor 2025, AI Act, zákazy, AI literacy, první vlna",
+        "context": "Od 2.2.2025 platí čl. 5 (zákazy) a čl. 4 (AI literacy). Praktický přehled co už teď musíte dodržovat."
+    },
+    {
+        "slug": "ai-act-a-prumysl-4-0",
+        "title": "Průmysl 4.0 a AI Act: Dopady na výrobní podniky",
+        "keywords": "průmysl at 4.0, výroba, AI Act, automatizace, bezpečnost",
+        "context": "Výrobní podniky se smart factory AI systémy. Kvalita, bezpečnost, prediktivní údržba. Klassifikace dle AI Actu."
+    },
+    {
+        "slug": "ai-act-a-personalizace-cen",
+        "title": "Dynamické ceny a AI Act: Je personalizace legální?",
+        "keywords": "dynamické ceny, personalizace, AI Act, e-shop, transparence",
+        "context": "AI pro dynamické/personalizované ceny v e-shopech. AI Act + consumer protection. Transparence povinnosti."
+    },
+    {
+        "slug": "ai-act-interoperabilita-systemu",
+        "title": "Interoperabilita AI systémů: Technické standardy AI Actu",
+        "keywords": "interoperabilita, standardy, AI Act, API, kompatibilita",
+        "context": "AI Act a požadavky na interoperabilitu. Logging formáty, API standardy, datové formáty pro compliance."
+    },
+    {
+        "slug": "ai-act-a-neziskovky",
+        "title": "AI Act a neziskové organizace: Platí i pro NGO?",
+        "keywords": "NGO, neziskovky, AI Act, výjimky, výzkum, dobrovolnictví",
+        "context": "Vztahuje se AI Act na NGO? Výjimky pro výzkum, open source, neziskový sektor. Když NGO provozuje AI chatbot."
+    },
+    {
+        "slug": "ai-act-a-social-media",
+        "title": "AI v sociálních médiích a AI Act: Content moderation",
+        "keywords": "sociální média, content moderation, AI Act, algoritmus, DSA",
+        "context": "AI algoritmy sociálních médií (feed ranking, content moderation). Překryv AI Act a DSA, transparence."
+    },
+    {
+        "slug": "ai-act-a-voice-assistants",
+        "title": "Hlasové AI systémy a AI Act: Voice boty pod regulací",
+        "keywords": "voice assistant, hlasový bot, AI Act, call centrum, transparence",
+        "context": "AI hlasové boty (call centra, IVR). Povinnost informovat o AI interakci (čl. 50). Nahrávky, consent."
+    },
+    {
+        "slug": "ai-act-a-detske-aplikace",
+        "title": "AI Act a děti: Zvýšená ochrana v digitálním světě",
+        "keywords": "děti, ochrana, AI Act, aplikace, hry, vzdělávání",
+        "context": "AI Act zpřísňuje pravidla pro AI interagující s dětmi (čl. 5, 7). Manipulace, profiling, age verification."
+    },
+    {
+        "slug": "ai-act-compliance-cost-estimate",
+        "title": "Kolik stojí AI Act compliance? Odhad nákladů",
+        "keywords": "náklady, cena, AI Act, compliance, budget, investice",
+        "context": "Realistický odhad nákladů na AI Act compliance. Podle velikosti firmy, typu AI systému, externího poradenství."
+    },
+    {
+        "slug": "ai-act-a-3d-tisk",
+        "title": "AI řízený 3D tisk a AI Act: Nová výrobní revoluce",
+        "keywords": "3D tisk, AI Act, generativní design, výroba, bezpečnost",
+        "context": "AI v 3D tisku: generativní design, quality control. Pokud je výstup safety component, spadá pod AI Act."
+    },
+    {
+        "slug": "ai-act-a-legaltech",
+        "title": "LegalTech AI a AI Act: Regulace pro právní AI nástroje",
+        "keywords": "legaltech, právní AI, AI Act, smlouvy, analýza, justice",
+        "context": "AI nástroje pro právo (contract analysis, legal research, prediction). Klasifikace rizika — justice = vysoce rizikový."
+    }
+]
