@@ -74,6 +74,7 @@ export default function RootLayout({
         <html lang="cs" className={`overflow-x-hidden ${inter.variable}`}>
             <head>
                 <meta name="theme-color" content="#7c3aed" />
+                <meta name="google-site-verification" content="yQ-vZanc4EnuKMrENxtiKTKdcAYrTjLoirbcka4rS9s" />
                 {/* ── Schema.org JSON-LD ── */}
                 <script
                     type="application/ld+json"
