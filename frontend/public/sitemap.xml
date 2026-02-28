@@ -185,4 +185,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://aishield.cz/blog/feed.xml</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://aishield.cz/llms-full.txt</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>

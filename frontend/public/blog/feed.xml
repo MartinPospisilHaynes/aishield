@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>AIshield.cz Blog — AI Act novinky pro české firmy</title>
+    <link>https://aishield.cz/blog</link>
+    <description>Praktické návody, analýzy a novinky o EU AI Act pro české firmy a e-shopy. Deadline: srpen 2026.</description>
+    <language>cs</language>
+    <lastBuildDate>2026-02-28</lastBuildDate>
+    <atom:link href="https://aishield.cz/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <image>
+      <url>https://aishield.cz/icon.png</url>
+      <title>AIshield.cz</title>
+      <link>https://aishield.cz</link>
+    </image>
+    <managingEditor>info@aishield.cz (AIshield.cz)</managingEditor>
+    <webMaster>info@aishield.cz (AIshield.cz)</webMaster>
+    <copyright>© 2025-2026 AIshield.cz</copyright>
+    <ttl>1440</ttl>
+    <item>
+      <title>AI Act: Klíčové povinnosti pro české firmy do roku 2026</title>
+      <link>https://aishield.cz/blog/ai-act-co-musi-splnit-ceske-firmy</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/ai-act-co-musi-splnit-ceske-firmy</guid>
+      <description>Nový EU AI Act přináší zásadní změny. Zjistěte, jaké povinnosti čekají české firmy a jak se na ně efektivně připravit.</description>
+      <pubDate>2026-02-28</pubDate>
+      <category>Průvodce</category>
+    </item>
+    <item>
+      <title>AI Act a české e-shopy: Co musíte splnit do srpna 2026</title>
+      <link>https://aishield.cz/blog/ai-act-a-e-shopy-v-cr</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/ai-act-a-e-shopy-v-cr</guid>
+      <description>Praktický průvodce pro majitele e-shopů. Chatboty, doporučování, remarketing.</description>
+      <pubDate>2026-02-15</pubDate>
+      <category>Průvodce</category>
+    </item>
+    <item>
+      <title>Co je transparenční stránka a proč ji potřebujete</title>
+      <link>https://aishield.cz/blog/co-je-transparencni-stranka</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/co-je-transparencni-stranka</guid>
+      <description>Článek 50 AI Actu vyžaduje informovat o AI. Jak vytvořit stránku krok za krokem.</description>
+      <pubDate>2026-02-10</pubDate>
+      <category>Návod</category>
+    </item>
+    <item>
+      <title>Deadline AI Act: srpen 2026 — co se stane a jak se připravit</title>
+      <link>https://aishield.cz/blog/deadline-ai-act-srpen-2026</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/deadline-ai-act-srpen-2026</guid>
+      <description>Přehled všech deadlinů AI Actu. Co platí už teď a co přijde v srpnu 2026.</description>
+      <pubDate>2026-02-05</pubDate>
+      <category>Časová osa</category>
+    </item>
+  </channel>
+</rss>

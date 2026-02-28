@@ -22,6 +22,18 @@ export default function ContentPage({
     children,
     cta = true,
 }: ContentPageProps) {
+    // Generate BreadcrumbList JSON-LD
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbs?.map((bc, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": bc.label,
+            ...(bc.href ? { "item": `https://aishield.cz${bc.href}` } : {}),
+        })),
+    };
+
     return (
         <article className="py-20 sm:py-28">
             <div className="mx-auto max-w-3xl px-4 sm:px-6">

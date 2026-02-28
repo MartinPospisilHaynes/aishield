@@ -1,0 +1,25 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "AIshield.cz — AI Act Compliance Scanner",
+  "name_for_model": "aishield_ai_act_compliance",
+  "description_for_human": "Automatizovaný scanner AI systémů na webech pro splnění EU AI Act. Bezplatný sken za 60 sekund.",
+  "description_for_model": "AIshield.cz is a Czech SaaS for EU AI Act (Regulation 2024/1689) compliance. It scans websites for AI systems (chatbots, analytics, ML models, recommendation engines), classifies risk levels (unacceptable/high/limited/minimal), and generates required compliance documentation (transparency pages, technical docs, risk assessments, AI registries). Deadline: August 2, 2026. Fines up to 35M EUR. Free scan at aishield.cz/scan. Targets Czech businesses, e-shops, agencies, municipalities.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://aishield.cz/api/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://aishield.cz/icon.png",
+  "contact_email": "info@aishield.cz",
+  "legal_info_url": "https://aishield.cz/terms",
+  "endpoints": {
+    "scan": "https://aishield.cz/scan",
+    "pricing": "https://aishield.cz/pricing",
+    "faq": "https://aishield.cz/faq",
+    "blog": "https://aishield.cz/blog",
+    "ai_act_hub": "https://aishield.cz/ai-act"
+  }
+}

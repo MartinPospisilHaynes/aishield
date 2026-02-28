@@ -4,7 +4,7 @@ Disallow: /admin
 Disallow: /dashboard
 Disallow: /api/
 
-# AI crawlers welcome
+# ── AI Crawlers Welcome ──
 User-agent: GPTBot
 Allow: /
 
@@ -23,5 +23,50 @@ Allow: /
 User-agent: cohere-ai
 Allow: /
 
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: AI2Bot
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: ImagesiftBot
+Allow: /
+
+User-agent: Omgilibot
+Allow: /
+
 Sitemap: https://aishield.cz/sitemap.xml
-# LLMs info: https://aishield.cz/llms.txt
+# RSS feed
+Feed: https://aishield.cz/blog/feed.xml
+# LLM-readable site description
+LLMs-txt: https://aishield.cz/llms.txt
+LLMs-full-txt: https://aishield.cz/llms-full.txt
+# AI plugin manifest
+AI-Plugin: https://aishield.cz/.well-known/ai-plugin.json

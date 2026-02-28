@@ -318,6 +318,22 @@ def build_page_tsx(article: dict, has_image: bool = False) -> str:
         images: [{{ url: "/blog/{slug}.png", width: 1200, height: 630 }}],
     }},"""
 
+    # BlogPosting JSON-LD schema
+    blog_schema = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": f"{article['h1_title']} {article['h1_accent']}",
+        "description": article["meta_description"],
+        "datePublished": article["date"],
+        "dateModified": article["date"],
+        "author": {"@type": "Organization", "name": "AIshield.cz", "url": "https://aishield.cz"},
+        "publisher": {"@type": "Organization", "name": "AIshield.cz", "logo": {"@type": "ImageObject", "url": "https://aishield.cz/icon.png"}},
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{SITE_URL}/blog/{slug}"},
+        "inLanguage": "cs",
+        "keywords": article.get("topic_title", "AI Act, compliance"),
+        "image": f"{SITE_URL}/blog/{slug}.png" if has_image else f"{SITE_URL}/icon.png",
+    }, ensure_ascii=False)
+
     tsx = f'''import type {{ Metadata }} from "next";
 import ContentPage from "@/components/content-page";
 import Link from "next/link";
@@ -330,6 +346,8 @@ export const metadata: Metadata = {{
 
 export default function Page() {{
     return (
+        <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{{{ __html: `{blog_schema}` }}}} />
         <ContentPage
             breadcrumbs={{[
                 {{ label: "Domů", href: "/" }},
@@ -343,6 +361,7 @@ export default function Page() {{
 {chr(10).join(sections_jsx)}
 {links_jsx}
         </ContentPage>
+        </>
     );
 }}
 '''
@@ -412,6 +431,117 @@ def update_sitemap(slug: str):
     content = content.replace("</urlset>", f"{new_entry}\n</urlset>")
     sitemap_path.write_text(content, encoding="utf-8")
     log.info(f"Added /blog/{slug} to sitemap")
+
+
+
+
+# ── IndexNow API ────────────────────────────────────────────────────────────
+INDEXNOW_KEY = "aishield2026czaiact"
+
+def submit_indexnow(url: str):
+    """Submit URL to IndexNow (Bing, Yandex, Seznam, Naver instantly)."""
+    # Create key file if not exists
+    key_file = FRONTEND_DIR / "public" / f"{INDEXNOW_KEY}.txt"
+    if not key_file.exists():
+        key_file.write_text(INDEXNOW_KEY)
+        log.info(f"Created IndexNow key file: {key_file}")
+
+    payload = json.dumps({
+        "host": "aishield.cz",
+        "key": INDEXNOW_KEY,
+        "keyLocation": f"https://aishield.cz/{INDEXNOW_KEY}.txt",
+        "urlList": [url]
+    }).encode()
+
+    for endpoint in [
+        "https://api.indexnow.org/indexnow",
+        "https://www.bing.com/indexnow",
+        "https://yandex.com/indexnow",
+    ]:
+        req = Request(endpoint, data=payload, headers={"Content-Type": "application/json"})
+        try:
+            with urlopen(req, timeout=15) as resp:
+                log.info(f"IndexNow {endpoint}: {resp.status}")
+        except Exception as e:
+            log.warning(f"IndexNow {endpoint} failed: {e}")
+
+
+def ping_sitemaps():
+    """Ping Google and Bing about sitemap update."""
+    sitemap_url = f"{SITE_URL}/sitemap.xml"
+    urls = [
+        f"https://www.google.com/ping?sitemap={sitemap_url}",
+        f"https://www.bing.com/ping?sitemap={sitemap_url}",
+    ]
+    for url in urls:
+        req = Request(url)
+        try:
+            with urlopen(req, timeout=15) as resp:
+                log.info(f"Sitemap ping {url}: {resp.status}")
+        except Exception as e:
+            log.warning(f"Sitemap ping failed: {e}")
+
+
+def regenerate_rss():
+    """Regenerate RSS feed from manifest."""
+    manifest = load_manifest()
+    items = ""
+    for a in manifest:
+        items += f"""    <item>
+      <title>{a['title']}</title>
+      <link>{SITE_URL}{a['href']}</link>
+      <guid isPermaLink="true">{SITE_URL}{a['href']}</guid>
+      <description>{a['desc']}</description>
+      <pubDate>{a['date']}</pubDate>
+      <category>{a.get('tag', 'AI Act')}</category>
+    </item>
+"""
+    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>AIshield.cz Blog — AI Act novinky pro české firmy</title>
+    <link>{SITE_URL}/blog</link>
+    <description>Praktické návody, analýzy a novinky o EU AI Act pro české firmy a e-shopy. Deadline: srpen 2026.</description>
+    <language>cs</language>
+    <lastBuildDate>{manifest[0]['date'] if manifest else ''}</lastBuildDate>
+    <atom:link href="{SITE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <image>
+      <url>{SITE_URL}/icon.png</url>
+      <title>AIshield.cz</title>
+      <link>{SITE_URL}</link>
+    </image>
+    <managingEditor>info@aishield.cz (AIshield.cz)</managingEditor>
+    <copyright>© 2025-2026 AIshield.cz</copyright>
+    <ttl>1440</ttl>
+{items}  </channel>
+</rss>
+"""
+    feed_dir = FRONTEND_DIR / "public" / "blog"
+    feed_dir.mkdir(parents=True, exist_ok=True)
+    (feed_dir / "feed.xml").write_text(rss, encoding="utf-8")
+    log.info("RSS feed regenerated")
+
+
+def update_llms_full(article: dict):
+    """Append new article to llms-full.txt."""
+    llms_path = FRONTEND_DIR / "public" / "llms-full.txt"
+    if llms_path.exists():
+        content = llms_path.read_text(encoding="utf-8")
+        new_line = f"- [{article['h1_title']} {article['h1_accent']}]({SITE_URL}/blog/{article['slug']}) — {article['excerpt']} ({article['date_human']})\n"
+        # Insert after "## Blog Articles" section
+        if "## Blog Articles" in content:
+            # Find end of blog section and insert
+            lines = content.split("\n")
+            for i, line in enumerate(lines):
+                if line.startswith("## Blog Articles"):
+                    # Find next empty line or section after articles
+                    j = i + 1
+                    while j < len(lines) and (lines[j].startswith("- [") or lines[j].strip() == ""):
+                        j += 1
+                    lines.insert(j - 1, new_line.rstrip("\n"))
+                    break
+            llms_path.write_text("\n".join(lines), encoding="utf-8")
+            log.info("Updated llms-full.txt with new article")
 
 
 # ── Git Deploy ──────────────────────────────────────────────────────────────
@@ -505,9 +635,24 @@ def main():
         save_manifest(manifest)
         sys.exit(1)
 
-    # 8. Deploy
+    # 8. Regenerate RSS feed
+    regenerate_rss()
+
+    # 9. Update llms-full.txt
+    update_llms_full(article)
+
+    # 10. Deploy
     git_deploy(article["slug"])
-    log.info(f"✅ Article published: {SITE_URL}/blog/{article['slug']}")
+
+    # 11. IndexNow — instant indexing by Bing, Yandex, Seznam
+    article_url = f"{SITE_URL}/blog/{article['slug']}"
+    submit_indexnow(article_url)
+    submit_indexnow(f"{SITE_URL}/blog")  # also re-index blog hub
+
+    # 12. Ping sitemaps to Google and Bing
+    ping_sitemaps()
+
+    log.info(f"✅ Article published: {article_url}")
     log.info("=" * 60)
 
 
