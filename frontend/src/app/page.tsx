@@ -570,9 +570,9 @@ export default function HomePage() {
                     {/* Povinnosti — odrážky */}
                     <div className="mx-auto mt-12 max-w-2xl text-left">
                         <ScrollReveal variant="fade-up">
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
+                            <p className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4 text-center">
                                 Co zákon vyžaduje od webů a e-shopů
-                            </h3>
+                            </p>
                         </ScrollReveal>
                         <div className="grid sm:grid-cols-2 gap-3 sm:auto-rows-[1fr]">
                             {[

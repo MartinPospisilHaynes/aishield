@@ -11,6 +11,8 @@ interface TimeLeft {
     seconds: number;
 }
 
+const ZERO: TimeLeft = { months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+
 function calcTimeLeft(): TimeLeft {
     const deadline = new Date("2026-08-02T00:00:00Z").getTime();
     const now = Date.now();
@@ -21,7 +23,6 @@ function calcTimeLeft(): TimeLeft {
     const totalHours = Math.floor(totalMinutes / 60);
     const totalDays = Math.floor(totalHours / 24);
 
-    // Months = rough 30-day chunks
     const months = Math.floor(totalDays / 30);
     const afterMonths = totalDays - months * 30;
     const weeks = Math.floor(afterMonths / 7);
@@ -37,11 +38,11 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
     return (
         <div className="flex flex-col items-center">
             <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm flex items-center justify-center">
-                <span className="text-xl sm:text-3xl font-bold tabular-nums text-white">
+                <span suppressHydrationWarning className="text-xl sm:text-3xl font-bold tabular-nums text-white">
                     {String(value).padStart(2, "0")}
                 </span>
             </div>
-            <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">
                 {label}
             </span>
         </div>
@@ -69,13 +70,11 @@ const labelsCz: Record<keyof TimeLeft, string> = {
 function CountdownInner({ time, className }: { time: TimeLeft; className: string }) {
     return (
         <>
-            {/* Mobile: 3-column grid, no separators */}
             <div className={`grid grid-cols-3 gap-3 sm:hidden ${className}`}>
                 {labels.map((key) => (
                     <CountdownUnit key={key} value={time[key]} label={labelsCz[key]} />
                 ))}
             </div>
-            {/* Desktop: row with separators */}
             <div className={`hidden sm:flex items-center justify-center gap-2 ${className}`}>
                 <CountdownUnit value={time.months} label="Měsíce" />
                 <Separator />
@@ -94,16 +93,13 @@ function CountdownInner({ time, className }: { time: TimeLeft; className: string
 }
 
 export default function Countdown({ className = "" }: { className?: string }) {
-    const [time, setTime] = useState<TimeLeft>(calcTimeLeft);
-    const [mounted, setMounted] = useState(false);
+    const [time, setTime] = useState<TimeLeft>(ZERO);
 
     useEffect(() => {
-        setMounted(true);
+        setTime(calcTimeLeft());
         const id = setInterval(() => setTime(calcTimeLeft()), 1000);
         return () => clearInterval(id);
     }, []);
 
-    const zeroTime: TimeLeft = { months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
-
-    return <CountdownInner time={mounted ? time : zeroTime} className={className} />;
+    return <CountdownInner time={time} className={className} />;
 }

@@ -1,4 +1,11 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+    subsets: ["latin", "latin-ext"],
+    display: "swap",
+    variable: "--font-inter",
+});
 import "./globals.css";
 import Providers from "@/components/providers";
 import HeaderVisibility from "@/components/header-visibility";
@@ -6,11 +13,14 @@ import ConsentBanner from "@/components/consent-banner";
 
 
 export const metadata: Metadata = {
-    title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
+    title: {
+        default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
+        template: "%s | AIshield.cz",
+    },
     description:
-        "Automatizovaný AI Act compliance scanner pro české firmy. " +
-        "Zjistěte za 60 sekund, jestli váš web splňuje nový zákon EU o umělé inteligenci. " +
-        "Deadline: srpen 2026. Pokuta až 35 milionů EUR.",
+        "Bezplatný AI Act compliance scanner pro české firmy a e-shopy. " +
+        "Zjistěte za 60 sekund, jaké AI systémy na vašem webu běží a co musíte udělat do 2. srpna 2026. " +
+        "Pokuta až 35 mil. EUR. Jsme jediný specializovaný nástroj v ČR.",
     keywords: [
         "AI Act",
         "compliance",
@@ -21,10 +31,20 @@ export const metadata: Metadata = {
         "chatbot",
         "transparence",
         "české firmy",
+        "AI Act e-shop",
+        "AI Act pokuty",
+        "AI Act článek 50",
+        "transparenční stránka",
+        "AI systémy na webu",
+        "AI Act Česko",
+        "AI Act povinnosti",
     ],
     authors: [{ name: "AIshield.cz" }],
     openGraph: {
-        title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
+        title: {
+        default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
+        template: "%s | AIshield.cz",
+    },
         description:
             "Automatizovaný compliance scanner pro české firmy. Zjistěte za 60 sekund, " +
             "jestli váš web splňuje zákon EU o AI. Pokuta až 35 mil. €. Deadline: srpen 2026.",
@@ -35,7 +55,10 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "AIshield.cz — Váš štít proti pokutám EU za AI Act",
+        title: {
+        default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
+        template: "%s | AIshield.cz",
+    },
         description:
             "Zjistěte za 60 sekund, jestli váš web splňuje zákon EU o AI. " +
             "Pokuta až 35 mil. €. Deadline: srpen 2026."
@@ -48,14 +71,157 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="cs" className="overflow-x-hidden">
+        <html lang="cs" className={`overflow-x-hidden ${inter.variable}`}>
             <head>
                 <meta name="theme-color" content="#7c3aed" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-                    rel="stylesheet"
+                {/* ── Schema.org JSON-LD ── */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@graph": [
+                                {
+                                    "@type": "Organization",
+                                    "@id": "https://aishield.cz/#organization",
+                                    "name": "AIshield.cz",
+                                    "url": "https://aishield.cz",
+                                    "logo": "https://aishield.cz/icon.png",
+                                    "description": "Automatizovaný AI Act compliance scanner pro české firmy a e-shopy. Skenování AI systémů, riziková klasifikace, generování dokumentace.",
+                                    "foundingDate": "2025",
+                                    "address": {
+                                        "@type": "PostalAddress",
+                                        "addressCountry": "CZ",
+                                        "addressRegion": "Olomoucký kraj"
+                                    },
+                                    "contactPoint": {
+                                        "@type": "ContactPoint",
+                                        "telephone": "+420-732-716-141",
+                                        "email": "info@aishield.cz",
+                                        "contactType": "customer service",
+                                        "availableLanguage": "Czech"
+                                    },
+                                    "sameAs": []
+                                },
+                                {
+                                    "@type": "WebSite",
+                                    "@id": "https://aishield.cz/#website",
+                                    "name": "AIshield.cz",
+                                    "url": "https://aishield.cz",
+                                    "publisher": { "@id": "https://aishield.cz/#organization" },
+                                    "inLanguage": "cs",
+                                    "potentialAction": {
+                                        "@type": "SearchAction",
+                                        "target": "https://aishield.cz/scan?url={search_term_string}",
+                                        "query-input": "required name=search_term_string"
+                                    }
+                                },
+                                {
+                                    "@type": "SoftwareApplication",
+                                    "@id": "https://aishield.cz/#software",
+                                    "name": "AIshield Scanner",
+                                    "applicationCategory": "BusinessApplication",
+                                    "operatingSystem": "Web",
+                                    "offers": {
+                                        "@type": "Offer",
+                                        "price": "0",
+                                        "priceCurrency": "CZK",
+                                        "description": "Bezplatný AI Act sken webu"
+                                    },
+                                    "description": "Automatizovaný scanner AI systémů na webových stránkách pro splnění EU AI Act (Nařízení 2024/1689). Detekce chatbotů, analytiky, ML modelů a dalších AI nástrojů.",
+                                    "creator": { "@id": "https://aishield.cz/#organization" }
+                                },
+                                {
+                                    "@type": "FAQPage",
+                                    "@id": "https://aishield.cz/#faq",
+                                    "mainEntity": [
+                                        {
+                                            "@type": "Question",
+                                            "name": "Co je AI Act a proč se mě týká?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "AI Act (Nařízení EU 2024/1689) je první zákon na světě regulující umělou inteligenci. Platí pro každého, kdo v EU provozuje AI systémy — chatboty, analytiku, doporučovací systémy. Pokuta až 35 mil. EUR."
+                                            }
+                                        },
+                                        {
+                                            "@type": "Question",
+                                            "name": "Jaké pokuty hrozí za porušení AI Act?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "Až 35 milionů EUR nebo 7 % obratu za zakázané AI praktiky. Až 15 mil. EUR nebo 3 % za chybějící dokumentaci. Až 7,5 mil. EUR za nepravdivé informace. Pokuty se počítají za každé porušení zvlášť."
+                                            }
+                                        },
+                                        {
+                                            "@type": "Question",
+                                            "name": "Týká se AI Act malých firem a e-shopů?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "Ano. Pokud používáte chatbot (Smartsupp, Tidio), Google Analytics, doporučování produktů nebo reklamní pixel, zákon se vás týká. Pro malé firmy platí nižší stropy pokut, ale povinnost transparence zůstává."
+                                            }
+                                        },
+                                        {
+                                            "@type": "Question",
+                                            "name": "Jaký je deadline pro splnění AI Act?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "Klíčové datum je 2. srpen 2026 — plná účinnost AI Actu. Některé povinnosti (zakázané praktiky, AI gramotnost) platí od února 2025. Příprava dokumentace zabere 2–4 týdny."
+                                            }
+                                        },
+                                        {
+                                            "@type": "Question",
+                                            "name": "Je skenování webu na AIshield.cz zdarma?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "Ano, bezplatný sken je zcela zdarma, bez registrace a bez skrytých podmínek. Zadáte URL a za minutu dostanete přehled AI systémů na webu. Platíte pouze za compliance dokumenty."
+                                            }
+                                        },
+                                        {
+                                            "@type": "Question",
+                                            "name": "Jak AIshield scanner funguje?",
+                                            "acceptedAnswer": {
+                                                "@type": "Answer",
+                                                "text": "Scanner automaticky prochází web pomocí 24 nezávislých skenů z 8 zemí (desktop + mobil). Detekuje chatboty, analytiku, ML modely a další AI nástroje. Výsledky jsou k dispozici do 60 sekund pro základní sken, nebo do 24 hodin pro hloubkový audit."
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "@type": "HowTo",
+                                    "@id": "https://aishield.cz/#howto",
+                                    "name": "Jak splnit AI Act pro váš web",
+                                    "description": "4 kroky ke kompletní AI Act compliance pro český web nebo e-shop",
+                                    "step": [
+                                        {
+                                            "@type": "HowToStep",
+                                            "position": 1,
+                                            "name": "Skenujte web",
+                                            "text": "Zadejte URL vašeho webu do AIshield scanneru. Za 60 sekund dostanete přehled všech AI systémů, které na webu běží."
+                                        },
+                                        {
+                                            "@type": "HowToStep",
+                                            "position": 2,
+                                            "name": "Zjistěte rizika",
+                                            "text": "Scanner automaticky klasifikuje nalezené AI systémy podle rizikových kategorií AI Actu a ukáže, jaké povinnosti z nich plynou."
+                                        },
+                                        {
+                                            "@type": "HowToStep",
+                                            "position": 3,
+                                            "name": "Vyplňte dotazník",
+                                            "text": "Krátký dotazník (5 minut) pokryje i interní AI systémy, které sken nevidí — ChatGPT, AI v účetnictví, automatizaci."
+                                        },
+                                        {
+                                            "@type": "HowToStep",
+                                            "position": 4,
+                                            "name": "Obdržíte dokumenty",
+                                            "text": "Do 7 dnů dostanete kompletní compliance dokumentaci: transparenční stránku, registr AI, risk assessment, interní AI politiku a školení."
+                                        }
+                                    ]
+                                }
+                            ]
+                        })
+                    }}
                 />
-                {/* Auto-reload on chunk load error (stale deploy cache) */}
+{/* Auto-reload on chunk load error (stale deploy cache) */}
                 <script dangerouslySetInnerHTML={{
                     __html: `
                     if (typeof window !== 'undefined') {
@@ -70,7 +236,7 @@ export default function RootLayout({
                     }
                 `}} />
             </head>
-            <body className="bg-dark-900 text-slate-100 overflow-x-hidden">
+            <body className={`bg-dark-900 text-slate-100 overflow-x-hidden ${inter.className}`}>
                 <Providers>
                     {/* ── Header (skrytý v dotazníku — koliduje s progress barem) ── */}
                     <HeaderVisibility />
@@ -103,7 +269,7 @@ export default function RootLayout({
                                             <span className="text-slate-600 text-sm font-normal ml-0.5">.cz</span>
                                         </span>
                                     </div>
-                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                    <p className="text-sm text-slate-400 leading-relaxed">
                                         Váš štít proti pokutám EU za AI Act.
                                         Automatizovaný compliance scanner pro české firmy.
                                     </p>

@@ -1,0 +1,4 @@
+  File "<string>", line 16
+    print(f'[{vis}] {el.evaluate(e
+          ^
+SyntaxError: unterminated string literal (detected at line 16)

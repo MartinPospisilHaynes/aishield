@@ -200,12 +200,12 @@
     0%,
     100% {
         transform: scale(1);
-        box-shadow: 0 0 20px rgba(232, 121, 249, 0.3), 0 0 40px rgba(232, 121, 249, 0.1);
+        opacity: 1;
     }
 
     50% {
-        transform: scale(1.06);
-        box-shadow: 0 0 35px rgba(232, 121, 249, 0.6), 0 0 70px rgba(232, 121, 249, 0.25), 0 0 100px rgba(192, 38, 211, 0.15);
+        transform: scale(1.04);
+        opacity: 0.92;
     }
 }
 
@@ -214,13 +214,11 @@
 
     0%,
     100% {
-        border-color: rgba(232, 121, 249, 0.2);
-        box-shadow: 0 0 15px rgba(232, 121, 249, 0.05);
+        opacity: 1;
     }
 
     50% {
-        border-color: rgba(34, 211, 238, 0.25);
-        box-shadow: 0 0 25px rgba(34, 211, 238, 0.08);
+        opacity: 0.85;
     }
 }
 
@@ -293,6 +291,7 @@
 /* ── Persistent CTA pulse (always animating, not scroll-triggered) ── */
 .cta-pulse {
     animation: neonPulse 2s ease-in-out infinite;
+    will-change: transform, opacity;
 }
 
 /* ── Hide scrollbar on chat textarea ── */
