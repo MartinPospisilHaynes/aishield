@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d946ef"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d946ef"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Mini štít ikona vlevo -->
+  <g transform="translate(30, 20) scale(0.31)" filter="url(#glow)">
+    <path d="M256 36 L440 120 L440 260 Q440 380 256 476 Q72 380 72 260 L72 120 Z"
+          fill="none" stroke="url(#iconGrad)" stroke-width="12"
+          stroke-linejoin="round"/>
+    <path d="M256 60 L420 136 L420 256 Q420 368 256 456 Q92 368 92 256 L92 136 Z"
+          fill="url(#iconGrad)" opacity="0.15"/>
+    <!-- Centrální AI bod -->
+    <circle cx="256" cy="230" r="30" fill="#0f172a" stroke="#d946ef" stroke-width="5"/>
+    <circle cx="256" cy="230" r="16" fill="#d946ef" opacity="0.5"/>
+    <circle cx="256" cy="230" r="8" fill="#fff" opacity="0.9"/>
+    <!-- Circuit linie -->
+    <g stroke="#06b6d4" stroke-width="4" opacity="0.7">
+      <line x1="256" y1="130" x2="256" y2="200"/>
+      <line x1="256" y1="260" x2="256" y2="370"/>
+      <line x1="150" y1="200" x2="226" y2="230"/>
+      <line x1="362" y1="200" x2="286" y2="230"/>
+      <line x1="150" y1="290" x2="226" y2="250"/>
+      <line x1="362" y1="290" x2="286" y2="250"/>
+    </g>
+    <circle cx="256" cy="130" r="10" fill="#06b6d4"/>
+    <circle cx="256" cy="370" r="10" fill="#06b6d4"/>
+    <circle cx="150" cy="200" r="8" fill="#7c3aed"/>
+    <circle cx="362" cy="200" r="8" fill="#7c3aed"/>
+    <circle cx="150" cy="290" r="8" fill="#7c3aed"/>
+    <circle cx="362" cy="290" r="8" fill="#7c3aed"/>
+  </g>
+
+  <!-- Text "AI" - gradient -->
+  <text x="200" y="135" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif"
+        font-size="88" font-weight="900" letter-spacing="-2"
+        fill="url(#textGrad)" filter="url(#textGlow)">AI</text>
+
+  <!-- Text "shield" - bílý -->
+  <text x="310" y="135" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif"
+        font-size="88" font-weight="300" letter-spacing="-2"
+        fill="#ffffff">shield</text>
+
+  <!-- Tečka jako cyan accent -->
+  <circle cx="688" cy="125" r="6" fill="#06b6d4" filter="url(#glow)"/>
+
+  <!-- Podtitulek -->
+  <text x="202" y="170" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif"
+        font-size="18" font-weight="400" letter-spacing="6"
+        fill="#94a3b8">AI ACT COMPLIANCE</text>
+</svg>

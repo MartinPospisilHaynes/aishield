@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     authors: [{ name: "AIshield.cz" }],
     openGraph: {
         title: {
-            default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
-            template: "%s | AIshield.cz",
-        },
+        default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
+        template: "%s | AIshield.cz",
+    },
         description:
             "Automatizovaný compliance scanner pro české firmy. Zjistěte za 60 sekund, " +
             "jestli váš web splňuje zákon EU o AI. Pokuta až 35 mil. €. Deadline: srpen 2026.",
@@ -56,9 +56,9 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: {
-            default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
-            template: "%s | AIshield.cz",
-        },
+        default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
+        template: "%s | AIshield.cz",
+    },
         description:
             "Zjistěte za 60 sekund, jestli váš web splňuje zákon EU o AI. " +
             "Pokuta až 35 mil. €. Deadline: srpen 2026."
@@ -71,7 +71,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="cs" className={inter.variable}>
+        <html lang="cs" className={`overflow-x-hidden ${inter.variable}`}>
             <head>
                 <meta name="theme-color" content="#7c3aed" />
                 <link rel="alternate" type="application/rss+xml" title="AIshield.cz Blog" href="/blog/feed.xml" />
@@ -227,7 +227,7 @@ export default function RootLayout({
                         })
                     }}
                 />
-                {/* Auto-reload on chunk load error (stale deploy cache) */}
+{/* Auto-reload on chunk load error (stale deploy cache) */}
                 <script dangerouslySetInnerHTML={{
                     __html: `
                     if (typeof window !== 'undefined') {
@@ -370,20 +370,20 @@ export default function RootLayout({
                                     <a href="/faq" className="hover:text-slate-400 transition-colors">FAQ</a>
                                 </div>
                                 <div className="text-center text-sm text-slate-600">
-                                    <p>&copy; {new Date().getFullYear()} AIshield.cz — Provozovatel: Martin Haynes, IČO: 17889251</p>
-                                    <p className="mt-2">
-                                        Vytvořila agentura{" "}
-                                        <a
-                                            href="https://www.desperados-design.cz"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="font-semibold transition-colors hover:brightness-125 inline-block py-3"
-                                            style={{ color: "#d946ef" }}
-                                        >
-                                            Desperados-design.cz
-                                        </a>
-                                    </p>
-                                </div>
+                                <p>&copy; {new Date().getFullYear()} AIshield.cz — Provozovatel: Martin Haynes, IČO: 17889251</p>
+                                <p className="mt-2">
+                                    Vytvořila agentura{" "}
+                                    <a
+                                        href="https://www.desperados-design.cz"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold transition-colors hover:brightness-125 inline-block py-3"
+                                        style={{ color: "#d946ef" }}
+                                    >
+                                        Desperados-design.cz
+                                    </a>
+                                </p>
+                            </div>
                             </div>
                         </div>
                     </footer>

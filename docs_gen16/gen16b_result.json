@@ -1,0 +1,60 @@
+{
+  "documents": [
+    {
+      "template_key": "chatbot_notices",
+      "template_name": "Texty oznámení",
+      "filename": "oznameni_ai_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/oznameni_ai_20260226_073613.pdf?",
+      "size_bytes": 54273,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:41:17.489843+00:00"
+    },
+    {
+      "template_key": "ai_policy",
+      "template_name": "Interní AI politika",
+      "filename": "interni_ai_politika_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/interni_ai_politika_20260226_073613.pdf?",
+      "size_bytes": 65061,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:47:02.968044+00:00"
+    },
+    {
+      "template_key": "incident_response_plan",
+      "template_name": "Plán řízení incidentů",
+      "filename": "plan_rizeni_incidentu_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/plan_rizeni_incidentu_20260226_073613.pdf?",
+      "size_bytes": 60040,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:53:09.209529+00:00"
+    },
+    {
+      "template_key": "dpia_template",
+      "template_name": "Posouzení dopadů (DPIA/FRIA)",
+      "filename": "dpia_posouzeni_vlivu_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/dpia_posouzeni_vlivu_20260226_073613.pdf?",
+      "size_bytes": 56370,
+      "format": "pdf",
+      "generated_at": "2026-02-26T07:59:15.384466+00:00"
+    },
+    {
+      "template_key": "vendor_checklist",
+      "template_name": "Dodavatelský checklist",
+      "filename": "dodavatelsky_checklist_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/dodavatelsky_checklist_20260226_073613.pdf?",
+      "size_bytes": 58299,
+      "format": "pdf",
+      "generated_at": "2026-02-26T08:04:36.822168+00:00"
+    },
+    {
+      "template_key": "monitoring_plan",
+      "template_name": "Monitoring plán",
+      "filename": "monitoring_plan_ai_20260226_073613.pdf",
+      "download_url": "https://rsxwqcrkttlfnqbjgpgc.supabase.co/storage/v1/object/public/documents/3900ae47-25d5-42fb-af4d-0d06623bc8cc/monitoring_plan_ai_20260226_073613.pdf?",
+      "size_bytes": 52594,
+      "format": "pdf",
+      "generated_at": "2026-02-26T08:09:33.933791+00:00"
+    }
+  ],
+  "errors": [],
+  "elapsed_s": 2003.1
+}
