@@ -2,33 +2,33 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Blog \u2014 AI Act novinky, n\u00e1vody a tipy pro \u010desk\u00e9 firmy",
+    title: "Blog — AI Act novinky, návody a tipy pro české firmy",
     description:
-        "Aktu\u00e1ln\u00ed informace o EU AI Act, praktick\u00e9 n\u00e1vody na compliance a tipy pro \u010desk\u00e9 weby a e-shopy.",
+        "Aktuální informace o EU AI Act, praktické návody na compliance a tipy pro české weby a e-shopy.",
     alternates: { canonical: "https://aishield.cz/blog" },
 };
 
 const articles = [
     {
         href: "/blog/ai-act-a-e-shopy-v-cr",
-        title: "AI Act a \u010desk\u00e9 e-shopy: Co mus\u00edte splnit do srpna 2026",
-        desc: "Praktick\u00fd pr\u016fvodce pro majitele e-shop\u016f. Chatboty, doporu\u010dov\u00e1n\u00ed, remarketing.",
-        date: "15. \u00fanora 2026",
-        tag: "Pr\u016fvodce",
+        title: "AI Act a české e-shopy: Co musíte splnit do srpna 2026",
+        desc: "Praktický průvodce pro majitele e-shopů. Chatboty, doporučování, remarketing.",
+        date: "15. února 2026",
+        tag: "Průvodce",
     },
     {
         href: "/blog/co-je-transparencni-stranka",
-        title: "Co je transparen\u010dn\u00ed str\u00e1nka a pro\u010d ji pot\u0159ebujete",
-        desc: "\u010cl\u00e1nek 50 AI Actu vy\u017eaduje informovat o AI. Jak vytvo\u0159it str\u00e1nku krok za krokem.",
-        date: "10. \u00fanora 2026",
-        tag: "N\u00e1vod",
+        title: "Co je transparenční stránka a proč ji potřebujete",
+        desc: "Článek 50 AI Actu vyžaduje informovat o AI. Jak vytvořit stránku krok za krokem.",
+        date: "10. února 2026",
+        tag: "Návod",
     },
     {
         href: "/blog/deadline-ai-act-srpen-2026",
-        title: "Deadline AI Act: srpen 2026 \u2014 co se stane a jak se p\u0159ipravit",
-        desc: "P\u0159ehled v\u0161ech deadlin\u016f AI Actu. Co plat\u00ed u\u017e te\u010f a co p\u0159ijde v srpnu 2026.",
-        date: "5. \u00fanora 2026",
-        tag: "\u010casov\u00e1 osa",
+        title: "Deadline AI Act: srpen 2026 — co se stane a jak se připravit",
+        desc: "Přehled všech deadlinů AI Actu. Co platí už teď a co přijde v srpnu 2026.",
+        date: "5. února 2026",
+        tag: "Časová osa",
     },
 ];
 
@@ -42,7 +42,7 @@ export default function BlogHub() {
                         AI Act <span className="neon-text">novinky</span>
                     </h1>
                     <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                        Praktick\u00e9 n\u00e1vody, anal\u00fdzy a novinky o EU AI Act pro \u010desk\u00e9 firmy.
+                        Praktické návody, analýzy a novinky o EU AI Act pro české firmy.
                     </p>
                 </header>
                 <div className="space-y-6">

@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Integrace \u2014 AI Act a popul\u00e1rn\u00ed n\u00e1stroje na \u010desk\u00fdch webech",
+    title: "Integrace — AI Act a populární nástroje na českých webech",
     description:
-        "Jak AI Act ovliv\u0148uje Smartsupp, Google Analytics, Shoptet, ChatGPT a Meta Pixel? " +
-        "Praktick\u00fd pr\u016fvodce pro ka\u017ed\u00fd n\u00e1stroj.",
+        "Jak AI Act ovlivňuje Smartsupp, Google Analytics, Shoptet, ChatGPT a Meta Pixel? " +
+        "Praktický průvodce pro každý nástroj.",
     alternates: { canonical: "https://aishield.cz/integrace" },
 };
 
 const integrations = [
-    { href: "/integrace/smartsupp", name: "Smartsupp", desc: "Chatbot a live chat s AI asistenc\u00ed", icon: "💬", cat: "Chatbot" },
+    { href: "/integrace/smartsupp", name: "Smartsupp", desc: "Chatbot a live chat s AI asistencí", icon: "💬", cat: "Chatbot" },
     { href: "/integrace/google-analytics", name: "Google Analytics 4", desc: "Analytika s ML predikcemi a smart audiences", icon: "📊", cat: "Analytika" },
-    { href: "/integrace/shoptet", name: "Shoptet", desc: "\u010cesk\u00e1 e-shop platforma s AI funkcemi", icon: "🛒", cat: "E-commerce" },
-    { href: "/integrace/openai-chatgpt", name: "OpenAI / ChatGPT", desc: "Generativn\u00ed AI pro obsah, z\u00e1kaznick\u00fd servis", icon: "🧠", cat: "Generativn\u00ed AI" },
-    { href: "/integrace/meta-pixel", name: "Meta Pixel", desc: "Reklamn\u00ed AI pro Facebook a Instagram", icon: "📡", cat: "Reklama" },
+    { href: "/integrace/shoptet", name: "Shoptet", desc: "Česká e-shop platforma s AI funkcemi", icon: "🛒", cat: "E-commerce" },
+    { href: "/integrace/openai-chatgpt", name: "OpenAI / ChatGPT", desc: "Generativní AI pro obsah, zákaznický servis", icon: "🧠", cat: "Generativní AI" },
+    { href: "/integrace/meta-pixel", name: "Meta Pixel", desc: "Reklamní AI pro Facebook a Instagram", icon: "📡", cat: "Reklama" },
 ];
 
 export default function IntegraceHub() {
@@ -24,10 +24,10 @@ export default function IntegraceHub() {
                 <header className="text-center mb-16">
                     <p className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-3">Integrace</p>
                     <h1 className="text-4xl font-extrabold sm:text-5xl mb-4">
-                        AI Act a <span className="neon-text">va\u0161e n\u00e1stroje</span>
+                        AI Act a <span className="neon-text">vaše nástroje</span>
                     </h1>
                     <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                        Ka\u017ed\u00fd n\u00e1stroj s AI na va\u0161em webu spad\u00e1 pod AI Act. Zjist\u011bte, co mus\u00edte ud\u011blat pro konkr\u00e9tn\u00ed slu\u017ebu.
+                        Každý nástroj s AI na vašem webu spadá pod AI Act. Zjistěte, co musíte udělat pro konkrétní službu.
                     </p>
                 </header>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -48,7 +48,7 @@ export default function IntegraceHub() {
                 </div>
                 <div className="mt-16 text-center">
                     <Link href="/scan" className="btn-primary cta-pulse text-base px-8 py-3.5 inline-flex items-center justify-center gap-2">
-                        Skenovat m\u016fj web ZDARMA
+                        Skenovat můj web ZDARMA
                     </Link>
                 </div>
             </div>

@@ -346,7 +346,24 @@ export default function RootLayout({
                                 </div>
                             </div>
 
-                            <div className="mt-12 border-t border-white/[0.06] pt-8 text-center text-sm text-slate-600">
+                            <div className="mt-12 border-t border-white/[0.06] pt-8">
+                                <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-600 mb-6">
+                                    <a href="/ai-act" className="hover:text-slate-400 transition-colors">AI Act průvodce</a>
+                                    <a href="/ai-act/checklist" className="hover:text-slate-400 transition-colors">AI Act checklist</a>
+                                    <a href="/ai-act/pokuty" className="hover:text-slate-400 transition-colors">Pokuty</a>
+                                    <a href="/ai-act/clanek-50" className="hover:text-slate-400 transition-colors">Článek 50</a>
+                                    <a href="/ai-act/e-shopy" className="hover:text-slate-400 transition-colors">E-shopy a AI Act</a>
+                                    <a href="/integrace" className="hover:text-slate-400 transition-colors">Integrace</a>
+                                    <a href="/integrace/smartsupp" className="hover:text-slate-400 transition-colors">Smartsupp</a>
+                                    <a href="/integrace/google-analytics" className="hover:text-slate-400 transition-colors">Google Analytics</a>
+                                    <a href="/integrace/shoptet" className="hover:text-slate-400 transition-colors">Shoptet</a>
+                                    <a href="/srovnani" className="hover:text-slate-400 transition-colors">Srovnání</a>
+                                    <a href="/blog" className="hover:text-slate-400 transition-colors">Blog</a>
+                                    <a href="/metodika" className="hover:text-slate-400 transition-colors">Metodika</a>
+                                    <a href="/report" className="hover:text-slate-400 transition-colors">Data report</a>
+                                    <a href="/faq" className="hover:text-slate-400 transition-colors">FAQ</a>
+                                </div>
+                                <div className="text-center text-sm text-slate-600">
                                 <p>&copy; {new Date().getFullYear()} AIshield.cz — Provozovatel: Martin Haynes, IČO: 17889251</p>
                                 <p className="mt-2">
                                     Vytvořila agentura{" "}
@@ -360,6 +377,7 @@ export default function RootLayout({
                                         Desperados-design.cz
                                     </a>
                                 </p>
+                            </div>
                             </div>
                         </div>
                     </footer>
