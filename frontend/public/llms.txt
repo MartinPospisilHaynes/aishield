@@ -70,3 +70,27 @@ Robot automaticky prochází web pomocí 24 nezávislých skenů z 8 zemí (desk
 - Telefon: +420 732 716 141
 - IČO: 17889251
 - Provozovatel: Martin Haynes
+
+## AI Act Knowledge Hub (new)
+
+- [AI Act hub](https://aishield.cz/ai-act) - complete guide for Czech businesses
+- [What is AI Act](https://aishield.cz/ai-act/co-je-ai-act) - EU Regulation 2024/1689 basics
+- [Risk categories](https://aishield.cz/ai-act/rizikove-kategorie) - unacceptable, high, limited, minimal
+- [Article 50 transparency](https://aishield.cz/ai-act/clanek-50) - transparency obligations
+- [Fines](https://aishield.cz/ai-act/pokuty) - up to 35M EUR, Czech examples
+- [AI Act for e-shops](https://aishield.cz/ai-act/e-shopy) - chatbots, recommendations, remarketing
+- [AI Act checklist](https://aishield.cz/ai-act/checklist) - 10 steps to compliance
+
+## Integrations
+- [Integration hub](https://aishield.cz/integrace) - popular tools and AI Act
+- [Smartsupp](https://aishield.cz/integrace/smartsupp) - chatbot obligations
+- [Google Analytics](https://aishield.cz/integrace/google-analytics) - ML predictions
+- [Shoptet](https://aishield.cz/integrace/shoptet) - Czech e-commerce platform
+- [ChatGPT/OpenAI](https://aishield.cz/integrace/openai-chatgpt) - using AI internally
+- [Meta Pixel](https://aishield.cz/integrace/meta-pixel) - advertising AI
+
+## Blog & Resources
+- [Blog](https://aishield.cz/blog) - AI Act news and compliance tips
+- [Methodology](https://aishield.cz/metodika) - how AIshield scanning works
+- [Comparisons](https://aishield.cz/srovnani) - AIshield vs alternatives
+- [Data report](https://aishield.cz/report) - state of AI on Czech websites 2026
