@@ -20,6 +20,7 @@ const timeline = [
 export default function Page() {
     return (
         <ContentPage
+            heroImage="/blog/deadline-ai-act-srpen-2026.png"
             breadcrumbs={[
                 { label: "Domů", href: "/" },
                 { label: "Blog", href: "/blog" },

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 export default function Page() {
     return (
         <ContentPage
+            heroImage="/blog/ai-act-a-e-shopy-v-cr.png"
             breadcrumbs={[
                 { label: "Domů", href: "/" },
                 { label: "Blog", href: "/blog" },

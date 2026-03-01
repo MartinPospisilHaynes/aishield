@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 export default function Page() {
     return (
         <ContentPage
+            heroImage="/blog/co-je-transparencni-stranka.png"
             breadcrumbs={[
                 { label: "Domů", href: "/" },
                 { label: "Blog", href: "/blog" },
