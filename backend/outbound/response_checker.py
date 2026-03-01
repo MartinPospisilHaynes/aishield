@@ -246,7 +246,7 @@ async def check_imap_responses() -> dict:
                     "not_interested": "not_interested",
                     "angry": "angry",
                     "blocked": "blocked",
-                    "autoresponse": None,  # Nechej stávající status
+                    "autoresponse": "autoresponse",  # Zaznamenej — potvrzuje funkční email
                     "unclear": "responded",
                 }
                 db_status = status_map.get(new_status)

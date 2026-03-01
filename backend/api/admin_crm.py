@@ -2397,7 +2397,24 @@ async def admin_scan_monitor(
             "deep_scan_finished_at", thirty_days_ago
         ).order("deep_scan_finished_at", desc=True).limit(100).execute()
 
-        # ── 3. Aktivní quick scany (queued/running) ──
+        # ── 3. Auto-cleanup stuck quick scanu (running > 15 min = timeout) ──
+        stuck_cutoff = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
+        stuck_quick = supabase.table("scans").select(
+            "id"
+        ).in_("status", ["queued", "running"]).lt(
+            "created_at", stuck_cutoff
+        ).execute()
+        if stuck_quick.data:
+            cleanup_now = datetime.now(timezone.utc).isoformat()
+            for stuck in stuck_quick.data:
+                supabase.table("scans").update({
+                    "status": "error",
+                    "finished_at": cleanup_now,
+                    "error_message": "TIMEOUT: Scan prekrocil maximalni dobu behu (auto-cleanup)",
+                }).eq("id", stuck["id"]).execute()
+            logger.info(f"[Admin] Auto-cleanup: {len(stuck_quick.data)} stuck quick scanu nastaveno na error")
+
+        # ── 4. Aktivni quick scany (queued/running) ──
         active_quick = supabase.table("scans").select(
             "id, company_id, url_scanned, status, scan_type, "
             "started_at, total_findings, created_at, error_message"
@@ -2405,8 +2422,18 @@ async def admin_scan_monitor(
             "created_at", desc=True
         ).limit(50).execute()
 
-        # ── 4. Doplnit company info ke skenům ──
-        all_scans = (active_deep.data or []) + (completed_deep.data or []) + (active_quick.data or [])
+        # ── 5. Dokoncene quick scany (poslednich 30 dni) ──
+        quick_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+        completed_quick = supabase.table("scans").select(
+            "id, company_id, url_scanned, status, scan_type, "
+            "started_at, finished_at, total_findings, created_at, "
+            "error_message, duration_seconds"
+        ).in_("status", ["done", "error"]).is_("deep_scan_status", "null").gte(
+            "created_at", quick_cutoff
+        ).order("created_at", desc=True).limit(200).execute()
+
+        # ── 6. Doplnit company info ke skenum ──
+        all_scans = (active_deep.data or []) + (completed_deep.data or []) + (active_quick.data or []) + (completed_quick.data or [])
         company_ids = list(set(s.get("company_id") for s in all_scans if s.get("company_id")))
 
         company_map = {}
@@ -2488,8 +2515,9 @@ async def admin_scan_monitor(
         enriched_active_deep = [_enrich_scan(s) for s in (active_deep.data or [])]
         enriched_completed_deep = [_enrich_scan(s) for s in (completed_deep.data or [])]
         enriched_active_quick = [_enrich_scan(s) for s in (active_quick.data or [])]
+        enriched_completed_quick = [_enrich_scan(s) for s in (completed_quick.data or [])]
 
-        # ── 5. Zjistit, zda byl odeslán email po deep scanu ──
+        # ── 7. Zjistit, zda byl odeslán email po deep scanu ──
         completed_scan_ids = [s["id"] for s in enriched_completed_deep]
         email_status_map: dict[str, dict] = {}
         if completed_scan_ids:
@@ -2517,11 +2545,14 @@ async def admin_scan_monitor(
             else:
                 scan["email_status"] = {"sent": False}
 
-        # ── 6. Statistiky ──
+        # ── 8. Statistiky ──
         stats = {
             "active_deep_scans": len(enriched_active_deep),
             "completed_deep_scans_year": len(enriched_completed_deep),
             "active_quick_scans": len(enriched_active_quick),
+            "completed_quick_scans_month": len(enriched_completed_quick),
+            "quick_done": len([s for s in enriched_completed_quick if s.get("status") == "done"]),
+            "quick_error": len([s for s in enriched_completed_quick if s.get("status") == "error"]),
             "total_deep_done": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "done"]),
             "total_deep_error": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "error"]),
             "total_deep_cancelled": len([s for s in enriched_completed_deep if s.get("deep_scan_status") == "cancelled"]),
@@ -2532,6 +2563,7 @@ async def admin_scan_monitor(
             "active_deep": enriched_active_deep,
             "completed_deep": enriched_completed_deep,
             "active_quick": enriched_active_quick,
+            "completed_quick": enriched_completed_quick,
         }
 
     except Exception as e:
@@ -2706,6 +2738,19 @@ async def admin_resend_report(
             from_email="info@aishield.cz",
             from_name="AIshield.cz",
         )
+
+        # Zápis do outbound_emails — aby scan-monitor viděl status "Odesláno"
+        try:
+            supabase.table("outbound_emails").insert({
+                "company_id": scan.get("company_id"),
+                "scan_id": scan_id,
+                "email_to": email_to,
+                "subject": subject,
+                "template": "deep_scan_report",
+                "sent_at": datetime.now(timezone.utc).isoformat(),
+            }).execute()
+        except Exception as oe:
+            logger.warning(f"[Admin] outbound_emails insert failed: {oe}")
 
         logger.info(f"[Admin] Resend report scan={scan_id} to={email_to} by={user.email}")
 

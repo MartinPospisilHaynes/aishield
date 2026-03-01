@@ -92,8 +92,8 @@ async def send_email(
     sender_email = from_email or settings.email_from
     sender_name = from_name or "AIshield.cz"
 
-    # Reply-To na existující email (Resend odesílá, odpovědi jdou jinam)
-    reply_to = "info@desperados-design.cz"
+    # Reply-To — odpovědi jdou na stejnou adresu, kterou monitoruje IMAP checker
+    reply_to = "info@aishield.cz"
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.post(
@@ -118,7 +118,29 @@ async def send_email(
             },
         )
         response.raise_for_status()
-        return response.json()
+        result_data = response.json()
+
+        # FIX 4: Auto-log VŠECH odeslaných emailů (systémové, alerty, formuláře)
+        try:
+            from backend.database import get_supabase as _get_sb
+            _sb = _get_sb()
+            resend_id = result_data.get("id", "")
+            if resend_id:
+                existing = _sb.table("email_log").select("id").eq("resend_id", resend_id).execute()
+                if not existing.data:
+                    _sb.table("email_log").insert({
+                        "resend_id": resend_id,
+                        "to_email": to,
+                        "from_email": sender_email,
+                        "subject": (subject or "")[:200],
+                        "status": "sent",
+                        "sent_at": datetime.utcnow().isoformat(),
+                        "variant": "system",
+                    }).execute()
+        except Exception:
+            pass  # Nefailovat odesílání kvůli logu
+
+        return result_data
 
 
 async def check_delivery_status(resend_id: str) -> dict:
@@ -335,6 +357,7 @@ async def run_email_campaign(
     stats["total_candidates"] = len(companies)
 
     for company in companies:
+        company_id = company.get("id")
         ico = company.get("ico", "")
         email = company.get("email", "")
         name = company.get("name", "")
@@ -342,6 +365,17 @@ async def run_email_campaign(
         emails_sent = company.get("emails_sent", 0)
 
         if not email or not url:
+            continue
+
+        # FIX 2: Idempotency guard — neodesílat duplicitně
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0).isoformat()
+        existing_today = supabase.table("email_log").select("id").eq(
+            "to_email", email
+        ).gte("sent_at", today_start).neq("status", "dry_run").execute()
+        if existing_today.data:
+            print(f"[Email] ⏭️  {email} už dnes dostal email — přeskakuji duplicitu")
+            stats.setdefault("skipped_duplicate", 0)
+            stats["skipped_duplicate"] += 1
             continue
 
         # Blacklist jména firmy (IT/web/software)
@@ -463,9 +497,10 @@ async def run_email_campaign(
                     from_name=sender_name,
                 )
 
-            # Zalogovat (s from_email pro sender tracking)
-            supabase.table("email_log").insert({
-                "company_ico": ico,
+            # Zalogovat (s company_id pro tracking)
+            log_entry = {
+                "company_id": company_id,
+                "company_ico": ico or None,
                 "to_email": email,
                 "from_email": sender_email,
                 "subject": email_data.subject,
@@ -473,9 +508,13 @@ async def run_email_campaign(
                 "resend_id": result.get("id", ""),
                 "status": "sent" if not dry_run else "dry_run",
                 "sent_at": datetime.utcnow().isoformat(),
-            }).execute()
+            }
+            try:
+                supabase.table("email_log").insert(log_entry).execute()
+            except Exception as log_err:
+                print(f"[Email] ⚠️  email_log insert selhal: {log_err}")
 
-            # Aktualizovat counter na firmě
+            # Aktualizovat counter na firmě (FIX: matchujeme na id, ne ico)
             update_fields = {
                 "emails_sent": emails_sent + 1,
                 "last_email_at": datetime.utcnow().isoformat(),
@@ -483,7 +522,10 @@ async def run_email_campaign(
             }
             if emails_sent == 0:
                 update_fields["first_contacted_at"] = datetime.utcnow().isoformat()
-            supabase.table("companies").update(update_fields).eq("ico", ico).execute()
+            try:
+                supabase.table("companies").update(update_fields).eq("id", company_id).execute()
+            except Exception as upd_err:
+                print(f"[Email] ⚠️  Counter update selhal pro {name}: {upd_err}")
 
             if emails_sent == 0:
                 stats["emails_sent"] += 1

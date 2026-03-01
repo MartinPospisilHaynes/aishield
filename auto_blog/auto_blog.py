@@ -349,6 +349,7 @@ export default function Page() {{
         <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{{{ __html: `{blog_schema}` }}}} />
         <ContentPage
+            heroImage="/blog/{slug}.png"
             breadcrumbs={{[
                 {{ label: "Domů", href: "/" }},
                 {{ label: "Blog", href: "/blog" }},

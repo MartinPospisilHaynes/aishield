@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface Breadcrumb {
     label: string;
@@ -10,6 +11,8 @@ interface ContentPageProps {
     title: string;
     titleAccent?: string;
     subtitle?: string;
+    heroImage?: string;
+    heroAlt?: string;
     children: React.ReactNode;
     cta?: boolean;
 }
@@ -19,6 +22,8 @@ export default function ContentPage({
     title,
     titleAccent,
     subtitle,
+    heroImage,
+    heroAlt,
     children,
     cta = true,
 }: ContentPageProps) {
@@ -64,6 +69,18 @@ export default function ContentPage({
                         <p className="text-lg text-slate-400 max-w-2xl">{subtitle}</p>
                     )}
                 </header>
+                {heroImage && (
+                    <div className="relative w-full aspect-[1200/630] rounded-2xl overflow-hidden mb-12 border border-white/[0.06]">
+                        <Image
+                            src={heroImage}
+                            alt={heroAlt || title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 720px"
+                            priority
+                        />
+                    </div>
+                )}
                 <div className="space-y-8 text-slate-300 leading-relaxed">
                     {children}
                 </div>

@@ -16,6 +16,7 @@ export default function Page() {
         <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena", "description": "Pochopte vysoce rizikové AI systémy dle Přílohy III EU AI Actu. Zjistěte, jaké kategorie AI spadají pod high-risk a povinnosti provozovatelů.", "datePublished": "2026-03-01", "dateModified": "2026-03-01", "author": {"@type": "Organization", "name": "AIshield.cz", "url": "https://aishield.cz"}, "publisher": {"@type": "Organization", "name": "AIshield.cz", "logo": {"@type": "ImageObject", "url": "https://aishield.cz/icon.png"}}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://aishield.cz/blog/vysoko-rizikove-ai-systemy-priloha-iii"}, "inLanguage": "cs", "keywords": "Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena", "image": "https://aishield.cz/blog/vysoko-rizikove-ai-systemy-priloha-iii.png"}` }} />
         <ContentPage
+            heroImage="/blog/vysoko-rizikove-ai-systemy-priloha-iii.png"
             breadcrumbs={[
                 { label: "Domů", href: "/" },
                 { label: "Blog", href: "/blog" },

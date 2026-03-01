@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 export default function Page() {
     return (
         <ContentPage
+            heroImage="/blog/ai-act-co-musi-splnit-ceske-firmy.png"
             breadcrumbs={[
                 { label: "Domů", href: "/" },
                 { label: "Blog", href: "/blog" },

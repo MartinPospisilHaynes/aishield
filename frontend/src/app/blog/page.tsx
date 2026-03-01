@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import manifest from "@/data/blog-manifest.json";
 
 export const metadata: Metadata = {
@@ -40,18 +41,31 @@ export default function BlogHub() {
                         <Link
                             key={a.href}
                             href={a.href}
-                            className="group block rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] hover:border-fuchsia-500/20 transition-all"
+                            className="group block rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:bg-white/[0.04] hover:border-fuchsia-500/20 transition-all"
                         >
-                            <div className="flex items-center gap-3 mb-3">
-                                <span className="text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-500/10 text-fuchsia-400">
-                                    {a.tag}
-                                </span>
-                                <span className="text-xs text-slate-500">{a.date_human}</span>
+                            {a.image && (
+                                <div className="relative w-full aspect-[1200/630] bg-dark-800">
+                                    <Image
+                                        src={a.image}
+                                        alt={a.title}
+                                        fill
+                                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                                        sizes="(max-width: 768px) 100vw, 720px"
+                                    />
+                                </div>
+                            )}
+                            <div className="p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <span className="text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-500/10 text-fuchsia-400">
+                                        {a.tag}
+                                    </span>
+                                    <span className="text-xs text-slate-500">{a.date_human}</span>
+                                </div>
+                                <h2 className="text-lg font-semibold text-white group-hover:text-fuchsia-400 transition-colors mb-2">
+                                    {a.title}
+                                </h2>
+                                <p className="text-sm text-slate-400">{a.desc}</p>
                             </div>
-                            <h2 className="text-lg font-semibold text-white group-hover:text-fuchsia-400 transition-colors mb-2">
-                                {a.title}
-                            </h2>
-                            <p className="text-sm text-slate-400">{a.desc}</p>
                         </Link>
                     ))}
                 </div>
