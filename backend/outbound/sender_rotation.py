@@ -22,21 +22,14 @@ from backend.database import get_supabase
 
 # ── Konfigurace senderů ──
 
+# ⚠️ Pouze info@aishield.cz reálně existuje v Resend.
+# Ostatní adresy (ahoj@, podpora@) NEJSOU nastaveny.
+# Přidat až budou vytvořeny v Resend dashboardu.
 SENDERS = [
     {
         "email": "info@aishield.cz",
         "name": "AIshield.cz",
-        "priority": 1,  # Primární
-    },
-    {
-        "email": "ahoj@aishield.cz",
-        "name": "AIshield",
-        "priority": 2,  # Záloha 1
-    },
-    {
-        "email": "podpora@aishield.cz",
-        "name": "AIshield Podpora",
-        "priority": 3,  # Záloha 2
+        "priority": 1,
     },
 ]
 

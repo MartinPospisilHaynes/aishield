@@ -2792,6 +2792,273 @@ async def admin_preview_report(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+
+# ═══════════════════════════════════════════════════════════════
+# LOVEC CRM — Outreach tracking & prospecting management
+# ═══════════════════════════════════════════════════════════════
+
+@router.get("/crm/lovec/overview")
+async def lovec_overview(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+    status: str | None = None,
+    source: str | None = None,
+    has_email: bool | None = None,
+    limit: int = 100,
+    offset: int = 0,
+):
+    """
+    LOVEC přehled — seznam firem s outreach statusem.
+    Filtry: status, source, has_email.
+    Slouží jako hlavní CRM tabulka pro outbound kampaně.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    query = supabase.table("companies").select(
+        "id, name, url, email, email_source, email_confidence, "
+        "ico, source, phone, "
+        "outreach_status, response_summary, last_response_at, "
+        "response_count, first_contacted_at, rejection_reason, "
+        "outbound_email_count, last_email_at, "
+        "lead_score, lead_tier, total_findings, "
+        "scan_status, prospecting_status, workflow_status, "
+        "lovec_batch_id, lovec_found_at, "
+        "created_at, updated_at",
+        count="exact",
+    )
+
+    # Filtry
+    if status:
+        query = query.eq("outreach_status", status)
+    if source:
+        query = query.eq("source", source)
+    if has_email is True:
+        query = query.neq("email", "").not_.is_("email", "null")
+    elif has_email is False:
+        query = query.or_("email.is.null,email.eq.")
+
+    query = query.order("updated_at", desc=True).range(offset, offset + limit - 1)
+    result = query.execute()
+
+    # Statistiky souhrn
+    stats_res = supabase.table("companies").select(
+        "outreach_status", count="exact"
+    ).execute()
+
+    status_counts = {}
+    for row in (stats_res.data or []):
+        s = row.get("outreach_status", "not_contacted") or "not_contacted"
+        status_counts[s] = status_counts.get(s, 0) + 1
+
+    return {
+        "total": result.count or 0,
+        "companies": result.data or [],
+        "status_summary": status_counts,
+        "filters": {"status": status, "source": source, "has_email": has_email},
+    }
+
+
+@router.get("/crm/lovec/stats")
+async def lovec_stats(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+):
+    """
+    LOVEC statistiky — přehled celého outreach funnelu.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    # Celkové počty
+    total = supabase.table("companies").select("id", count="exact").execute()
+    with_email = supabase.table("companies").select("id", count="exact").neq(
+        "email", ""
+    ).not_.is_("email", "null").execute()
+    contacted = supabase.table("companies").select("id", count="exact").neq(
+        "outreach_status", "not_contacted"
+    ).execute()
+    responded = supabase.table("companies").select("id", count="exact").in_(
+        "outreach_status", ["responded", "interested", "meeting_scheduled", "converted"]
+    ).execute()
+    negative = supabase.table("companies").select("id", count="exact").in_(
+        "outreach_status", ["not_interested", "angry", "blocked"]
+    ).execute()
+
+    # Emaily odeslané dnes
+    today = datetime.now(timezone.utc).date().isoformat()
+    emails_today = supabase.table("email_log").select(
+        "id", count="exact"
+    ).gte("sent_at", today).execute()
+
+    # Outreach status breakdown
+    all_companies = supabase.table("companies").select(
+        "outreach_status"
+    ).execute()
+    breakdown = {}
+    for c in (all_companies.data or []):
+        s = c.get("outreach_status", "not_contacted") or "not_contacted"
+        breakdown[s] = breakdown.get(s, 0) + 1
+
+    total_count = total.count or 0
+    email_count = with_email.count or 0
+    contacted_count = contacted.count or 0
+    responded_count = responded.count or 0
+
+    return {
+        "funnel": {
+            "total_companies": total_count,
+            "with_email": email_count,
+            "contacted": contacted_count,
+            "responded": responded_count,
+            "negative": negative.count or 0,
+            "email_rate": round(email_count / total_count * 100, 1) if total_count else 0,
+            "response_rate": round(responded_count / contacted_count * 100, 1) if contacted_count else 0,
+        },
+        "emails_today": emails_today.count or 0,
+        "status_breakdown": breakdown,
+    }
+
+
+@router.patch("/crm/lovec/company/{company_id}/status")
+async def lovec_update_status(
+    company_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Manuální aktualizace outreach statusu firmy.
+    Body: {"outreach_status": "interested", "notes": "Zavolal, má zájem"}
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    body = await request.json()
+    new_status = body.get("outreach_status")
+    notes = body.get("notes")
+    rejection_reason = body.get("rejection_reason")
+
+    if not new_status:
+        raise HTTPException(status_code=400, detail="outreach_status je povinný")
+
+    valid_statuses = [
+        "not_contacted", "email_sent", "followup_sent", "responded",
+        "interested", "meeting_scheduled", "converted",
+        "not_interested", "angry", "blocked", "bounced", "no_response",
+    ]
+    if new_status not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Neplatný status. Povolené: {valid_statuses}",
+        )
+
+    update_data = {
+        "outreach_status": new_status,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if notes:
+        update_data["notes"] = notes
+    if rejection_reason:
+        update_data["rejection_reason"] = rejection_reason
+
+    supabase.table("companies").update(update_data).eq("id", company_id).execute()
+
+    logger.info(f"[LOVEC] Admin {user.email} změnil status {company_id} → {new_status}")
+    return {"status": "ok", "company_id": company_id, "new_status": new_status}
+
+
+@router.get("/crm/lovec/export")
+async def lovec_export(
+    user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
+    format: str = "json",
+):
+    """
+    Export LOVEC dat — JSON nebo CSV.
+    Pro Excel/tabulkový formát použij format=csv.
+    """
+    from backend.database import get_supabase
+    supabase = get_supabase()
+
+    result = supabase.table("companies").select(
+        "name, url, email, email_source, email_confidence, "
+        "ico, phone, source, "
+        "outreach_status, response_summary, first_contacted_at, "
+        "last_response_at, response_count, rejection_reason, "
+        "outbound_email_count, last_email_at, "
+        "lead_score, lead_tier, total_findings, "
+        "scan_status, lovec_batch_id, lovec_found_at, "
+        "created_at"
+    ).order("created_at", desc=True).execute()
+
+    companies = result.data or []
+
+    if format == "csv":
+        import csv
+        import io
+        from fastapi.responses import StreamingResponse
+
+        output = io.StringIO()
+        if companies:
+            writer = csv.DictWriter(output, fieldnames=companies[0].keys())
+            writer.writeheader()
+            writer.writerows(companies)
+
+        output.seek(0)
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename=lovec_export_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            },
+        )
+
+    return {"total": len(companies), "companies": companies}
+
+
+@router.post("/crm/lovec/run-cycle")
+async def lovec_run_cycle(
+    request: Request,
+    user: AuthUser = Depends(require_admin),
+):
+    """
+    Manuálně spustí jeden cyklus LOVEC pipeline.
+    Body (volitelné): {"phases": ["prospecting", "find_emails", "scanning"]}
+    Bez body = celý cyklus.
+    """
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+
+    phases = body.get("phases")
+
+    if phases:
+        # Spusť vybrané fáze
+        from backend.outbound.orchestrator import run_task
+        results = {}
+        for phase in phases:
+            results[phase] = await run_task(phase)
+        return {"status": "ok", "results": results}
+    else:
+        # Celý cyklus
+        from backend.outbound.orchestrator import run_cycle
+        result = await run_cycle()
+        return {"status": "ok", "result": result}
+
+
+@router.post("/crm/lovec/check-responses")
+async def lovec_check_responses(
+    user: AuthUser = Depends(require_admin),
+):
+    """Manuálně spustí kontrolu příchozích odpovědí."""
+    from backend.outbound.response_checker import run_response_check
+    result = await run_response_check()
+    return {"status": "ok", "result": result}
+
+
 @router.post("/crm/scans/stop-all")
 async def admin_stop_all_scans(
     request: Request,

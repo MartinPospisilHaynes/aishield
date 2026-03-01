@@ -145,13 +145,13 @@ def calculate_lead_score(
     score = max(0, min(100, score))
 
     # Tier
-    if score >= 80:
+    if score >= 40:
         tier = "HOT"
         recommendation = "Poslat email ihned — vysoká šance na konverzi"
-    elif score >= 50:
+    elif score >= 20:
         tier = "WARM"
         recommendation = "Poslat email — solidní lead"
-    elif score >= 20:
+    elif score >= 10:
         tier = "COOL"
         recommendation = "Follow-up za týden — nízká priorita"
     else:
@@ -179,7 +179,7 @@ async def score_all_leads() -> dict:
     res = supabase.table("companies").select(
         "id, ico, url, total_findings, source, nace_codes, email, "
         "email_source, email_confidence, heureka_reviews, heureka_rating"
-    ).eq("prospecting_status", "qualified").execute()
+    ).in_("prospecting_status", ["qualified", "qualified_hot"]).execute()
 
     companies = res.data or []
 
@@ -211,9 +211,9 @@ async def score_all_leads() -> dict:
             nace_codes=company.get("nace_codes", []),
             email=company.get("email", ""),
             email_source=company.get("email_source", ""),
-            email_confidence=company.get("email_confidence", 0.0),
-            heureka_reviews=company.get("heureka_reviews", 0),
-            heureka_rating=company.get("heureka_rating", 0.0),
+            email_confidence=company.get("email_confidence") or 0.0,
+            heureka_reviews=company.get("heureka_reviews") or 0,
+            heureka_rating=company.get("heureka_rating") or 0.0,
         )
 
         update = {

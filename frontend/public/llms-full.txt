@@ -95,6 +95,7 @@ AIshield.cz is the only specialized tool in the Czech Republic for automated EU 
 - [AI Act a české e-shopy: Co musíte splnit do srpna 2026](https://aishield.cz/blog/ai-act-a-e-shopy-v-cr) — Praktický průvodce pro majitele e-shopů. Chatboty, doporučování, remarketing. (15. února 2026)
 - [Co je transparenční stránka a proč ji potřebujete](https://aishield.cz/blog/co-je-transparencni-stranka) — Článek 50 AI Actu vyžaduje informovat o AI. Jak vytvořit stránku krok za krokem. (10. února 2026)
 - [Deadline AI Act: srpen 2026 — co se stane a jak se připravit](https://aishield.cz/blog/deadline-ai-act-srpen-2026) — Přehled všech deadlinů AI Actu. Co platí už teď a co přijde v srpnu 2026. (5. února 2026)
+- [Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena](https://aishield.cz/blog/vysoko-rizikove-ai-systemy-priloha-iii) — Příloha III EU AI Actu definuje kategorie vysoce rizikových AI systémů. Provozovatelé těchto systémů čelí přísným povinnostem. (1. března 2026)
 
 ## Pricing
 

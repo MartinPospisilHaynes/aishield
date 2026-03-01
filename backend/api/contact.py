@@ -5,15 +5,20 @@ Přijme data z kontaktního formuláře, uloží do Supabase a odešle notifikac
 
 import logging
 import os
+import time
+from collections import defaultdict
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# ── Rate limit: max 3 kontakty za hodinu per IP ──
+_contact_requests: dict[str, list[float]] = defaultdict(list)
 
 
 class ContactRequest(BaseModel):
@@ -123,8 +128,16 @@ async def _send_notification(req: ContactRequest) -> bool:
 
 
 @router.post("/contact", response_model=ContactResponse)
-async def contact(req: ContactRequest):
+async def contact(req: ContactRequest, http_req: Request = None):
     """Kontaktní formulář — uloží data a pošle notifikaci."""
+    # Rate limit
+    ip = http_req.client.host if http_req and http_req.client else "unknown"
+    now = time.time()
+    _contact_requests[ip] = [t for t in _contact_requests[ip] if now - t < 3600]
+    if len(_contact_requests[ip]) >= 3:
+        logger.warning("[Contact] Rate limit: IP=%s", ip)
+        raise HTTPException(status_code=429, detail="Příliš mnoho požadavků.")
+    _contact_requests[ip].append(now)
 
     # Validace
     if not req.name.strip() or not req.email.strip():

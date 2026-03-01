@@ -1,22 +1,18 @@
 """
-AIshield.cz — Smart Prospecting Pipeline v2
-Převrácené pořadí: Najdi web → Skenuj → MÁ AI? → Najdi email → Pošli
+AIshield.cz — Smart Prospecting Pipeline v3
 
-STARÝ PŘÍSTUP (v1):
-  ARES → najdi web → najdi email → skenuj → pošli email VŠEM
+NOVÉ POŘADÍ (v3):
+  1. GATHER    — Sesbírej firmy z katalogů (ARES, Heureka, Firmy.cz, Zboží.cz)
+  2. EMAIL     — Najdi email (httpx regex → Playwright → Vision kaskáda)
+  3. FILTR     — Nemá email? → SKIP. Nebudeme plýtvat scanem.
+  4. SCAN      — Naskenuj web POUZE firmám, které mají email
+  5. SCORE     — Ohodnoť lead (findings × závažnost)
 
-NOVÝ PŘÍSTUP (v2):
-  1. ZDROJE: Shoptet + Heureka + ARES → získej firmy s webem
-  2. SKEN: Playwright sken webu → najdi AI systémy
-  3. KVALIFIKACE: Má AI findings? → Pokud NE → SKIP (neplýtvat)
-  4. EMAIL: Najdi email POUZE pro firmy kde jsme NĚCO našli
-  5. SCORING: Ohodnoť lead (počet findings × závažnost × velikost)
-  6. OUTREACH: Pošli email POUZE HOT leadům
+Princip: Nejdřív ověř, že máme kam poslat. Pak teprve investuj do analýzy.
 
-Výhody:
-- Neposíláme zbytečné emaily firmám bez AI
-- Šetříme Resend kredity i reputaci
-- Vyšší konverzní poměr (nabízíme řešení KONKRÉTNÍHO problému)
+SLOUPCE V DB:
+  email_source  — "regex" | "playwright" | "vision" | "not_found" | null
+                  null = ještě nezkoušeno, "not_found" = zkoušeno bez výsledku
 """
 
 import asyncio
@@ -31,78 +27,201 @@ async def phase_gather_companies(
     max_per_source: int = 100,
 ) -> dict:
     """
-    Fáze 1: Stáhne firmy z katalogů (Shoptet, Heureka) + ARES.
-    Uloží do DB se statusem scan_status='pending'.
+    Fáze 1: Stáhne firmy z katalogů.
+    Uloží do DB se statusem scan_status='pending', prospecting_status='found'.
     """
-    available_sources = sources or ["shoptet", "heureka", "ares"]
+    available_sources = sources or ["heureka", "ares", "firmy", "zbozi"]
     stats = {"total_new": 0, "by_source": {}}
 
     for source in available_sources:
-        print(f"[Pipeline v2] Fáze 1 — zdroj: {source}")
+        print(f"[Pipeline v3] Fáze 1 — zdroj: {source}")
         source_stats = {}
 
         try:
             if source == "shoptet":
                 from backend.prospecting.shoptet import import_shoptet_to_db
-                source_stats = await import_shoptet_to_db(
-                    max_pages_per_category=2,
-                )
+                source_stats = await import_shoptet_to_db(max_pages_per_category=2)
             elif source == "heureka":
                 from backend.prospecting.heureka import import_heureka_to_db
-                source_stats = await import_heureka_to_db(
-                    max_pages_per_category=2,
-                    min_reviews=3,
-                )
+                source_stats = await import_heureka_to_db(max_pages_per_category=3)
             elif source == "ares":
                 from backend.prospecting.pipeline import run_prospecting
-                source_stats = await run_prospecting(
-                    max_per_nace=max_per_source // 5,
-                )
+                source_stats = await run_prospecting(max_per_nace=max_per_source // 5)
+            elif source == "firmy":
+                from backend.prospecting.firmy import import_firmy_to_db
+                source_stats = await import_firmy_to_db(max_pages=2)
+            elif source == "zbozi":
+                from backend.prospecting.zbozi import import_zbozi_to_db
+                source_stats = await import_zbozi_to_db(max_products=3)
         except Exception as e:
-            print(f"[Pipeline v2] Chyba zdroje {source}: {e}")
+            print(f"[Pipeline v3] Chyba zdroje {source}: {e}")
             source_stats = {"error": str(e)}
 
         stats["by_source"][source] = source_stats
         stats["total_new"] += source_stats.get("new", 0) + source_stats.get("new_companies", 0)
 
-    print(f"[Pipeline v2] Fáze 1 hotova: {stats['total_new']} nových firem")
+    print(f"[Pipeline v3] Fáze 1 hotova: {stats['total_new']} nových firem")
     return stats
 
 
-# ── Fáze 2: Skenování webů (hledáme AI) ──
+# ── Fáze 2: Najdi email — LEVNÉ (httpx + Playwright) ──
 
-async def phase_scan_websites(limit: int = 50) -> dict:
+async def phase_find_emails(
+    use_playwright: bool = True,
+    use_vision: bool = False,
+    limit: int = 100,
+) -> dict:
     """
-    Fáze 2: Vezmi firmy s URL + scan_status='pending' a naskenuj je.
-    Hledáme: chatboty, AI systémy, recommendation engines...
+    Fáze 2: Pro VŠECHNY firmy s URL a bez emailu — najdi email.
+    Kaskáda: regex scan → Playwright render → Claude Vision.
+
+    LEVNÁ operace. Děláme PŘED scanem, protože nemá smysl
+    skenovat web firmě, které pak nemáme kam poslat výsledek.
+
+    email_source sleduje stav:
+      null          → ještě nezkoušeno
+      "not_found"   → zkoušeno, email nenalezen → PŘESKOČ
+      "regex"/"playwright"/"vision" → nalezeno
     """
-    from backend.scanner.pipeline import run_scan
+    from backend.prospecting.smart_email_finder import find_email_smart
 
     supabase = get_supabase()
-    stats = {"scanned": 0, "with_findings": 0, "errors": 0}
+    stats = {"searched": 0, "found": 0, "not_found": 0, "no_url": 0}
 
-    # Firmy s webem, které ještě nebyly skenovány
+    # Firmy s URL, kde jsme ještě email NEHLEDALI (email_source je null)
     res = supabase.table("companies").select(
-        "ico, name, url"
-    ).eq(
-        "scan_status", "pending"
+        "ico, url, name"
+    ).is_(
+        "email_source", "null"
     ).neq(
         "url", ""
     ).limit(limit).execute()
 
     companies = res.data or []
-    print(f"[Pipeline v2] Fáze 2 — skenování {len(companies)} webů...")
+    print(f"[Pipeline v3] Fáze 2 — hledám emaily pro {len(companies)} firem...")
+
+    for company in companies:
+        url = company.get("url", "")
+        ico = company.get("ico", "")
+        name = company.get("name", "?")
+
+        if not url:
+            stats["no_url"] += 1
+            continue
+
+        stats["searched"] += 1
+
+        try:
+            result = await find_email_smart(
+                url,
+                use_playwright=use_playwright,
+            )
+
+            if result.email:
+                update = {
+                    "email": result.email,
+                    "email_source": result.source,
+                    "email_confidence": result.confidence,
+                }
+                if ico:
+                    supabase.table("companies").update(update).eq("ico", ico).execute()
+                else:
+                    supabase.table("companies").update(update).eq("url", url).execute()
+                stats["found"] += 1
+                print(f"  ✅ {name} → {result.email} ({result.source}, {result.confidence:.0%})")
+            else:
+                update = {"email_source": "not_found"}
+                if ico:
+                    supabase.table("companies").update(update).eq("ico", ico).execute()
+                else:
+                    supabase.table("companies").update(update).eq("url", url).execute()
+                stats["not_found"] += 1
+                print(f"  ❌ {name} ({url}) — email nenalezen")
+
+        except Exception as e:
+            print(f"  ⚠️  {name}: chyba — {e}")
+            stats["not_found"] += 1
+
+        await asyncio.sleep(0.3)
+
+    pct = f"{stats['found']}/{stats['searched']}" if stats["searched"] else "0/0"
+    print(f"[Pipeline v3] Fáze 2 hotova: {pct} emailů nalezeno | {stats}")
+    return stats
+
+
+# ── Fáze 3: Skenování webů — JEN pro firmy S emailem ──
+
+async def phase_scan_websites(limit: int = 50) -> dict:
+    """
+    Fáze 3: Naskenuj web POUZE firmám s potvrzeným emailem.
+    DRAHÁ operace (Playwright + AI analýza) → jen pro kontaktovatelné firmy.
+    """
+    from backend.scanner.pipeline import run_scan_pipeline
+
+    supabase = get_supabase()
+    stats = {"scanned": 0, "with_findings": 0, "errors": 0}
+
+    # KLÍČOVÉ: vyžadujeme email!
+    res = supabase.table("companies").select(
+        "id, ico, name, url, email"
+    ).eq(
+        "scan_status", "pending"
+    ).neq(
+        "url", ""
+    ).neq(
+        "email", ""
+    ).not_.is_(
+        "email", "null"
+    ).limit(limit).execute()
+
+    companies = res.data or []
+    print(f"[Pipeline v3] Fáze 3 — skenování {len(companies)} webů (jen s emailem)...")
 
     for company in companies:
         url = company["url"]
         ico = company.get("ico", "")
+        name = company.get("name", "?")
+        email = company.get("email", "")
 
         try:
-            scan_result = await run_scan(url)
-            scan_id = scan_result.get("scan_id", "")
+            # Vytvoř scan záznam v DB
+            import uuid
+            company_db_id = company.get("id", "")
+            if not company_db_id:
+                print(f"  ⚠️  {name}: chybí companies.id — přeskakuji")
+                stats["errors"] += 1
+                continue
+
+            scan_id = str(uuid.uuid4())
+            scan_insert = {
+                "id": scan_id,
+                "url_scanned": url,
+                "url": url,
+                "company_id": company_db_id,
+                "status": "pending",
+                "triggered_by": "lovec_pipeline",
+            }
+            supabase.table("scans").insert(scan_insert).execute()
+
+            # Timeout ochrana — max 120s na jeden scan, aby se pipeline nezasekla
+            try:
+                scan_result = await asyncio.wait_for(
+                    run_scan_pipeline(scan_id, url, company_db_id),
+                    timeout=120.0,
+                )
+            except asyncio.TimeoutError:
+                print(f"  ⏰ {name} ({url}): scan timeout po 120s — přeskakuji")
+                supabase.table("scans").update({
+                    "status": "error",
+                    "error": "Timeout 120s — scan trval příliš dlouho",
+                }).eq("id", scan_id).execute()
+                supabase.table("companies").update({
+                    "scan_status": "error",
+                }).eq("id", company_db_id).execute()
+                stats["errors"] += 1
+                continue
             total_findings = scan_result.get("total_findings", 0)
 
-            # Aktualizuj firmu
             update = {
                 "scan_status": "scanned",
                 "last_scan_id": scan_id,
@@ -118,34 +237,34 @@ async def phase_scan_websites(limit: int = 50) -> dict:
             stats["scanned"] += 1
             if total_findings > 0:
                 stats["with_findings"] += 1
+                print(f"  🔍 {name} — {total_findings} findings → email: {email}")
+            else:
+                print(f"  ✓  {name} — čistý web")
 
         except Exception as e:
-            print(f"[Pipeline v2] Sken chyba {url}: {e}")
+            print(f"  ⚠️  {name} ({url}): scan chyba — {e}")
             stats["errors"] += 1
-
-            # Označ jako failed
             update = {"scan_status": "scan_failed"}
             if ico:
                 supabase.table("companies").update(update).eq("ico", ico).execute()
             else:
                 supabase.table("companies").update(update).eq("url", url).execute()
 
-    print(f"[Pipeline v2] Fáze 2 hotova: {stats}")
+    print(f"[Pipeline v3] Fáze 3 hotova: {stats}")
     return stats
 
 
-# ── Fáze 3: Kvalifikace — filtruj jen firmy s AI findings ──
+# ── Fáze 4: Kvalifikace + Lead scoring ──
 
 async def phase_qualify_leads() -> dict:
     """
-    Fáze 3: Vezmeme naskenované firmy a odfiltrujeme jen ty,
-    které mají AI findings (= mají co řešit → jsou náš zákazník).
-    Firmám BEZ findings nastavíme prospecting_status='no_ai_found'.
+    Fáze 4: Kvalifikuj naskenované firmy.
+    qualified_hot = má AI findings
+    qualified     = čistý web, ale AI Act se týká i interních nástrojů
     """
     supabase = get_supabase()
-    stats = {"qualified": 0, "disqualified": 0}
+    stats = {"qualified": 0, "qualified_hot": 0}
 
-    # Najdi firmy naskenované, ale ještě nekvalifikované
     res = supabase.table("companies").select(
         "ico, url, total_findings"
     ).eq(
@@ -161,7 +280,12 @@ async def phase_qualify_leads() -> dict:
         url = company.get("url", "")
         findings = company.get("total_findings", 0)
 
-        new_status = "qualified" if findings > 0 else "no_ai_found"
+        if findings > 0:
+            new_status = "qualified_hot"
+            stats["qualified_hot"] += 1
+        else:
+            new_status = "qualified"
+            stats["qualified"] += 1
 
         if ico:
             supabase.table("companies").update({
@@ -172,124 +296,63 @@ async def phase_qualify_leads() -> dict:
                 "prospecting_status": new_status,
             }).eq("url", url).execute()
 
-        if findings > 0:
-            stats["qualified"] += 1
-        else:
-            stats["disqualified"] += 1
-
-    print(f"[Pipeline v2] Fáze 3 hotova: {stats['qualified']} kvalifikovaných, {stats['disqualified']} vyřazených")
+    total = stats["qualified"] + stats["qualified_hot"]
+    print(f"[Pipeline v3] Fáze 4 hotova: {total} kvalifikovaných ({stats['qualified_hot']} hot)")
     return stats
 
 
-# ── Fáze 4: Najdi email POUZE pro kvalifikované leady ──
-
-async def phase_find_emails(
-    use_playwright: bool = True,
-    use_vision: bool = False,
-    limit: int = 50,
-) -> dict:
-    """
-    Fáze 4: Pro kvalifikované firmy (mají AI, nemají email)
-    spustíme smart email finder.
-    """
-    from backend.prospecting.smart_email_finder import find_email_smart
-
-    supabase = get_supabase()
-    stats = {"searched": 0, "found": 0, "not_found": 0}
-
-    # Firmy kvalifikované, BEZ emailu
-    res = supabase.table("companies").select(
-        "ico, url, name"
-    ).eq(
-        "prospecting_status", "qualified"
-    ).in_(
-        "email", ["", None]
-    ).limit(limit).execute()
-
-    companies = res.data or []
-    print(f"[Pipeline v2] Fáze 4 — hledám emaily pro {len(companies)} firem...")
-
-    for company in companies:
-        url = company.get("url", "")
-        ico = company.get("ico", "")
-        if not url:
-            continue
-
-        stats["searched"] += 1
-
-        result = await find_email_smart(
-            url,
-            use_playwright=use_playwright,
-            use_vision=use_vision,
-        )
-
-        if result.email:
-            update = {
-                "email": result.email,
-                "email_source": result.source,
-                "email_confidence": result.confidence,
-            }
-            if ico:
-                supabase.table("companies").update(update).eq("ico", ico).execute()
-            else:
-                supabase.table("companies").update(update).eq("url", url).execute()
-            stats["found"] += 1
-        else:
-            stats["not_found"] += 1
-
-        await asyncio.sleep(0.3)
-
-    print(f"[Pipeline v2] Fáze 4 hotova: {stats}")
-    return stats
-
-
-# ── Kompletní pipeline ──
+# ── Kompletní pipeline v3 ──
 
 async def run_smart_pipeline(
     gather: bool = True,
+    find_emails: bool = True,
     scan: bool = True,
     qualify: bool = True,
-    find_emails: bool = True,
     sources: list[str] | None = None,
     scan_limit: int = 50,
-    email_limit: int = 50,
+    email_limit: int = 100,
 ) -> dict:
     """
-    Kompletní smart pipeline v2:
-    gather → scan → qualify → find_emails
+    Kompletní smart pipeline v3:
+      1. GATHER     → sesbírej firmy z katalogů
+      2. FIND EMAIL → najdi email (levné: regex + Playwright)
+      3. SCAN       → skenuj web JEN firmám s emailem (drahé)
+      4. QUALIFY    → ohodnoť leady (scoring)
 
-    Každá fáze jde spustit i samostatně.
+    Princip: Nejdřív ověř kontakt, pak investuj do analýzy.
     """
     results = {}
 
     if gather:
-        print("═" * 60)
-        print("[Pipeline v2] FÁZE 1: Shromažďování firem z katalogů")
-        print("═" * 60)
+        print("=" * 60)
+        print("[Pipeline v3] FÁZE 1: Shromažďování firem z katalogů")
+        print("=" * 60)
         results["gather"] = await phase_gather_companies(sources=sources)
 
+    if find_emails:
+        print("=" * 60)
+        print("[Pipeline v3] FÁZE 2: Hledání emailů (levné)")
+        print("=" * 60)
+        results["emails"] = await phase_find_emails(limit=email_limit)
+
     if scan:
-        print("═" * 60)
-        print("[Pipeline v2] FÁZE 2: Skenování webů")
-        print("═" * 60)
+        print("=" * 60)
+        print("[Pipeline v3] FÁZE 3: Skenování webů (jen s emailem)")
+        print("=" * 60)
         results["scan"] = await phase_scan_websites(limit=scan_limit)
 
     if qualify:
-        print("═" * 60)
-        print("[Pipeline v2] FÁZE 3: Kvalifikace leadů + scoring")
-        print("═" * 60)
+        print("=" * 60)
+        print("[Pipeline v3] FÁZE 4: Kvalifikace + scoring")
+        print("=" * 60)
         results["qualify"] = await phase_qualify_leads()
-        # Lead scoring — ohodnoť kvalifikované leady
-        from backend.prospecting.lead_scoring import score_all_leads
-        results["scoring"] = await score_all_leads()
+        try:
+            from backend.prospecting.lead_scoring import score_all_leads
+            results["scoring"] = await score_all_leads()
+        except ImportError:
+            print("[Pipeline v3] Lead scoring modul nenalezen, přeskakuji")
 
-    if find_emails:
-        print("═" * 60)
-        print("[Pipeline v2] FÁZE 4: Hledání emailů")
-        print("═" * 60)
-        results["emails"] = await phase_find_emails(limit=email_limit)
-
-    print("═" * 60)
-    print(f"[Pipeline v2] HOTOVO: {results}")
-    print("═" * 60)
+    print("=" * 60)
+    print(f"[Pipeline v3] HOTOVO: {results}")
+    print("=" * 60)
     return results

@@ -27,18 +27,19 @@ from backend.prospecting.smart_pipeline import (
     phase_find_emails,
 )
 from backend.outbound.email_engine import run_email_campaign, is_sending_allowed
+from backend.outbound.response_checker import run_response_check
 
 # ══════════════════════════════════════════════════════════════
 # ⛔ PIPELINE POZASTAVENA — zapnout až bude celá pipeline hotová
 # Nastavit na True pro spuštění prospectingu, scanningu a emailů.
 # ══════════════════════════════════════════════════════════════
-PIPELINE_ENABLED = False
+PIPELINE_ENABLED = True
 
 # ── AGRESIVNÍ LIMITY ──
 
 # Prospecting: kolik firem načíst za cyklus (z každého zdroje)
 PROSPECT_PER_SOURCE = 50         # 50 × 3 zdroje = 150/cyklus
-PROSPECT_SOURCES = ["shoptet", "heureka", "ares"]
+PROSPECT_SOURCES = ["heureka", "ares", "firmy", "zbozi"]  # 4 aktivní zdroje
 
 # Scanning: kolik webů skenovat za cyklus
 SCAN_LIMIT = 30                  # 30/cyklus × ~8 cyklů = 240/den
@@ -174,6 +175,12 @@ async def task_emailing():
     return result
 
 
+async def task_check_responses():
+    """Zkontroluj příchozí odpovědi — IMAP + Resend eventy."""
+    result = await run_response_check()
+    return result
+
+
 async def task_reporting():
     """20:00 — Měsíční reporty (1. den v měsíci)."""
     today = datetime.utcnow()
@@ -211,6 +218,7 @@ SCHEDULE = {
     "find_emails": task_find_emails,
     "emailing": task_emailing,
     "reporting": task_reporting,
+    "check_responses": task_check_responses,
 }
 
 
@@ -252,34 +260,47 @@ async def run_all_tasks():
 
 async def run_cycle() -> dict:
     """
-    Jeden cyklus pipeline:
-    1. Prospecting (načti nové firmy)
-    2. Scanning (skenuj weby)
-    3. Find emails (najdi kontakty)
-    4. Emailing (pošli dávku — jen v pracovní hodiny)
+    Jeden cyklus pipeline v3:
+    1. GATHER     — Sesbírej firmy z katalogů
+    2. FIND EMAIL — Najdi emaily (levné: httpx + Perplexity + Playwright)
+    3. SCAN       — Skenuj web JEN firmám s emailem (drahé)
+    4. QUALIFY    — Ohodnoť leady (scoring)
+    5. EMAILING   — Pošli dávku emailů (jen v pracovní hodiny)
 
-    Monitoring a reporting se spouštějí zvlášť (jednou denně).
+    v3 princip: Nejdřív ověř kontakt, pak investuj do analýzy.
     """
+    # ⛔ DOUBLE SAFETY: Pipeline musí být explicitně povolena
+    if not PIPELINE_ENABLED:
+        print("[Cyklus] ⛔ PIPELINE_ENABLED = False → přeskakuji celý cyklus")
+        return {"skipped": True, "reason": "PIPELINE_ENABLED = False"}
+
     cycle_start = datetime.utcnow()
     cycle_results = {}
 
-    # Fáze 1: Prospecting
+    # Fáze 1: GATHER — Sesbírej firmy z katalogů
     print("\n" + "=" * 60)
-    print(f"[Cyklus {cycle_start.strftime('%H:%M')}] Fáze 1/4: PROSPECTING")
+    print(f"[Cyklus {cycle_start.strftime('%H:%M')}] Fáze 1/5: GATHER (prospecting)")
     print("=" * 60)
     cycle_results["prospecting"] = await run_task("prospecting")
 
-    # Fáze 2: Scanning + Qualify + Score
-    print(f"[Cyklus] Fáze 2/4: SCANNING + QUALIFY")
-    cycle_results["scanning"] = await run_task("scanning")
-
-    # Fáze 3: Find Emails
-    print(f"[Cyklus] Fáze 3/4: FIND EMAILS")
+    # Fáze 2: FIND EMAIL — Levná operace PŘED scanem
+    print(f"[Cyklus] Fáze 2/5: FIND EMAILS (kaskáda)")
     cycle_results["find_emails"] = await run_task("find_emails")
 
-    # Fáze 4: Emailing (jen v pracovní hodiny)
-    print(f"[Cyklus] Fáze 4/4: EMAILING")
+    # Fáze 3: SCAN — Jen firmy s emailem (drahé → šetříme)
+    print(f"[Cyklus] Fáze 3/5: SCANNING + QUALIFY")
+    cycle_results["scanning"] = await run_task("scanning")
+
+    # Fáze 4: QUALIFY + SCORE
+    # (task_scanning() už volá phase_qualify_leads + score_all_leads)
+
+    # Fáze 5: EMAILING (jen v pracovní hodiny)
+    print(f"[Cyklus] Fáze 4/5: EMAILING")
     cycle_results["emailing"] = await run_task("emailing")
+
+    # Fáze 6: RESPONSE CHECK
+    print(f"[Cyklus] Fáze 6/6: RESPONSE CHECK")
+    cycle_results["check_responses"] = await run_task("check_responses")
 
     # Shrnutí
     cycle_duration = (datetime.utcnow() - cycle_start).total_seconds()
@@ -338,22 +359,31 @@ async def run_continuous():
             last_reporting = now
 
         # Hlavní cyklus
-        can_send, _ = is_sending_allowed()
+        try:
+          can_send, _ = is_sending_allowed()
+        except Exception as e:
+          print(f"[Daemon] ⚠️ Chyba v is_sending_allowed: {e}")
+          can_send = False
         if can_send:
             # Denní režim: plný cyklus (prospecting + scanning + emaily)
             print(f"\n[Daemon] ☀️  Denní cyklus ({now.strftime('%H:%M')} UTC)")
             await run_cycle()
             wait_minutes = CYCLE_INTERVAL_MINUTES
         else:
-            # Noční režim: jen prospecting + scanning (buduj zásobu)
+            # Noční režim v3: gather + find_emails + scanning (buduj zásobu)
             print(f"\n[Daemon] 🌙 Noční cyklus ({now.strftime('%H:%M')} UTC)")
             await run_task("prospecting")
+            await run_task("find_emails")   # Před scanem — v3 pořadí
             await run_task("scanning")
-            await run_task("find_emails")
+            await run_task("check_responses")
             wait_minutes = NIGHT_CYCLE_MINUTES
 
         print(f"[Daemon] 💤 Čekám {wait_minutes} minut do dalšího cyklu...")
-        await asyncio.sleep(wait_minutes * 60)
+        try:
+            await asyncio.sleep(wait_minutes * 60)
+        except asyncio.CancelledError:
+            print("[Daemon] ⛔ Daemon zastaven (CancelledError)")
+            break
 
 
 # ── CLI vstupní bod ──

@@ -21,7 +21,6 @@ from backend.outbound.email_templates import (
     get_outbound_email,
     get_followup_email,
 )
-from backend.outbound.ai_email_composer import compose_email as ai_compose_email
 from backend.outbound.deliverability import (
     get_email_health,
     check_domain_limit,
@@ -35,9 +34,9 @@ from backend.outbound.sender_rotation import (
 
 logger = logging.getLogger(__name__)
 
-# Max emailů na jednu firmu (Email 1: AI + Email 2: HTML template po 14 dnech)
-MAX_EMAILS_PER_COMPANY = 2
-FOLLOWUP_DAYS = 14
+# Max emailů na jednu firmu (1. email + 2 follow-upy)
+MAX_EMAILS_PER_COMPANY = 3
+FOLLOWUP_DAYS = 7
 
 # Zpoždění mezi emaily (sekundy) — náhodné, vypadá přirozeně
 MIN_DELAY_SECONDS = 30
@@ -57,7 +56,6 @@ def is_sending_allowed() -> tuple[bool, str]:
     weekday = now.weekday()
     hour = now.hour
 
-    # Víkendový blok — PRODUKČNÍ REŽIM
     if weekday in WEEKEND_DAYS:
         return False, f"Víkend (den {weekday}) — emaily se neposílají"
 
@@ -221,21 +219,14 @@ async def get_companies_to_email(limit: int = 50) -> list[dict]:
     - Lead tier je HOT nebo WARM (COOL a COLD přeskakujeme)
     - Ještě nedostaly max počet emailů
     - Nejsou unsubscribed
-    - DEDUPLIKACE: email adresa NENÍ ještě v email_log (bezpečnostní pojistka)
     Řazeno dle lead_score DESC (nejlepší leady první).
     """
     supabase = get_supabase()
 
-    # ── DEDUPLIKACE: načti všechny již oslovené email adresy ──
-    already_emailed_res = supabase.table("email_log").select("to_email").execute()
-    already_emailed = {row["to_email"] for row in (already_emailed_res.data or [])}
-    if already_emailed:
-        logger.info(f"[Email] Deduplikace: {len(already_emailed)} adres už v email_log")
-
     res = supabase.table("companies").select(
-        "*, scans!scans_company_id_fkey(id, total_findings), findings(name, risk_level, ai_act_article)"
+        "*, scans(id, total_findings), findings(name, risk_level, ai_act_article)"
     ).in_(
-        "prospecting_status", ["qualified", "qualified_hot"]
+        "prospecting_status", ["qualified"]
     ).in_(
         "lead_tier", ["HOT", "WARM"]
     ).eq(
@@ -246,33 +237,9 @@ async def get_companies_to_email(limit: int = 50) -> list[dict]:
         "emails_sent", MAX_EMAILS_PER_COMPANY
     ).order(
         "lead_score", desc=True
-    ).limit(limit * 2).execute()
+    ).limit(limit).execute()
 
-    candidates = res.data or []
-
-    # ── Odfiltrovat firmy s emailem už v email_log ──
-    deduped = []
-    seen_emails = set()
-    for company in candidates:
-        email = company.get("email", "")
-        if not email:
-            continue
-        emails_sent = company.get("emails_sent", 0)
-        # Nový kontakt (emails_sent==0), ale email je už v logu → duplikát
-        if emails_sent == 0 and email in already_emailed:
-            logger.debug(f"[Email] Deduplikace: {email} už v email_log — přeskakuji")
-            continue
-        # Deduplikace v rámci batche (2 firmy se stejným emailem)
-        if email in seen_emails:
-            logger.debug(f"[Email] Deduplikace: {email} duplicitní v batchi — přeskakuji")
-            continue
-        seen_emails.add(email)
-        deduped.append(company)
-        if len(deduped) >= limit:
-            break
-
-    logger.info(f"[Email] Kandidáti: {len(candidates)} → po deduplikaci: {len(deduped)}")
-    return deduped
+    return res.data or []
 
 
 async def run_email_campaign(
@@ -344,13 +311,6 @@ async def run_email_campaign(
         if not email or not url:
             continue
 
-        # Blacklist jména firmy (IT/web/software)
-        from backend.prospecting.ares import is_blacklisted_company
-        if is_blacklisted_company(name):
-            logger.debug(f"[Email] Blacklist firma: {name} — přeskakuji")
-            stats["skipped_blacklisted"] += 1
-            continue
-
         # Blacklist check
         if await is_email_blacklisted(email):
             stats["skipped_blacklisted"] += 1
@@ -379,75 +339,25 @@ async def run_email_campaign(
 
         top_finding = findings[0].get("name", "AI systém bez označení")
 
-        # 2-step sekvence v2:
-        #   Email 1 (emails_sent=0): AI-generovaný personalizovaný email (Claude)
-        #   Email 2 (emails_sent=1): HTML šablona follow-up (14 dní po Email 1, jen pokud neodpověděl)
-        last_email_at_str = company.get("last_email_at") or company.get("outbound_email_sent_at")
-        outreach_status = company.get("outreach_status", "not_contacted")
-
+        # Rozhodnutí: první email nebo follow-up
         if emails_sent == 0:
-            # ── EMAIL 1: AI-generovaný (Claude) ──
-            try:
-                contact_name = company.get("contact_name", "")
-                legal_form = company.get("legal_form", "")
-                ai_email = await ai_compose_email(
-                    company_name=name,
-                    company_url=url,
-                    contact_person=contact_name,
-                    legal_form=legal_form,
-                    industry=company.get("category", ""),
-                    findings=findings,
-                    scan_id=company.get("last_scan_id", ""),
-                )
-                # Adaptér: ComposedEmail → EmailVariant-kompatibilní objekt
-                class _EmailAdapter:
-                    def __init__(self, ce):
-                        self.subject = ce.subject
-                        self.body_html = ce.body_html
-                        self.variant_id = f"ai_v2_{ce.model[:20]}"
-                email_data = _EmailAdapter(ai_email)
-                logger.info(f"[Email] AI email vygenerován: {name} | cost=${ai_email.cost_usd:.4f}")
-            except Exception as e:
-                logger.error(f"[Email] AI composer selhal pro {name}: {e} — přeskakuji")
-                stats["errors"] += 1
-                continue
-
-        elif emails_sent == 1:
-            # ── EMAIL 2: HTML šablona follow-up (jen po 14+ dnech a bez odpovědi) ──
-            # Kontrola: odpověděl klient?
-            responded_statuses = {"interested", "meeting_scheduled", "not_interested", "angry", "blocked", "responded"}
-            if outreach_status in responded_statuses:
-                logger.info(f"[Email] Přeskakuji follow-up pro {name} — status={outreach_status}")
-                continue
-
-            # Kontrola: uplynulo 14 dní od prvního emailu?
-            if last_email_at_str:
-                from datetime import datetime as _dt
-                try:
-                    last_dt = _dt.fromisoformat(last_email_at_str.replace("Z", "+00:00"))
-                    days_since = (datetime.utcnow() - last_dt.replace(tzinfo=None)).days
-                except (ValueError, TypeError):
-                    days_since = 0
-                if days_since < FOLLOWUP_DAYS:
-                    continue  # Ještě není čas na follow-up
-
-            email_data = get_followup_email(
+            # A/B test: náhodně varianta A nebo B
+            variant = random.choice(["A", "B"])
+            email_data = get_outbound_email(
                 company_name=name,
                 company_url=url,
-                days_since=FOLLOWUP_DAYS,
+                findings_count=findings_count,
+                top_finding=top_finding,
+                variant=variant,
                 to_email=email,
             )
         else:
-            continue  # Max 2 emaily
-
-        # ── SAFETY: Pre-send deduplikace ──
-        existing_log = supabase.table("email_log").select("id").eq(
-            "to_email", email
-        ).execute()
-        if existing_log.data and emails_sent == 0:
-            logger.warning(f"[Email] SAFETY BLOCK: {email} už v email_log — přeskakuji")
-            stats["skipped_blacklisted"] += 1
-            continue
+            email_data = get_followup_email(
+                company_name=name,
+                company_url=url,
+                days_since=FOLLOWUP_DAYS * emails_sent,
+                to_email=email,
+            )
 
         # Odeslat přes vybraného sendera
         try:
@@ -469,21 +379,17 @@ async def run_email_campaign(
                 "to_email": email,
                 "from_email": sender_email,
                 "subject": email_data.subject,
-                "variant": getattr(email_data, "variant_id", "unknown"),
+                "variant": email_data.variant_id,
                 "resend_id": result.get("id", ""),
                 "status": "sent" if not dry_run else "dry_run",
                 "sent_at": datetime.utcnow().isoformat(),
             }).execute()
 
             # Aktualizovat counter na firmě
-            update_fields = {
+            supabase.table("companies").update({
                 "emails_sent": emails_sent + 1,
                 "last_email_at": datetime.utcnow().isoformat(),
-                "outreach_status": "email_sent" if emails_sent == 0 else "followup_sent",
-            }
-            if emails_sent == 0:
-                update_fields["first_contacted_at"] = datetime.utcnow().isoformat()
-            supabase.table("companies").update(update_fields).eq("ico", ico).execute()
+            }).eq("ico", ico).execute()
 
             if emails_sent == 0:
                 stats["emails_sent"] += 1

@@ -20,13 +20,17 @@ ARES_SEARCH_URL = f"{ARES_BASE_URL}/ekonomicke-subjekty/vyhledat"
 ARES_DETAIL_URL = f"{ARES_BASE_URL}/ekonomicke-subjekty"
 
 # CZ-NACE kódy (5-ciferné!) — relevantní pro AI Act
-# ⚠️ BLACKLIST v2: Odstraněny IT/web/software/agency kódy
-# (62010, 62020, 62090, 63110, 63120, 73110, 70210, 58210, 58290)
-# Důvod: Tyto firmy by viděly tržní příležitost a začaly konkurovat.
 RELEVANT_NACE = [
     "47910",   # Maloobchod prostřednictvím internetu (e-shopy)
     "47990",   # Ostatní maloobchod mimo prodejny
+    "62010",   # Programování
+    "62020",   # Poradenství v oblasti IT
+    "62090",   # Ostatní činnosti v oblasti IT
+    "63110",   # Zpracování dat, hosting
+    "63120",   # Webové portály
     "63990",   # Ostatní informační činnosti
+    "73110",   # Reklamní agentury
+    "70210",   # PR a komunikace
     "69100",   # Právní činnosti
     "69200",   # Účetnictví a audit
     "65110",   # Životní pojištění
@@ -36,39 +40,19 @@ RELEVANT_NACE = [
     "46900",   # Nespecializovaný velkoobchod
     "47110",   # Maloobchod se smíšeným zbožím
     "47190",   # Ostatní maloobchod
+    "58210",   # Vydávání počítačových her
+    "58290",   # Vydávání ostatního software
     "61100",   # Telekomunikační činnosti
 ]
 
 # Klíčová slova pro hledání firem podle jména
-# ⚠️ BLACKLIST v2: Odstraněna IT/web/software klíčová slova
 SEARCH_KEYWORDS = [
-    "e-shop", "eshop", "online", "internet",
-    "marketing", "media",
-    "poradenství", "consulting",
-    "logistik", "obchod", "prodejna",
-    "pojištění", "účetnictví", "právní",
-    "vzdělávání", "škola", "kurz",
-    "restaurace", "hotel", "ubytování",
-    "zdraví", "lékárna", "klinika",
+    "digital", "software", "IT", "web", "tech", "data",
+    "marketing", "media", "cloud", "hosting", "e-shop",
+    "eshop", "online", "internet", "agency", "agentura",
+    "poradenství", "consulting", "solutions", "systems",
+    "systémy", "automatizace", "analytik", "logistik",
 ]
-
-# Blacklist: firmy s těmito slovy v názvu PŘESKOČIT (IT/web/software/agency)
-BLACKLIST_NAME_KEYWORDS = [
-    "web", "software", "programov", "digital", "hosting",
-    "cloud", "IT ", " IT,", "i.t.", "agentura", "agency",
-    "design", "development", "developer", "kódov", "server",
-    "cyber", "kyber", "seo", "tvorba web", "webdesign",
-    "webový", "webov", "applic", "aplika", "saas", "paas",
-]
-
-
-def is_blacklisted_company(name: str) -> bool:
-    """Zkontroluje jestli firma patří mezi IT/web/software — přeskočit."""
-    name_lower = name.lower()
-    for kw in BLACKLIST_NAME_KEYWORDS:
-        if kw.lower() in name_lower:
-            return True
-    return False
 
 
 @dataclass
@@ -239,8 +223,6 @@ async def batch_search(
         companies = await search_by_name(keyword, count=max_per_nace)
         for c in companies:
             if c.ico not in all_companies:
-                if is_blacklisted_company(c.name):
-                    continue
                 all_companies[c.ico] = c
 
         # Rate limit
@@ -256,8 +238,6 @@ async def batch_search(
         companies = await search_by_nace(code, count=max_per_nace)
         for c in companies:
             if c.ico not in all_companies:
-                if is_blacklisted_company(c.name):
-                    continue
                 all_companies[c.ico] = c
             else:
                 # Přidej NACE kód

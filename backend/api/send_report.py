@@ -3,7 +3,9 @@ AIshield.cz — Send Report API endpoint
 Přijme email + scan_id, vygeneruje branded HTML report a odešle ho.
 """
 
-from fastapi import APIRouter, HTTPException
+import time
+from collections import defaultdict
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 from backend.database import get_supabase
 from backend.outbound.email_engine import send_email
@@ -14,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# ── Rate limit: max 3 reporty za 10 minut per IP ──
+_report_requests: dict[str, list[float]] = defaultdict(list)
+
 
 class SendReportRequest(BaseModel):
     """Požadavek na odeslání reportu."""
@@ -21,7 +26,15 @@ class SendReportRequest(BaseModel):
 
 
 @router.post("/scan/{scan_id}/send-report")
-async def send_scan_report(scan_id: str, request: SendReportRequest):
+async def send_scan_report(scan_id: str, request: SendReportRequest, req: Request = None):
+    # Rate limit
+    ip = req.client.host if req and req.client else "unknown"
+    now = time.time()
+    _report_requests[ip] = [t for t in _report_requests[ip] if now - t < 600]
+    if len(_report_requests[ip]) >= 3:
+        logger.warning("[SendReport] Rate limit: IP=%s", ip)
+        raise HTTPException(status_code=429, detail="Příliš mnoho požadavků.")
+    _report_requests[ip].append(now)
     """
     Odešle branded HTML report na zadaný email.
     1. Načte scan data z DB

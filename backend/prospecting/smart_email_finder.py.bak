@@ -55,12 +55,6 @@ EMAIL_BLACKLIST_PATTERNS = {
     "woocommerce", "wordpress", "example", "test",
     "noreply", "no-reply", "mailer-daemon", "postmaster",
     "unsubscribe", "donotreply",
-    # Nevhodné pro outbound nabídky
-    "reklamace", "reklamacia", "complaint", "complaints",
-    "gdpr", "dpo", "abuse", "spam", "security",
-    "fakturace", "invoicing", "billing",
-    "infolinka", "hotline", "callcentrum", "call-centrum",
-    "infolinka", "hotline", "callcentrum", "call-centrum",
 }
 
 # Preferované prefixy — řazení od nejlepšího
@@ -108,9 +102,6 @@ def score_email(email: str, website_domain: str = "") -> float:
     # Bonus: email na doméně webu
     if website_domain and domain in website_domain.lower():
         score += 0.3
-    elif website_domain:
-        # Cizí doména = tvrdá penalizace (např. cooperation@hptronic na datart.cz)
-        score -= 0.4
 
     # Bonus: preferovaný prefix
     for i, pref in enumerate(EMAIL_PRIORITY):
@@ -136,8 +127,8 @@ def pick_best_email(
     scored = [(e, score_email(e, website_domain)) for e in emails]
     scored.sort(key=lambda x: x[1], reverse=True)
 
-    # Vrať jen pokud skóre dostatečné (cizí doména/freemail neprojde)
-    if scored[0][1] >= 0.3:
+    # Vrať jen pokud skóre > 0
+    if scored[0][1] > 0:
         return scored[0][0]
     return None
 
@@ -220,274 +211,6 @@ async def find_email_fast(url: str) -> EmailFinderResult:
 
 
 # ── Metoda 2: Playwright render ──
-
-
-# ── Metoda 1b: Perplexity Sonar (web search AI) ──
-
-# ── Perplexity budget guard ──
-# Globální flag — zastaví další Perplexity dotazy v aktuálním cyklu
-_perplexity_budget_exhausted = False
-
-
-async def _send_budget_alert(error_detail: str = "") -> None:
-    """Pošle email alert o vyčerpání Perplexity kreditů."""
-    try:
-        from backend.outbound.email_engine import send_email
-        await send_email(
-            to="martin@aishield.cz",
-            subject="⚠️ AIshield LOVEC — Perplexity kredity vyčerpány",
-            html=f"""
-            <h2>Perplexity API — kredity vyčerpány</h2>
-            <p>LOVEC pipeline automaticky pozastavil Perplexity dotazy.</p>
-            <p><strong>Detail chyby:</strong> {error_detail}</p>
-            <p>Ostatní fáze pipeline (regex, Playwright, Vision) pokračují normálně.</p>
-            <p>Pro obnovení Perplexity: doplňte kredity a restartujte orchestrátor.</p>
-            <hr>
-            <small>Automatická zpráva z AIshield LOVEC systému</small>
-            """,
-            from_email="info@aishield.cz",
-            from_name="AIshield LOVEC",
-        )
-        print("[Perplexity] ✉️ Budget alert odeslán na martin@aishield.cz")
-    except Exception as e:
-        print(f"[Perplexity] ⚠️ Nepodařilo se odeslat budget alert: {e}")
-
-
-async def _call_perplexity_api(
-    api_key: str,
-    model: str,
-    messages: list[dict],
-    response_format: dict,
-    temperature: float = 0.1,
-    timeout: float = 30.0,
-) -> dict | None:
-    """
-    Zavolá Perplexity Chat Completions API.
-    Vrací parsed JSON odpověď nebo None při chybě.
-    Při 429/402 nastaví budget guard.
-    """
-    global _perplexity_budget_exhausted
-
-    try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            resp = await client.post(
-                "https://api.perplexity.ai/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": messages,
-                    "response_format": response_format,
-                    "temperature": temperature,
-                },
-            )
-            resp.raise_for_status()
-            return resp.json()
-
-    except httpx.HTTPStatusError as e:
-        status = e.response.status_code
-        # 429 = rate limit / kredity vyčerpány, 402 = payment required
-        if status in (429, 402):
-            _perplexity_budget_exhausted = True
-            error_msg = f"HTTP {status} od Perplexity API (model={model})"
-            print(f"[Perplexity] 🛑 {error_msg} — budget guard aktivován")
-            await _send_budget_alert(error_msg)
-            return None
-        # Jiné HTTP chyby (500, 503...) — jen logujeme, nekillujeme pipeline
-        print(f"[Perplexity] HTTP {status} pro model={model}")
-        return None
-
-    except Exception as e:
-        print(f"[Perplexity] Chyba API volání ({model}): {e}")
-        return None
-
-
-async def find_email_perplexity(
-    url: str,
-    company_name: str = "",
-    ico: str = "",
-    city: str = "",
-) -> EmailFinderResult:
-    """
-    Hledání emailu přes Perplexity Sonar Pro Chat Completions API.
-    Prohledá rejstříky, katalogy, sociální sítě — ne jen web firmy.
-
-    Strategie:
-    - Primární model: sonar-pro (~$0.003/dotaz, lepší kvalita)
-    - Fallback: sonar (~$0.001/dotaz, při chybě sonar-pro)
-    - Budget guard: při 429/402 zastaví Perplexity dotazy + pošle email alert
-
-    Source: "perplexity".
-    """
-    import os
-    import json as _json
-
-    global _perplexity_budget_exhausted
-
-    # Budget guard — pokud jsou kredity vyčerpány, přeskočíme
-    if _perplexity_budget_exhausted:
-        return EmailFinderResult()
-
-    api_key = os.getenv("PERPLEXITY_API_KEY", "")
-    if not api_key:
-        return EmailFinderResult()
-
-    domain = extract_domain(url)
-
-    # Sestavení kontextu pro prompt (české labely — lepší pro české weby)
-    context_parts = []
-    if company_name:
-        context_parts.append(f"Název firmy: {company_name}")
-    if ico:
-        context_parts.append(f"IČO: {ico}")
-    if city:
-        context_parts.append(f"Město: {city}")
-    context_parts.append(f"Web: {url}")
-    context_parts.append(f"Doména: {domain}")
-    company_context = "\n".join(context_parts)
-
-    # Prompt v3 — český, OSINT strategie, negativní příklady, přesné instrukce
-    prompt = f"""Potřebuji najít obecný obchodní kontaktní email pro tuto českou firmu:
-
-{company_context}
-
-STRATEGIE HLEDÁNÍ — postupuj přesně podle těchto kroků:
-1. Hledej: "{company_name} email kontakt" a "{company_name} kontaktní údaje"
-2. Prověř české firemní katalogy: firmy.cz, zivefirmy.cz, heureka.cz — najdi tuto firmu
-3. Hledej: site:{domain} "info@" OR "kontakt@" OR "office@" OR "obchod@"
-4. Zkontroluj český obchodní rejstřík (justice.cz, rejstrik-firem.kurzy.cz) — použij IČO pokud je k dispozici
-5. Prohledej LinkedIn firemní stránku pro {company_name}
-6. Jako poslední možnost hledej: "{domain}" email
-
-PŘIJATELNÉ prefixy emailů (v pořadí priority):
-info@, kontakt@, office@, obchod@, prodej@
-
-ZAKÁZANÉ prefixy emailů (tyto NIKDY nevracej):
-reklamace@, gdpr@, dpo@, infolinka@, fakturace@, abuse@, noreply@, spam@,
-security@, podpora@, support@, helpdesk@, webmaster@, admin@, objednavky@,
-eshop@, marketing@, press@, media@, kariera@, jobs@, hr@
-
-PRAVIDLA PRO DOMÉNU:
-- Email MUSÍ být na doméně {domain}
-- JEDINÁ výjimka: pokud firma oficiálně operuje pod jinou doménou (např. mateřská společnost), to je přijatelné
-- NIKDY nevracej email na zcela nesouvisející doméně
-
-ŠPATNÉ PŘÍKLADY (tyto chyby NEOPAKUJ):
-- reklamace@datart.cz — toto je oddělení reklamací, ne obchodní kontakt
-- cooperation@hptronic.cz — toto je doména úplně jiné firmy, špatně
-- jan.novak@firma.cz — osobní email zaměstnance, ne obecný firemní kontakt
-
-DŮLEŽITÉ UPOZORNĚNÍ:
-- Hledáš OBECNÝ obchodní email, na který může přijít obchodní nabídka
-- Pokud firma provozuje e-shop, preferuj email z kontaktní stránky webu, ne z objednávkového systému
-- Vždy ověř, že nalezený email skutečně patří hledané firmě a ne jiné organizaci
-- Pokud si nejsi jistý, zda email patří správné firmě, raději vrať prázdný řetězec
-
-Pokud nemůžeš najít vhodný obecný obchodní email s vysokou jistotou, vrať prázdný řetězec.
-NIKDY nehadej ani nevymýšlej emaily."""
-
-    # System message — český
-    system_msg = (
-        "Jsi OSINT specialista na hledání firemních kontaktních emailů českých firem. "
-        "Systematicky prohledáváš web — katalogy, rejstříky, firemní weby. "
-        "Nikdy nehadáš a nevymýšlíš data. Odpovídáš výhradně ve strukturovaném JSON formátu."
-    )
-
-    messages = [
-        {"role": "system", "content": system_msg},
-        {"role": "user", "content": prompt},
-    ]
-
-    response_format = {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "email_result",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "description": "Nalezený obchodní kontaktní email, nebo prázdný řetězec pokud nenalezen"
-                    },
-                    "source": {
-                        "type": "string",
-                        "description": "Přesná URL nebo název webu/katalogu kde byl email nalezen (např. firmy.cz, zivefirmy.cz, web firmy). Nikdy nepoužívej čísla citací jako [1]."
-                    }
-                },
-                "required": ["email", "source"],
-                "additionalProperties": False
-            }
-        }
-    }
-
-    # Primární pokus: sonar-pro (lepší kvalita, dražší)
-    data = await _call_perplexity_api(
-        api_key=api_key,
-        model="sonar-pro",
-        messages=messages,
-        response_format=response_format,
-        temperature=0.1,
-        timeout=30.0,
-    )
-
-    # Fallback na sonar pokud sonar-pro selže (a není to budget problém)
-    if data is None and not _perplexity_budget_exhausted:
-        print(f"[Perplexity] sonar-pro selhal, zkouším fallback na sonar...")
-        data = await _call_perplexity_api(
-            api_key=api_key,
-            model="sonar",
-            messages=messages,
-            response_format=response_format,
-            temperature=0.1,
-            timeout=25.0,
-        )
-
-    if data is None:
-        return EmailFinderResult()
-
-    # Extrakce textu z Chat Completions odpovědi
-    output_text = ""
-    choices = data.get("choices", [])
-    if choices:
-        output_text = choices[0].get("message", {}).get("content", "")
-
-    if not output_text:
-        return EmailFinderResult()
-
-    # Parse JSON
-    try:
-        parsed = _json.loads(output_text)
-    except _json.JSONDecodeError:
-        email_match = re.search(
-            r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-            output_text,
-        )
-        if email_match:
-            parsed = {"email": email_match.group(0), "source": "perplexity"}
-        else:
-            return EmailFinderResult()
-
-    email = parsed.get("email", "").strip().lower()
-    zdroj = parsed.get("source", "") or parsed.get("zdroj", "perplexity")
-
-    if not email or "@" not in email:
-        return EmailFinderResult()
-
-    # Ověření přes score_email
-    score = score_email(email, domain)
-    if score < 0.3:
-        return EmailFinderResult()
-
-    return EmailFinderResult(
-        email=email,
-        source="perplexity",
-        confidence=min(score + 0.1, 0.95),
-        contact_page_url=zdroj,
-        all_emails_found=[email],
-    )
-
 
 async def find_email_playwright(url: str) -> EmailFinderResult:
     """
@@ -640,60 +363,35 @@ async def find_email_vision(screenshot: bytes, url: str) -> EmailFinderResult:
 
 async def find_email_smart(
     url: str,
-    use_perplexity: bool = True,
     use_playwright: bool = True,
-    company_name: str = "",
-    ico: str = "",
-    city: str = "",
+    use_vision: bool = True,
 ) -> EmailFinderResult:
     """
-    Kaskádové hledání emailu — každá další fáze se spustí JEN
-    pokud předchozí nic nenašla. Žádné dvojí ověřování.
+    Kaskádové hledání emailu:
+    1. Rychlý regex (httpx) — levný
+    2. Playwright render — dražší, ale vídí JS
+    3. Claude Vision — nejdražší, ale čte i obrázky
 
-    Pořadí (od nejlevnějšího):
-    1. Rychlý regex (httpx) — zdarma, <1s
-    2. Playwright render — zdarma, ~5s (vidí JS-rendered emaily)
-    3. Perplexity Sonar Pro — ~$0.003/dotaz (AI web search)
-    4. Hádání info@doména — zdarma, poslední šance
+    Přestane hledat jakmile najde email s confidence >= 0.6
     """
-    result = EmailFinderResult()
-
-    # ── Fáze 1: Rychlý regex scan (httpx) — zdarma ──
+    # Fáze 1: Rychlý scan
     result = await find_email_fast(url)
-    if result.email:
+    if result.email and result.confidence >= 0.6:
         return result
 
-    # ── Fáze 2: Playwright render — zdarma, ale pomalejší ──
+    # Fáze 2: Playwright
     if use_playwright:
         pw_result = await find_email_playwright(url)
-        if pw_result.email:
-            return pw_result
+        if pw_result.email and pw_result.confidence > (result.confidence or 0):
+            result = pw_result
+        if result.email and result.confidence >= 0.6:
+            return result
 
-    # ── Fáze 3: Perplexity Sonar Pro — placená AI ──
-    # Volá se JEN pokud regex ani Playwright nic nenašly
-    if use_perplexity:
-        import os
-        if os.getenv("PERPLEXITY_API_KEY"):
-            pplx_result = await find_email_perplexity(
-                url,
-                company_name=company_name,
-                ico=ico,
-                city=city,
-            )
-            if pplx_result.email:
-                return pplx_result
-
-    # ── Fáze 4: Hádání info@doména — poslední šance ──
-    domain = extract_domain(url)
-    if domain:
-        guess_email = f"info@{domain}"
-        return EmailFinderResult(
-            email=guess_email,
-            source="guess",
-            confidence=0.35,
-            contact_page_url="",
-            all_emails_found=[guess_email],
-        )
+        # Fáze 3: Vision (pouze pokud Playwright udělal screenshot)
+        if use_vision and hasattr(pw_result, "_screenshot") and pw_result._screenshot:
+            vision_result = await find_email_vision(pw_result._screenshot, url)
+            if vision_result.email and vision_result.confidence > (result.confidence or 0):
+                result = vision_result
 
     return result
 
@@ -720,6 +418,7 @@ async def batch_find_emails(
             result = await find_email_smart(
                 url,
                 use_playwright=use_playwright,
+                use_vision=use_vision,
             )
             results[url] = result
             if result.email:

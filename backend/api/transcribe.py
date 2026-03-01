@@ -5,9 +5,10 @@ Přijme audio blob z frontendu, pošle do OpenAI Whisper API, vrátí text.
 
 import logging
 import httpx
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 
 from backend.config import get_settings
+from backend.api.auth import get_current_user, AuthUser
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -17,7 +18,7 @@ MAX_AUDIO_SIZE = 25 * 1024 * 1024  # 25 MB (Whisper limit)
 
 
 @router.post("/transcribe")
-async def transcribe_audio(file: UploadFile = File(...)):
+async def transcribe_audio(file: UploadFile = File(...), user: AuthUser = Depends(get_current_user)):
     """
     Přijme audio soubor (webm/mp4/wav), pošle do OpenAI Whisper API,
     vrátí přepsaný text.

@@ -5,7 +5,8 @@ Endpointy pro generování a stahování compliance dokumentů.
 
 import logging
 import time
-from fastapi import APIRouter, HTTPException
+from collections import defaultdict
+from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel
 
 from backend.documents.templates import TEMPLATE_NAMES
@@ -15,6 +16,18 @@ from backend.documents.pipeline import (
 )
 
 logger = logging.getLogger(__name__)
+
+# ── Rate limit: max 5 generování za hodinu per IP ──
+_gen_requests: dict[str, list[float]] = defaultdict(list)
+
+async def _check_gen_rate_limit(request: Request):
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    _gen_requests[ip] = [t for t in _gen_requests[ip] if now - t < 3600]
+    if len(_gen_requests[ip]) >= 5:
+        logger.warning("[Documents] Rate limit: IP=%s překročil 5/hod", ip)
+        raise HTTPException(status_code=429, detail="Příliš mnoho požadavků.")
+    _gen_requests[ip].append(now)
 
 router = APIRouter(prefix="/documents")
 
@@ -54,7 +67,7 @@ async def list_templates():
     }
 
 
-@router.post("/generate/{client_id}", response_model=GenerateKitResponse)
+@router.post("/generate/{client_id}", response_model=GenerateKitResponse, dependencies=[Depends(_check_gen_rate_limit)])
 async def generate_kit(client_id: str):
     """
     Vygeneruje kompletní AI Act Compliance Kit (7 dokumentů).
@@ -83,7 +96,7 @@ async def generate_kit(client_id: str):
         )
 
 
-@router.post("/generate/{client_id}/{template_key}", response_model=GenerateDocResponse)
+@router.post("/generate/{client_id}/{template_key}", response_model=GenerateDocResponse, dependencies=[Depends(_check_gen_rate_limit)])
 async def generate_doc(client_id: str, template_key: str):
     """Vygeneruje jeden konkrétní dokument."""
     if template_key not in TEMPLATE_NAMES:
