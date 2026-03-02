@@ -19,7 +19,7 @@ playwright==1.49.0
 weasyprint==62.3
 
 # Image processing
-pillow==11.0.0
+pillow==12.1.1
 
 # Email
 resend==2.5.1
