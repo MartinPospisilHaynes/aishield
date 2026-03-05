@@ -1,3 +1,4 @@
+
 """
 AIshield.cz — Payments API
 Multi-gateway: Stripe + bankovní převod.

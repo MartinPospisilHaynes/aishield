@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Routy vyžadující přihlášení (Supabase session)
 // /admin routes mají vlastní CRM autentizaci — nepotřebují Supabase
-const PROTECTED_ROUTES = ["/dashboard", "/dotaznik"];
+const PROTECTED_ROUTES = ["/dashboard", "/dotaznik", "/platba"];
 
 export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({ request });
@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/dotaznik/:path*", "/login", "/registrace"],
+    matcher: ["/dashboard/:path*", "/dotaznik/:path*", "/platba/:path*", "/login", "/registrace"],
 };

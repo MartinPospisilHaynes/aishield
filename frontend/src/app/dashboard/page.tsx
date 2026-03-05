@@ -826,7 +826,10 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 
 function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { findings: DashboardData["findings"]; questFindings: DashboardData["questionnaire_findings"]; resolvedIds: string[]; onResolvedChange: () => void }) {
     const [toggling, setToggling] = useState<string | null>(null);
-    const resolvedSet = new Set(resolvedIds);
+    const [optimisticIds, setOptimisticIds] = useState<Set<string>>(new Set(resolvedIds));
+    // Synchronizace s props, pokud se změní ze serveru
+    useEffect(() => { setOptimisticIds(new Set(resolvedIds)); }, [resolvedIds]);
+    const resolvedSet = optimisticIds;
     const allItems: { id: string; text: string; risk: string; article: string; source: string; tag: "done" | "client" | "lawyer" | "it"; resolved: boolean }[] = [];
 
     const standardItems: { text: string; tag: "done" | "client" | "lawyer" | "it"; risk: string; article: string }[] = [
@@ -840,7 +843,11 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
         { text: "Nastavit logování AI výstupů s retencí min. 6 měsíců", tag: "it", risk: "info", article: "čl. 12" },
     ];
 
+    const hasRealFindings = findings.length > 0 || questFindings.length > 0;
+
     for (const item of standardItems) {
+        // Generické úkoly (client/lawyer/it) zobrazit jen když existují reálné nálezy
+        if (!hasRealFindings && item.tag !== "done") continue;
         const itemId = `std-${item.text.slice(0, 20)}`;
         allItems.push({ id: itemId, text: item.text, risk: item.risk, article: item.article, source: "standard", tag: item.tag, resolved: item.tag === "done" || resolvedSet.has(itemId) });
     }
@@ -897,12 +904,26 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                 const canToggle = item.tag !== "done";
                 const handleToggle = async () => {
                     if (!canToggle || toggling) return;
+                    const newResolved = !item.resolved;
+                    // Optimistický update — okamžitá odezva UI
+                    setOptimisticIds(prev => {
+                        const next = new Set(prev);
+                        if (newResolved) next.add(item.id);
+                        else next.delete(item.id);
+                        return next;
+                    });
                     setToggling(item.id);
                     try {
-                        await toggleActionPlanItem(item.id, !item.resolved);
-                        onResolvedChange();
+                        await toggleActionPlanItem(item.id, newResolved);
                     } catch (e) {
                         console.error("Toggle failed", e);
+                        // Revert optimistického updatu
+                        setOptimisticIds(prev => {
+                            const next = new Set(prev);
+                            if (newResolved) next.delete(item.id);
+                            else next.add(item.id);
+                            return next;
+                        });
                     } finally {
                         setToggling(null);
                     }

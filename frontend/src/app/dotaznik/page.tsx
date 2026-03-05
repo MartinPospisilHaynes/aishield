@@ -176,7 +176,9 @@ function QuestionnaireInner() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
     const [serverAnswersLoaded, setServerAnswersLoaded] = useState(false); // flag to trigger resume-position
+    const [serverPosition, setServerPosition] = useState<number | null>(null); // pozice uložená na serveru
     const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({}); // question_key → custom text
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     /* ── Realtime autosave: uloží jednu odpověď na server okamžitě ── */
     const saveToServer = useCallback(async (
@@ -395,6 +397,16 @@ function QuestionnaireInner() {
                             setCustomAnswers(prev => ({ ...prev, ...restoredCustom }));
                         }
                         console.log(`[Dotazník] Obnoveno ${data.answers.length} odpovědí ze serveru`);
+                        // Načíst uloženou pozici ze serveru
+                        fetch(`${API_URL}/api/questionnaire/${cid}/position`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(pos => {
+                                if (pos?.position != null) {
+                                    setServerPosition(pos.position);
+                                    console.log(`[Dotazník] Server position: ${pos.position}`);
+                                }
+                            })
+                            .catch(() => {});
                     } else {
                         // Server has no answers — try localStorage
                         _restoreFromLocalStorage(cid!);
@@ -416,12 +428,17 @@ function QuestionnaireInner() {
         if (firstUnanswered >= 0) {
             setCurrentQuestion(firstUnanswered);
             console.log(`[Dotazník] Resuming at question ${firstUnanswered} (first unanswered)`);
+        } else if (serverPosition != null && serverPosition < allQuestions.length) {
+            // Všechny zodpovězené — vrátit se na uloženou pozici
+            setCurrentQuestion(serverPosition);
+            console.log(`[Dotazník] All answered, resuming at server position ${serverPosition}`);
         } else if (allQuestions.length > 0) {
-            setCurrentQuestion(0);
-            console.log(`[Dotazník] All answered, starting from question 0`);
+            // Všechny zodpovězené, žádná uložená pozice — poslední otázka
+            setCurrentQuestion(allQuestions.length - 1);
+            console.log(`[Dotazník] All answered, going to last question`);
         }
         setServerAnswersLoaded(false);
-    }, [serverAnswersLoaded, sections, answers]);
+    }, [serverAnswersLoaded, sections, answers, serverPosition]);
 
     /* ── Jump to specific question via ?q=question_key ── */
     useEffect(() => {
@@ -437,11 +454,22 @@ function QuestionnaireInner() {
 
     /* ── Navigation helpers ── */
     const goNext = useCallback(() => {
+        setValidationError(null);
+
+        // Validace telefonního čísla
+        const currentQ = allQuestions[currentQuestion];
+        if (currentQ && (currentQ.key === "company_phone" || currentQ.key.includes("phone") || currentQ.key.includes("telefon"))) {
+            const phoneVal = answersRef.current[currentQ.key]?.answer || "";
+            if (phoneVal && !/^\+?[\d\s\-()]{9,}$/.test(phoneVal.trim())) {
+                setValidationError("Zadejte platné telefonní číslo (např. +420 123 456 789)");
+                return;
+            }
+        }
+
         setDirection("forward");
         questionStartTimeRef.current = Date.now();
 
         // Okamžitý autosave aktuální odpovědi na server
-        const currentQ = allQuestions[currentQuestion];
         if (currentQ && companyId) {
             const currentAns = answersRef.current[currentQ.key];
             if (currentAns && currentAns.answer) {
@@ -1099,6 +1127,21 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && !isMulti && <div className="mb-6" />}
 
+                        {/* Risk hint + AI Act article — pod textem otázky */}
+                        {(q.risk_hint || q.ai_act_article) && (
+                            <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
+                                {q.ai_act_article && (
+                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        {q.ai_act_article}
+                                    </span>
+                                )}
+                                {q.risk_hint && (
+                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
+                                )}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {q.options.map((opt) => {
                                 const selected = isMulti
@@ -1247,6 +1290,21 @@ function QuestionnaireInner() {
                             </div>
                         )}
 
+                        {/* Risk hint + AI Act article — pod textem otázky */}
+                        {(q.risk_hint || q.ai_act_article) && (
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                {q.ai_act_article && (
+                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        {q.ai_act_article}
+                                    </span>
+                                )}
+                                {q.risk_hint && (
+                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
+                                )}
+                            </div>
+                        )}
+
                         {/* Form fields */}
                         <div className="space-y-4 mb-6">
                             {cFields.map((field) => {
@@ -1369,6 +1427,21 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && <div className="mb-6" />}
 
+                        {/* Risk hint + AI Act article — pod textem otázky */}
+                        {(q.risk_hint || q.ai_act_article) && (
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                {q.ai_act_article && (
+                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        {q.ai_act_article}
+                                    </span>
+                                )}
+                                {q.risk_hint && (
+                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
+                                )}
+                            </div>
+                        )}
+
                         <div className="space-y-4">
                             <div>
                                 <label className="text-xs text-slate-400 mb-1.5 block font-medium">Ulice</label>
@@ -1414,16 +1487,6 @@ function QuestionnaireInner() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* AI Act reference pill */}
-                        {q.ai_act_article && (
-                            <div className="mt-4">
-                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                    {q.ai_act_article}
-                                </span>
-                            </div>
-                        )}
 
                         {/* Navigation */}
                         <div className="flex justify-between mt-8">
@@ -1489,8 +1552,24 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && <div className="mb-6" />}
 
+                        {/* Risk hint + AI Act article — pod textem otázky */}
+                        {(q.risk_hint || q.ai_act_article) && (
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                {q.ai_act_article && (
+                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        {q.ai_act_article}
+                                    </span>
+                                )}
+                                {q.risk_hint && (
+                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
+                                )}
+                            </div>
+                        )}
+
                         <input
                             type={q.key === "company_contact_email" ? "email" : q.key === "company_phone" ? "tel" : "text"}
+                            inputMode={q.key === "company_phone" ? "tel" : undefined}
                             placeholder={
                                 q.key === "company_legal_name" ? "Např. ACME Solutions s.r.o." :
                                     q.key === "company_ico" ? "Např. 12345678" :
@@ -1499,20 +1578,21 @@ function QuestionnaireInner() {
                                                 q.key === "company_phone" ? "Např. +420 123 456 789" :
                                                     "Napište…"
                             }
-                            className="w-full bg-white/[0.04] border-2 border-white/[0.1] rounded-2xl px-5 py-4 text-white text-lg outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600"
+                            className={`w-full bg-white/[0.04] border-2 rounded-2xl px-5 py-4 text-white text-lg outline-none focus:ring-2 transition-all placeholder:text-slate-600 ${validationError && q.key === "company_phone" ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/25" : "border-white/[0.1] focus:border-fuchsia-500/50 focus:ring-fuchsia-500/25"}`}
                             value={ans?.answer || ""}
-                            onChange={(e) => setAnswer(q.key, e.target.value)}
+                            onChange={(e) => {
+                                if (q.key === "company_phone") {
+                                    setValidationError(null);
+                                    const filtered = e.target.value.replace(/[^\d\s+\-()]/g, "");
+                                    setAnswer(q.key, filtered);
+                                } else {
+                                    setAnswer(q.key, e.target.value);
+                                }
+                            }}
                             autoFocus
                         />
-
-                        {/* AI Act reference pill */}
-                        {q.ai_act_article && (
-                            <div className="mt-4">
-                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                    {q.ai_act_article}
-                                </span>
-                            </div>
+                        {validationError && q.key === "company_phone" && (
+                            <p className="text-red-400 text-sm mt-2">{validationError}</p>
                         )}
 
                         {/* Navigation */}
@@ -1588,6 +1668,21 @@ function QuestionnaireInner() {
                     )}
                     {!q.help_text && !(q as any).scope_hint && <div className="mb-4" />}
 
+                    {/* Risk hint + AI Act article — pod textem otázky */}
+                    {(q.risk_hint || q.ai_act_article) && (
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            {q.ai_act_article && (
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
+                            )}
+                            {q.risk_hint && (
+                                <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
+                            )}
+                        </div>
+                    )}
+
                     {/* Answer tiles */}
                     <div className={`grid ${q.type === "yes_unknown" ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"} gap-3 mb-4`}>
                         {([
@@ -1651,16 +1746,6 @@ function QuestionnaireInner() {
                             );
                         })}
                     </div>
-
-                    {/* AI Act reference pill */}
-                    {q.ai_act_article && (
-                        <div className="mb-6">
-                            <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                {q.ai_act_article}
-                            </span>
-                        </div>
-                    )}
 
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (
