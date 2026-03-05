@@ -1,5 +1,35 @@
 [
   {
+    "slug": "jak-se-pripravit-na-ai-act",
+    "href": "/blog/jak-se-pripravit-na-ai-act",
+    "title": "Jak se připravit na AI Act — 10 kroků pro vaši firmu",
+    "desc": "Praktický návod na přípravu na EU AI Act v 10 krocích. Od auditu AI systémů přes dokumentaci po školení zaměstnanců.",
+    "date": "2026-03-01",
+    "date_human": "1. března 2026",
+    "tag": "Návod",
+    "image": "/blog/jak-se-pripravit-na-ai-act.png"
+  },
+  {
+    "slug": "ai-act-pokuty-az-35-milionu-eur",
+    "href": "/blog/ai-act-pokuty-az-35-milionu-eur",
+    "title": "AI Act pokuty — až 35 milionů EUR. Kolik riskujete?",
+    "desc": "Přehled pokut za porušení EU AI Actu. Až 35 mil. EUR nebo 7 % obratu. Zjistěte, co hrozí vaší firmě.",
+    "date": "2026-03-01",
+    "date_human": "1. března 2026",
+    "tag": "Analýza",
+    "image": "/blog/ai-act-pokuty-az-35-milionu-eur.png"
+  },
+  {
+    "slug": "ai-act-vs-gdpr-rozdily",
+    "href": "/blog/ai-act-vs-gdpr-rozdily",
+    "title": "AI Act vs GDPR — 10 rozdílů které musíte znát",
+    "desc": "Srovnání EU AI Actu a GDPR: pokuty, povinnosti, dozor, lhůty. 10 klíčových rozdílů pro české firmy.",
+    "date": "2026-03-01",
+    "date_human": "1. března 2026",
+    "tag": "Srovnání",
+    "image": "/blog/ai-act-vs-gdpr-rozdily.png"
+  },
+  {
     "slug": "vysoko-rizikove-ai-systemy-priloha-iii",
     "href": "/blog/vysoko-rizikove-ai-systemy-priloha-iii",
     "title": "Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena",

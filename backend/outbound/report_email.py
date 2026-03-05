@@ -65,6 +65,15 @@ SHIELD_LOGO_SVG = (
     '</svg>'
 )
 
+# Twemoji CDN — PNG ikony fungující ve všech emailových klientech
+_TWEMOJI = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72"
+
+
+def _eimg(code: str, alt: str = "", size: int = 20, inline: bool = False) -> str:
+    """Vygeneruje <img> tag s twemoji PNG ikonou pro email."""
+    style = "vertical-align:middle;margin-right:4px;" if inline else "display:block;"
+    return f'<img src="{_TWEMOJI}/{code}.png" width="{size}" height="{size}" alt="{alt}" style="{style}">'
+
 # AI Act enforcement date
 _AI_ACT_DATE = date(2026, 8, 2)
 
@@ -330,7 +339,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="3" stroke="{D['accent_fuchsia']}" stroke-width="1.5"/><path d="M8 12h8M8 8h8M8 16h5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            {_eimg('1f4cb', '📋')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">AI Act Compliance Report</div>
@@ -341,7 +350,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 10h16M4 14h10M4 18h7" stroke="{D['accent_purple']}" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            {_eimg('1f4ca', '📊')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Registr AI systémů</div>
@@ -352,7 +361,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="{D['success']}" stroke-width="1.5"/><path d="M12 3C12 3 6 8 6 12s3 6 6 6" stroke="{D['success']}" stroke-width="1.5"/><path d="M12 3c0 0 6 5 6 9s-3 6-6 6" stroke="{D['success']}" stroke-width="1.5"/><path d="M3 12h18" stroke="{D['success']}" stroke-width="1.5"/></svg>
+                            {_eimg('1f310', '🌐')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Transparenční stránka</div>
@@ -363,7 +372,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="{D['warning']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {_eimg('1f4ac', '💬')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Texty oznámení pro AI nástroje</div>
@@ -374,7 +383,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {_eimg('1f4c4', '📄')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">AI politika firmy</div>
@@ -382,13 +391,13 @@ def generate_report_email_html(
                         </td>
                     </tr></table>
                 </td></tr>
-                <tr><td style="padding:12px 14px;background:linear-gradient(135deg, {D["bg_section"]}, #1a1040);border-radius:8px;border:1px solid {D['accent_fuchsia']}30;">
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 14l9-5-9-5-9 5 9 5z" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 14v7" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M21 9v5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round"/><path d="M6 11.5V17c0 1 2.7 3 6 3s6-2 6-3v-5.5" stroke="{D['accent_fuchsia']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {_eimg('1f393', '🎓')}
                         </td>
                         <td>
-                            <div style="font-size:14px;font-weight:600;color:{D['accent_fuchsia']};">Školení zaměstnanců v PowerPointu</div>
+                            <div style="font-size:14px;font-weight:600;color:{D['text']};">Školení zaměstnanců v PowerPointu</div>
                             <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Prezentace na míru přímo pro {company_name} — splnění povinnosti AI gramotnosti dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a></div>
                         </td>
                     </tr></table>
@@ -396,7 +405,7 @@ def generate_report_email_html(
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;"><tr>
                         <td style="width:32px;vertical-align:top;padding-right:10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="{D['accent_cyan']}" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="{D['accent_cyan']}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {_eimg('2705', '✅')}
                         </td>
                         <td>
                             <div style="font-size:14px;font-weight:600;color:{D['text']};">Záznamový list o proškolení</div>
@@ -707,23 +716,23 @@ def generate_zero_findings_email_html(
             </div>
             <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
-                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128203; AI politika firmy</div>
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};"> {_eimg('1f4c4', '', 16, True)}AI politika firmy</div>
                     <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Interní pravidla pro zaměstnance — povinné pro každou firmu využívající jakékoliv AI nástroje</div>
                 </td></tr>
-                <tr><td style="padding:12px 14px;background:linear-gradient(135deg, {D["bg_section"]}, #1a1040);border-radius:8px;border:1px solid {D['accent_fuchsia']}30;">
-                    <div style="font-size:14px;font-weight:600;color:{D['accent_fuchsia']};">&#127891; Školení zaměstnanců v PowerPointu</div>
+                <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">{_eimg('1f393', '', 16, True)}Školení zaměstnanců v PowerPointu</div>
                     <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Povinnost AI gramotnosti dle <a href="{AI_ACT_LINKS['čl. 4']}" style="color:{D['accent_cyan']};text-decoration:underline;" target="_blank">čl. 4 AI Act</a> — platí od 2. února 2025!</div>
                 </td></tr>
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
-                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128203; Záznamový list o proškolení</div>
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">{_eimg('2705', '', 16, True)}Záznamový list o proškolení</div>
                     <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Doklad prokazující splnění povinnosti — připraveno k podpisu zaměstnanci</div>
                 </td></tr>
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
-                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128209; Registr AI systémů</div>
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">{_eimg('1f4d1', '', 16, True)}Registr AI systémů</div>
                     <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Evidence AI nástrojů ve firmě — po vyplnění dotazníku na míru pro {company_name}</div>
                 </td></tr>
                 <tr><td style="padding:12px 14px;background:{D["bg_section"]};border-radius:8px;">
-                    <div style="font-size:14px;font-weight:600;color:{D['text']};">&#128196; AI Act Compliance Report</div>
+                    <div style="font-size:14px;font-weight:600;color:{D['text']};">{_eimg('1f4c4', '', 16, True)}AI Act Compliance Report</div>
                     <div style="font-size:12px;color:{D['text_muted']};margin-top:2px;">Kompletní přehled včetně interních systémů odhalených dotazníkem</div>
                 </td></tr>
             </table>

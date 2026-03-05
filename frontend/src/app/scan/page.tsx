@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import {
     startScan,
     getScanStatus,
+    notifyResultsViewed,
     getScanFindings,
     type ScanStatus,
     type Finding,
@@ -264,6 +265,8 @@ function ScanPageInner() {
     const trackApiError = useApiErrorTracking();
     const [url, setUrl] = useState("");
     const scanStartTimeRef = useRef<number>(0);
+    const resultsShownTimeRef = useRef<number>(0);
+    const resultsNotifiedRef = useRef<boolean>(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [scanResult, setScanResult] = useState<ScanStatus | null>(null);
@@ -351,7 +354,7 @@ function ScanPageInner() {
                     const status = await getScanStatus(id);
                     setScanResult(status);
                     if (status.status === "done" || status.status === "error") {
-                            if (status.status === "done") setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
+                        if (status.status === "done") setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
                         if (pollingRef.current) clearInterval(pollingRef.current);
                         pollingRef.current = null;
                         if (stageRef.current) clearTimeout(stageRef.current);
@@ -362,6 +365,8 @@ function ScanPageInner() {
                         if (status.status === "done") {
                             track("scan_completed", { scan_id: id, findings_count: status.total_findings || 0 }, duration);
                             await fetchFindings(id);
+                            // Zaznamenat čas zobrazení výsledků
+                            resultsShownTimeRef.current = Date.now();
                         } else {
                             track("scan_error", { scan_id: id, error: "scan_failed" }, duration);
                         }
@@ -425,9 +430,9 @@ function ScanPageInner() {
                 setLoading(false);
                 setCurrentStage(SCAN_STAGES.length);
                 if (status.status === "done") {
-                            await fetchFindings(result.scan_id);
-                            setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
-                        }
+                    await fetchFindings(result.scan_id);
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
+                }
                 return;
             }
 
@@ -441,9 +446,9 @@ function ScanPageInner() {
                 if (stageRef.current) clearTimeout(stageRef.current);
                 setCurrentStage(SCAN_STAGES.length);
                 if (status.status === "done") {
-                            await fetchFindings(result.scan_id);
-                            setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
-                        }
+                    await fetchFindings(result.scan_id);
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
+                }
             }
         } catch (err) {
             const errMsg = err instanceof Error ? err.message : "Nastala neočekávaná chyba";
@@ -487,6 +492,58 @@ function ScanPageInner() {
         } catch { /* silent */ }
         setEmailSending(false);
     };
+
+    // ── Notifikace: klient si prohlíží výsledky ──
+    // Odešle se po 5s na stránce s výsledky (= klient si je skutečně čte)
+    useEffect(() => {
+        // Spustíme jen když máme findings a scan je done
+        if (!scanResult || scanResult.status !== "done" || findings.length === 0) return;
+        if (resultsNotifiedRef.current) return;
+        if (resultsShownTimeRef.current === 0) resultsShownTimeRef.current = Date.now();
+
+        const timer = setTimeout(() => {
+            if (resultsNotifiedRef.current) return;
+            resultsNotifiedRef.current = true;
+            const timeOnResults = (Date.now() - resultsShownTimeRef.current) / 1000;
+            const scanDuration = scanStartTimeRef.current > 0
+                ? (resultsShownTimeRef.current - scanStartTimeRef.current) / 1000
+                : 0;
+            notifyResultsViewed(
+                scanResult.scan_id || scanId || "",
+                timeOnResults,
+                true, // klient vyčkal
+                scanDuration,
+            );
+        }, 5000); // Počkáme 5 sekund — pak notifikujeme
+
+        // Pokud klient odejde před 5s, pošleme s client_waited=false
+        const handleBeforeUnload = () => {
+            if (resultsNotifiedRef.current) return;
+            resultsNotifiedRef.current = true;
+            const timeOnResults = (Date.now() - resultsShownTimeRef.current) / 1000;
+            const scanDuration = scanStartTimeRef.current > 0
+                ? (resultsShownTimeRef.current - scanStartTimeRef.current) / 1000
+                : 0;
+            // Beacon API — spolehlivější při unload
+            const payload = JSON.stringify({
+                time_on_results_s: timeOnResults,
+                client_waited: timeOnResults >= 5,
+                scan_duration_s: scanDuration,
+            });
+            const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").trim();
+            navigator.sendBeacon(
+                `${API}/api/scan/${scanResult.scan_id || scanId}/results-viewed`,
+                new Blob([payload], { type: "application/json" }),
+            );
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [scanResult, findings, scanId]);
 
     const riskBadge = (level: string) => {
         switch (level) {
@@ -581,28 +638,28 @@ function ScanPageInner() {
                 {/* ═══ PRŮBĚH SKENOVÁNÍ — multi-stage progress ═══ */}
                 {loading && (
                     <div className="mt-10 card">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <IconShield className="w-8 h-8 text-fuchsia-400 animate-pulse" />
-                                <div>
+                        <div className="flex items-center justify-between mb-6 gap-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <IconShield className="w-8 h-8 text-fuchsia-400 animate-pulse flex-shrink-0" />
+                                <div className="min-w-0">
                                     <h2 className="text-lg font-semibold text-white">Skenování probíhá...</h2>
-                                    <p className="text-sm text-slate-400">Analyzujeme {scanResult?.url || url}</p>
+                                    <p className="text-sm text-slate-400 truncate">Analyzujeme {scanResult?.url || url}</p>
                                 </div>
                             </div>
                             {/* Countdown timer */}
-                            <div className="text-right flex-shrink-0 ml-4">
-                                <div className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-2">
-                                    <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <div className="text-right flex-shrink-0">
+                                <div className="inline-flex items-center gap-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] px-2.5 sm:px-4 py-2">
+                                    <svg className="w-4 h-4 text-fuchsia-400 flex-shrink-0 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
                                     </svg>
-                                    <span className="font-mono text-lg font-bold text-white tabular-nums">
+                                    <span className="font-mono text-base sm:text-lg font-bold text-white tabular-nums">
                                         {countdown > 0
                                             ? `${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`
                                             : '0:00'}
                                     </span>
                                 </div>
-                                <p className="text-[10px] text-slate-500 mt-1">
-                                    {countdown > 0 ? 'odhadovaný zbývající čas' : 'ještě chvíli…'}
+                                <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
+                                    {countdown > 0 ? 'zbývající čas' : 'ještě chvíli…'}
                                 </p>
                             </div>
                         </div>
@@ -832,7 +889,7 @@ function ScanPageInner() {
                                                         <p className="text-sm font-medium text-white truncate">{t.name}</p>
                                                         <p className="text-[11px] text-slate-500 truncate">{t.description_cs}</p>
                                                     </div>
-                                                    <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-[10px] text-slate-500 flex-shrink-0">
+                                                    <span className="ml-auto inline-flex items-center rounded bg-slate-500/10 px-1.5 py-0.5 text-xs text-slate-500 flex-shrink-0">
                                                         {t.category}
                                                     </span>
                                                 </div>
@@ -1017,12 +1074,12 @@ function ScanPageInner() {
                                             <a
                                                 href={
                                                     reportEmail.endsWith("@gmail.com") ? "https://mail.google.com/mail/u/0/#inbox"
-                                                    : reportEmail.endsWith("@seznam.cz") ? "https://email.seznam.cz/"
-                                                    : reportEmail.endsWith("@email.cz") ? "https://email.seznam.cz/"
-                                                    : reportEmail.endsWith("@outlook.com") || reportEmail.endsWith("@hotmail.com") || reportEmail.endsWith("@live.com") ? "https://outlook.live.com/mail/0/inbox"
-                                                    : reportEmail.endsWith("@yahoo.com") ? "https://mail.yahoo.com/"
-                                                    : reportEmail.endsWith("@icloud.com") ? "https://www.icloud.com/mail/"
-                                                    : `mailto:${reportEmail}`
+                                                        : reportEmail.endsWith("@seznam.cz") ? "https://email.seznam.cz/"
+                                                            : reportEmail.endsWith("@email.cz") ? "https://email.seznam.cz/"
+                                                                : reportEmail.endsWith("@outlook.com") || reportEmail.endsWith("@hotmail.com") || reportEmail.endsWith("@live.com") ? "https://outlook.live.com/mail/0/inbox"
+                                                                    : reportEmail.endsWith("@yahoo.com") ? "https://mail.yahoo.com/"
+                                                                        : reportEmail.endsWith("@icloud.com") ? "https://www.icloud.com/mail/"
+                                                                            : `mailto:${reportEmail}`
                                                 }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
@@ -1039,7 +1096,7 @@ function ScanPageInner() {
                                                 value={reportEmail}
                                                 onChange={(e) => setReportEmail(e.target.value)}
                                                 placeholder="vas@email.cz"
-                                                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 transition text-sm"
+                                                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-500/50 transition text-base"
                                                 required
                                             />
                                             <button
@@ -1051,7 +1108,7 @@ function ScanPageInner() {
                                             </button>
                                         </div>
                                     )}
-                                    <p className="text-[10px] text-slate-600 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a> a <a href="/gdpr" className="underline hover:text-slate-400">GDPR</a>.</p>
+                                    <p className="text-xs text-slate-500 mt-2">Odesláním souhlasíte se zpracováním dle <a href="/vop" className="underline hover:text-slate-400">VOP</a> a <a href="/gdpr" className="underline hover:text-slate-400">GDPR</a>.</p>
                                 </div>
                             )}
                         </ResultReveal>

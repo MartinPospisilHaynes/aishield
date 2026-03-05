@@ -586,10 +586,25 @@ def _load_company_data(client_id: str) -> dict:
 
 
 def _save_document_record(client_id: str, doc_info: dict) -> None:
-    """Uloží záznam o generovaném dokumentu do DB tabulky 'documents'."""
+    """Uloží záznam o generovaném dokumentu do DB tabulky 'documents'. Pioneer → pending_review."""
     supabase = get_supabase()
 
     try:
+        # Zjisti zda je klient z Pioneer programu
+        is_pioneer = False
+        try:
+            pioneer_check = (
+                supabase.table("pioneer_codes")
+                .select("id")
+                .eq("company_id", client_id)
+                .eq("status", "used")
+                .limit(1)
+                .execute()
+            )
+            is_pioneer = bool(pioneer_check.data)
+        except Exception:
+            pass
+
         supabase.table("documents").insert({
             "company_id": client_id,
             "type": doc_info["template_key"],
@@ -597,8 +612,9 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
             "url": doc_info.get("download_url", ""),
             "format": doc_info.get("format", "pdf"),
             "size_bytes": doc_info.get("size_bytes", 0),
+            "approval_status": "pending_review" if is_pioneer else "auto_approved",
         }).execute()
-        logger.info(f"[Pipeline] DB záznam uložen: {doc_info['template_key']} ({doc_info.get('format', 'pdf')})")
+        logger.info(f"[Pipeline] DB záznam uložen: {doc_info['template_key']} ({doc_info.get('format', 'pdf')}){' [PIONEER]' if is_pioneer else ''}")
     except Exception as e:
         logger.error(f"[Pipeline] Nepodařilo se uložit záznam dokumentu do DB: {e}", exc_info=True)
 

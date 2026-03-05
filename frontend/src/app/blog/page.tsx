@@ -26,7 +26,7 @@ export default function BlogHub() {
 
     return (
         <section className="py-20 sm:py-28">
-            <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
                 <header className="text-center mb-16">
                     <p className="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-3">Blog</p>
                     <h1 className="text-4xl font-extrabold sm:text-5xl mb-4">
@@ -36,12 +36,12 @@ export default function BlogHub() {
                         Praktické návody, analýzy a novinky o EU AI Act pro české firmy.
                     </p>
                 </header>
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {articles.map((a) => (
                         <Link
                             key={a.href}
                             href={a.href}
-                            className="group block rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:bg-white/[0.04] hover:border-fuchsia-500/20 transition-all"
+                            className="group flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:bg-white/[0.04] hover:border-fuchsia-500/20 transition-all"
                         >
                             {a.image && (
                                 <div className="relative w-full aspect-[1200/630] bg-dark-800">
@@ -50,21 +50,21 @@ export default function BlogHub() {
                                         alt={a.title}
                                         fill
                                         className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                                        sizes="(max-width: 768px) 100vw, 720px"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                     />
                                 </div>
                             )}
-                            <div className="p-6">
+                            <div className="flex flex-col flex-1 p-5">
                                 <div className="flex items-center gap-3 mb-3">
                                     <span className="text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-500/10 text-fuchsia-400">
                                         {a.tag}
                                     </span>
                                     <span className="text-xs text-slate-500">{a.date_human}</span>
                                 </div>
-                                <h2 className="text-lg font-semibold text-white group-hover:text-fuchsia-400 transition-colors mb-2">
+                                <h2 className="text-base font-semibold text-white group-hover:text-fuchsia-400 transition-colors mb-2 line-clamp-2">
                                     {a.title}
                                 </h2>
-                                <p className="text-sm text-slate-400">{a.desc}</p>
+                                <p className="text-sm text-slate-400 line-clamp-3 mt-auto">{a.desc}</p>
                             </div>
                         </Link>
                     ))}

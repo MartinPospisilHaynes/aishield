@@ -38,6 +38,9 @@ import {
     getAdminInvoices,
     getLLMUsage,
     checkLLMKeys,
+    getPioneerCodes,
+    revokePioneerCode,
+    sendPioneerInvite,
     factoryReset,
     clearAllRateLimits,
     stopAllScans,
@@ -78,6 +81,7 @@ import type {
     ScanFinding,
     LLMUsageSummary,
     LLMApiHealth,
+    PioneerCode,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -156,7 +160,8 @@ type Tab =
     | "analytika"
     | "predplatne"
     | "testy24h"
-    | "llm";
+    | "llm"
+    | "pioneer";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -172,6 +177,7 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "analytika", icon: "📉", label: "Analytika" },
     { id: "predplatne", icon: "💳", label: "Předplatné" },
     { id: "llm", icon: "🧠", label: "LLM API" },
+    { id: "pioneer", icon: "🚀", label: "Pioneer" },
 ];
 
 const TASKS = [
@@ -433,6 +439,11 @@ export default function AdminPage() {
     const [llmLoading, setLlmLoading] = useState(false);
     const [llmCheckingKeys, setLlmCheckingKeys] = useState(false);
 
+    // Pioneer Program
+    const [pioneerCodes, setPioneerCodes] = useState<PioneerCode[]>([]);
+    const [pioneerLoading, setPioneerLoading] = useState(false);
+    const [pioneerAction, setPioneerAction] = useState<string | null>(null);
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -621,6 +632,46 @@ export default function AdminPage() {
         }
     }, []);
 
+    const loadPioneer = useCallback(async () => {
+        setPioneerLoading(true);
+        try {
+            const d = await getPioneerCodes();
+            setPioneerCodes(d);
+        } catch (e) {
+            console.error("Pioneer load error:", e);
+            setLoadError(`Pioneer: ${e}`);
+        } finally {
+            setPioneerLoading(false);
+        }
+    }, []);
+
+    const handleRevokePioneer = useCallback(async (codeId: string, codeName: string) => {
+        if (!confirm(`Opravdu zrušit kód pro ${codeName}?`)) return;
+        setPioneerAction(codeId);
+        try {
+            await revokePioneerCode(codeId);
+            await loadPioneer();
+        } catch (e) {
+            console.error("Pioneer revoke error:", e);
+        } finally {
+            setPioneerAction(null);
+        }
+    }, [loadPioneer]);
+
+    const handleResendInvite = useCallback(async (codeId: string) => {
+        setPioneerAction(codeId);
+        try {
+            const r = await sendPioneerInvite(codeId);
+            alert(r.message || "Pozvánka odeslána!");
+            await loadPioneer();
+        } catch (e) {
+            console.error("Pioneer invite error:", e);
+            alert("Chyba při odesílání pozvánky");
+        } finally {
+            setPioneerAction(null);
+        }
+    }, [loadPioneer]);
+
     const handleCheckKeys = useCallback(async () => {
         setLlmCheckingKeys(true);
         try {
@@ -663,7 +714,8 @@ export default function AdminPage() {
         if (tab === "predplatne") loadSubscriptions();
         if (tab === "testy24h") loadScanMonitor();
         if (tab === "llm") loadLLMUsage();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadLLMUsage]);
+        if (tab === "pioneer") loadPioneer();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadLLMUsage, loadPioneer]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -930,6 +982,7 @@ export default function AdminPage() {
                                 if (tab === "predplatne") loadSubscriptions();
                                 if (tab === "nastroje") loadDashboard();
                                 if (tab === "testy24h") loadScanMonitor();
+                                if (tab === "pioneer") loadPioneer();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -4542,6 +4595,147 @@ export default function AdminPage() {
                                     </>
                                 );
                             })()}
+                        </>
+                    )}
+
+                    {tab === "pioneer" && (
+                        <>
+                            {pioneerLoading && pioneerCodes.length === 0 && (
+                                <div className="text-center py-12 text-gray-400">Načítám Pioneer data…</div>
+                            )}
+
+                            {/* Statistiky */}
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                                {[
+                                    { label: "Celkem kódů", value: pioneerCodes.length, color: "gray" },
+                                    { label: "Aktivní", value: pioneerCodes.filter(c => c.status === "active").length, color: "green" },
+                                    { label: "Použité", value: pioneerCodes.filter(c => c.status === "used").length, color: "blue" },
+                                    { label: "Expirované", value: pioneerCodes.filter(c => c.status === "expired").length, color: "yellow" },
+                                    { label: "Zrušené", value: pioneerCodes.filter(c => c.status === "revoked").length, color: "red" },
+                                ].map((s) => (
+                                    <div key={s.label} className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 text-center">
+                                        <div className="text-2xl font-bold text-white">{s.value}</div>
+                                        <div className="text-xs text-gray-400 mt-1">{s.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Tabulka kódů */}
+                            {pioneerCodes.length > 0 && (
+                                <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl overflow-hidden">
+                                    <div className="p-4 border-b border-gray-700/50">
+                                        <h3 className="text-sm font-semibold text-white">🚀 Pioneer kódy ({pioneerCodes.length})</h3>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="text-gray-400 text-xs border-b border-gray-700/30">
+                                                    <th className="text-left p-3">Kód</th>
+                                                    <th className="text-left p-3">Firma</th>
+                                                    <th className="text-left p-3">Kontakt</th>
+                                                    <th className="text-left p-3">Status</th>
+                                                    <th className="text-left p-3">Pozvánka</th>
+                                                    <th className="text-left p-3">Použit</th>
+                                                    <th className="text-left p-3">Akce</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {pioneerCodes.map((pc) => {
+                                                    const statusColors: Record<string, string> = {
+                                                        active: "text-green-400 bg-green-400/10",
+                                                        used: "text-blue-400 bg-blue-400/10",
+                                                        expired: "text-yellow-400 bg-yellow-400/10",
+                                                        revoked: "text-red-400 bg-red-400/10",
+                                                    };
+                                                    const statusLabels: Record<string, string> = {
+                                                        active: "Aktivní",
+                                                        used: "Použitý",
+                                                        expired: "Expirovaný",
+                                                        revoked: "Zrušený",
+                                                    };
+                                                    return (
+                                                        <tr key={pc.id} className="border-b border-gray-700/20 hover:bg-white/5 transition-colors">
+                                                            <td className="p-3">
+                                                                <code className="text-xs bg-gray-900 px-2 py-1 rounded font-mono text-gray-300">
+                                                                    {pc.code}
+                                                                </code>
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <div className="text-white font-medium">{pc.company_name}</div>
+                                                                <div className="text-xs text-gray-500">{pc.company_domain || "—"}</div>
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <div className="text-gray-300 text-xs">{pc.contact_name || "—"}</div>
+                                                                <div className="text-gray-500 text-xs">{pc.contact_email || "—"}</div>
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[pc.status] || "text-gray-400"}`}>
+                                                                    {statusLabels[pc.status] || pc.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-3 text-xs text-gray-400">
+                                                                {pc.invitation_sent_at
+                                                                    ? new Date(pc.invitation_sent_at).toLocaleDateString("cs-CZ")
+                                                                    : <span className="text-yellow-500">Neodesláno</span>
+                                                                }
+                                                            </td>
+                                                            <td className="p-3 text-xs">
+                                                                {pc.used_at ? (
+                                                                    <div>
+                                                                        <div className="text-blue-400">{new Date(pc.used_at).toLocaleDateString("cs-CZ")}</div>
+                                                                        <div className="text-gray-500">{pc.used_by_email}</div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-gray-600">—</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="p-3">
+                                                                <div className="flex gap-1">
+                                                                    {pc.status === "active" && !pc.invitation_sent_at && (
+                                                                        <button
+                                                                            onClick={() => handleResendInvite(pc.id)}
+                                                                            disabled={pioneerAction === pc.id}
+                                                                            className="text-xs px-2 py-1 rounded bg-fuchsia-500/20 text-fuchsia-400 hover:bg-fuchsia-500/30 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            📧 Poslat
+                                                                        </button>
+                                                                    )}
+                                                                    {pc.status === "active" && pc.invitation_sent_at && (
+                                                                        <button
+                                                                            onClick={() => handleResendInvite(pc.id)}
+                                                                            disabled={pioneerAction === pc.id}
+                                                                            className="text-xs px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            🔄 Znovu
+                                                                        </button>
+                                                                    )}
+                                                                    {pc.status === "active" && (
+                                                                        <button
+                                                                            onClick={() => handleRevokePioneer(pc.id, pc.company_name)}
+                                                                            disabled={pioneerAction === pc.id}
+                                                                            className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {pioneerCodes.length === 0 && !pioneerLoading && (
+                                <div className="text-center py-16 text-gray-500">
+                                    <div className="text-4xl mb-4">🚀</div>
+                                    <div className="text-lg font-medium">Zatím žádné Pioneer kódy</div>
+                                    <div className="text-sm mt-2">Řekni mi firmu + email a vytvořím kód + pošlu pozvánku.</div>
+                                </div>
+                            )}
                         </>
                     )}
 

@@ -401,17 +401,37 @@ def _load_company_data(company_id: str) -> dict:
 
 
 def _save_document_record(client_id: str, doc_info: dict) -> None:
-    """Uloží záznam dokumentu do DB."""
+    """Uloží záznam dokumentu do DB. Pioneer klienti → pending_review."""
     supabase = get_supabase()
     try:
-        supabase.table("documents").insert({
+        # Zjisti zda je klient z Pioneer programu
+        is_pioneer = False
+        try:
+            pioneer_check = (
+                supabase.table("pioneer_codes")
+                .select("id")
+                .eq("company_id", client_id)
+                .eq("status", "used")
+                .limit(1)
+                .execute()
+            )
+            is_pioneer = bool(pioneer_check.data)
+        except Exception:
+            pass  # Tabulka neexistuje nebo jiná chyba — pokračuj normálně
+
+        record = {
             "company_id": client_id,
             "type": doc_info["template_key"],
             "name": doc_info["template_name"],
             "url": doc_info.get("download_url", ""),
             "format": doc_info.get("format", "pdf"),
             "size_bytes": doc_info.get("size_bytes", 0),
-        }).execute()
+            "approval_status": "pending_review" if is_pioneer else "auto_approved",
+        }
+        supabase.table("documents").insert(record).execute()
+
+        if is_pioneer:
+            logger.info(f"[Pipeline] Pioneer dokument uložen ke schválení: {doc_info['template_key']}")
     except Exception as e:
         logger.error(f"[Pipeline] DB save failed: {e}")
 

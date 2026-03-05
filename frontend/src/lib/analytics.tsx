@@ -25,6 +25,7 @@ import { usePathname } from "next/navigation";
 
 interface AnalyticsEvent {
   session_id: string;
+  visitor_id: string;
   event_name: string;
   properties: Record<string, unknown>;
   page_url: string | null;
@@ -51,8 +52,10 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const CONSENT_KEY = "aishield_consent_v1";
 const SESSION_KEY = "aishield_session_id";
+const VISITOR_ID_KEY = "aishield_vid";
 const BATCH_INTERVAL_MS = 3000; // Posílat eventy každé 3 sekundy
 const MAX_BATCH_SIZE = 25;
+const HEARTBEAT_INTERVAL_MS = 15000; // Heartbeat každých 15 sekund
 
 /**
  * Technicky nezbytné eventy — trackují se BEZ cookie consent.
@@ -72,7 +75,27 @@ const ESSENTIAL_EVENTS = new Set([
   "registration_completed",  // Registrace
   "email_verified",        // Verifikace emailu
   "chat_message_sent",     // Použití chatbota
+  "heartbeat",             // Time-on-page měření (bezpečnostní signál)
+  "cta_click",             // Kliknutí na CTA (funnel diagnostika)
+  "text_copied",           // Kopírování textu (ochrana know-how)
+  "bot_signals",           // Detekce botů (bezpečnost)
 ]);
+
+// Klíčové stránky — pokud je návštěvník navštíví, je to signál zájmu
+const HIGH_INTENT_PAGES = [
+  "/pricing", "/scan", "/dotaznik", "/contact",
+  "/enterprise", "/objednavka", "/platba",
+];
+
+// CTA texty a hrefs pro delegovaný click tracking
+const CTA_HREFS = [
+  "/pricing", "/scan", "/dotaznik", "/contact",
+  "/enterprise", "/objednavka", "/registrace",
+];
+const CTA_TEXTS = [
+  "skenovat", "objednat", "kontakt", "ceník", "vyzkoušet",
+  "registr", "začít", "audit", "zjistit",
+];
 
 // ── Context ──
 
@@ -95,6 +118,34 @@ function getOrCreateSessionId(): string {
     sessionStorage.setItem(SESSION_KEY, sid);
   }
   return sid;
+}
+
+// ── Persistent Visitor ID (přežije zavření tabu) ──
+
+function getOrCreateVisitorId(): string {
+  if (typeof window === "undefined") return "";
+  let vid = localStorage.getItem(VISITOR_ID_KEY);
+  if (!vid) {
+    vid = `v_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(VISITOR_ID_KEY, vid);
+  }
+  return vid;
+}
+
+// ── Bot detection signály ──
+
+function collectBotSignals(): Record<string, unknown> {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return {};
+  return {
+    is_webdriver: !!(navigator as unknown as Record<string, unknown>).webdriver,
+    languages_count: navigator.languages?.length ?? 0,
+    plugins_count: navigator.plugins?.length ?? 0,
+    outer_height: window.outerHeight,
+    screen_res: `${screen.width}x${screen.height}`,
+    color_depth: screen.colorDepth,
+    has_touch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
 }
 
 // ── Consent check ──
@@ -121,13 +172,18 @@ export function AnalyticsProvider({
   const queueRef = useRef<AnalyticsEvent[]>([]);
   const userEmailRef = useRef<string | null>(null);
   const sessionIdRef = useRef<string>("");
+  const visitorIdRef = useRef<string>("");
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
+  const botSignalsSentRef = useRef(false);
+  const heartbeatPageRef = useRef<string>("");
+  const heartbeatStartRef = useRef<number>(0);
 
   // Initialize on client only
   useEffect(() => {
     setIsClient(true);
     sessionIdRef.current = getOrCreateSessionId();
+    visitorIdRef.current = getOrCreateVisitorId();
   }, []);
 
   // ── Flush queue → backend ──
@@ -185,14 +241,16 @@ export function AnalyticsProvider({
 
     // Flush on page unload
     const handleUnload = () => flush();
-    window.addEventListener("beforeunload", handleUnload);
-    document.addEventListener("visibilitychange", () => {
+    const handleVisibility = () => {
       if (document.visibilityState === "hidden") flush();
-    });
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       clearInterval(timer);
       window.removeEventListener("beforeunload", handleUnload);
+      document.removeEventListener("visibilitychange", handleVisibility);
       flush(); // Final flush on unmount
     };
   }, [isClient, flush]);
@@ -208,6 +266,7 @@ export function AnalyticsProvider({
       // Always enqueue — consent check happens at flush time
       const event: AnalyticsEvent = {
         session_id: sessionIdRef.current,
+        visitor_id: visitorIdRef.current,
         event_name: eventName,
         properties,
         page_url: typeof window !== "undefined" ? window.location.pathname : null,
@@ -268,6 +327,7 @@ export function AnalyticsProvider({
       value={{ track, trackPageView, setUserEmail, getSessionId }}
     >
       <GlobalErrorTracker />
+      <VisitorIntelTracker />
       {children}
     </AnalyticsContext.Provider>
   );
@@ -276,6 +336,111 @@ export function AnalyticsProvider({
 // ── Auto-activated error tracker (inside Provider) ──
 function GlobalErrorTracker() {
   useErrorTracking();
+  return null;
+}
+
+// ── Visitor Intelligence tracker (heartbeat, CTA kliky, copy, bot detekce) ──
+function VisitorIntelTracker() {
+  const { track } = useAnalytics();
+  const botSentRef = useRef(false);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pageStartRef = useRef<number>(Date.now());
+  const pathname = usePathname();
+
+  // Bot signals — jednou za session
+  useEffect(() => {
+    if (botSentRef.current) return;
+    botSentRef.current = true;
+    const signals = collectBotSignals();
+    track("bot_signals", signals);
+  }, [track]);
+
+  // Heartbeat — time-on-page měření (každých 15s, pauzuje při skrytém tabu)
+  useEffect(() => {
+    pageStartRef.current = Date.now();
+
+    const startHeartbeat = () => {
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+      heartbeatRef.current = setInterval(() => {
+        if (document.visibilityState === "hidden") return;
+        const elapsed = Date.now() - pageStartRef.current;
+        track("heartbeat", {
+          page: window.location.pathname,
+          elapsed_ms: elapsed,
+        });
+      }, HEARTBEAT_INTERVAL_MS);
+    };
+
+    startHeartbeat();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        // Tab skrytý — pošli finální heartbeat
+        const elapsed = Date.now() - pageStartRef.current;
+        track("heartbeat", {
+          page: window.location.pathname,
+          elapsed_ms: elapsed,
+          tab_hidden: true,
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [pathname, track]);
+
+  // Delegovaný CTA click tracking — 1 listener, 0 změn v komponentách
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest("a");
+      const button = target.closest("button");
+      const el = anchor || button;
+      if (!el) return;
+
+      const href = anchor?.getAttribute("href") || "";
+      const text = (el.textContent || "").trim().toLowerCase().slice(0, 50);
+
+      // Kontrola: je to CTA href?
+      const isCtaHref = CTA_HREFS.some((h) => href.includes(h));
+      // Kontrola: je to CTA text?
+      const isCtaText = CTA_TEXTS.some((t) => text.includes(t));
+
+      if (isCtaHref || isCtaText) {
+        track("cta_click", {
+          href,
+          text: text.slice(0, 50),
+          page: window.location.pathname,
+        });
+      }
+    };
+
+    document.addEventListener("click", handleClick, { passive: true });
+    return () => document.removeEventListener("click", handleClick);
+  }, [track]);
+
+  // Copy tracking — detekce kopírování textu
+  useEffect(() => {
+    const handleCopy = () => {
+      const selection = window.getSelection();
+      const selLength = selection?.toString().length || 0;
+      if (selLength > 10) {
+        // Ignorujeme krátké výběry (omyl, klik)
+        track("text_copied", {
+          page: window.location.pathname,
+          selection_length: selLength,
+        });
+      }
+    };
+
+    document.addEventListener("copy", handleCopy);
+    return () => document.removeEventListener("copy", handleCopy);
+  }, [track]);
+
   return null;
 }
 

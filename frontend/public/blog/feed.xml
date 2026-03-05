@@ -5,7 +5,7 @@
     <link>https://aishield.cz/blog</link>
     <description>Praktické návody, analýzy a novinky o EU AI Act pro české firmy a e-shopy. Deadline: srpen 2026.</description>
     <language>cs</language>
-    <lastBuildDate>2026-03-01</lastBuildDate>
+    <lastBuildDate>2026-03-03</lastBuildDate>
     <atom:link href="https://aishield.cz/blog/feed.xml" rel="self" type="application/rss+xml"/>
     <image>
       <url>https://aishield.cz/icon.png</url>
@@ -15,6 +15,30 @@
     <managingEditor>info@aishield.cz (AIshield.cz)</managingEditor>
     <copyright>© 2025-2026 AIshield.cz</copyright>
     <ttl>1440</ttl>
+    <item>
+      <title>Jak se připravit na AI Act — 10 kroků pro vaši firmu</title>
+      <link>https://aishield.cz/blog/jak-se-pripravit-na-ai-act</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/jak-se-pripravit-na-ai-act</guid>
+      <description>Praktický návod na přípravu na EU AI Act v 10 krocích. Od auditu AI systémů přes dokumentaci po školení zaměstnanců.</description>
+      <pubDate>2026-03-01</pubDate>
+      <category>Návod</category>
+    </item>
+    <item>
+      <title>AI Act pokuty — až 35 milionů EUR. Kolik riskujete?</title>
+      <link>https://aishield.cz/blog/ai-act-pokuty-az-35-milionu-eur</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/ai-act-pokuty-az-35-milionu-eur</guid>
+      <description>Přehled pokut za porušení EU AI Actu. Až 35 mil. EUR nebo 7 % obratu. Zjistěte, co hrozí vaší firmě.</description>
+      <pubDate>2026-03-01</pubDate>
+      <category>Analýza</category>
+    </item>
+    <item>
+      <title>AI Act vs GDPR — 10 rozdílů které musíte znát</title>
+      <link>https://aishield.cz/blog/ai-act-vs-gdpr-rozdily</link>
+      <guid isPermaLink="true">https://aishield.cz/blog/ai-act-vs-gdpr-rozdily</guid>
+      <description>Srovnání EU AI Actu a GDPR: pokuty, povinnosti, dozor, lhůty. 10 klíčových rozdílů pro české firmy.</description>
+      <pubDate>2026-03-01</pubDate>
+      <category>Srovnání</category>
+    </item>
     <item>
       <title>Vysoce rizikové AI systémy: Příloha III AI Actu vysvětlena</title>
       <link>https://aishield.cz/blog/vysoko-rizikove-ai-systemy-priloha-iii</link>

@@ -4,6 +4,7 @@ Přijme URL, uloží do DB, vrátí scan_id.
 Skutečný scanner přijde v Fázi B (úkoly 6-10).
 """
 
+import asyncio
 import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -21,6 +22,51 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+# ── Circuit Breaker pro scan endpoint ──
+
+class _ScanCircuitBreaker:
+    """
+    Po THRESHOLD selháních za WINDOW sekund → odmítá requesty na COOLDOWN.
+    """
+    THRESHOLD = 3       # po kolika selháních se otevře
+    WINDOW = 600        # sledovací okno (10 min)
+    COOLDOWN = 120      # jak dlouho odmítá (2 min)
+
+    def __init__(self):
+        import time
+        self._failures: list[float] = []
+        self._opened_at: float | None = None
+
+    def record_failure(self):
+        import time
+        now = time.monotonic()
+        self._failures.append(now)
+        self._failures = [t for t in self._failures if now - t < self.WINDOW]
+        if len(self._failures) >= self.THRESHOLD:
+            self._opened_at = now
+            logger.warning(f"[CircuitBreaker] OTEVŘEN — {len(self._failures)} selhání")
+
+    def record_success(self):
+        self._failures.clear()
+        if self._opened_at:
+            logger.info("[CircuitBreaker] UZAVŘEN — scan úspěšný")
+            self._opened_at = None
+
+    def is_open(self) -> bool:
+        import time
+        if self._opened_at is None:
+            return False
+        if (time.monotonic() - self._opened_at) > self.COOLDOWN:
+            self._opened_at = None
+            self._failures.clear()
+            logger.info("[CircuitBreaker] Auto-close po cooldown")
+            return False
+        return True
+
+
+_circuit_breaker = _ScanCircuitBreaker()
 
 # ── SSRF ochrana ──
 
@@ -127,6 +173,14 @@ async def create_scan(
     4. Spustí scan pipeline na pozadí
     5. Vrátí scan_id (frontend pak polluje stav)
     """
+    # ── Circuit breaker ──
+    if _circuit_breaker.is_open():
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Skenovací služba je dočasně přetížena. Zkuste to za 2 minuty.", "retry_after": 120},
+            headers={"Retry-After": "120"},
+        )
+
     supabase = get_supabase()
     url = request.url
     logger.info(f"[Scan] create_scan: url={url}, user={user.email if user else 'anonymous'}")
@@ -216,8 +270,18 @@ async def create_scan(
             logger.warning(f"[Scan] DB cooldown check failed (allowing scan): {e}")
 
     try:
-        # 1. Hledáme firmu podle URL
+        # 1. Hledáme firmu podle URL (přesný match + doménový fallback)
         existing = supabase.table("companies").select("id, name, email").eq("url", url).limit(1).execute()
+
+        # Fallback: hledej podle domény (bez http(s)://, www.)
+        if not existing.data:
+            _domain_clean = re.sub(r"^https?://(www\.)?", "", url).split("/")[0].lower().strip(".")
+            if _domain_clean:
+                # Hledáme firmu kde url OBSAHUJE doménu
+                _fb = supabase.table("companies").select("id, name, email").ilike("url", f"%{_domain_clean}%").limit(1).execute()
+                if _fb.data:
+                    existing = _fb
+                    logger.info(f"[Scan] Domain fallback matched: {_domain_clean} → company {_fb.data[0]['id']}")
 
         user_email = user.email if user else None
         user_meta = user.metadata if user else {}
@@ -269,8 +333,93 @@ async def create_scan(
             "last_scanned_at": now,
         }).eq("id", company_id).execute()
 
-        # 4. Spustíme scan pipeline na pozadí
-        background_tasks.add_task(run_scan_pipeline, scan_id, url, company_id)
+        # 4. Spustíme scan pipeline na pozadí S TIMEOUT OCHRANOU
+        async def _guarded_scan(sid: str, u: str, cid: str):
+            """Wrapper: hard timeout 180s + error handling."""
+            try:
+                _result = await asyncio.wait_for(
+                    run_scan_pipeline(sid, u, cid),
+                    timeout=180.0,
+                )
+                if isinstance(_result, dict) and _result.get("status") == "done":
+                    _circuit_breaker.record_success()
+                    # ── Okamžitá notifikace o organickém skenu ──
+                    try:
+                        from backend.monitoring.admin_notifier import notify_organic_scan_completed
+                        sb_notif = get_supabase()
+                        scan_row = sb_notif.table("scans").select("*").eq("id", sid).single().execute()
+                        comp_row = sb_notif.table("companies").select("name").eq("id", cid).single().execute()
+                        findings_data = sb_notif.table("findings").select("risk_level").eq("scan_id", sid).execute()
+                        
+                        high_f = sum(1 for f in findings_data.data if f.get("risk_level") == "high")
+                        med_f = sum(1 for f in findings_data.data if f.get("risk_level") == "medium")
+                        low_f = sum(1 for f in findings_data.data if f.get("risk_level") == "low")
+                        
+                        started = scan_row.data.get("started_at", "")
+                        finished = scan_row.data.get("finished_at", "")
+                        duration = 0.0
+                        if started and finished:
+                            from datetime import datetime as _dt
+                            try:
+                                t0 = _dt.fromisoformat(started.replace("Z", "+00:00"))
+                                t1 = _dt.fromisoformat(finished.replace("Z", "+00:00"))
+                                duration = (t1 - t0).total_seconds()
+                            except Exception:
+                                pass
+                        
+                        await notify_organic_scan_completed(
+                            scan_id=sid,
+                            url=u,
+                            company_id=cid,
+                            company_name=comp_row.data.get("name", ""),
+                            total_findings=len(findings_data.data),
+                            high_findings=high_f,
+                            medium_findings=med_f,
+                            low_findings=low_f,
+                            scan_duration_s=duration,
+                            triggered_by=scan_row.data.get("triggered_by", "client"),
+                            scan_status="done",
+                        )
+                    except Exception as notif_err:
+                        logger.warning(f"[Scan] Organic scan notif selhala (non-fatal): {notif_err}")
+                elif isinstance(_result, dict) and _result.get("status") == "error":
+                    _circuit_breaker.record_failure()
+            except asyncio.TimeoutError:
+                _circuit_breaker.record_failure()
+                logger.error(f"[Scan] HARD TIMEOUT 180s pro scan {sid} ({u})")
+                try:
+                    sb = get_supabase()
+                    sb.table("scans").update({
+                        "status": "error",
+                        "error_message": "Sken vypršel po 180s — web je příliš pomalý nebo nereaguje.",
+                        "finished_at": datetime.now(timezone.utc).isoformat(),
+                    }).eq("id", sid).execute()
+                except Exception as db_err:
+                    logger.error(f"[Scan] DB update po timeout selhalo: {db_err}")
+            except Exception as exc:
+                _circuit_breaker.record_failure()
+                logger.error(f"[Scan] Neočekávaná chyba v pipeline: {exc}", exc_info=True)
+                try:
+                    sb = get_supabase()
+                    sb.table("scans").update({
+                        "status": "error",
+                        "error_message": f"Pipeline error: {str(exc)[:500]}",
+                        "finished_at": datetime.now(timezone.utc).isoformat(),
+                    }).eq("id", sid).execute()
+                except Exception:
+                    pass
+                # ── Error logging → admin email ──
+                try:
+                    from backend.monitoring.admin_notifier import notify_error
+                    await notify_error(
+                        module="scan_pipeline",
+                        error=exc,
+                        context={"scan_id": sid, "url": u, "company_id": company_id},
+                    )
+                except Exception:
+                    pass
+
+        background_tasks.add_task(_guarded_scan, scan_id, url, company_id)
 
         # 5. Zaregistrujeme sken do rate limiter cache
         scan_limiter.register_scan(url, scan_id, company_id)
@@ -702,8 +851,21 @@ async def trigger_deep_scan(scan_id: str):
             detail="Hloubkový scan byl proveden v posledních 7 dnech. Zkuste to později.",
         )
 
-    # 3. Označit jako pending a enqueue
-    logger.info(f"[DeepTrigger] Nastavuji pending a enqueue: scan_id={scan_id}, url={url}")
+    # 3. Stagger: rozložit starty deep scanů v čase
+    #    Kolo = 3 země × ~3 min = ~8 min. Interval = 3h = 180 min.
+    #    Stagger 6 min → 30 zákazníků se vejde do jednoho intervalu.
+    #    Max 2 Playwright instance naráz (8 min kolo / 6 min stagger).
+    STAGGER_MINUTES = 6
+    active_deep = supabase.table("scans").select("id").in_(
+        "deep_scan_status", ["pending", "running"]
+    ).execute()
+    active_count = len(active_deep.data) if active_deep.data else 0
+    defer_minutes = active_count * STAGGER_MINUTES
+
+    logger.info(
+        f"[DeepTrigger] Plánuji deep scan: scan_id={scan_id}, url={url}, "
+        f"active_deep={active_count}, defer={defer_minutes}min"
+    )
     supabase.table("scans").update({
         "deep_scan_status": "pending",
     }).eq("id", scan_id).execute()
@@ -716,9 +878,21 @@ async def trigger_deep_scan(scan_id: str):
             url,
             company_id,
             _job_id=f"deep-{scan_id}",
+            _defer_by=timedelta(minutes=defer_minutes),
         )
         await pool.close()
-        logger.info(f"[DeepTrigger] ✅ Job zařazen do fronty: scan_id={scan_id}, url={url}")
+        logger.info(
+            f"[DeepTrigger] ✅ Deep scan naplánován: scan_id={scan_id}, "
+            f"url={url}, start za {defer_minutes} min"
+        )
+
+        # ── Admin notifikace: deep scan spuštěn ──
+        try:
+            from backend.monitoring.admin_notifier import notify_deep_scan_started
+            await notify_deep_scan_started(scan_id, url, company_id)
+        except Exception as notif_err:
+            logger.error(f"[DeepTrigger] Admin notif selhala: {notif_err}")
+
     except Exception as enqueue_err:
         logger.error(
             f"[DeepTrigger] ❌ Chyba při enqueue: scan_id={scan_id}, error={enqueue_err}",
@@ -728,6 +902,17 @@ async def trigger_deep_scan(scan_id: str):
         supabase.table("scans").update({
             "deep_scan_status": None,
         }).eq("id", scan_id).execute()
+        # ── Error logging → admin email ──
+        try:
+            from backend.monitoring.admin_notifier import notify_error
+            await notify_error(
+                module="deep_scan_trigger",
+                error=enqueue_err,
+                context={"scan_id": scan_id, "url": url},
+                severity="critical",
+            )
+        except Exception:
+            pass
         raise HTTPException(
             status_code=500,
             detail=f"Nepodařilo se naplánovat hloubkový scan: {str(enqueue_err)}",
@@ -738,3 +923,95 @@ async def trigger_deep_scan(scan_id: str):
         "deep_scan_status": "pending",
         "message": "Hloubkový 24h scan byl úspěšně spuštěn. Výsledky obdržíte e-mailem.",
     }
+
+# ══════════════════════════════════════════════════════════════
+# RESULTS-VIEWED — Frontend zavolá když klient vidí výsledky
+# ══════════════════════════════════════════════════════════════
+
+class ResultsViewedRequest(BaseModel):
+    """Data z frontendu o zobrazení výsledků."""
+    time_on_results_s: float = 0.0
+    client_waited: bool = True
+    scan_duration_s: float = 0.0
+
+
+@router.post("/scan/{scan_id}/results-viewed")
+async def scan_results_viewed(scan_id: str, body: ResultsViewedRequest):
+    """
+    Frontend zavolá tento endpoint když klient uvidí výsledky skenu.
+    Odešle okamžitou notifikaci adminovi s analýzou chování klienta.
+    """
+    supabase = get_supabase()
+
+    try:
+        # Načteme data o skenu
+        scan_row = supabase.table("scans").select(
+            "id, url_scanned, company_id, status, total_findings, triggered_by, started_at, finished_at"
+        ).eq("id", scan_id).single().execute()
+
+        if not scan_row.data:
+            raise HTTPException(status_code=404, detail="Scan nenalezen")
+
+        scan = scan_row.data
+
+        # Jen organic skeny (ne admin)
+        triggered_by = scan.get("triggered_by", "client")
+
+        # Načteme firmu
+        comp = supabase.table("companies").select("name").eq("id", scan["company_id"]).single().execute()
+        company_name = comp.data.get("name", "") if comp.data else ""
+
+        # Načteme findings pro risk breakdown
+        findings = supabase.table("findings").select("risk_level").eq("scan_id", scan_id).execute()
+        high_f = sum(1 for f in findings.data if f.get("risk_level") == "high")
+
+        # Skutečná délka skenu z DB
+        scan_duration = body.scan_duration_s
+        if scan.get("started_at") and scan.get("finished_at"):
+            try:
+                t0 = datetime.fromisoformat(scan["started_at"].replace("Z", "+00:00"))
+                t1 = datetime.fromisoformat(scan["finished_at"].replace("Z", "+00:00"))
+                scan_duration = (t1 - t0).total_seconds()
+            except Exception:
+                pass
+
+        # Zalogujeme do analytics tabulky
+        from backend.api.analytics import track_server_event
+        track_server_event(
+            event_name="scan_results_viewed",
+            properties={
+                "scan_id": scan_id,
+                "url": scan.get("url_scanned"),
+                "time_on_results_s": body.time_on_results_s,
+                "client_waited": body.client_waited,
+                "total_findings": scan.get("total_findings", 0),
+                "high_findings": high_f,
+            },
+        )
+
+        # Odešleme email notifikaci
+        from backend.monitoring.admin_notifier import notify_scan_results_viewed
+        await notify_scan_results_viewed(
+            scan_id=scan_id,
+            url=scan.get("url_scanned", ""),
+            company_name=company_name,
+            total_findings=scan.get("total_findings", 0) or len(findings.data),
+            high_findings=high_f,
+            time_on_results_s=body.time_on_results_s,
+            scan_duration_s=scan_duration,
+            client_waited=body.client_waited,
+            triggered_by=triggered_by,
+        )
+
+        # Uložíme info o zhlédnutí do scans tabulky
+        supabase.table("scans").update({
+            "results_viewed_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", scan_id).execute()
+
+        return {"status": "ok", "message": "Notifikace odeslána"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[Scan] results-viewed selhalo: {e}")
+        return {"status": "error", "message": str(e)}

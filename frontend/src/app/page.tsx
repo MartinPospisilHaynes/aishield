@@ -5,6 +5,7 @@ import Countdown from "@/components/countdown";
 import ContactForm from "@/components/contact-form";
 import ScrollReveal from "@/components/scroll-reveal";
 import { useScrollTracking } from "@/lib/analytics";
+import LogoWall from "@/components/logo-wall";
 
 /* ─── Inline SVG icons (no emoji) ─── */
 const ICONS = {
@@ -329,7 +330,7 @@ function DeliverableCard({ item }: { item: (typeof DELIVERABLES)[0] }) {
             </div>
             {open && item.bullets && (
                 <div className="px-5 pb-4 pt-0">
-                    <div className="border-t border-white/[0.06] pt-3 ml-[3.75rem]">
+                    <div className="border-t border-white/[0.06] pt-3 sm:ml-[3.75rem]">
                         <ul className="space-y-1.5">
                             {item.bullets.map((b, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-400 leading-relaxed">
@@ -500,6 +501,25 @@ export default function HomePage() {
     useScrollTracking();
     return (
         <>
+            {/* ── FAQPage JSON-LD (jen na homepage, ne v globálním layoutu) ── */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "FAQPage",
+                        "@id": "https://aishield.cz/#faq",
+                        mainEntity: FAQ_ITEMS.map((item) => ({
+                            "@type": "Question",
+                            name: item.q,
+                            acceptedAnswer: {
+                                "@type": "Answer",
+                                text: item.a,
+                            },
+                        })),
+                    }),
+                }}
+            />
             {/* ══════ HERO ══════ */}
             <section className="relative overflow-hidden">
                 {/* BG glow effects */}
@@ -741,6 +761,9 @@ export default function HomePage() {
                     </ScrollReveal>
                 </div>
             </section>
+
+            {/* ══════ LOGO WALL — Pioneer partneři ══════ */}
+            <LogoWall />
 
             {/* ══════ STATS / FOMO ══════ */}
             <section className="border-t border-white/[0.06] py-12 sm:py-20">

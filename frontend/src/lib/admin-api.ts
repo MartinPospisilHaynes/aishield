@@ -1209,3 +1209,54 @@ export async function getChatFeedbackStats(): Promise<ChatFeedbackStats> {
     if (!res.ok) throw new Error("Chyba při načítání statistik");
     return res.json();
 }
+
+// ── Pioneer Program ──
+
+export interface PioneerCode {
+    id: string;
+    code: string;
+    company_name: string;
+    company_domain: string | null;
+    ico: string | null;
+    contact_email: string | null;
+    contact_name: string | null;
+    contact_position: string | null;
+    status: "active" | "used" | "expired" | "revoked";
+    plan: string;
+    used_at: string | null;
+    used_by_email: string | null;
+    company_id: string | null;
+    client_id: string | null;
+    order_id: string | null;
+    sprint: number;
+    preaudit_pdf_url: string | null;
+    notes: string | null;
+    expires_at: string | null;
+    invitation_sent_at: string | null;
+    invitation_sent_via: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export async function getPioneerCodes(): Promise<PioneerCode[]> {
+    const res = await adminFetch(`${API_URL}/api/pioneer/codes`);
+    if (!res.ok) throw new Error("Chyba při načítání Pioneer kódů");
+    return res.json();
+}
+
+export async function revokePioneerCode(codeId: string): Promise<void> {
+    const res = await adminFetch(`${API_URL}/api/pioneer/codes/${codeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "revoked" }),
+    });
+    if (!res.ok) throw new Error("Chyba při rušení kódu");
+}
+
+export async function sendPioneerInvite(codeId: string): Promise<{ message: string }> {
+    const res = await adminFetch(`${API_URL}/api/pioneer/codes/${codeId}/send-invite`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error("Chyba při odesílání pozvánky");
+    return res.json();
+}

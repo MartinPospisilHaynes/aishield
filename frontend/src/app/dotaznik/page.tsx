@@ -157,6 +157,8 @@ function QuestionnaireInner() {
     const questionChangeCountRef = useRef<Record<string, number>>({});
     const questStartTimeRef = useRef<number>(Date.now());
     const answersRef = useRef<Record<string, Answer>>({});
+    const followupRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLDivElement>(null);
 
     /* ── State ── */
     const [sections, setSections] = useState<Section[]>([]);
@@ -174,6 +176,46 @@ function QuestionnaireInner() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [fromDashboard, setFromDashboard] = useState(false); // came from dashboard to answer specific Q
     const [serverAnswersLoaded, setServerAnswersLoaded] = useState(false); // flag to trigger resume-position
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({}); // question_key → custom text
+
+    /* ── Realtime autosave: uloží jednu odpověď na server okamžitě ── */
+    const saveToServer = useCallback(async (
+        questionKey: string,
+        section: string,
+        answer: string,
+        details: Record<string, any> | null,
+        toolName: string | null,
+        questionIndex: number,
+        customAnswer?: string,
+    ) => {
+        if (!companyId || !answer) return;
+        try {
+            const body: any = {
+                company_id: companyId,
+                question_key: questionKey,
+                section: section,
+                answer: answer,
+                details: details && Object.keys(details).length > 0 ? details : null,
+                tool_name: toolName || null,
+                current_question_index: questionIndex,
+            };
+            if (customAnswer && customAnswer.trim()) {
+                body.custom_answer = customAnswer.trim();
+            }
+            // Fire-and-forget — neblokuje UI
+            fetch(`${API_URL}/api/questionnaire/autosave`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            }).then(r => {
+                if (!r.ok) console.warn(`[Autosave] Server ${r.status}`);
+                else console.log(`[Autosave] OK: ${questionKey}`);
+            }).catch(err => {
+                console.warn(`[Autosave] Offline/chyba:`, err);
+                // Nevadí — localStorage je záloha
+            });
+        } catch { /* ignore */ }
+    }, [companyId]);
 
     /* ── Flat question list (with show_when filtering) ── */
     const allQuestions: (Question & { _section: string; _sectionTitle: string })[] = sections.flatMap((s) =>
@@ -289,6 +331,9 @@ function QuestionnaireInner() {
                 if (typeof parsed.currentQuestion === "number") {
                     setCurrentQuestion(parsed.currentQuestion);
                 }
+                if (parsed.customAnswers) {
+                    setCustomAnswers(parsed.customAnswers);
+                }
                 console.log("[Dotazník] Obnoveno z localStorage");
             }
         } catch { /* ignore localStorage errors */ }
@@ -339,6 +384,16 @@ function QuestionnaireInner() {
                         });
                         setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
                         setServerAnswersLoaded(true);
+                        // Obnovit custom answers ze serveru
+                        const restoredCustom: Record<string, string> = {};
+                        for (const a of data.answers) {
+                            if (a.details?.custom_answer) {
+                                restoredCustom[a.question_key] = a.details.custom_answer;
+                            }
+                        }
+                        if (Object.keys(restoredCustom).length > 0) {
+                            setCustomAnswers(prev => ({ ...prev, ...restoredCustom }));
+                        }
                         console.log(`[Dotazník] Obnoveno ${data.answers.length} odpovědí ze serveru`);
                     } else {
                         // Server has no answers — try localStorage
@@ -384,6 +439,30 @@ function QuestionnaireInner() {
     const goNext = useCallback(() => {
         setDirection("forward");
         questionStartTimeRef.current = Date.now();
+
+        // Okamžitý autosave aktuální odpovědi na server
+        const currentQ = allQuestions[currentQuestion];
+        if (currentQ && companyId) {
+            const currentAns = answersRef.current[currentQ.key];
+            if (currentAns && currentAns.answer) {
+                // Přidat custom_answer do details pokud existuje
+                const customText = customAnswers[currentQ.key];
+                let mergedDetails = { ...(currentAns.details || {}) };
+                if (customText && customText.trim()) {
+                    mergedDetails.custom_answer = customText.trim();
+                }
+                saveToServer(
+                    currentAns.question_key,
+                    currentAns.section,
+                    currentAns.answer,
+                    mergedDetails,
+                    currentAns.tool_name,
+                    currentQuestion + 1,
+                    customText,
+                );
+            }
+        }
+
         setCurrentQuestion((p) => {
             if (p >= totalQuestions - 1) return p;
             const next = p + 1;
@@ -394,13 +473,14 @@ function QuestionnaireInner() {
                     const existing = localStorage.getItem(`aishield_quest_${companyId}`);
                     const data = existing ? JSON.parse(existing) : {};
                     data.currentQuestion = next;
+                    data.customAnswers = customAnswers;
                     localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(data));
                 } catch { /* ignore */ }
             }
             return next;
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [totalQuestions, companyId]);
+    }, [totalQuestions, companyId, allQuestions, currentQuestion, customAnswers, saveToServer]);
 
     const goBack = useCallback(() => {
         setDirection("back");
@@ -457,6 +537,7 @@ function QuestionnaireInner() {
                     answers: Object.fromEntries(
                         Object.entries(answers).map(([k, v]) => [k, v])
                     ),
+                    customAnswers,
                     companyId,
                     timestamp: new Date().toISOString(),
                 };
@@ -464,7 +545,7 @@ function QuestionnaireInner() {
             } catch { /* ignore localStorage quota errors */ }
         }, 2000); // 2s debounce
         return () => clearTimeout(timer);
-    }, [answers, companyId]);
+    }, [answers, companyId, customAnswers]);
 
     /* ── Set detail (single select / text) ── */
     const setDetail = useCallback((qKey: string, fKey: string, value: string) => {
@@ -512,13 +593,21 @@ function QuestionnaireInner() {
         const latestAnswers = answersRef.current;
         const list = Object.values(latestAnswers)
             .filter((a) => a.answer !== "")
-            .map((a) => ({
-                question_key: a.question_key,
-                section: a.section,
-                answer: a.answer,
-                details: Object.keys(a.details).length > 0 ? a.details : null,
-                tool_name: a.tool_name || null,
-            }));
+            .map((a) => {
+                const mergedDetails = { ...(a.details || {}) };
+                const customText = customAnswers[a.question_key];
+                if (customText && customText.trim()) {
+                    mergedDetails.custom_answer = customText.trim();
+                }
+                return {
+                    question_key: a.question_key,
+                    section: a.section,
+                    answer: a.answer,
+                    details: Object.keys(mergedDetails).length > 0 ? mergedDetails : null,
+                    tool_name: a.tool_name || null,
+                    custom_answer: customText?.trim() || null,
+                };
+            });
 
         const nevimCount = list.filter((a) => a.answer === "unknown").length;
         const totalDuration = Date.now() - questStartTimeRef.current;
@@ -911,6 +1000,32 @@ function QuestionnaireInner() {
         );
     };
 
+    /* ── Inline custom answer block — NESMÍ být vnořená komponenta,
+       jinak React při každém stisku klávesy unmountuje textarea a klávesnice na iOS/Android mizí ── */
+
+    /* ── AutosaveOnSelect: voláno při výběru odpovědi u yes/no/unknown ── */
+    const autosaveOnSelect = (questionKey: string, value: string) => {
+        // Volá se ihned při kliknutí na odpověď (dlaždici)
+        const qDef = allQuestions.find(aq => aq.key === questionKey);
+        if (!qDef || !companyId) return;
+        const ans = answersRef.current[questionKey];
+        if (!ans) return;
+        const customText = customAnswers[questionKey];
+        const mergedDetails = { ...(ans.details || {}) };
+        if (customText && customText.trim()) {
+            mergedDetails.custom_answer = customText.trim();
+        }
+        saveToServer(
+            questionKey,
+            ans.section || qDef._section,
+            value,
+            mergedDetails,
+            ans.tool_name,
+            currentQuestion,
+            customText,
+        );
+    };
+
     /* ═══════════════════════════════════════════
        QUESTION SCREENS (0..N)
        ═══════════════════════════════════════════ */
@@ -1008,8 +1123,8 @@ function QuestionnaireInner() {
                                                 setAnswer(q.key, opt);
                                             }
                                         }}
-                                        className={`
-                      p-4 rounded-2xl border text-left transition-all duration-200
+                                        className={`touch-bubble
+                      p-4 rounded-2xl border text-left transition-[background-color,border-color,color,box-shadow] duration-150
                       ${selected
                                                 ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10"
                                                 : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
@@ -1033,10 +1148,35 @@ function QuestionnaireInner() {
                                 <input
                                     type="text"
                                     placeholder="Upřesněte vaše odvětví…"
-                                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                     value={(ans?.details[`${q.key}_other`] as string) || ""}
                                     onChange={(e) => setDetail(q.key, `${q.key}_other`, e.target.value)}
                                 />
+                            </div>
+                        )}
+
+                        {/* Vlastní odpověď — inline, ne jako vnořená komponenta (jinak iOS klávesnice mizí) */}
+                        {!["text", "address", "conditional_fields"].includes(q.type) && (
+                            <div className="mt-5 mb-2">
+                                <div className="rounded-2xl border-2 border-dashed border-fuchsia-500/30 bg-white/[0.06] p-4 transition-all duration-200 hover:border-fuchsia-500/50 hover:bg-white/[0.08] focus-within:border-fuchsia-500/60 focus-within:bg-white/[0.08] focus-within:ring-2 focus-within:ring-fuchsia-500/25 focus-within:shadow-lg focus-within:shadow-fuchsia-500/5">
+                                    <label className="flex items-center gap-2 text-sm font-semibold text-fuchsia-300/90 mb-2">
+                                        <svg className="w-4 h-4 text-fuchsia-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                        Vlastní odpověď
+                                    </label>
+                                    <textarea
+                                        placeholder="Zde napište vlastní odpověď, pokud jste v možnostech nenašli přiléhavou volbu…"
+                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white text-base outline-none transition-all placeholder:text-slate-400 resize-none min-h-[56px] max-h-[120px] focus:border-fuchsia-500/40 focus:ring-1 focus:ring-fuchsia-500/20"
+                                        rows={2}
+                                        maxLength={2000}
+                                        value={customAnswers[q.key] || ""}
+                                        onChange={(e) => setCustomAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
+                                    />
+                                </div>
+                                {customAnswers[q.key] && customAnswers[q.key].trim() && (
+                                    <p className="text-xs text-fuchsia-400/70 mt-2 ml-1">
+                                        ✓ Vaše odpověď bude zohledněna ({customAnswers[q.key].length}/2000 znaků)
+                                    </p>
+                                )}
                             </div>
                         )}
 
@@ -1251,7 +1391,7 @@ function QuestionnaireInner() {
                                     onChange={(e) => setAnswer(q.key, composeAddress(addrStreet, e.target.value, addrCity, addrZip))}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs text-slate-400 mb-1.5 block font-medium">Město</label>
                                     <input
@@ -1462,6 +1602,7 @@ function QuestionnaireInner() {
                                     key={opt.value}
                                     onClick={() => {
                                         setAnswer(q.key, opt.value);
+                                        autosaveOnSelect(q.key, opt.value);
                                         if (fromDashboard) {
                                             // Came from dashboard for specific question — submit this answer and go back
                                             if (q.followup && q.followup.condition === opt.value) {
@@ -1479,9 +1620,25 @@ function QuestionnaireInner() {
                                         }
                                         // Normal flow: NEVER auto-advance.
                                         // User must always click "Další →" or "Ukončit" button.
+
+                                        // Auto-scroll k followup pod-možnostem na mobilu
+                                        const willShowFollowup =
+                                            (q.followup && (q.followup.condition === opt.value || q.followup.condition === "any")) ||
+                                            (q.followup_no && opt.value === "no") ||
+                                            (q.followup_yes && opt.value === "yes");
+                                        if (willShowFollowup) {
+                                            setTimeout(() => {
+                                                followupRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                            }, 400);
+                                        } else {
+                                            // Scroll k tlačítku "Další" aby klient věděl jak pokračovat
+                                            setTimeout(() => {
+                                                navRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                            }, 300);
+                                        }
                                     }}
-                                    className={`
-                    relative py-5 px-4 rounded-2xl border text-center transition-all duration-200 cursor-pointer
+                                    className={`touch-bubble
+                    relative py-5 px-4 rounded-2xl border text-center transition-[background-color,border-color,color,box-shadow,ring-color] duration-150 cursor-pointer
                     ${selected
                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300 shadow-lg shadow-fuchsia-500/10 ring-2 ring-offset-2 ring-offset-slate-950 ring-fuchsia-500/60"
                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08] hover:border-white/[0.15]"
@@ -1507,7 +1664,7 @@ function QuestionnaireInner() {
 
                     {/* ── Followup fields (slides down when "Ano") ── */}
                     {showFollowup && q.followup && (
-                        <div className="animate-slide-down mb-6">
+                        <div ref={followupRef} className="animate-slide-down mb-6">
                             <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl p-5">
                                 <p className="text-cyan-300 text-sm font-semibold mb-4">Upřesněte prosím:</p>
                                 <div className="space-y-4">
@@ -1532,7 +1689,7 @@ function QuestionnaireInner() {
                                                     )}
                                                     <p className={`text-xs leading-relaxed ${field.label.startsWith("🚫") ? "text-red-300 font-semibold"
                                                         : field.label.startsWith("⚠️") ? "text-amber-200"
-                                                        : "text-slate-400"
+                                                            : "text-slate-400"
                                                         }`}>{renderWarningText(field.label.replace(/^[🚫⚠️ℹ️✅📦]+\s*/, ''))}</p>
                                                 </div>
                                             ) : (
@@ -1551,8 +1708,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => setDetail(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1569,7 +1726,7 @@ function QuestionnaireInner() {
                                                         <input
                                                             type="text"
                                                             placeholder="Upřesněte…"
-                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                             value={(ans?.details[`${field.key}_other`] as string) || ""}
                                                             onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
                                                             autoFocus
@@ -1598,8 +1755,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => toggleMulti(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150 flex items-center gap-2
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1616,23 +1773,28 @@ function QuestionnaireInner() {
                                                         <input
                                                             type="text"
                                                             placeholder="Upřesněte…"
-                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                            className="mt-2 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                             value={(ans?.details[`${field.key}_other`] as string) || ""}
                                                             onChange={(e) => setDetail(q.key, `${field.key}_other`, e.target.value)}
                                                             autoFocus
                                                         />
                                                     )}
-                                                    {/* Warning banner for multi_select — check if any selected value triggers warning */}
+                                                    {/* Warning banners for multi_select — each selected warning as separate card */}
                                                     {field.warning && (() => {
                                                         const sel = multiSelections[`${q.key}__${field.key}`] || [];
                                                         const w = field.warning as Record<string, string>;
-                                                        const msg = sel.map(s => w[s]).filter(Boolean);
-                                                        return msg.length > 0 ? (
-                                                            <div className="mt-2 flex items-start gap-2 rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3">
-                                                                <span className="text-red-400 flex-shrink-0 mt-0.5">⚠️</span>
-                                                                <div>
-                                                                    <p className="text-xs text-red-300 leading-relaxed">{renderWarningText(msg.join(" "))}</p>
-                                                                </div>
+                                                        const entries = sel.map(s => ({ key: s, text: w[s] })).filter(e => e.text);
+                                                        return entries.length > 0 ? (
+                                                            <div className="mt-3 space-y-2">
+                                                                {entries.map((entry) => (
+                                                                    <div key={entry.key} className="flex items-start gap-3 rounded-xl bg-amber-500/[0.07] border border-amber-500/20 px-4 py-3 animate-slide-down">
+                                                                        <span className="text-amber-400 flex-shrink-0 mt-0.5 text-base">⚠️</span>
+                                                                        <div>
+                                                                            <p className="text-[11px] font-semibold text-amber-300/90 mb-0.5">{entry.key}</p>
+                                                                            <p className="text-xs text-amber-200/80 leading-relaxed">{renderWarningText(entry.text.replace(/^⚠️\s*/, ''))}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         ) : null;
                                                     })()}
@@ -1644,7 +1806,7 @@ function QuestionnaireInner() {
                                                 <input
                                                     type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
                                                     placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
-                                                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                     value={(ans?.details[field.key] as string) || ""}
                                                     onChange={(e) => setDetail(q.key, field.key, e.target.value)}
                                                 />
@@ -1665,8 +1827,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => setDetail(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1689,7 +1851,7 @@ function QuestionnaireInner() {
 
                     {/* ── Followup_no fields (slides down when "Ne") ── */}
                     {q.followup_no && ans?.answer === "no" && (
-                        <div className="animate-slide-down mb-6">
+                        <div ref={followupRef} className="animate-slide-down mb-6">
                             <div className="bg-red-500/[0.06] backdrop-blur-xl rounded-2xl p-5">
                                 <div className="space-y-4">
                                     {q.followup_no.fields.map((field) => (
@@ -1711,7 +1873,7 @@ function QuestionnaireInner() {
                                                     <input
                                                         type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
                                                         placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
-                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                         value={(ans?.details[field.key] as string) || ""}
                                                         onChange={(e) => setDetail(q.key, field.key, e.target.value)}
                                                     />
@@ -1731,8 +1893,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => setDetail(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1768,8 +1930,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => setDetail(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1792,7 +1954,7 @@ function QuestionnaireInner() {
 
                     {/* ── Followup_yes fields (slides down when "Ano") ── */}
                     {q.followup_yes && ans?.answer === "yes" && (
-                        <div className="animate-slide-down mb-6">
+                        <div ref={followupRef} className="animate-slide-down mb-6">
                             <div className="bg-emerald-500/[0.06] backdrop-blur-xl rounded-2xl p-5">
                                 <p className="text-emerald-300 text-sm font-semibold mb-4">Doplňující informace:</p>
                                 <div className="space-y-4">
@@ -1815,7 +1977,7 @@ function QuestionnaireInner() {
                                                     <input
                                                         type={field.key.includes("phone") || field.key.includes("telefon") ? "tel" : field.key.includes("email") ? "email" : "text"}
                                                         placeholder={field.key.includes("phone") || field.key.includes("telefon") ? "+420…" : field.key.includes("email") ? "email@firma.cz" : "Napište…"}
-                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
+                                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-base outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-500"
                                                         value={(ans?.details[field.key] as string) || ""}
                                                         onChange={(e) => setDetail(q.key, field.key, e.target.value)}
                                                     />
@@ -1835,8 +1997,8 @@ function QuestionnaireInner() {
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => setDetail(q.key, field.key, opt)}
-                                                                    className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                                                                    className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150
                                       ${selected
                                                                             ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                             : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1861,8 +2023,8 @@ function QuestionnaireInner() {
                                                             <button
                                                                 key={opt}
                                                                 onClick={() => toggleMulti(q.key, field.key, opt)}
-                                                                className={`
-                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                                                className={`touch-bubble
+                                      px-4 py-2.5 rounded-xl border text-sm font-medium transition-[background-color,border-color,color] duration-150 flex items-center gap-2
                                       ${selected
                                                                         ? "bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-300"
                                                                         : "bg-white/[0.04] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]"
@@ -1886,8 +2048,33 @@ function QuestionnaireInner() {
                     {ans?.answer && !isNA && <RiskWarningBanner questionKey={q.key} answer={ans.answer} />}
                     {ans?.answer && !isNA && <ComplianceGapBanner questionKey={q.key} answer={ans.answer} />}
 
+                    {/* Vlastní odpověď — inline, ne jako vnořená komponenta (jinak iOS klávesnice mizí) */}
+                    {!["text", "address", "conditional_fields"].includes(q.type) && (
+                        <div className="mt-5 mb-2">
+                            <div className="rounded-2xl border border-white/[0.12] bg-white/[0.04] p-4 transition-all duration-200 hover:border-white/[0.2] focus-within:border-fuchsia-500/50 focus-within:ring-1 focus-within:ring-fuchsia-500/25">
+                                <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-2">
+                                    <svg className="w-4 h-4 text-fuchsia-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                    Vlastní odpověď
+                                </label>
+                                <textarea
+                                    placeholder="Zde napište vlastní odpověď, pokud jste v možnostech nenašli přiléhavou volbu…"
+                                    className="w-full bg-transparent border-0 rounded-lg px-1 py-1 text-white text-base outline-none transition-all placeholder:text-slate-500 resize-none min-h-[56px] max-h-[120px]"
+                                    rows={2}
+                                    maxLength={2000}
+                                    value={customAnswers[q.key] || ""}
+                                    onChange={(e) => setCustomAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
+                                />
+                            </div>
+                            {customAnswers[q.key] && customAnswers[q.key].trim() && (
+                                <p className="text-xs text-fuchsia-400/70 mt-2 ml-1">
+                                    ✓ Vaše odpověď bude zohledněna ({customAnswers[q.key].length}/2000 znaků)
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     {/* Navigation */}
-                    <div className="flex justify-between items-center mt-6">
+                    <div ref={navRef} className="flex justify-between items-center mt-6">
                         <button
                             onClick={goBack}
                             className="px-4 sm:px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-400 font-medium transition-all hover:bg-white/[0.1] text-sm sm:text-base"
@@ -1960,6 +2147,14 @@ function QuestionnaireInner() {
         }
         .animate-slide-down {
           animation: slide-down 0.4s ease-out;
+        }
+        /* Okamžitá odezva na dotykovém zařízení — bez 300ms delay */
+        .touch-bubble {
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          -webkit-touch-callout: none;
+          user-select: none;
+          -webkit-user-select: none;
         }
       `}</style>
         </div >
