@@ -827,68 +827,41 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
 function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { findings: DashboardData["findings"]; questFindings: DashboardData["questionnaire_findings"]; resolvedIds: string[]; onResolvedChange: () => void }) {
     const [toggling, setToggling] = useState<string | null>(null);
     const [optimisticIds, setOptimisticIds] = useState<Set<string>>(new Set(resolvedIds));
-    // Synchronizace s props, pokud se změní ze serveru
     useEffect(() => { setOptimisticIds(new Set(resolvedIds)); }, [resolvedIds]);
     const resolvedSet = optimisticIds;
-    const allItems: { id: string; text: string; risk: string; article: string; source: string; tag: "done" | "client" | "lawyer" | "it"; resolved: boolean }[] = [];
 
-    const standardItems: { text: string; tag: "done" | "client" | "lawyer" | "it"; risk: string; article: string }[] = [
-        { text: "Vytvořit interní registr AI systémů (čl. 49 — evidence)", tag: "done", risk: "info", article: "čl. 49" },
-        { text: "Proškolit zaměstnance — AI gramotnost dle čl. 4 AI Act", tag: "done", risk: "info", article: "čl. 4" },
-        { text: "Připravit DPIA pro AI systémy zpracovávající osobní údaje", tag: "done", risk: "info", article: "GDPR" },
-        { text: "Naplánovat pravidelný re-sken webu (monitoring)", tag: "done", risk: "info", article: "čl. 9" },
-        { text: "Jmenovat odpovědnou osobu za AI compliance (čl. 14)", tag: "client", risk: "info", article: "čl. 14" },
-        { text: "Zavést proces pro zavedení nového AI nástroje", tag: "client", risk: "info", article: "čl. 9" },
-        { text: "Zkontrolovat smlouvy s dodavateli AI (DPA, opt-out)", tag: "lawyer", risk: "info", article: "GDPR" },
-        { text: "Nastavit logování AI výstupů s retencí min. 6 měsíců", tag: "it", risk: "info", article: "čl. 12" },
-    ];
-
-    const hasRealFindings = findings.length > 0 || questFindings.length > 0;
-
-    for (const item of standardItems) {
-        // Generické úkoly (client/lawyer/it) zobrazit jen když existují reálné nálezy
-        if (!hasRealFindings && item.tag !== "done") continue;
-        const itemId = `std-${item.text.slice(0, 20)}`;
-        allItems.push({ id: itemId, text: item.text, risk: item.risk, article: item.article, source: "standard", tag: item.tag, resolved: item.tag === "done" || resolvedSet.has(itemId) });
-    }
-
-    for (const f of findings) {
-        const isResolved = f.confirmed_by_client === "false_positive" || f.status === "resolved" || resolvedSet.has(f.id);
-        allItems.push({ id: f.id, text: f.action_required || f.name, risk: f.risk_level, article: f.ai_act_article, source: "scan", tag: "client", resolved: isResolved });
-    }
+    // Akční plán = POUZE body z dotazníku (questionnaire_findings)
+    const items: { id: string; text: string; risk: string; article: string; resolved: boolean }[] = [];
 
     for (const f of questFindings) {
         const itemId = `q-${f.question_key}`;
-        allItems.push({ id: itemId, text: f.action_required || f.name, risk: f.risk_level, article: f.ai_act_article, source: "questionnaire", tag: "client", resolved: resolvedSet.has(itemId) });
+        items.push({ id: itemId, text: f.action_required || f.name, risk: f.risk_level, article: f.ai_act_article, resolved: resolvedSet.has(itemId) });
     }
 
-    if (allItems.length === 0) {
-        return <EmptyState title="Akční plán je prázdný" description="Nejdříve proveďte sken webu — akční plán se vygeneruje z nálezů." href="/scan" cta="Spustit sken" />;
+    if (items.length === 0) {
+        return (
+            <div className="glass text-center py-12">
+                <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Žádné úkoly z dotazníku</h3>
+                <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                    Na základě vašich odpovědí v dotazníku nejsou potřeba žádné další kroky.
+                    Kompletní dokumentaci připravujeme v rámci vašeho balíčku.
+                </p>
+            </div>
+        );
     }
 
     const riskOrder: Record<string, number> = { high: 0, medium: 1, limited: 2, low: 3, info: 4 };
-    const sorted = [...allItems].sort((a, b) => {
-        return (riskOrder[a.risk] ?? 5) - (riskOrder[b.risk] ?? 5);
-    });
-
+    const sorted = [...items].sort((a, b) => (riskOrder[a.risk] ?? 5) - (riskOrder[b.risk] ?? 5));
     const total = sorted.length;
     const resolved = sorted.filter((i) => i.resolved).length;
 
-    const TAG_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-        done: { bg: "bg-green-500/10", text: "text-green-400", label: "✅ Součást balíčku" },
-        client: { bg: "bg-amber-500/10", text: "text-amber-400", label: "✏️ Vaše akce" },
-        lawyer: { bg: "bg-red-500/10", text: "text-red-400", label: "⚖️ Právník" },
-        it: { bg: "bg-blue-500/10", text: "text-blue-400", label: "💻 IT oddělení" },
-    };
-
     return (
         <div className="space-y-4">
-            <div className="glass flex flex-wrap gap-3 text-xs">
-                {Object.entries(TAG_STYLES).map(([key, style]) => (
-                    <span key={key} className={`inline-flex items-center rounded-full px-2.5 py-1 ${style.bg} ${style.text}`}>{style.label}</span>
-                ))}
-            </div>
-
             <div className="glass">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-slate-300">Postup</span>
@@ -900,12 +873,9 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
             </div>
 
             {sorted.map((item) => {
-                const tagStyle = TAG_STYLES[item.tag] || TAG_STYLES.client;
-                const canToggle = item.tag !== "done";
                 const handleToggle = async () => {
-                    if (!canToggle || toggling) return;
+                    if (toggling) return;
                     const newResolved = !item.resolved;
-                    // Optimistický update — okamžitá odezva UI
                     setOptimisticIds(prev => {
                         const next = new Set(prev);
                         if (newResolved) next.add(item.id);
@@ -917,7 +887,6 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                         await toggleActionPlanItem(item.id, newResolved);
                     } catch (e) {
                         console.error("Toggle failed", e);
-                        // Revert optimistického updatu
                         setOptimisticIds(prev => {
                             const next = new Set(prev);
                             if (newResolved) next.delete(item.id);
@@ -933,9 +902,9 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                         <button
                             type="button"
                             onClick={handleToggle}
-                            disabled={!canToggle || toggling === item.id}
-                            title={canToggle ? (item.resolved ? "Zrušit splnění" : "Máme splněno") : "Součást balíčku"}
-                            className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border ${item.resolved ? "border-green-500/30 bg-green-500/20" : "border-white/10 bg-white/5 hover:border-green-500/30 hover:bg-green-500/10"} flex items-center justify-center transition-colors ${canToggle ? "cursor-pointer" : "cursor-default"} ${toggling === item.id ? "animate-pulse" : ""}`}
+                            disabled={toggling === item.id}
+                            title={item.resolved ? "Zrušit splnění" : "Máme splněno"}
+                            className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border ${item.resolved ? "border-green-500/30 bg-green-500/20" : "border-white/10 bg-white/5 hover:border-green-500/30 hover:bg-green-500/10"} flex items-center justify-center transition-colors cursor-pointer ${toggling === item.id ? "animate-pulse" : ""}`}
                         >
                             {item.resolved && (
                                 <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -944,10 +913,9 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                             )}
                         </button>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-200">{item.text}</p>
+                            <p className={`text-sm font-medium ${item.resolved ? "text-slate-500 line-through" : "text-slate-200"}`}>{item.text}</p>
                             <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${tagStyle.bg} ${tagStyle.text}`}>{tagStyle.label}</span>
-                                {canToggle && !item.resolved && (
+                                {!item.resolved && (
                                     <button
                                         type="button"
                                         onClick={handleToggle}
@@ -963,9 +931,7 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                                         {item.risk === "high" ? "Vysoká" : item.risk === "medium" ? "Střední" : "Nízká"} priorita
                                     </span>
                                 )}
-                                <span className="text-[10px] text-slate-500">{item.article}</span>
-                                {item.source === "scan" && <span className="text-[10px] text-slate-600">Ze skenu</span>}
-                                {item.source === "questionnaire" && <span className="text-[10px] text-cyan-600">Z dotazníku</span>}
+                                {item.article && <span className="text-[10px] text-slate-500">{item.article}</span>}
                             </div>
                         </div>
                     </div>
