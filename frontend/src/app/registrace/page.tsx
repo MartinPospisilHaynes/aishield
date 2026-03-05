@@ -162,6 +162,25 @@ function RegistraceInner() {
             return;
         }
 
+        // 2b. Notifikace admina o nové registraci (fire-and-forget)
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aishield.cz";
+            fetch(`${API_URL}/api/auth/register-notify`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email,
+                    company_name: companyName,
+                    ico: ico || "",
+                    web_url: normalizedWeb || "",
+                    utm_source: searchParams.get("utm_source") || "",
+                    utm_medium: searchParams.get("utm_medium") || "",
+                    utm_campaign: searchParams.get("utm_campaign") || "",
+                    partner: partner || "",
+                }),
+            }).catch(() => {}); // Fire-and-forget — nečekáme na odpověď
+        } catch { /* non-critical */ }
+
         // 3. Pokud Supabase potvrdil email automaticky (dev mode), jít na dashboard
         if (data.session) {
             router.push(redirectTo);
@@ -220,44 +239,44 @@ function RegistraceInner() {
 
                         {/* Otevřít schránku — detekce webmail providera */}
                         <div className="flex flex-col items-center gap-3 mt-5">
-                        {(() => {
-                            const domain = email.split("@")[1]?.toLowerCase() || "";
-                            const providers: Record<string, { url: string; label: string; icon: string }> = {
-                                "gmail.com": { url: "https://mail.google.com", label: "Otevřít Gmail", icon: "📧" },
-                                "googlemail.com": { url: "https://mail.google.com", label: "Otevřít Gmail", icon: "📧" },
-                                "seznam.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
-                                "email.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
-                                "post.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
-                                "outlook.com": { url: "https://outlook.live.com/mail", label: "Otevřít Outlook", icon: "📧" },
-                                "hotmail.com": { url: "https://outlook.live.com/mail", label: "Otevřít Hotmail", icon: "📧" },
-                                "live.com": { url: "https://outlook.live.com/mail", label: "Otevřít Outlook", icon: "📧" },
-                                "yahoo.com": { url: "https://mail.yahoo.com", label: "Otevřít Yahoo Mail", icon: "📧" },
-                                "icloud.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
-                                "me.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
-                                "mac.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
-                                "centrum.cz": { url: "https://mail.centrum.cz", label: "Otevřít Centrum.cz", icon: "📧" },
-                                "volny.cz": { url: "https://mail.volny.cz", label: "Otevřít Volný.cz", icon: "📧" },
-                                "tiscali.cz": { url: "https://mail.tiscali.cz", label: "Otevřít Tiscali", icon: "📧" },
-                            };
-                            const provider = providers[domain];
-                            return (
-                                <a
-                                    href={provider ? provider.url : `https://mail.google.com/mail/u/0/#search/from%3Aaishield`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                                    </svg>
-                                    {provider ? provider.label : "Otevřít emailovou schránku"}
-                                </a>
-                            );
-                        })()}
+                            {(() => {
+                                const domain = email.split("@")[1]?.toLowerCase() || "";
+                                const providers: Record<string, { url: string; label: string; icon: string }> = {
+                                    "gmail.com": { url: "https://mail.google.com", label: "Otevřít Gmail", icon: "📧" },
+                                    "googlemail.com": { url: "https://mail.google.com", label: "Otevřít Gmail", icon: "📧" },
+                                    "seznam.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
+                                    "email.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
+                                    "post.cz": { url: "https://email.seznam.cz", label: "Otevřít Seznam Email", icon: "📧" },
+                                    "outlook.com": { url: "https://outlook.live.com/mail", label: "Otevřít Outlook", icon: "📧" },
+                                    "hotmail.com": { url: "https://outlook.live.com/mail", label: "Otevřít Hotmail", icon: "📧" },
+                                    "live.com": { url: "https://outlook.live.com/mail", label: "Otevřít Outlook", icon: "📧" },
+                                    "yahoo.com": { url: "https://mail.yahoo.com", label: "Otevřít Yahoo Mail", icon: "📧" },
+                                    "icloud.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
+                                    "me.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
+                                    "mac.com": { url: "https://www.icloud.com/mail", label: "Otevřít iCloud Mail", icon: "📧" },
+                                    "centrum.cz": { url: "https://mail.centrum.cz", label: "Otevřít Centrum.cz", icon: "📧" },
+                                    "volny.cz": { url: "https://mail.volny.cz", label: "Otevřít Volný.cz", icon: "📧" },
+                                    "tiscali.cz": { url: "https://mail.tiscali.cz", label: "Otevřít Tiscali", icon: "📧" },
+                                };
+                                const provider = providers[domain];
+                                return (
+                                    <a
+                                        href={provider ? provider.url : `https://mail.google.com/mail/u/0/#search/from%3Aaishield`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                        </svg>
+                                        {provider ? provider.label : "Otevřít emailovou schránku"}
+                                    </a>
+                                );
+                            })()}
 
-                        <a href="/login" className="btn-secondary inline-flex">
-                            Zpět na přihlášení
-                        </a>
+                            <a href="/login" className="btn-secondary inline-flex">
+                                Zpět na přihlášení
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -454,14 +473,29 @@ function RegistraceInner() {
                         </div>
 
                         {/* GDPR souhlas */}
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={gdprConsent}
-                                onChange={(e) => setGdprConsent(e.target.checked)}
-                                className="mt-0 h-5 w-5 min-w-[44px] min-h-[44px] rounded border-white/20 bg-white/5 text-fuchsia-500 appearance-none 
-                                    focus:ring-fuchsia-500/50 focus:ring-offset-0 cursor-pointer"
-                            />
+                        <div
+                            className="flex items-start gap-3 cursor-pointer group"
+                            onClick={(e) => {
+                                // Neklikej checkbox pokud uživatel klikl na odkaz
+                                if ((e.target as HTMLElement).closest('a')) return;
+                                setGdprConsent(!gdprConsent);
+                            }}
+                            role="checkbox"
+                            aria-checked={gdprConsent}
+                        >
+                            <div className="relative flex-shrink-0 mt-0.5">
+                                <div className={`h-6 w-6 rounded border transition-colors cursor-pointer flex items-center justify-center
+                                    ${gdprConsent
+                                        ? 'bg-fuchsia-500 border-fuchsia-500'
+                                        : 'border-white/20 bg-white/5 group-hover:border-white/40'}`}
+                                >
+                                    {gdprConsent && (
+                                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                </div>
+                            </div>
                             <span className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
                                 Souhlasím se{" "}
                                 <a href="/privacy" target="_blank" className="text-fuchsia-400 hover:text-fuchsia-300 underline inline-block py-3 min-h-[44px]">
@@ -474,7 +508,7 @@ function RegistraceInner() {
                                 . Vaše data zpracováváme výhradně pro poskytování služby
                                 AI Act compliance v souladu s GDPR.
                             </span>
-                        </label>
+                        </div>
 
                         {/* Anti-bot: matematický příklad */}
                         <div>

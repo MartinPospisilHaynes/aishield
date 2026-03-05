@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createCheckout } from "@/lib/api";
+import { createCheckout, validateVoucher } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
@@ -75,9 +75,49 @@ function CheckoutInner() {
     const [aresError, setAresError] = useState<string | null>(null);
     const [aresFilled, setAresFilled] = useState(false);
 
+    // Slevový kód (voucher)
+    const [voucherCode, setVoucherCode] = useState("");
+    const [voucherLoading, setVoucherLoading] = useState(false);
+    const [voucherApplied, setVoucherApplied] = useState(false);
+    const [voucherDiscount, setVoucherDiscount] = useState(0);
+    const [voucherError, setVoucherError] = useState<string | null>(null);
+    const [voucherMessage, setVoucherMessage] = useState<string | null>(null);
+
     // Anti-bot: honeypot + timing
     const [honeypot, setHoneypot] = useState("");
     const formLoadedAt = useRef(Date.now());
+
+    // Ověření slevového kódu
+    async function handleVoucherApply() {
+        if (!voucherCode.trim()) return;
+        setVoucherLoading(true);
+        setVoucherError(null);
+        setVoucherMessage(null);
+        try {
+            const result = await validateVoucher(voucherCode.trim());
+            if (result.valid) {
+                setVoucherApplied(true);
+                setVoucherDiscount(result.discount_percent);
+                setVoucherMessage(result.message);
+            } else {
+                setVoucherError(result.message || "Neplatný kód");
+                setVoucherApplied(false);
+                setVoucherDiscount(0);
+            }
+        } catch {
+            setVoucherError("Chyba při ověřování kódu");
+        } finally {
+            setVoucherLoading(false);
+        }
+    }
+
+    function handleVoucherRemove() {
+        setVoucherCode("");
+        setVoucherApplied(false);
+        setVoucherDiscount(0);
+        setVoucherError(null);
+        setVoucherMessage(null);
+    }
 
     // ARES lookup when IČO reaches 8 digits
     const lookupAres = useCallback(async (icoValue: string) => {
@@ -171,8 +211,8 @@ function CheckoutInner() {
 
         try {
             const billing = { company, ico, dic, street, city, zip, phone };
-            const data = await createCheckout(planKey, email, gateway, billing);
-            track("checkout_redirected", { plan: planKey, gateway });
+            const data = await createCheckout(planKey, email, gateway, billing, voucherApplied ? voucherCode.trim() : undefined);
+            track("checkout_redirected", { plan: planKey, gateway: data.gateway || gateway });
             window.location.href = data.gateway_url;
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Nepodařilo se vytvořit platbu");
@@ -443,20 +483,76 @@ function CheckoutInner() {
                                 ))}
                             </ul>
 
+                            {/* Slevový kód */}
+                            <div className="border-t border-white/[0.06] pt-4 mb-4">
+                                <label className="block text-sm text-slate-400 mb-2">Slevový kód</label>
+                                {voucherApplied ? (
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400 flex-shrink-0"><path d="M20 6L9 17l-5-5" /></svg>
+                                        <span className="text-sm text-emerald-300 flex-1">{voucherMessage}</span>
+                                        <button type="button" onClick={handleVoucherRemove} className="text-slate-400 hover:text-red-400 transition-colors">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={voucherCode}
+                                            onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(null); }}
+                                            placeholder="Zadejte kód"
+                                            className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/25 transition-all placeholder:text-slate-600 font-mono tracking-wider"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleVoucherApply}
+                                            disabled={voucherLoading || !voucherCode.trim()}
+                                            className="px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-sm text-white hover:bg-white/[0.1] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            {voucherLoading ? (
+                                                <div className="w-4 h-4 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin" />
+                                            ) : "Uplatnit"}
+                                        </button>
+                                    </div>
+                                )}
+                                {voucherError && (
+                                    <p className="text-xs text-red-400 mt-1.5">{voucherError}</p>
+                                )}
+                            </div>
+
                             {/* Price */}
                             <div className="border-t border-white/[0.06] pt-4 mb-6">
-                                <div className="flex justify-between text-sm text-slate-400 mb-1">
-                                    <span>Cena bez DPH</span>
-                                    <span>{Math.round(plan.price / 1.21).toLocaleString("cs-CZ")} Kč</span>
-                                </div>
-                                <div className="flex justify-between text-sm text-slate-400 mb-2">
-                                    <span>DPH 21 %</span>
-                                    <span>{(plan.price - Math.round(plan.price / 1.21)).toLocaleString("cs-CZ")} Kč</span>
-                                </div>
-                                <div className="flex justify-between text-lg font-bold border-t border-white/[0.06] pt-2">
-                                    <span>Celkem</span>
-                                    <span className="text-fuchsia-400">{plan.price.toLocaleString("cs-CZ")} Kč</span>
-                                </div>
+                                {voucherApplied && voucherDiscount === 100 ? (
+                                    <>
+                                        <div className="flex justify-between text-sm text-slate-500 mb-1">
+                                            <span>Původní cena</span>
+                                            <span className="line-through">{plan.price.toLocaleString("cs-CZ")} Kč</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-emerald-400 mb-2">
+                                            <span>Sleva 100 %</span>
+                                            <span>−{plan.price.toLocaleString("cs-CZ")} Kč</span>
+                                        </div>
+                                        <div className="flex justify-between text-lg font-bold border-t border-white/[0.06] pt-2">
+                                            <span>Celkem</span>
+                                            <span className="text-emerald-400">ZDARMA</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="flex justify-between text-sm text-slate-400 mb-1">
+                                            <span>Cena bez DPH</span>
+                                            <span>{Math.round(plan.price / 1.21).toLocaleString("cs-CZ")} Kč</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-slate-400 mb-2">
+                                            <span>DPH 21 %</span>
+                                            <span>{(plan.price - Math.round(plan.price / 1.21)).toLocaleString("cs-CZ")} Kč</span>
+                                        </div>
+                                        <div className="flex justify-between text-lg font-bold border-t border-white/[0.06] pt-2">
+                                            <span>Celkem</span>
+                                            <span className="text-fuchsia-400">{plan.price.toLocaleString("cs-CZ")} Kč</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {/* Submit */}
@@ -470,6 +566,8 @@ function CheckoutInner() {
                                         <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" /></svg>
                                         Zpracovávám…
                                     </span>
+                                ) : voucherApplied && voucherDiscount === 100 ? (
+                                    "Dokončit objednávku zdarma"
                                 ) : gateway === "bank_transfer" ? (
                                     "Odeslat objednávku"
                                 ) : (

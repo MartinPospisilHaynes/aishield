@@ -9,7 +9,7 @@ import { useAnalytics } from "@/lib/analytics";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-type PaymentGateway = "stripe" | "bank_transfer";
+type PaymentGateway = "stripe" | "bank_transfer" | "voucher";
 
 type PaymentStatus = {
     payment_id: string;
@@ -22,6 +22,7 @@ type PaymentStatus = {
 const GATEWAY_NAMES: Record<PaymentGateway, string> = {
     stripe: "Stripe",
     bank_transfer: "Bankovní převod",
+    voucher: "Slevový kód",
 };
 
 function PaymentStatusContent() {
@@ -39,6 +40,7 @@ function PaymentStatusContent() {
 
     const gatewayName = GATEWAY_NAMES[gateway] || gateway;
     const isBankTransfer = gateway === "bank_transfer";
+    const isVoucher = gateway === "voucher";
 
     // Check questionnaire completeness
     useEffect(() => {
@@ -65,8 +67,11 @@ function PaymentStatusContent() {
     }, [session]);
 
     useEffect(() => {
-        // Bank transfer — no online gateway to check
-        if (isBankTransfer) {
+        // Bank transfer / voucher — no online gateway to check
+        if (isBankTransfer || isVoucher) {
+            if (isVoucher) {
+                setStatus({ payment_id: paymentId || "", state: "PAID", is_paid: true, order_number: "" });
+            }
             setLoading(false);
             return;
         }

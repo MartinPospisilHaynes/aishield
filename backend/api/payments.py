@@ -97,6 +97,7 @@ class CheckoutRequest(BaseModel):
     email: str
     gateway: Literal["stripe", "bank_transfer"] = "stripe"
     billing: BillingInfo | None = None
+    voucher_code: str | None = None
 
 
 class CheckoutResponse(BaseModel):
@@ -363,6 +364,49 @@ async def list_available_gateways():
     return {"gateways": gateways}
 
 
+# ── Slevový kód (voucher) ──
+
+class VoucherValidateRequest(BaseModel):
+    code: str
+
+class VoucherValidateResponse(BaseModel):
+    valid: bool
+    discount_percent: int = 0
+    message: str = ""
+
+
+def _validate_voucher(code: str, plan: str | None = None) -> dict:
+    """Ověří slevový kód. Vrací dict s valid, discount_percent, message, voucher_id."""
+    if not code or not code.strip():
+        return {"valid": False, "discount_percent": 0, "message": "Zadejte slevový kód", "voucher_id": None}
+    supabase = get_supabase()
+    r = supabase.table("voucher_codes").select("*").eq("code", code.strip().upper()).eq("is_active", True).execute()
+    if not r.data:
+        return {"valid": False, "discount_percent": 0, "message": "Neplatný slevový kód", "voucher_id": None}
+    voucher = r.data[0]
+    if voucher["used_count"] >= voucher["max_uses"]:
+        return {"valid": False, "discount_percent": 0, "message": "Tento kód byl již vyčerpán", "voucher_id": None}
+    if voucher.get("valid_for_plan") and plan and voucher["valid_for_plan"] != plan:
+        return {"valid": False, "discount_percent": 0, "message": f"Kód platí pouze pro balíček {voucher['valid_for_plan'].upper()}", "voucher_id": None}
+    return {
+        "valid": True,
+        "discount_percent": voucher["discount_percent"],
+        "message": f"Sleva {voucher['discount_percent']} % aplikována",
+        "voucher_id": voucher["id"],
+    }
+
+
+@router.post("/voucher/validate", response_model=VoucherValidateResponse)
+async def validate_voucher(req: VoucherValidateRequest):
+    """Ověří slevový kód (voucher) — nevyžaduje přihlášení."""
+    result = _validate_voucher(req.code)
+    return VoucherValidateResponse(
+        valid=result["valid"],
+        discount_percent=result["discount_percent"],
+        message=result["message"],
+    )
+
+
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_current_user)):
     """
@@ -383,6 +427,50 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
 
     frontend_url = settings.app_url if settings.environment == "production" else "http://localhost:3000"
     api_url = settings.api_url if settings.environment == "production" else "http://localhost:8000"
+
+    # ── Slevový kód → 100% sleva = objednávka PAID bez platby ──
+    if req.voucher_code:
+        v = _validate_voucher(req.voucher_code.strip(), req.plan)
+        if not v["valid"]:
+            raise HTTPException(status_code=400, detail=v["message"])
+        if v["discount_percent"] == 100:
+            supabase = get_supabase()
+            # Inkrementovat used_count
+            supabase.table("voucher_codes").update({"used_count": supabase.table("voucher_codes").select("used_count").eq("id", v["voucher_id"]).execute().data[0]["used_count"] + 1}).eq("id", v["voucher_id"]).execute()
+            # Vytvořit objednávku rovnou jako PAID
+            order_data = {
+                "order_number": order_number,
+                "gopay_payment_id": f"VOUCHER-{req.voucher_code.strip().upper()}",
+                "plan": req.plan,
+                "amount": 0,
+                "email": req.email,
+                "user_email": req.email,
+                "status": "PAID",
+                "order_type": "one_time",
+                "payment_gateway": "voucher",
+                "created_at": datetime.utcnow().isoformat(),
+            }
+            if req.billing:
+                order_data["billing_data"] = req.billing.model_dump()
+            supabase.table("orders").insert(order_data).execute()
+            logger.info(f"[Payments] Voucher {req.voucher_code} → objednávka {order_number} PAID (100% sleva)")
+
+            # Notifikace adminovi
+            await _notify_new_order(
+                order_number=order_number, plan=req.plan, amount=0,
+                email=req.email, gateway="voucher", status="PAID",
+                billing=req.billing.model_dump() if req.billing else None,
+            )
+
+            return CheckoutResponse(
+                payment_id=f"VOUCHER-{req.voucher_code.strip().upper()}",
+                gateway_url=f"{frontend_url}/platba/stav?id=VOUCHER-{req.voucher_code.strip().upper()}&gateway=voucher",
+                order_number=order_number,
+                gateway="voucher",
+            )
+        else:
+            # Částečná sleva — prozatím nepodporujeme, 100% nebo nic
+            raise HTTPException(status_code=400, detail="Částečné slevy zatím nejsou podporovány. Kontaktujte nás.")
 
     # ── Bankovní převod — speciální flow ──
     if gateway == "bank_transfer":

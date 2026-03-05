@@ -445,16 +445,34 @@ export async function createCheckout(
         zip?: string;
         phone?: string;
     },
+    voucher_code?: string,
 ): Promise<CheckoutResponse> {
     const res = await authFetch(`${API_URL}/api/payments/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, email, gateway, billing }),
+        body: JSON.stringify({ plan, email, gateway, billing, voucher_code: voucher_code || undefined }),
     });
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
         throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+
+    return res.json();
+}
+
+/**
+ * Ověří slevový kód (voucher).
+ */
+export async function validateVoucher(code: string): Promise<{ valid: boolean; discount_percent: number; message: string }> {
+    const res = await fetch(`${API_URL}/api/payments/voucher/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+    });
+
+    if (!res.ok) {
+        return { valid: false, discount_percent: 0, message: "Chyba při ověřování kódu" };
     }
 
     return res.json();
@@ -905,4 +923,28 @@ export async function getQuestionnaireResults(companyId: string): Promise<Questi
         throw new Error(`HTTP ${res.status}`);
     }
     return res.json();
+}
+
+// ── Scan results viewed notification ──
+// Zavolá backend když klient zobrazí výsledky skenu
+
+export async function notifyResultsViewed(
+    scanId: string,
+    timeOnResultsS: number,
+    clientWaited: boolean,
+    scanDurationS: number,
+): Promise<void> {
+    try {
+        await fetch(`${API_URL}/api/scan/${scanId}/results-viewed`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                time_on_results_s: timeOnResultsS,
+                client_waited: clientWaited,
+                scan_duration_s: scanDurationS,
+            }),
+        });
+    } catch {
+        // Non-critical — neblokujeme UX
+    }
 }

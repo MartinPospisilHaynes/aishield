@@ -29,6 +29,16 @@ export default function ConsentBanner() {
         return () => clearTimeout(timer);
     }, []);
 
+    // Přidej padding-bottom na body, aby consent banner nepřekrýval formuláře
+    useEffect(() => {
+        if (visible) {
+            document.body.style.paddingBottom = '420px';
+        } else {
+            document.body.style.paddingBottom = '';
+        }
+        return () => { document.body.style.paddingBottom = ''; };
+    }, [visible]);
+
     function saveConsent(consent: ConsentState) {
         try {
             localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
@@ -36,6 +46,15 @@ export default function ConsentBanner() {
         // Also set a regular cookie (365 days) as fallback
         if (typeof document !== 'undefined') {
             document.cookie = `${CONSENT_KEY}=1; path=/; max-age=${365 * 86400}; SameSite=Lax`;
+        }
+        // Aktualizovat GA4 Consent Mode podle volby uživatele
+        if (typeof window !== 'undefined') {
+            const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+            if (typeof w.gtag === 'function') {
+                w.gtag('consent', 'update', {
+                    'analytics_storage': consent.cookies ? 'granted' : 'denied',
+                });
+            }
         }
         setVisible(false);
     }

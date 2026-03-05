@@ -448,7 +448,7 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
         {
             done: isProcessingDocs,
             label: "Tvorba dokumentace",
-            desc: isProcessingDocs ? "Pracujeme na vaší dokumentaci — obvykle do 30 minut" : hasPaidOrder ? "Připravujeme vaše dokumenty" : "Po zaplacení začneme s tvorbou",
+            desc: isProcessingDocs ? "Pracujeme na vaší dokumentaci — elektronické PDF do 7 pracovních dnů" : hasPaidOrder ? "Připravujeme vaše dokumenty" : "Po zaplacení začneme s tvorbou",
             detail: null,
             href: null,
             cta: isProcessingDocs ? "Zpracováváme" : "",
@@ -470,7 +470,7 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
     const progressTarget = currentStepIndex >= 0 ? currentStepIndex : steps.length - 1;
     const lineWidthPercent = progressTarget <= 0 ? 0 : (progressTarget / (steps.length - 1)) * ((steps.length - 1) / steps.length * 100);
 
-    const isProcessing = hasPaidOrder && !hasDocs;
+    const isProcessing = hasPaidOrder && !hasDocs && hasScans;
     const currentHour = new Date().getHours();
     const isBusinessHours = currentHour >= 8 && currentHour < 16;
 
@@ -687,7 +687,7 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                         <div>
                             <h3 className="font-semibold text-slate-200">Zpracováváme vaši objednávku</h3>
                             <p className="text-sm text-slate-300 mt-1">
-                                Generování dokumentů obvykle trvá do 30 minut. Jakmile budou hotové, pošleme vám e-mail.
+                                Elektronické PDF dokumenty doručíme do 7 pracovních dnů. Tištěnou verzi v profesionální vazbě do 14 dnů. Jakmile budou hotové, pošleme vám e-mail.
                             </p>
                         </div>
                     </div>
