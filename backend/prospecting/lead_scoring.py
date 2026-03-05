@@ -70,11 +70,13 @@ NACE_BONUS = {
 
 # Kvalita emailu
 EMAIL_QUALITY_SCORE = {
-    "vision": 8,       # Claude Vision = ověřený email
     "playwright": 10,  # Playwright render = spolehlivý
+    "vision": 8,       # Claude Vision = ověřený email
+    "perplexity": 8,   # Perplexity Sonar AI search = ověřený
     "regex": 7,        # Regex = OK
     "firmy.cz": 6,     # Firmy.cz = může být starý
     "heuristic": 3,    # Heuristika = nespolehlivý
+    "guess": 1,        # info@doména hádání = velmi nespolehlivý
 }
 
 
@@ -122,7 +124,9 @@ def calculate_lead_score(
     # 5. Email quality (0-10 bodů)
     email_pts = 0
     if email:
-        email_pts = EMAIL_QUALITY_SCORE.get(email_source, 5)
+        # Compound zdroje ("vision/claude-3-5...") → použij prefix
+        source_key = email_source.split("/")[0] if email_source else ""
+        email_pts = EMAIL_QUALITY_SCORE.get(source_key, 5)
         # Bonus za confidence
         email_pts = int(email_pts * max(email_confidence, 0.5))
     breakdown["email"] = email_pts
@@ -221,10 +225,7 @@ async def score_all_leads() -> dict:
             "lead_tier": lead.tier,
         }
 
-        if ico:
-            supabase.table("companies").update(update).eq("ico", ico).execute()
-        elif url:
-            supabase.table("companies").update(update).eq("url", url).execute()
+        supabase.table("companies").update(update).eq("id", company_id).execute()
 
         stats["scored"] += 1
         stats[lead.tier.lower()] = stats.get(lead.tier.lower(), 0) + 1

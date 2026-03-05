@@ -11,13 +11,17 @@ NOVÉ POŘADÍ (v3):
 Princip: Nejdřív ověř, že máme kam poslat. Pak teprve investuj do analýzy.
 
 SLOUPCE V DB:
-  email_source  — "regex" | "playwright" | "vision" | "not_found" | null
+  email_source  — "regex" | "playwright" | "vision" | "perplexity" | "guess" | "not_found" | null
                   null = ještě nezkoušeno, "not_found" = zkoušeno bez výsledku
+                  "guess" = info@doména hádání (nespolehlivý, confidence ~0.35)
 """
 
 import asyncio
+import logging
 from datetime import datetime
 from backend.database import get_supabase
+
+logger = logging.getLogger(__name__)
 
 
 # ── Fáze 1: Získání firem z více zdrojů ──
@@ -34,7 +38,7 @@ async def phase_gather_companies(
     stats = {"total_new": 0, "by_source": {}}
 
     for source in available_sources:
-        print(f"[Pipeline v3] Fáze 1 — zdroj: {source}")
+        logger.info(f"[Pipeline v3] Fáze 1 — zdroj: {source}")
         source_stats = {}
 
         try:
@@ -54,13 +58,13 @@ async def phase_gather_companies(
                 from backend.prospecting.zbozi import import_zbozi_to_db
                 source_stats = await import_zbozi_to_db(max_products=3)
         except Exception as e:
-            print(f"[Pipeline v3] Chyba zdroje {source}: {e}")
+            logger.error(f"[Pipeline v3] Chyba zdroje {source}: {e}", exc_info=True)
             source_stats = {"error": str(e)}
 
         stats["by_source"][source] = source_stats
         stats["total_new"] += source_stats.get("new", 0) + source_stats.get("new_companies", 0)
 
-    print(f"[Pipeline v3] Fáze 1 hotova: {stats['total_new']} nových firem")
+    logger.info(f"[Pipeline v3] Fáze 1 hotova: {stats['total_new']} nových firem")
     return stats
 
 
@@ -90,7 +94,7 @@ async def phase_find_emails(
 
     # Firmy s URL, kde jsme ještě email NEHLEDALI (email_source je null)
     res = supabase.table("companies").select(
-        "ico, url, name"
+        "id, ico, url, name"
     ).is_(
         "email_source", "null"
     ).neq(
@@ -98,11 +102,11 @@ async def phase_find_emails(
     ).limit(limit).execute()
 
     companies = res.data or []
-    print(f"[Pipeline v3] Fáze 2 — hledám emaily pro {len(companies)} firem...")
+    logger.info(f"[Pipeline v3] Fáze 2 — hledám emaily pro {len(companies)} firem...")
 
     for company in companies:
         url = company.get("url", "")
-        ico = company.get("ico", "")
+        company_id = company.get("id", "")
         name = company.get("name", "?")
 
         if not url:
@@ -123,29 +127,23 @@ async def phase_find_emails(
                     "email_source": result.source,
                     "email_confidence": result.confidence,
                 }
-                if ico:
-                    supabase.table("companies").update(update).eq("ico", ico).execute()
-                else:
-                    supabase.table("companies").update(update).eq("url", url).execute()
+                supabase.table("companies").update(update).eq("id", company_id).execute()
                 stats["found"] += 1
-                print(f"  ✅ {name} → {result.email} ({result.source}, {result.confidence:.0%})")
+                logger.info(f"[Pipeline] Email nalezen: {name} → {result.email} ({result.source}, {result.confidence:.0%})")
             else:
                 update = {"email_source": "not_found"}
-                if ico:
-                    supabase.table("companies").update(update).eq("ico", ico).execute()
-                else:
-                    supabase.table("companies").update(update).eq("url", url).execute()
+                supabase.table("companies").update(update).eq("id", company_id).execute()
                 stats["not_found"] += 1
-                print(f"  ❌ {name} ({url}) — email nenalezen")
+                logger.debug(f"[Pipeline] Email nenalezen: {name} ({url})")
 
         except Exception as e:
-            print(f"  ⚠️  {name}: chyba — {e}")
+            logger.error(f"[Pipeline] Chyba hledání emailu pro {name} ({url}): {e}", exc_info=True)
             stats["not_found"] += 1
 
         await asyncio.sleep(0.3)
 
     pct = f"{stats['found']}/{stats['searched']}" if stats["searched"] else "0/0"
-    print(f"[Pipeline v3] Fáze 2 hotova: {pct} emailů nalezeno | {stats}")
+    logger.info(f"[Pipeline v3] Fáze 2 hotova: {pct} emailů nalezeno | {stats}")
     return stats
 
 
@@ -161,9 +159,9 @@ async def phase_scan_websites(limit: int = 50) -> dict:
     supabase = get_supabase()
     stats = {"scanned": 0, "with_findings": 0, "errors": 0}
 
-    # KLÍČOVÉ: vyžadujeme email!
+    # KLÍČOVÉ: vyžadujeme ověřený email (ne guess)!
     res = supabase.table("companies").select(
-        "id, ico, name, url, email"
+        "id, ico, name, url, email, email_source"
     ).eq(
         "scan_status", "pending"
     ).neq(
@@ -172,10 +170,12 @@ async def phase_scan_websites(limit: int = 50) -> dict:
         "email", ""
     ).not_.is_(
         "email", "null"
+    ).neq(
+        "email_source", "guess"
     ).limit(limit).execute()
 
     companies = res.data or []
-    print(f"[Pipeline v3] Fáze 3 — skenování {len(companies)} webů (jen s emailem)...")
+    logger.info(f"[Pipeline v3] Fáze 3 — skenování {len(companies)} webů (jen s ověřeným emailem)...")
 
     for company in companies:
         url = company["url"]
@@ -188,7 +188,7 @@ async def phase_scan_websites(limit: int = 50) -> dict:
             import uuid
             company_db_id = company.get("id", "")
             if not company_db_id:
-                print(f"  ⚠️  {name}: chybí companies.id — přeskakuji")
+                logger.warning(f"[Pipeline] {name}: chybí companies.id — přeskakuji sken")
                 stats["errors"] += 1
                 continue
 
@@ -210,7 +210,7 @@ async def phase_scan_websites(limit: int = 50) -> dict:
                     timeout=120.0,
                 )
             except asyncio.TimeoutError:
-                print(f"  ⏰ {name} ({url}): scan timeout po 120s — přeskakuji")
+                logger.error(f"[Pipeline] Scan timeout 120s: {name} ({url}) — přeskakuji")
                 supabase.table("scans").update({
                     "status": "error",
                     "error": "Timeout 120s — scan trval příliš dlouho",
@@ -229,28 +229,23 @@ async def phase_scan_websites(limit: int = 50) -> dict:
                 "total_findings": total_findings,
             }
 
-            if ico:
-                supabase.table("companies").update(update).eq("ico", ico).execute()
-            else:
-                supabase.table("companies").update(update).eq("url", url).execute()
+            supabase.table("companies").update(update).eq("id", company_db_id).execute()
 
             stats["scanned"] += 1
             if total_findings > 0:
                 stats["with_findings"] += 1
-                print(f"  🔍 {name} — {total_findings} findings → email: {email}")
+                logger.info(f"[Pipeline] Sken OK: {name} — {total_findings} findings, email: {email}")
             else:
-                print(f"  ✓  {name} — čistý web")
+                logger.debug(f"[Pipeline] Sken OK: {name} — čistý web")
 
         except Exception as e:
-            print(f"  ⚠️  {name} ({url}): scan chyba — {e}")
+            logger.error(f"[Pipeline] Chyba scanu: {name} ({url}): {e}", exc_info=True)
             stats["errors"] += 1
-            update = {"scan_status": "scan_failed"}
-            if ico:
-                supabase.table("companies").update(update).eq("ico", ico).execute()
-            else:
-                supabase.table("companies").update(update).eq("url", url).execute()
+            supabase.table("companies").update({
+                "scan_status": "scan_failed",
+            }).eq("id", company_db_id).execute()
 
-    print(f"[Pipeline v3] Fáze 3 hotova: {stats}")
+    logger.info(f"[Pipeline v3] Fáze 3 hotova: {stats}")
     return stats
 
 
@@ -266,7 +261,7 @@ async def phase_qualify_leads() -> dict:
     stats = {"qualified": 0, "qualified_hot": 0}
 
     res = supabase.table("companies").select(
-        "ico, url, total_findings"
+        "id, total_findings"
     ).eq(
         "scan_status", "scanned"
     ).eq(
@@ -276,8 +271,7 @@ async def phase_qualify_leads() -> dict:
     companies = res.data or []
 
     for company in companies:
-        ico = company.get("ico", "")
-        url = company.get("url", "")
+        company_id = company.get("id", "")
         findings = company.get("total_findings", 0)
 
         if findings > 0:
@@ -287,17 +281,12 @@ async def phase_qualify_leads() -> dict:
             new_status = "qualified"
             stats["qualified"] += 1
 
-        if ico:
-            supabase.table("companies").update({
-                "prospecting_status": new_status,
-            }).eq("ico", ico).execute()
-        else:
-            supabase.table("companies").update({
-                "prospecting_status": new_status,
-            }).eq("url", url).execute()
+        supabase.table("companies").update({
+            "prospecting_status": new_status,
+        }).eq("id", company_id).execute()
 
     total = stats["qualified"] + stats["qualified_hot"]
-    print(f"[Pipeline v3] Fáze 4 hotova: {total} kvalifikovaných ({stats['qualified_hot']} hot)")
+    logger.info(f"[Pipeline v3] Fáze 4 hotova: {total} kvalifikovaných ({stats['qualified_hot']} hot)")
     return stats
 
 
@@ -324,35 +313,25 @@ async def run_smart_pipeline(
     results = {}
 
     if gather:
-        print("=" * 60)
-        print("[Pipeline v3] FÁZE 1: Shromažďování firem z katalogů")
-        print("=" * 60)
+        logger.info("[Pipeline v3] ══ FÁZE 1: Shromažďování firem z katalogů ══")
         results["gather"] = await phase_gather_companies(sources=sources)
 
     if find_emails:
-        print("=" * 60)
-        print("[Pipeline v3] FÁZE 2: Hledání emailů (levné)")
-        print("=" * 60)
+        logger.info("[Pipeline v3] ══ FÁZE 2: Hledání emailů (levné) ══")
         results["emails"] = await phase_find_emails(limit=email_limit)
 
     if scan:
-        print("=" * 60)
-        print("[Pipeline v3] FÁZE 3: Skenování webů (jen s emailem)")
-        print("=" * 60)
+        logger.info("[Pipeline v3] ══ FÁZE 3: Skenování webů (jen s ověřeným emailem) ══")
         results["scan"] = await phase_scan_websites(limit=scan_limit)
 
     if qualify:
-        print("=" * 60)
-        print("[Pipeline v3] FÁZE 4: Kvalifikace + scoring")
-        print("=" * 60)
+        logger.info("[Pipeline v3] ══ FÁZE 4: Kvalifikace + scoring ══")
         results["qualify"] = await phase_qualify_leads()
         try:
             from backend.prospecting.lead_scoring import score_all_leads
             results["scoring"] = await score_all_leads()
         except ImportError:
-            print("[Pipeline v3] Lead scoring modul nenalezen, přeskakuji")
+            logger.warning("[Pipeline v3] Lead scoring modul nenalezen, přeskakuji")
 
-    print("=" * 60)
-    print(f"[Pipeline v3] HOTOVO: {results}")
-    print("=" * 60)
+    logger.info(f"[Pipeline v3] HOTOVO: {results}")
     return results

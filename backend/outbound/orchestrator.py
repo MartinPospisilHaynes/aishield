@@ -243,6 +243,25 @@ async def run_task(task_name: str) -> dict:
         error_msg = str(e)
         await log_task(task_name, "failed", error=error_msg)
         print(f"[Orchestrátor] Chyba: {task_name} → {error_msg}")
+
+        # Alert email při selhání pipeline fáze
+        try:
+            from backend.outbound.email_engine import send_email
+            await send_email(
+                to="martin@aishield.cz",
+                subject=f"⚠️ LOVEC pipeline selhání: {task_name}",
+                html=(
+                    f"<h3>Pipeline úloha <code>{task_name}</code> selhala</h3>"
+                    f"<p><strong>Chyba:</strong> {error_msg}</p>"
+                    f"<p><strong>Čas:</strong> {datetime.utcnow().isoformat()} UTC</p>"
+                    f"<hr><small>Automatická zpráva z LOVEC orchestrátoru</small>"
+                ),
+                from_email="info@aishield.cz",
+                from_name="AIshield LOVEC",
+            )
+        except Exception:
+            pass  # Selhání alertu nesmí shodit pipeline
+
         return {"task": task_name, "status": "failed", "error": error_msg}
 
 

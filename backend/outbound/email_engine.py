@@ -264,6 +264,8 @@ async def get_companies_to_email(limit: int = 50) -> list[dict]:
         "scan_status", "scanned"
     ).neq(
         "email", ""
+    ).not_.in_(
+        "outreach_status", ["bounced", "blocked", "angry", "unsubscribed"]
     ).lt(
         "emails_sent", MAX_EMAILS_PER_COMPANY
     ).order(
@@ -448,8 +450,8 @@ async def run_email_campaign(
 
         elif emails_sent == 1:
             # ── EMAIL 2: HTML šablona follow-up (jen po 14+ dnech a bez odpovědi) ──
-            # Kontrola: odpověděl klient?
-            responded_statuses = {"interested", "meeting_scheduled", "not_interested", "angry", "blocked", "responded"}
+            # Kontrola: odpověděl klient nebo je adresa nefunkční?
+            responded_statuses = {"interested", "meeting_scheduled", "not_interested", "angry", "blocked", "responded", "bounced", "unsubscribed"}
             if outreach_status in responded_statuses:
                 logger.info(f"[Email] Přeskakuji follow-up pro {name} — status={outreach_status}")
                 continue

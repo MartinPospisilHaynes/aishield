@@ -219,10 +219,12 @@ async def import_zbozi_to_db(categories: list[str] | None = None,
 
     for shop in all_shops.values():
         try:
-            # Kontrola duplicity
-            existing = supabase.table("companies").select("id").eq(
-                "name", shop.name
-            ).execute()
+            shop_url = shop.url or f"https://www.zbozi.cz/obchod/{shop.shop_id}/"
+
+            # Kontrola duplicity — URL i název
+            existing = supabase.table("companies").select("id").or_(
+                f"name.eq.{shop.name},url.eq.{shop_url}"
+            ).limit(1).execute()
 
             if existing.data:
                 skipped += 1
@@ -230,7 +232,7 @@ async def import_zbozi_to_db(categories: list[str] | None = None,
 
             supabase.table("companies").insert({
                 "name": shop.name,
-                "url": shop.url or f"https://www.zbozi.cz/obchod/{shop.shop_id}/",
+                "url": shop_url,
                 "source": shop.source,
                 "prospecting_status": "new",
                 "metadata": {

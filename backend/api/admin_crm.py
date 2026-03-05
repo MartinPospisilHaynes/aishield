@@ -2971,6 +2971,7 @@ async def lovec_update_status(
     company_id: str,
     request: Request,
     user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
 ):
     """
     Manuální aktualizace outreach statusu firmy.
@@ -2998,6 +2999,11 @@ async def lovec_update_status(
             detail=f"Neplatný status. Povolené: {valid_statuses}",
         )
 
+    # Zjistit starý status pro audit log
+    old_res = supabase.table("companies").select("outreach_status, name").eq("id", company_id).limit(1).execute()
+    old_status = (old_res.data[0].get("outreach_status", "?") if old_res.data else "?")
+    company_name = (old_res.data[0].get("name", "?") if old_res.data else "?")
+
     update_data = {
         "outreach_status": new_status,
         "updated_at": datetime.now(timezone.utc).isoformat(),
@@ -3009,7 +3015,26 @@ async def lovec_update_status(
 
     supabase.table("companies").update(update_data).eq("id", company_id).execute()
 
-    logger.info(f"[LOVEC] Admin {user.email} změnil status {company_id} → {new_status}")
+    # Audit log do DB — kdo, kdy, co změnil
+    try:
+        supabase.table("orchestrator_log").insert({
+            "task_name": "lovec_manual_status_change",
+            "status": "completed",
+            "result": {
+                "company_id": company_id,
+                "company_name": company_name,
+                "old_status": old_status,
+                "new_status": new_status,
+                "changed_by": user.email,
+                "notes": notes,
+                "rejection_reason": rejection_reason,
+            },
+            "started_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        pass  # Selhání audit logu nesmí blokovat operaci
+
+    logger.info(f"[LOVEC] Admin {user.email} změnil status {company_id} ({company_name}): {old_status} → {new_status}")
     return {"status": "ok", "company_id": company_id, "new_status": new_status}
 
 
@@ -3066,6 +3091,7 @@ async def lovec_export(
 async def lovec_run_cycle(
     request: Request,
     user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
 ):
     """
     Manuálně spustí jeden cyklus LOVEC pipeline.
@@ -3097,6 +3123,7 @@ async def lovec_run_cycle(
 @router.post("/crm/lovec/check-responses")
 async def lovec_check_responses(
     user: AuthUser = Depends(require_admin),
+    _rl=Depends(_check_admin_rate_limit),
 ):
     """Manuálně spustí kontrolu příchozích odpovědí."""
     from backend.outbound.response_checker import run_response_check

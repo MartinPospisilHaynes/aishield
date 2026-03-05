@@ -293,10 +293,12 @@ async def import_firmy_to_db(categories: list[str] | None = None,
 
     for company in all_companies:
         try:
-            # Zkontroluj duplicitu
-            existing = supabase.table("companies").select("id").eq(
-                "name", company.name
-            ).execute()
+            company_url = company.web_url or company.detail_url
+
+            # Zkontroluj duplicitu — URL je spolehlivější než název
+            existing = supabase.table("companies").select("id").or_(
+                f"name.eq.{company.name},url.eq.{company_url}"
+            ).limit(1).execute()
 
             if existing.data:
                 skipped += 1
