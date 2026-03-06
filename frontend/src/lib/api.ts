@@ -35,6 +35,17 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
     return fetch(url, { ...options, headers });
 }
 
+// ── Helper: extrakce chybové zprávy z FastAPI odpovědi ──
+// FastAPI 422 vrací detail jako pole objektů [{msg:"..."}], ne string
+function extractErrorMsg(detail: unknown, fallback: string): string {
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+        const msgs = detail.map((d: { msg?: string }) => d.msg || "").filter(Boolean);
+        return msgs.length > 0 ? msgs.join("; ") : fallback;
+    }
+    return fallback;
+}
+
 // ── Lightweight logger ──
 // Logs API calls in dev + stores last N errors for debug panel
 
@@ -177,7 +188,7 @@ export async function startScan(url: string): Promise<ScanResponse> {
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
-            const msg = error.detail || `HTTP ${res.status}`;
+            const msg = extractErrorMsg(error.detail, `HTTP ${res.status}`);
             apiLog("error", `POST ${endpoint} → ${res.status}`, msg);
             throw new Error(msg);
         }
@@ -209,7 +220,7 @@ export async function triggerDeepScan(scanId: string): Promise<{ scan_id: string
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
-            const msg = error.detail || `HTTP ${res.status}`;
+            const msg = extractErrorMsg(error.detail, `HTTP ${res.status}`);
             apiLog("error", `POST ${endpoint} → ${res.status}`, msg);
             throw new Error(msg);
         }
@@ -238,7 +249,7 @@ export async function getScanStatus(scanId: string): Promise<ScanStatus> {
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({ detail: "Neznámá chyba" }));
-            const msg = error.detail || `HTTP ${res.status}`;
+            const msg = extractErrorMsg(error.detail, `HTTP ${res.status}`);
             apiLog("error", `GET ${endpoint} → ${res.status}`, msg);
             throw new Error(msg);
         }

@@ -729,28 +729,17 @@ function ScanPageInner() {
                             </div>
                         )}
 
-                        {/* Waiting message when animation is done but scan still running */}
-                        {currentStage >= SCAN_STAGES.length - 1 && (
-                            <div className="mt-4 flex items-center gap-3 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/25 px-4 py-3">
-                                <div className="w-5 h-5 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin flex-shrink-0" />
-                                <div>
-                                    <p className="text-sm font-medium text-fuchsia-300">Finalizujeme report, vyčkejte prosím…</p>
-                                    <p className="text-xs text-fuchsia-400/60 mt-0.5">
-                                        Výsledky se zobrazí automaticky. Obvykle to trvá ještě 15–30 sekund.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 )}
 
                 {/* ═══ VÝSLEDKY ═══ */}
                 {scanResult && scanResult.status === "done" && (
-                    <div className="mt-8 space-y-5">
+                    <div className="mt-8 flex flex-col gap-5">
 
                         {/* ── INFO BANNER: cached výsledky ── */}
                         {isCached && (
-                            <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-3 flex items-center gap-2.5">
+                            <div className="order-1 rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-3 flex items-center gap-2.5">
                                 <IconInfo className="w-4 h-4 text-blue-400 flex-shrink-0" />
                                 <p className="text-xs text-blue-300">
                                     Zobrazujeme výsledky z předchozího skenu.
@@ -763,7 +752,7 @@ function ScanPageInner() {
 
                         {/* ── ZELENÝ POZITIVNÍ BANNER ── */}
                         {hasFindings && (
-                            <ResultReveal step={0}>
+                            <ResultReveal step={0} className="order-2">
                                 <div className="rounded-2xl bg-green-500/10 border-2 border-green-500/40 p-5">
                                     <div className="flex items-start gap-3">
                                         <IconCheckCircle className="w-7 h-7 text-green-400 flex-shrink-0 mt-0.5" />
@@ -787,7 +776,7 @@ function ScanPageInner() {
                         )}
 
                         {/* ── HLAVNÍ VÝSLEDKOVÁ KARTA ── */}
-                        <ResultReveal step={1}>
+                        <ResultReveal step={1} className="order-4 md:order-3">
                             <div className="rounded-2xl border-2 border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                 {/* Status bar */}
                                 <div className={"px-5 py-3 flex items-center justify-between " + (hasFindings ? "bg-red-500/10 border-b border-red-500/20" : "bg-green-500/8 border-b border-green-500/15")}>
@@ -863,7 +852,7 @@ function ScanPageInner() {
 
                         {/* ── Non-AI trackery (pro důvěryhodnost) ── */}
                         {trackers.length > 0 && (
-                            <ResultReveal step={2}>
+                            <ResultReveal step={2} className="order-5 md:order-4">
                                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
                                     <div className="px-5 py-3 bg-slate-500/8 border-b border-slate-500/15">
                                         <div className="flex items-center justify-between">
@@ -902,7 +891,7 @@ function ScanPageInner() {
 
                         {/* ── CTA: 24h hloubkový scan — ZDARMA ── */}
                         {hasFindings && (
-                            <ResultReveal step={3}>
+                            <ResultReveal step={3} className="order-6 md:order-5">
                                 <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500/8 via-purple-500/5 to-fuchsia-500/8 border-2 border-fuchsia-500/25 p-6 text-center relative overflow-hidden">
                                     <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-fuchsia-500/10 blur-3xl" />
                                     <h3 className="font-bold text-white text-lg">
@@ -931,7 +920,7 @@ function ScanPageInner() {
 
                         {/* ── Seznam nálezů ── */}
                         {hasFindings ? (
-                            <div>
+                            <div className="order-3 md:order-6">
                                 <ResultReveal step={4}>
                                     <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                                         <IconCpu className="w-5 h-5 text-fuchsia-400" />
@@ -985,7 +974,7 @@ function ScanPageInner() {
                                 </div>
                             </div>
                         ) : (
-                            <ResultReveal step={2}>
+                            <ResultReveal step={2} className="order-6">
                                 <div className="space-y-4">
                                     {/* Hlavní karta — varování nebo žádné nálezy */}
                                     {scanResult.scan_warning ? (() => {
@@ -1044,7 +1033,7 @@ function ScanPageInner() {
                         )}
 
                         {/* ── Odeslat report / Dashboard redirect ── */}
-                        <ResultReveal step={hasFindings ? 9 : 3}>
+                        <ResultReveal step={hasFindings ? 9 : 3} className="order-7">
                             {isLoggedIn ? (
                                 <div className="rounded-xl border border-green-500/15 bg-green-500/5 p-5 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -1114,7 +1103,7 @@ function ScanPageInner() {
                         </ResultReveal>
 
                         {/* ── CTA ceník ── */}
-                        <ResultReveal step={hasFindings ? 10 : 4}>
+                        <ResultReveal step={hasFindings ? 10 : 4} className="order-8">
                             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 text-center">
                                 <h3 className="font-semibold text-white">Chcete to vyřešit za vás?</h3>
                                 <p className="text-sm text-slate-400 mt-1">

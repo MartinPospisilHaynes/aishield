@@ -341,83 +341,103 @@ function QuestionnaireInner() {
         } catch { /* ignore localStorage errors */ }
     }, []);
 
+    /* ── Helper: load existing answers for a company_id ── */
+    const _loadAnswersForCompany = useCallback((cid: string) => {
+        fetch(`${API_URL}/api/questionnaire/${cid}/results`)
+            .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+            .then((data) => {
+                if (data.answers && data.answers.length > 0) {
+                    const multiUpdates: Record<string, string[]> = {};
+                    setAnswers((prev) => {
+                        const updated = { ...prev };
+                        for (const a of data.answers) {
+                            if (updated[a.question_key]) {
+                                updated[a.question_key] = {
+                                    ...updated[a.question_key],
+                                    answer: a.answer || "",
+                                    details: a.details || {},
+                                    tool_name: a.tool_name || "",
+                                };
+                                if (a.answer && a.answer.includes(", ")) {
+                                    const mkey = `topLevel__${a.question_key}`;
+                                    multiUpdates[mkey] = a.answer.split(", ");
+                                }
+                                if (a.details) {
+                                    for (const [fkey, fval] of Object.entries(a.details)) {
+                                        if (Array.isArray(fval)) {
+                                            multiUpdates[`${a.question_key}__${fkey}`] = fval;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return updated;
+                    });
+                    setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
+                    setServerAnswersLoaded(true);
+                    const restoredCustom: Record<string, string> = {};
+                    for (const a of data.answers) {
+                        if (a.details?.custom_answer) {
+                            restoredCustom[a.question_key] = a.details.custom_answer;
+                        }
+                    }
+                    if (Object.keys(restoredCustom).length > 0) {
+                        setCustomAnswers(prev => ({ ...prev, ...restoredCustom }));
+                    }
+                    console.log(`[Dotazník] Obnoveno ${data.answers.length} odpovědí ze serveru`);
+                    fetch(`${API_URL}/api/questionnaire/${cid}/position`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(pos => {
+                            if (pos?.position != null) {
+                                setServerPosition(pos.position);
+                                console.log(`[Dotazník] Server position: ${pos.position}`);
+                            }
+                        })
+                        .catch(() => {});
+                } else {
+                    _restoreFromLocalStorage(cid);
+                }
+            })
+            .catch(() => {
+                _restoreFromLocalStorage(cid);
+            });
+    }, [_restoreFromLocalStorage]);
+
     /* ── URL params + pre-fill existing answers in edit mode ── */
     useEffect(() => {
         const cid = searchParams.get("company_id");
         const sid = searchParams.get("scan_id");
         const edit = searchParams.get("edit");
-        if (cid) setCompanyId(cid);
         if (sid) setScanId(sid);
         if (edit === "true") setIsEditMode(true);
 
-        // Pre-fill existing answers if company_id present
         if (cid) {
-            fetch(`${API_URL}/api/questionnaire/${cid}/results`)
-                .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-                .then((data) => {
-                    if (data.answers && data.answers.length > 0) {
-                        const multiUpdates: Record<string, string[]> = {};
-                        setAnswers((prev) => {
-                            const updated = { ...prev };
-                            for (const a of data.answers) {
-                                if (updated[a.question_key]) {
-                                    updated[a.question_key] = {
-                                        ...updated[a.question_key],
-                                        answer: a.answer || "",
-                                        details: a.details || {},
-                                        tool_name: a.tool_name || "",
-                                    };
-                                    // Restore multi-select state for top-level multi_select
-                                    if (a.answer && a.answer.includes(", ")) {
-                                        const mkey = `topLevel__${a.question_key}`;
-                                        multiUpdates[mkey] = a.answer.split(", ");
-                                    }
-                                    // Restore multi-select state for followup fields
-                                    if (a.details) {
-                                        for (const [fkey, fval] of Object.entries(a.details)) {
-                                            if (Array.isArray(fval)) {
-                                                multiUpdates[`${a.question_key}__${fkey}`] = fval;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            return updated;
-                        });
-                        setMultiSelections((pm) => ({ ...pm, ...multiUpdates }));
-                        setServerAnswersLoaded(true);
-                        // Obnovit custom answers ze serveru
-                        const restoredCustom: Record<string, string> = {};
-                        for (const a of data.answers) {
-                            if (a.details?.custom_answer) {
-                                restoredCustom[a.question_key] = a.details.custom_answer;
-                            }
-                        }
-                        if (Object.keys(restoredCustom).length > 0) {
-                            setCustomAnswers(prev => ({ ...prev, ...restoredCustom }));
-                        }
-                        console.log(`[Dotazník] Obnoveno ${data.answers.length} odpovědí ze serveru`);
-                        // Načíst uloženou pozici ze serveru
-                        fetch(`${API_URL}/api/questionnaire/${cid}/position`)
-                            .then(r => r.ok ? r.json() : null)
-                            .then(pos => {
-                                if (pos?.position != null) {
-                                    setServerPosition(pos.position);
-                                    console.log(`[Dotazník] Server position: ${pos.position}`);
-                                }
-                            })
-                            .catch(() => {});
-                    } else {
-                        // Server has no answers — try localStorage
-                        _restoreFromLocalStorage(cid!);
+            // company_id je v URL — použijeme ho
+            setCompanyId(cid);
+            _loadAnswersForCompany(cid);
+        } else {
+            // company_id CHYBÍ v URL — zjistíme ho z dashboard API
+            (async () => {
+                try {
+                    const supabase = createClient();
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session?.access_token) return;
+                    const res = await fetch(`${API_URL}/api/dashboard/me`, {
+                        headers: { "Authorization": `Bearer ${session.access_token}` },
+                    });
+                    if (!res.ok) return;
+                    const dash = await res.json();
+                    if (dash.company?.id) {
+                        console.log(`[Dotazník] Auto-resolved company_id: ${dash.company.id}`);
+                        setCompanyId(dash.company.id);
+                        _loadAnswersForCompany(dash.company.id);
                     }
-                })
-                .catch(() => {
-                    // API error — try localStorage
-                    _restoreFromLocalStorage(cid!);
-                });
+                } catch {
+                    console.warn("[Dotazník] Nepodařilo se zjistit company_id z dashboardu");
+                }
+            })();
         }
-    }, [searchParams]);
+    }, [searchParams, _loadAnswersForCompany]);
 
     /* ── Resume position: jump to first unanswered question after server restore ── */
     useEffect(() => {
@@ -648,12 +668,14 @@ function QuestionnaireInner() {
         console.log(`[Dotazník] Počet odpovědí: ${list.length}, company_id: ${companyId}`);
 
         try {
-            const cid = companyId || crypto.randomUUID();
+            if (!companyId) {
+                throw new Error("Chybí identifikace firmy. Zkuste se přihlásit a otevřít dotazník z dashboardu.");
+            }
             const res = await fetch(`${API_URL}/api/questionnaire/submit`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    company_id: cid,
+                    company_id: companyId,
                     scan_id: scanId,
                     answers: list,
                 }),
@@ -1127,18 +1149,13 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && !isMulti && <div className="mb-6" />}
 
-                        {/* Risk hint + AI Act article — pod textem otázky */}
-                        {(q.risk_hint || q.ai_act_article) && (
+                        {/* AI Act article — pod textem otázky */}
+                        {q.ai_act_article && (
                             <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
-                                {q.ai_act_article && (
-                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                        {q.ai_act_article}
-                                    </span>
-                                )}
-                                {q.risk_hint && (
-                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
                             </div>
                         )}
 
@@ -1201,14 +1218,14 @@ function QuestionnaireInner() {
                         {/* Vlastní odpověď — inline, ne jako vnořená komponenta (jinak iOS klávesnice mizí) */}
                         {!["text", "address", "conditional_fields"].includes(q.type) && (
                             <div className="mt-5 mb-2">
-                                <div className="rounded-2xl border-2 border-dashed border-fuchsia-500/30 bg-white/[0.06] p-4 transition-all duration-200 hover:border-fuchsia-500/50 hover:bg-white/[0.08] focus-within:border-fuchsia-500/60 focus-within:bg-white/[0.08] focus-within:ring-2 focus-within:ring-fuchsia-500/25 focus-within:shadow-lg focus-within:shadow-fuchsia-500/5">
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-fuchsia-300/90 mb-2">
-                                        <svg className="w-4 h-4 text-fuchsia-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                <div className="rounded-2xl border border-white/[0.12] bg-white/[0.04] p-4 transition-all duration-200 hover:border-white/[0.2] focus-within:border-fuchsia-500/50 focus-within:ring-1 focus-within:ring-fuchsia-500/25">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-2">
+                                        <svg className="w-4 h-4 text-fuchsia-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                         Vlastní odpověď
                                     </label>
                                     <textarea
-                                        placeholder="Zde napište vlastní odpověď, pokud jste v možnostech nenašli přiléhavou volbu…"
-                                        className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-3 py-2.5 text-white text-base outline-none transition-all placeholder:text-slate-400 resize-none min-h-[56px] max-h-[120px] focus:border-fuchsia-500/40 focus:ring-1 focus:ring-fuchsia-500/20"
+                                        placeholder="Napište vlastní odpověď…"
+                                        className="w-full bg-transparent border-0 rounded-lg px-1 py-1 text-white text-base outline-none transition-all placeholder:text-slate-500 resize-none min-h-[56px] max-h-[120px]"
                                         rows={2}
                                         maxLength={2000}
                                         value={customAnswers[q.key] || ""}
@@ -1290,18 +1307,13 @@ function QuestionnaireInner() {
                             </div>
                         )}
 
-                        {/* Risk hint + AI Act article — pod textem otázky */}
-                        {(q.risk_hint || q.ai_act_article) && (
+                        {/* AI Act article — pod textem otázky */}
+                        {q.ai_act_article && (
                             <div className="flex flex-wrap items-center gap-2 mb-4">
-                                {q.ai_act_article && (
-                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                        {q.ai_act_article}
-                                    </span>
-                                )}
-                                {q.risk_hint && (
-                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
                             </div>
                         )}
 
@@ -1427,18 +1439,13 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && <div className="mb-6" />}
 
-                        {/* Risk hint + AI Act article — pod textem otázky */}
-                        {(q.risk_hint || q.ai_act_article) && (
+                        {/* AI Act article — pod textem otázky */}
+                        {q.ai_act_article && (
                             <div className="flex flex-wrap items-center gap-2 mb-4">
-                                {q.ai_act_article && (
-                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                        {q.ai_act_article}
-                                    </span>
-                                )}
-                                {q.risk_hint && (
-                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
                             </div>
                         )}
 
@@ -1552,18 +1559,13 @@ function QuestionnaireInner() {
                         )}
                         {!q.help_text && <div className="mb-6" />}
 
-                        {/* Risk hint + AI Act article — pod textem otázky */}
-                        {(q.risk_hint || q.ai_act_article) && (
+                        {/* AI Act article — pod textem otázky */}
+                        {q.ai_act_article && (
                             <div className="flex flex-wrap items-center gap-2 mb-4">
-                                {q.ai_act_article && (
-                                    <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                        {q.ai_act_article}
-                                    </span>
-                                )}
-                                {q.risk_hint && (
-                                    <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    {q.ai_act_article}
+                                </span>
                             </div>
                         )}
 
@@ -1668,18 +1670,13 @@ function QuestionnaireInner() {
                     )}
                     {!q.help_text && !(q as any).scope_hint && <div className="mb-4" />}
 
-                    {/* Risk hint + AI Act article — pod textem otázky */}
-                    {(q.risk_hint || q.ai_act_article) && (
+                    {/* AI Act article — pod textem otázky */}
+                    {q.ai_act_article && (
                         <div className="flex flex-wrap items-center gap-2 mb-4">
-                            {q.ai_act_article && (
-                                <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                    {q.ai_act_article}
-                                </span>
-                            )}
-                            {q.risk_hint && (
-                                <span className="text-xs text-amber-300/80">⚠️ {q.risk_hint}</span>
-                            )}
+                            <span className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-lg px-3 py-1.5 text-xs text-fuchsia-300">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                {q.ai_act_article}
+                            </span>
                         </div>
                     )}
 
@@ -2142,7 +2139,7 @@ function QuestionnaireInner() {
                                     Vlastní odpověď
                                 </label>
                                 <textarea
-                                    placeholder="Zde napište vlastní odpověď, pokud jste v možnostech nenašli přiléhavou volbu…"
+                                    placeholder="Napište vlastní odpověď…"
                                     className="w-full bg-transparent border-0 rounded-lg px-1 py-1 text-white text-base outline-none transition-all placeholder:text-slate-500 resize-none min-h-[56px] max-h-[120px]"
                                     rows={2}
                                     maxLength={2000}

@@ -44,7 +44,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Obchodní firma (název společnosti nebo jméno OSVČ):",
                 "type": "text",
                 "help_text": "Přesný název tak, jak je zapsán v obchodním rejstříku nebo živnostenském rejstříku.\nPříklady:\n1) ACME Solutions s.r.o.\n2) Jan Novák — grafický design\n3) TechStart a.s.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": None,
             },
             {
@@ -52,7 +52,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "IČO (identifikační číslo osoby):",
                 "type": "text",
                 "help_text": "8místné číslo z obchodního nebo živnostenského rejstříku. Slouží k identifikaci vaší firmy v oficiální dokumentaci.\nPříklady: 12345678, 05123456.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": None,
             },
             {
@@ -60,7 +60,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Sídlo firmy (adresa):",
                 "type": "address",
                 "help_text": "Adresa sídla dle rejstříku — použijeme ji v Compliance Reportu, na transparenční stránce a v oficiální dokumentaci.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": None,
             },
             {
@@ -68,7 +68,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Kontaktní e-mail pro AI záležitosti:",
                 "type": "text",
                 "help_text": "E-mail, na který se mohou obracet zákazníci, zaměstnanci nebo dozorové orgány ohledně vašeho používání AI. Zobrazí se na transparěnční stránce.\nPříklad: ai@vase-firma.cz nebo info@vase-firma.cz",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 50 — transparentnost a informování",
             },
             {
@@ -76,7 +76,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "text": "Kontaktní telefon:",
                 "type": "text",
                 "help_text": "Telefonní číslo pro kontakt ohledně AI záležitostí. Zobrazí se v dokumentaci a na transparenční stránce.\nPříklad: +420 123 456 789",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": None,
             },
 {
@@ -100,7 +100,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "Jiné",
                 ],
                 "help_text": "Vyberte všechna odvětví, která se vás týkají.\nPříklady:\n1) E-shop prodávající oblečení.\n2) Účetní kancelář zpracovávající daňová přiznání.\n3) Autoservis s online objednávkami.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": None,
             },
             {
@@ -126,7 +126,7 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "eshop_platform_other", "label": "Jakou platformu používáte?", "type": "text"},
                     ]
                 },
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 50 — transparentnost a informování (implementace transparenční stránky)",
             },
             {
@@ -141,7 +141,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "250+ zaměstnanců",
                 ],
                 "help_text": "Malé a střední podniky (do 250 zaměstnanců) mají dle AI Act některé úlevy.\nPříklady:\n1) OSVČ grafik.\n2) Restaurace s 5 zaměstnanci.\n3) Výrobní firma se 120 lidmi.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 62 — povinnosti MSP a start-upů",
             },
                         {
@@ -157,7 +157,7 @@ QUESTIONNAIRE_SECTIONS = [
                     "Nad 1 mld. Kč",
                 ],
                 "help_text": "Potřebujeme pro výpočet maximální výše pokut dle AI Act (pokuty se počítají jako % z celosvětového obratu). Údaj je důvěrný a slouží pouze pro vaši compliance dokumentaci.\n\n💡 Nemusíte odpovídat přesně — stačí přibližný rozsah.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 99 — správní pokuty (% z obratu)",
             },
 {
@@ -1044,7 +1044,7 @@ QUESTIONNAIRE_SECTIONS = [
                         {"key": "implementation_self_info", "label": "✅ Rozumíme! Veškeré vypracované podklady včetně HTML kódu transparenční stránky vám zašleme e-mailem a poštou. Implementace je jednoduchá — stačí vložit HTML soubor na váš web.", "type": "info"},
                     ]
                 },
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 50 — transparentnost a informování",
             },
             {
@@ -1056,7 +1056,7 @@ QUESTIONNAIRE_SECTIONS = [
                     {"key": "aishield_impl_note", "label": "✅ Výborně! Náš technik se vám ozve a domluví si s vámi detaily implementace.\n\n**Mezitím prosím připravte:**\n• Administrátorský účet (nebo návštěvnický s právem editovat) k vašemu webu / CMS\n• Zálohu webu (pro jistotu)\n\nPřístupové údaje vám bezpečně vyžádáme po objednávce. Implementace je zahrnuta v balíčcích **Pro** a **Enterprise**.", "type": "info"},
                 ],
                 "help_text": "Nainstalujeme transparenční stránku přímo na váš web.",
-                "risk_hint": "none",
+                "risk_hint": None,
                 "ai_act_article": "čl. 50 — transparentnost a informování",
             },
         ],
@@ -1133,6 +1133,7 @@ async def submit_questionnaire(submission: QuestionnaireSubmission):
         old_result = supabase.table("questionnaire_responses") \
             .select("question_key, answer") \
             .eq("client_id", client_id) \
+            .neq("question_key", "__position__") \
             .execute()
         if old_result.data:
             is_resubmission = True
@@ -1337,6 +1338,7 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
     result = supabase.table("questionnaire_responses") \
         .select("question_key, answer") \
         .eq("client_id", client_id) \
+        .neq("question_key", "__position__") \
         .execute()
 
     if not result.data:
@@ -1361,6 +1363,85 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
     }
 
 
+# ── Autosave: uloží jednu odpověď v reálném čase ──
+
+class AutosavePayload(BaseModel):
+    company_id: str
+    question_key: str
+    section: str
+    answer: str
+    details: Optional[dict] = None
+    tool_name: Optional[str] = None
+    current_question_index: Optional[int] = None
+    custom_answer: Optional[str] = None
+
+
+@router.post("/questionnaire/autosave")
+async def autosave_answer(payload: AutosavePayload):
+    """Uloží jednu odpověď do DB (upsert) + uloží pozici."""
+    supabase = get_supabase()
+
+    client_id = await _get_or_create_client(supabase, payload.company_id)
+
+    # Upsert odpovědi
+    details = payload.details or {}
+    if payload.custom_answer:
+        details["custom_answer"] = payload.custom_answer
+
+    row = {
+        "client_id": client_id,
+        "section": payload.section,
+        "question_key": payload.question_key,
+        "answer": payload.answer,
+        "details": details if details else None,
+        "tool_name": payload.tool_name,
+    }
+    supabase.table("questionnaire_responses").upsert(
+        row, on_conflict="client_id,question_key"
+    ).execute()
+
+    # Uloží aktuální pozici jako speciální záznam
+    if payload.current_question_index is not None:
+        pos_row = {
+            "client_id": client_id,
+            "section": "__meta__",
+            "question_key": "__position__",
+            "answer": str(payload.current_question_index),
+            "details": None,
+            "tool_name": None,
+        }
+        supabase.table("questionnaire_responses").upsert(
+            pos_row, on_conflict="client_id,question_key"
+        ).execute()
+
+    logger.info(f"[Autosave] {payload.question_key} = {payload.answer} (pos={payload.current_question_index}) company={payload.company_id}")
+    return {"ok": True}
+
+
+@router.get("/questionnaire/{company_id}/position")
+async def get_questionnaire_position(company_id: str):
+    """Vrátí uloženou pozici uživatele v dotazníku."""
+    supabase = get_supabase()
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        return {"position": None}
+
+    result = supabase.table("questionnaire_responses") \
+        .select("answer") \
+        .eq("client_id", client_id) \
+        .eq("question_key", "__position__") \
+        .limit(1) \
+        .execute()
+
+    if result.data:
+        try:
+            return {"position": int(result.data[0]["answer"])}
+        except (ValueError, TypeError):
+            pass
+
+    return {"position": None}
+
+
 @router.get("/questionnaire/{company_id}/results")
 async def get_questionnaire_results(company_id: str):
     """Vrátí uložené odpovědi a analýzu pro firmu."""
@@ -1373,6 +1454,7 @@ async def get_questionnaire_results(company_id: str):
     result = supabase.table("questionnaire_responses") \
         .select("*") \
         .eq("client_id", client_id) \
+        .neq("question_key", "__position__") \
         .order("submitted_at", desc=True) \
         .execute()
 
@@ -1420,6 +1502,7 @@ async def get_questionnaire_progress(company_id: str):
     result = supabase.table("questionnaire_responses") \
         .select("question_key, answer") \
         .eq("client_id", client_id) \
+        .neq("question_key", "__position__") \
         .execute()
 
     answered = len(result.data) if result.data else 0
@@ -1459,6 +1542,7 @@ async def get_combined_report(company_id: str, scan_id: Optional[str] = None):
         q_result = supabase.table("questionnaire_responses") \
             .select("*") \
             .eq("client_id", client_id) \
+            .neq("question_key", "__position__") \
             .execute()
 
     questionnaire_answers = []

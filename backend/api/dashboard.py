@@ -136,6 +136,27 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
                 break
 
     if not company:
+        # Auto-create: pokud máme web_url z registrace, založíme firmu
+        if web_url:
+            try:
+                new_company = {
+                    "email": user_email,
+                    "url": web_url,
+                    "name": company_name or web_url,
+                    "workflow_status": "new",
+                    "payment_status": "none",
+                    "total_findings": 0,
+                }
+                if ico:
+                    new_company["ico"] = ico
+                res = supabase.table("companies").insert(new_company).execute()
+                if res.data:
+                    company = res.data[0]
+                    logger.info(f"Auto-created company for {user_email}: {company['id']}")
+            except Exception as e:
+                logger.warning(f"Auto-create company failed for {user_email}: {e}")
+
+    if not company:
         # Zkusit najít podle objednávky
         order_res = supabase.table("orders").select("*").eq(
             "email", user_email

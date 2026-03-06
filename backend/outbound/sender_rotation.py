@@ -6,7 +6,7 @@ Pokud jedna spadne (blokace, příliš stížností) → automaticky přepne na 
 
 Odesílatelé:
   1. info@aishield.cz     — primární (výchozí)
-  2. ahoj@aishield.cz     — záloha 1
+  2. servis@aishield.cz   — záloha 1
   3. podpora@aishield.cz  — záloha 2
 
 Strategie:
@@ -22,9 +22,7 @@ from backend.database import get_supabase
 
 # ── Konfigurace senderů ──
 
-# ⚠️ Pouze info@aishield.cz reálně existuje v Resend.
-# Ostatní adresy (ahoj@, podpora@) NEJSOU nastaveny.
-# Přidat až budou vytvořeny v Resend dashboardu.
+# Všechny 3 adresy musejí být ověřeny v Resend dashboardu.
 SENDERS = [
     {
         "email": "info@aishield.cz",

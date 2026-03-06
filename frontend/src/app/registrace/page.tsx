@@ -33,6 +33,8 @@ function RegistraceInner() {
     const [partner, setPartner] = useState<string | null>(null);
     const [aresLoading, setAresLoading] = useState(false);
     const [aresStatus, setAresStatus] = useState<"idle" | "found" | "not-found">("idle");
+    const [webUrlStatus, setWebUrlStatus] = useState<"idle" | "checking" | "ok" | "error">("idle");
+    const [webUrlMessage, setWebUrlMessage] = useState("");
     // Anti-bot: math CAPTCHA
     const [captchaA, setCaptchaA] = useState(0);
     const [captchaB, setCaptchaB] = useState(0);
@@ -76,6 +78,32 @@ function RegistraceInner() {
             setAresStatus("not-found");
         } finally {
             setAresLoading(false);
+        }
+    }, []);
+
+    const checkWebUrl = useCallback(async (raw: string) => {
+        const url = normalizeUrl(raw);
+        if (!url) { setWebUrlStatus("idle"); setWebUrlMessage(""); return; }
+        setWebUrlStatus("checking");
+        setWebUrlMessage("");
+        try {
+            const res = await fetch(`${API_URL}/api/scan/check-url`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url }),
+            });
+            if (res.ok) {
+                setWebUrlStatus("ok");
+                setWebUrlMessage("Web je dostupný");
+            } else {
+                const data = await res.json().catch(() => ({ detail: "" }));
+                const msg = typeof data.detail === "string" ? data.detail : Array.isArray(data.detail) ? data.detail.map((d: { msg?: string }) => d.msg || "").filter(Boolean).join("; ") : "";
+                setWebUrlStatus("error");
+                setWebUrlMessage(msg || "Nepodařilo se ověřit URL — zkontrolujte adresu");
+            }
+        } catch {
+            setWebUrlStatus("error");
+            setWebUrlMessage("Nepodařilo se spojit se serverem");
         }
     }, []);
 
@@ -190,6 +218,7 @@ function RegistraceInner() {
         // 4. Jinak zobrazit hlášku o potvrzení emailu
         setSuccess(true);
         setLoading(false);
+        window.scrollTo({ top: 0, behavior: "instant" });
         track("registration_completed", { method: "email" });
     }
 
@@ -379,16 +408,41 @@ function RegistraceInner() {
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
                                 Web <span className="text-slate-500">(volitelné)</span>
                             </label>
-                            <input
-                                type="text"
-                                value={webUrl}
-                                onChange={(e) => setWebUrl(e.target.value)}
-                                placeholder="www.vasefirma.cz"
-                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3
-                                    text-white placeholder:text-slate-500
-                                    focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
-                                    transition-all"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={webUrl}
+                                    onChange={(e) => { setWebUrl(e.target.value); setWebUrlStatus("idle"); setWebUrlMessage(""); }}
+                                    onBlur={() => { if (webUrl.trim()) checkWebUrl(webUrl); }}
+                                    placeholder="www.vasefirma.cz"
+                                    className={`flex-1 rounded-xl border bg-white/5 px-4 py-3
+                                        text-white placeholder:text-slate-500
+                                        focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/30
+                                        transition-all ${
+                                            webUrlStatus === "ok" ? "border-green-500/30 bg-green-500/5" :
+                                            webUrlStatus === "error" ? "border-red-500/30 bg-red-500/5" :
+                                            "border-white/10"
+                                        }`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => checkWebUrl(webUrl)}
+                                    disabled={!webUrl.trim() || webUrlStatus === "checking"}
+                                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                                >
+                                    {webUrlStatus === "checking" ? (
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="w-3.5 h-3.5 border-2 border-fuchsia-400 border-t-transparent rounded-full animate-spin" />
+                                            Ověřuji…
+                                        </span>
+                                    ) : "Ověřit"}
+                                </button>
+                            </div>
+                            {webUrlMessage && (
+                                <p className={`text-xs mt-1 ${webUrlStatus === "ok" ? "text-green-400" : "text-red-400"}`}>
+                                    {webUrlStatus === "ok" ? "✓" : "⚠"} {webUrlMessage}
+                                </p>
+                            )}
                         </div>
 
                         <div>

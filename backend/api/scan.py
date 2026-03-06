@@ -158,6 +158,60 @@ class ScanStatusResponse(BaseModel):
 
 # ── Endpointy ──
 
+
+class CheckUrlRequest(BaseModel):
+    url: str
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        v = v.strip()
+        if not v.startswith(("http://", "https://")):
+            v = "https://" + v
+        pattern = r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$"
+        if not re.match(pattern, v):
+            raise ValueError("Neplatná URL adresa")
+        return v
+
+
+@router.post("/scan/check-url")
+async def check_url(req: CheckUrlRequest):
+    """Ověří, že URL je validní a web odpovídá (HEAD request)."""
+    import httpx
+
+    # Ověř DNS zvlášť – lepší chybová hláška
+    parsed = urlparse(req.url)
+    hostname = parsed.hostname
+    try:
+        socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+    except socket.gaierror:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Doména {hostname} neexistuje nebo není dostupná"
+        )
+
+    if not _is_url_safe(req.url):
+        raise HTTPException(
+            status_code=422,
+            detail="Zadaná URL směřuje na interní adresu"
+        )
+
+    try:
+        async with httpx.AsyncClient(timeout=8, follow_redirects=True, verify=False) as client:
+            r = await client.head(req.url)
+            if r.status_code < 500:
+                return {"ok": True, "status_code": r.status_code, "url": str(r.url)}
+            raise HTTPException(status_code=422, detail=f"Web vrátil chybu {r.status_code}")
+    except httpx.ConnectError:
+        raise HTTPException(status_code=422, detail="Web není dostupný — zkontrolujte adresu")
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=422, detail="Web neodpovídá (timeout) — zkontrolujte adresu")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=422, detail="Nepodařilo se ověřit web — zkontrolujte adresu")
+
+
 @router.post("/scan", response_model=ScanResponse)
 async def create_scan(
     request: ScanRequest,

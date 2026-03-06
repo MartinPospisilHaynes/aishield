@@ -192,7 +192,7 @@ async def send_questionnaire_reminder_job(ctx: dict, company_id: str, email: str
             to=email,
             subject=subject_map.get(day, "📋 Vyplňte dotazník pro AIshield.cz"),
             html=html,
-            from_email="ahoj@aishield.cz",
+            from_email="info@aishield.cz",
         )
         logger.info(f"[JOB] Reminder D+{day} odeslán: {email}")
         return {"status": "sent", "day": day}
