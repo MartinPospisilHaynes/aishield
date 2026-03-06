@@ -408,7 +408,7 @@ function RegistraceInner() {
                             <label className="block text-sm font-medium text-slate-300 mb-1.5">
                                 Web <span className="text-slate-500">(volitelné)</span>
                             </label>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                                 <input
                                     type="text"
                                     value={webUrl}

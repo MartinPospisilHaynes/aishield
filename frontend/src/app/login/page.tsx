@@ -69,7 +69,7 @@ function LoginForm() {
     return (
         <section className="py-20 relative">
             {/* BG glow */}
-            <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-[20%] left-[40%] h-[400px] w-[400px] rounded-full bg-fuchsia-600/8 blur-[120px]" />
             </div>
 

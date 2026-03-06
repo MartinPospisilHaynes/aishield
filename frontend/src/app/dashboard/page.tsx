@@ -634,7 +634,8 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
             {/* Pipeline vizualizace — zelená čára s body */}
             <div className="glass">
                 <h3 className="font-semibold mb-8">Váš postup k AI Act compliance</h3>
-                <div className="grid grid-cols-7 relative mb-8">
+                <div className="overflow-x-auto -mx-5 px-5 pb-2">
+                <div className="grid grid-cols-7 relative mb-8 min-w-[420px]">
                     <div className="absolute top-[18px] sm:top-[22px] left-[7%] right-[7%] h-1 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04]" />
                     {lineWidthPercent > 0 && (
                         <div
@@ -674,7 +675,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                                         <span className={isCurrent ? "drop-shadow-[0_0_4px_rgba(217,70,239,0.6)]" : ""}>{i + 1}</span>
                                     )}
                                 </div>
-                                <span className={`text-[8px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-semibold text-center leading-tight max-w-[60px] sm:max-w-none ${step.done
+                                <span className={`text-[10px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-semibold text-center leading-tight max-w-[60px] sm:max-w-none ${step.done
                                     ? "text-green-400/90 drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]"
                                     : isCurrent
                                         ? "text-fuchsia-400 drop-shadow-[0_0_4px_rgba(217,70,239,0.3)]"
@@ -685,6 +686,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                             </div>
                         );
                     })}
+                </div>
                 </div>
 
                 {/* Aktuální krok — JEDINÉ CTA */}
@@ -800,7 +802,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                                     <>
                                         {data?.company?.url && (
                                             <p className="text-xs text-slate-400">
-                                                Web: <strong className="text-white">{data.company.url}</strong>
+                                                Web: <strong className="text-white truncate max-w-[220px] inline-block align-bottom">{data.company.url}</strong>
                                             </p>
                                         )}
                                         <button
