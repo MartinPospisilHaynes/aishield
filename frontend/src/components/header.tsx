@@ -11,6 +11,7 @@ export default function Header() {
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
     const menuRef = useRef<HTMLDivElement>(null);
+    const toggleRef = useRef<HTMLButtonElement>(null);
 
     function isActive(href: string) {
         if (href === "/") return pathname === "/";
@@ -33,11 +34,17 @@ export default function Header() {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    // Close menu on outside click
+    // Close menu on outside click (vyloučit hamburger tlačítko — jinak race condition na iOS Safari)
     useEffect(() => {
         if (!mobileOpen) return;
         function handleClick(e: MouseEvent) {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMobileOpen(false);
+            const target = e.target as Node;
+            if (
+                menuRef.current && !menuRef.current.contains(target) &&
+                toggleRef.current && !toggleRef.current.contains(target)
+            ) {
+                setMobileOpen(false);
+            }
         }
         document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
@@ -150,6 +157,7 @@ export default function Header() {
 
                 {/* ── Mobile hamburger ── */}
                 <button
+                    ref={toggleRef}
                     className="lg:hidden relative w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 active:scale-95 transition-all"
                     aria-label={mobileOpen ? "Zavřít menu" : "Otevřít menu"}
                     onClick={() => setMobileOpen(!mobileOpen)}
