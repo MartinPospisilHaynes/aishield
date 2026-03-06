@@ -362,10 +362,28 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
-                {/* Cenové balíčky + srovnání — pod taby, zobrazí se pouze když nemá zaplacenou objednávku */}
+                {/* Cenové balíčky + srovnání — pod taby, zobrazí se pouze po kompletním dotazníku a bez zaplacené objednávky */}
                 {!ps.payment_done && (data?.scans?.length || 0) > 0 && (
                     <div className="mt-8">
-                        <PricingComparisonTable />
+                        {questionnaireIsComplete ? (
+                            <PricingComparisonTable />
+                        ) : (
+                            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-center">
+                                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center mx-auto mb-3">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                                </div>
+                                <h4 className="text-sm font-semibold text-slate-200 mb-1">Nejprve dokončete dotazník</h4>
+                                <p className="text-xs text-slate-400 mb-4">
+                                    {qAnswered > 0 ? `Zodpovězeno ${qAnswered} z ${qTotal} otázek` : "Vyplňte dotazník pro přesnější analýzu"} — po dokončení si budete moci vybrat balíček.
+                                </p>
+                                <a
+                                    href={data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik"}
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-amber-500/25 active:scale-[0.98]"
+                                >
+                                    {qAnswered > 0 ? "Pokračovat v dotazníku" : "Vyplnit dotazník"}
+                                </a>
+                            </div>
+                        )}
                     </div>
                 )}
 
