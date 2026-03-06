@@ -271,7 +271,16 @@ function QuestionnaireInner() {
                         };
                     }
                 }
-                setAnswers(init);
+                // Zachovat server odpovědi které mohly přijít před structure loadem
+                setAnswers(prev => {
+                    const merged = { ...init };
+                    for (const [k, v] of Object.entries(prev)) {
+                        if (v?.answer && merged[k]) {
+                            merged[k] = { ...merged[k], answer: v.answer, details: v.details || {}, tool_name: v.tool_name || "" };
+                        }
+                    }
+                    return merged;
+                });
                 setLoading(false);
             })
             .catch(() => setLoading(false));
@@ -341,22 +350,22 @@ function QuestionnaireInner() {
                     setAnswers((prev) => {
                         const updated = { ...prev };
                         for (const a of data.answers) {
-                            if (updated[a.question_key]) {
-                                updated[a.question_key] = {
-                                    ...updated[a.question_key],
-                                    answer: a.answer || "",
-                                    details: a.details || {},
-                                    tool_name: a.tool_name || "",
-                                };
-                                if (a.answer && a.answer.includes(", ")) {
-                                    const mkey = `topLevel__${a.question_key}`;
-                                    multiUpdates[mkey] = a.answer.split(", ");
-                                }
-                                if (a.details) {
-                                    for (const [fkey, fval] of Object.entries(a.details)) {
-                                        if (Array.isArray(fval)) {
-                                            multiUpdates[`${a.question_key}__${fkey}`] = fval;
-                                        }
+                            // Vždy nastavit — klíč nemusí existovat pokud structure ještě nenačetla
+                            const base = updated[a.question_key] || { question_key: a.question_key, section: a.section || "", answer: "", details: {}, tool_name: "" };
+                            updated[a.question_key] = {
+                                ...base,
+                                answer: a.answer || "",
+                                details: a.details || {},
+                                tool_name: a.tool_name || "",
+                            };
+                            if (a.answer && a.answer.includes(", ")) {
+                                const mkey = `topLevel__${a.question_key}`;
+                                multiUpdates[mkey] = a.answer.split(", ");
+                            }
+                            if (a.details) {
+                                for (const [fkey, fval] of Object.entries(a.details)) {
+                                    if (Array.isArray(fval)) {
+                                        multiUpdates[`${a.question_key}__${fkey}`] = fval;
                                     }
                                 }
                             }
