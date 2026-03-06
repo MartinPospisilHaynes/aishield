@@ -432,8 +432,9 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
     const hasScans = ps?.scan_done ?? (data?.scans.length || 0) > 0;
     const qAns = data?.questionnaire_answered_count ?? 0;
     const qTot = data?.questionnaire_total_questions ?? 0;
+    const qUnknownCount = data?.questionnaire_unknown_count ?? 0;
     const hasQuest = (qTot > 0 && qAns >= qTot) || (ps?.questionnaire_done ?? false);
-    const questStarted = !hasQuest && (qAns > 0 || (data?.questionnaire_status?.startsWith("rozpracován") ?? false));
+    const questStarted = !hasQuest && (qAns > 0 || qUnknownCount > 0 || (data?.questionnaire_status?.startsWith("rozpracován") ?? false));
     const hasDocs = ps?.documents_done ?? (data?.documents.length || 0) > 0;
     const hasOrder = (data?.orders || []).length > 0;
     const ws = data?.company?.workflow_status || 'new';
@@ -592,10 +593,10 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
         {
             done: hasOrder,
             label: "Objednávka",
-            desc: hasOrder ? "Objednávka byla přijata" : !hasQuest ? "Nejprve dokončete dotazník" : "Odemkněte compliance dokumenty a školení",
+            desc: hasOrder ? "Objednávka byla přijata" : !hasQuest && qUnknownCount > 0 ? `Doplňte ${qUnknownCount} odpověd${qUnknownCount === 1 ? "ě" : "í"} označen${qUnknownCount === 1 ? "ou" : "ých"} jako „Nevím"` : !hasQuest ? "Nejprve dokončete dotazník" : "Odemkněte compliance dokumenty a školení",
             detail: null,
             href: hasOrder ? null : !hasQuest ? null : "/pricing",
-            cta: hasOrder ? "✓ Objednáno" : !hasQuest ? "Nejprve dokončete dotazník" : "Vybrat balíček",
+            cta: hasOrder ? "✓ Objednáno" : !hasQuest ? (qUnknownCount > 0 ? "Doplňte odpovědi" : "Nejprve dokončete dotazník") : "Vybrat balíček",
         },
         {
             done: hasPaidOrder,

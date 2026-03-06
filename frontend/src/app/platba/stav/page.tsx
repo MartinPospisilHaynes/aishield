@@ -37,6 +37,7 @@ function PaymentStatusContent() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [questionnaireComplete, setQuestionnaireComplete] = useState<boolean | null>(null);
+    const [hasUnknowns, setHasUnknowns] = useState(false);
 
     const gatewayName = GATEWAY_NAMES[gateway] || gateway;
     const isBankTransfer = gateway === "bank_transfer";
@@ -57,6 +58,7 @@ function PaymentStatusContent() {
                 if (res.ok) {
                     const data = await res.json();
                     setQuestionnaireComplete(data.is_complete === true);
+                    setHasUnknowns(data.has_unknowns === true);
                 }
                 // On error, leave null — don't show the button
             } catch {
@@ -197,7 +199,7 @@ function PaymentStatusContent() {
                             {/* Conditional questionnaire button — only show when explicitly incomplete */}
                             {questionnaireComplete === false && (
                                 <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
-                                    Vyplnit dotazník
+                                    {hasUnknowns ? 'Doplnit odpovědi označené jako \u201ENevím\u201C' : "Vyplnit dotazník"}
                                 </a>
                             )}
                             {questionnaireComplete === true && (
@@ -324,8 +326,11 @@ function PaymentStatusContent() {
                                     </p>
                                 ) : (
                                     <p className="text-slate-400 text-sm mb-8">
-                                        Faktura vám přijde na email. Nyní vyplňte dotazník,
-                                        abychom vám připravili dokumenty na míru.
+                                        Faktura vám přijde na email.{questionnaireComplete === false
+                                            ? (hasUnknowns
+                                                ? ' Doplňte prosím odpovědi označené jako \u201ENevím\u201C, abychom vám připravili dokumenty na míru.'
+                                                : " Nyní vyplňte dotazník, abychom vám připravili dokumenty na míru.")
+                                            : " Dokumenty začneme připravovat co nejdříve."}
                                     </p>
                                 )}
                             </>
@@ -346,7 +351,7 @@ function PaymentStatusContent() {
                                 <>
                                     {questionnaireComplete === false && (
                                         <a href="/dotaznik" className="btn-primary w-full py-3.5 block text-center">
-                                            Vyplnit dotazník
+                                            {hasUnknowns ? 'Doplnit odpovědi označené jako \u201ENevím\u201C' : "Vyplnit dotazník"}
                                         </a>
                                     )}
                                     {questionnaireComplete === true && (

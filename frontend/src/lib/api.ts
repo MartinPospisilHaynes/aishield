@@ -701,6 +701,7 @@ export interface DashboardData {
     questionnaire_answers?: Record<string, string>;
     questionnaire_answered_count?: number;
     questionnaire_total_questions?: number;
+    questionnaire_unknown_count?: number;
     compliance_score: number | null;
     process_status?: ProcessStatus;
     action_plan_resolved?: string[];
