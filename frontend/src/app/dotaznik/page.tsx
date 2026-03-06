@@ -595,6 +595,40 @@ function QuestionnaireInner() {
         return () => clearTimeout(timer);
     }, [answers, companyId, customAnswers]);
 
+    /* ── Uložit pozici při odchodu ze stránky (beforeunload + visibilitychange) ── */
+    useEffect(() => {
+        const savePositionOnLeave = () => {
+            if (!companyId || currentQuestion < 0) return;
+            // localStorage — synchronní, spolehlivý
+            try {
+                const existing = localStorage.getItem(`aishield_quest_${companyId}`);
+                const data = existing ? JSON.parse(existing) : {};
+                data.currentQuestion = currentQuestion;
+                localStorage.setItem(`aishield_quest_${companyId}`, JSON.stringify(data));
+            } catch { /* ignore */ }
+            // Server — sendBeacon pro spolehlivé odeslání před zavřením
+            try {
+                const payload = JSON.stringify({
+                    company_id: companyId,
+                    position: currentQuestion,
+                });
+                navigator.sendBeacon(
+                    `${API_URL}/api/questionnaire/${companyId}/position`,
+                    new Blob([payload], { type: "application/json" })
+                );
+            } catch { /* ignore */ }
+        };
+        const handleVisibility = () => {
+            if (document.visibilityState === "hidden") savePositionOnLeave();
+        };
+        window.addEventListener("beforeunload", savePositionOnLeave);
+        document.addEventListener("visibilitychange", handleVisibility);
+        return () => {
+            window.removeEventListener("beforeunload", savePositionOnLeave);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
+    }, [companyId, currentQuestion]);
+
     /* ── Set detail (single select / text) ── */
     const setDetail = useCallback((qKey: string, fKey: string, value: string) => {
         setAnswers((prev) => ({

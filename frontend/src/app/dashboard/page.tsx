@@ -296,20 +296,33 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Desktop tabs */}
-                <div className="hidden md:flex gap-1 overflow-x-auto border-b border-white/[0.06] mb-6 pb-px">
-                    {TABS.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setActiveTab(tab.key)}
-                            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${activeTab === tab.key
-                                ? "text-fuchsia-400 border-b-2 border-fuchsia-400 bg-white/[0.03]"
-                                : "text-slate-500 hover:text-slate-300"
-                                }`}
-                        >
-                            {tab.icon}
-                            {tab.label}
-                        </button>
-                    ))}
+                <div className="hidden md:flex gap-6">
+                    {/* Levý sidebar */}
+                    <nav className="w-56 flex-shrink-0 space-y-1">
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${activeTab === tab.key
+                                    ? "text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 shadow-[0_0_12px_-3px_rgba(217,70,239,0.2)]"
+                                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] border border-transparent"
+                                    }`}
+                            >
+                                {tab.icon}
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Hlavní obsah */}
+                    <div className="flex-1 min-w-0 min-h-[400px]">
+                        {activeTab === "prehled" && <TabPrehled data={data} onRefresh={fetchData} />}
+                        {activeTab === "findings" && <TabFindings findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} />}
+                        {activeTab === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
+                        {activeTab === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
+                        {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} />}
+                        {activeTab === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} />}
+                    </div>
                 </div>
                 {/* Mobile accordion tabs — obsah se rozbalí přímo pod zvoleným tabem */}
                 <div className="md:hidden mb-6 space-y-1">
@@ -340,15 +353,6 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
-                {/* Desktop tab content */}
-                <div className="hidden md:block min-h-[400px]">
-                    {activeTab === "prehled" && <TabPrehled data={data} onRefresh={fetchData} />}
-                    {activeTab === "findings" && <TabFindings findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} />}
-                    {activeTab === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
-                    {activeTab === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
-                    {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} />}
-                    {activeTab === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} />}
-                </div>
             </div>
         </section>
     );

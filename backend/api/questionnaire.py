@@ -1442,6 +1442,32 @@ async def get_questionnaire_position(company_id: str):
     return {"position": None}
 
 
+class PositionUpdate(BaseModel):
+    company_id: str
+    position: int
+
+
+@router.post("/questionnaire/{company_id}/position")
+async def save_questionnaire_position(company_id: str, payload: PositionUpdate):
+    """Uloží pozici uživatele v dotazníku (volá se při odchodu ze stránky)."""
+    supabase = get_supabase()
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        raise HTTPException(status_code=404, detail="Firma nenalezena")
+    pos_row = {
+        "client_id": client_id,
+        "section": "__meta__",
+        "question_key": "__position__",
+        "answer": str(payload.position),
+        "details": None,
+        "tool_name": None,
+    }
+    supabase.table("questionnaire_responses").upsert(
+        pos_row, on_conflict="client_id,question_key"
+    ).execute()
+    return {"ok": True}
+
+
 @router.get("/questionnaire/{company_id}/results")
 async def get_questionnaire_results(company_id: str):
     """Vrátí uložené odpovědi a analýzu pro firmu."""
