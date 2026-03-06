@@ -34,7 +34,7 @@ TEST_DOMAINS = [
     "desperados-design.cz",
 ]
 
-TEST_VOUCHER = "PIONEER-XC123L"
+TEST_VOUCHER = "PIONEER-MH2026A"
 
 # ══════════════════════════════════════════════════════════
 #  Supabase credentials

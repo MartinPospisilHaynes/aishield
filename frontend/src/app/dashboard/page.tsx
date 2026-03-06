@@ -362,6 +362,13 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
+                {/* Cenové balíčky + srovnání — pod taby, zobrazí se pouze když nemá zaplacenou objednávku */}
+                {!ps.payment_done && (data?.scans?.length || 0) > 0 && (
+                    <div className="mt-8">
+                        <PricingComparisonTable />
+                    </div>
+                )}
+
             </div>
         </section>
     );
@@ -1007,26 +1014,22 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                 </div>
             )}
 
-            {/* Pokud nemá objednávky ani není processing — zobraz pricing nebo info */}
-            {!isProcessing && (!data?.orders || data.orders.length === 0) && (
-                hasScans ? (
-                    <PricingComparisonTable />
-                ) : (
-                    <div className="glass text-center py-12">
-                        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
-                            <svg className="w-7 h-7 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">Začněte skenem webu</h3>
-                        <p className="text-sm text-slate-400 max-w-sm mx-auto">
-                            Spusťte orientační sken a vyplňte dotazník — pak si budete moci vybrat balíček a objednat dokumentaci.
-                        </p>
-                        <a href="#pipeline-scan" className="btn-primary text-sm px-6 py-2.5 mt-4 inline-block">
-                            Přejít na sken
-                        </a>
+            {/* Pokud nemá objednávky ani není processing — info */}
+            {!isProcessing && (!data?.orders || data.orders.length === 0) && !hasScans && (
+                <div className="glass text-center py-12">
+                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                        <svg className="w-7 h-7 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                     </div>
-                )
+                    <h3 className="text-lg font-semibold text-white mb-2">Začněte skenem webu</h3>
+                    <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                        Spusťte orientační sken a vyplňte dotazník — pak si budete moci vybrat balíček a objednat dokumentaci.
+                    </p>
+                    <a href="#pipeline-scan" className="btn-primary text-sm px-6 py-2.5 mt-4 inline-block">
+                        Přejít na sken
+                    </a>
+                </div>
             )}
 
         </div>
