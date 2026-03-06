@@ -435,6 +435,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
     const qUnknownCount = data?.questionnaire_unknown_count ?? 0;
     const hasQuest = (qTot > 0 && qAns >= qTot) || (ps?.questionnaire_done ?? false);
     const questStarted = !hasQuest && (qAns > 0 || qUnknownCount > 0 || (data?.questionnaire_status?.startsWith("rozpracován") ?? false));
+    const allAnsweredWithUnknowns = !hasQuest && qUnknownCount > 0 && (qAns + qUnknownCount) >= qTot;
     const hasDocs = ps?.documents_done ?? (data?.documents.length || 0) > 0;
     const hasOrder = (data?.orders || []).length > 0;
     const ws = data?.company?.workflow_status || 'new';
@@ -583,12 +584,14 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
             label: "Dotazník",
             desc: hasQuest
                 ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
-                : questStarted
-                    ? `Rozpracovaný dotazník — ${qAns}/${qTot} odpovědí`
-                    : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot…)",
+                : allAnsweredWithUnknowns
+                    ? `U ${qUnknownCount} ${qUnknownCount === 1 ? "otázky" : "otázek"} jste zvolili „Nevím" — doplňte je pro kompletní analýzu`
+                    : questStarted
+                        ? `Rozpracovaný dotazník — ${qAns}/${qTot} odpovědí`
+                        : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot…)",
             detail: hasQuest || questStarted ? null : "EU AI Act se netýká jen toho, co je vidět na webu. Regulace zahrnuje i interní AI systémy — nástroje pro HR, účetnictví, rozhodování, generování obsahu nebo komunikaci se zaměstnanci. Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokrývá celou AI politiku firmy, včetně toho, co zákazník nikdy neuvidí.",
-            href: (hasScans || questStarted) && !hasQuest && data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : hasQuest && qUnknowns.length > 0 && data?.company?.id ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0]?.question_key || ""}` : null,
-            cta: !hasScans ? "🔒 Nejprve skenujte web" : !data?.company?.id ? "⏳ Čekáme na výsledky skenu" : !hasQuest ? (questStarted ? "Pokračovat v dotazníku" : "Vyplnit dotazník") : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
+            href: allAnsweredWithUnknowns && data?.company?.id ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0]?.question_key || ""}` : (hasScans || questStarted) && !hasQuest && data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : hasQuest && qUnknowns.length > 0 && data?.company?.id ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0]?.question_key || ""}` : null,
+            cta: !hasScans ? "🔒 Nejprve skenujte web" : !data?.company?.id ? "⏳ Čekáme na výsledky skenu" : allAnsweredWithUnknowns ? `Doplnit ${qUnknownCount} ${qUnknownCount === 1 ? "odpověď" : "odpovědi"} s Nevím` : !hasQuest ? (questStarted ? "Pokračovat v dotazníku" : "Vyplnit dotazník") : qUnknowns.length > 0 ? "Doplnit odpovědi" : "✓ Kompletní",
         },
         {
             done: hasOrder,
