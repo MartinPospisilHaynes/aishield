@@ -115,6 +115,24 @@ export default function OnboardingPage() {
             return;
         }
 
+        // Refresh session — nový JWT bude obsahovat aktualizovaná metadata
+        await supabase.auth.refreshSession();
+
+        // Notifikovat backend (vytvoří firmu + pošle admin notifikaci)
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            await fetch(`${API_URL}/api/auth/register-notify`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: user?.email || "",
+                    company_name: companyName || "",
+                    ico: ico || "",
+                    web_url: normalizedWeb,
+                }),
+            });
+        } catch { /* nevadí — dashboard auto-create je fallback */ }
+
         track("onboarding_completed", { has_ico: !!ico, has_web: !!normalizedWeb });
         router.push("/dashboard");
     }
