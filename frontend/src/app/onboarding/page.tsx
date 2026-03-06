@@ -31,6 +31,16 @@ export default function OnboardingPage() {
     const supabase = createClient();
     const { track } = useAnalytics();
 
+    // Guard: pokud uživatel už má web_url v metadatech, přesměrovat na dashboard
+    useEffect(() => {
+        (async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.user_metadata?.web_url) {
+                router.replace("/dashboard");
+            }
+        })();
+    }, [supabase, router]);
+
     // Generate math CAPTCHA on mount
     useEffect(() => {
         setCaptchaA(Math.floor(Math.random() * 10) + 1);
