@@ -243,22 +243,9 @@ function QuestionnaireInner() {
     );
     const totalQuestions = allQuestions.length;
 
-    /* ── Section emoji icons ── */
+    /* ── Section emoji icons (odstraněny dekorativní — ponechány jen varovné) ── */
     const SECTION_EMOJI: Record<string, string> = {
-        industry: "🏢",
-        internal_ai: "🤖",
-        customer_service: "💬",
-        hr: "👤",
-        finance: "💰",
-        education: "🎓",
         prohibited_systems: "⚠️",
-        infrastructure_safety: "🛡️",
-        data_protection: "🔒",
-        ai_literacy: "📚",
-        human_oversight: "👁️",
-        ai_role: "🔧",
-        incident_management: "🚨",
-        implementation: "🔨",
     };
 
 
@@ -824,7 +811,7 @@ function QuestionnaireInner() {
                     <h2 className="text-2xl font-bold text-white mb-3">Odesílám váš dotazník…</h2>
                     <div className="bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 rounded-2xl p-5 mb-4">
                         <p className="text-base text-white leading-relaxed">
-                            👋 Děkuji za váš čas! Vše dáme dohromady — do <strong className="text-fuchsia-300">7 dní</strong> dostanete kompletní dokumentaci v elektronické podobě a do <strong className="text-cyan-300">14 dní</strong> vše v tištěné podobě na vaši adresu.
+                            Děkuji za váš čas! Vše dáme dohromady — do <strong className="text-fuchsia-300">7 dní</strong> dostanete kompletní dokumentaci v elektronické podobě a do <strong className="text-cyan-300">14 dní</strong> vše v tištěné podobě na vaši adresu.
                         </p>
                         <p className="text-sm text-slate-400 mt-2">— Vaše Uršula</p>
                     </div>
@@ -917,7 +904,7 @@ function QuestionnaireInner() {
                     {/* Uršula greeting */}
                     <div className="bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 rounded-2xl p-5 mb-4">
                         <p className="text-lg sm:text-xl font-semibold text-white">
-                            👋 Dobrý den, já jsem váš virtuální pomocník <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">Uršula</span> a provedu vás celým procesem.
+                            Dobrý den, já jsem váš virtuální pomocník <span className="bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">Uršula</span> a provedu vás celým procesem.
                         </p>
                     </div>
 
@@ -950,17 +937,12 @@ function QuestionnaireInner() {
 
                     {/* Feature cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
-                        {[
-                            { icon: "🖱️", label: "Jen klikáte" },
-                            { icon: "🔒", label: "Data v bezpečí" },
-                            { icon: "⏱️", label: "5 minut" },
-                        ].map((f, i) => (
+                        {["Jen klikáte", "Data v bezpečí", "5 minut"].map((label, i) => (
                             <div
                                 key={i}
                                 className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 sm:p-5"
                             >
-                                <div className="text-2xl mb-2">{f.icon}</div>
-                                <div className="text-slate-300 text-sm font-medium">{f.label}</div>
+                                <div className="text-slate-300 text-sm font-medium">{label}</div>
                             </div>
                         ))}
                     </div>
@@ -983,7 +965,7 @@ function QuestionnaireInner() {
         if (!isNewSection && !isFirstQuestion) return null;
         const sec = currentQ;
         if (!sec) return null;
-        const emoji = SECTION_EMOJI[sec._section] || "📋";
+        const emoji = SECTION_EMOJI[sec._section] || "";
         const sectionTitle = sec._sectionTitle || sec._section;
         const sectionQCount = allQuestions.filter(
             (aq) => aq._section === sec._section
@@ -993,7 +975,7 @@ function QuestionnaireInner() {
             <div className="mb-6 animate-fade-in">
                 <div className="rounded-2xl bg-gradient-to-r from-fuchsia-500/[0.08] to-cyan-500/[0.08] border border-fuchsia-500/20 p-4">
                     <div className="flex items-center gap-3">
-                        <span className="text-2xl">{emoji}</span>
+                        {emoji && <span className="text-2xl">{emoji}</span>}
                         <div>
                             <p className="text-sm font-bold text-white">{sectionTitle}</p>
                             <p className="text-xs text-slate-400">{sectionQCount} {sectionQCount === 1 ? "otázka" : sectionQCount < 5 ? "otázky" : "otázek"} v této sekci</p>
@@ -1344,7 +1326,7 @@ function QuestionnaireInner() {
                                         disabled={submitting}
                                         className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 animate-pulse"
                                     >
-                                        {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                        {submitting ? "Odesílám…" : "Odeslat dotazník"}
                                     </button>
                                 )
                             ) : (isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
@@ -1471,7 +1453,7 @@ function QuestionnaireInner() {
                                     disabled={submitting || !allRequiredFilled}
                                     className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                                 >
-                                    {submitting ? "Odesílám…" : "✅ Ukončit a odeslat dotazník"}
+                                    {submitting ? "Odesílám…" : "Ukončit a odeslat dotazník"}
                                 </button>
                             ) : allRequiredFilled ? (
                                 <button
@@ -1601,7 +1583,7 @@ function QuestionnaireInner() {
                                             disabled={submitting || !allFilled}
                                             className={`px-8 py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${allFilled ? "bg-gradient-to-r from-cyan-500 to-emerald-500 text-white hover:shadow-lg hover:shadow-cyan-500/25 animate-pulse" : "bg-white/[0.06] border border-white/[0.1] text-slate-500 cursor-not-allowed"}`}
                                         >
-                                            {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                            {submitting ? "Odesílám…" : "Odeslat dotazník"}
                                         </button>
                                     );
                                 }
@@ -1701,7 +1683,7 @@ function QuestionnaireInner() {
                                         disabled={submitting}
                                         className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 animate-pulse"
                                     >
-                                        {submitting ? "Odesílám…" : "🚀 Odeslat dotazník"}
+                                        {submitting ? "Odesílám…" : "Odeslat dotazník"}
                                     </button>
                                 ) : (
                                     <button
@@ -1746,7 +1728,7 @@ function QuestionnaireInner() {
                     {/* Scope hint — who is this question for */}
                     {(q as any).scope_hint && (
                         <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 mb-4 flex items-start gap-2">
-                            <span className="text-amber-400 mt-0.5 flex-shrink-0 text-sm">👤</span>
+                            <svg className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0" /></svg>
                             <p className="text-xs text-amber-300/90 leading-relaxed">{(q as any).scope_hint}</p>
                         </div>
                     )}
@@ -2268,7 +2250,7 @@ function QuestionnaireInner() {
                                 disabled={submitting || !ans?.answer}
                                 className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                             >
-                                {submitting ? "Odesílám…" : "✅ Ukončit a odeslat dotazník"}
+                                {submitting ? "Odesílám…" : "Ukončit a odeslat dotazník"}
                             </button>
                         ) : ans?.answer ? (
                             <button
