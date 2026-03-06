@@ -179,6 +179,9 @@ function QuestionnaireInner() {
     const [serverPosition, setServerPosition] = useState<number | null>(null); // pozice uložená na serveru
     const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({}); // question_key → custom text
     const [validationError, setValidationError] = useState<string | null>(null);
+    const [showResumeModal, setShowResumeModal] = useState(false);
+    const [resumeTarget, setResumeTarget] = useState<number>(0);
+    const [resumeAnsweredCount, setResumeAnsweredCount] = useState(0);
 
     /* ── Realtime autosave: uloží jednu odpověď na server okamžitě ── */
     const saveToServer = useCallback(async (
@@ -439,23 +442,27 @@ function QuestionnaireInner() {
         }
     }, [searchParams, _loadAnswersForCompany]);
 
-    /* ── Resume position: jump to first unanswered question after server restore ── */
+    /* ── Resume position: show modal if there's saved progress ── */
     useEffect(() => {
         if (!serverAnswersLoaded || allQuestions.length === 0) return;
         // Don't override if ?q= param was provided (jump-to-question mode)
         if (searchParams.get("q")) { setServerAnswersLoaded(false); return; }
+        const answeredCount = allQuestions.filter(q => answers[q.key]?.answer).length;
         const firstUnanswered = allQuestions.findIndex(q => !answers[q.key]?.answer);
+        let target = 0;
         if (firstUnanswered >= 0) {
-            setCurrentQuestion(firstUnanswered);
-            console.log(`[Dotazník] Resuming at question ${firstUnanswered} (first unanswered)`);
+            target = firstUnanswered;
         } else if (serverPosition != null && serverPosition < allQuestions.length) {
-            // Všechny zodpovězené — vrátit se na uloženou pozici
-            setCurrentQuestion(serverPosition);
-            console.log(`[Dotazník] All answered, resuming at server position ${serverPosition}`);
+            target = serverPosition;
         } else if (allQuestions.length > 0) {
-            // Všechny zodpovězené, žádná uložená pozice — poslední otázka
-            setCurrentQuestion(allQuestions.length - 1);
-            console.log(`[Dotazník] All answered, going to last question`);
+            target = allQuestions.length - 1;
+        }
+        // Pokud je co resumovat (uživatel už odpověděl alespoň 1 otázku), zobrazit modal
+        if (answeredCount > 0 && target > 0) {
+            setResumeTarget(target);
+            setResumeAnsweredCount(answeredCount);
+            setShowResumeModal(true);
+            console.log(`[Dotazník] Nalezen uložený pokrok (${answeredCount}/${allQuestions.length}), zobrazuji modal`);
         }
         setServerAnswersLoaded(false);
     }, [serverAnswersLoaded, sections, answers, serverPosition]);
@@ -749,6 +756,53 @@ function QuestionnaireInner() {
        RENDERS
        ═══════════════════════════════════════════ */
 
+    /* ── Resume modal ── */
+    const resumeModal = showResumeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            {/* Modal */}
+            <div className="relative w-full max-w-md rounded-2xl border border-white/[0.12] bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-fuchsia-500/10 p-6 animate-fade-in">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-fuchsia-500/15 border border-fuchsia-500/25 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d946ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-white">Rozpracovaný dotazník</h3>
+                </div>
+                <p className="text-slate-300 text-sm leading-relaxed mb-1">
+                    Máte uložený pokrok — <span className="text-fuchsia-300 font-semibold">{resumeAnsweredCount} z {allQuestions.length}</span> otázek zodpovězeno.
+                </p>
+                <p className="text-slate-400 text-sm mb-6">Chcete pokračovat kde jste skončili?</p>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => {
+                            setCurrentQuestion(resumeTarget);
+                            setShowResumeModal(false);
+                            console.log(`[Dotazník] Uživatel zvolil pokračovat na pozici ${resumeTarget}`);
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold text-sm transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
+                    >
+                        Pokračovat
+                    </button>
+                    <button
+                        onClick={() => {
+                            setCurrentQuestion(0);
+                            setShowResumeModal(false);
+                            console.log(`[Dotazník] Uživatel zvolil začít znovu od otázky 0`);
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-slate-300 font-medium text-sm transition-all hover:bg-white/[0.1]"
+                    >
+                        Začít znovu
+                    </button>
+                </div>
+            </div>
+            <style>{`
+                @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+                .animate-fade-in { animation: fade-in 0.25s ease-out; }
+            `}</style>
+        </div>
+    );
+
     /* ── Loading ── */
     if (loading) {
         return (
@@ -836,6 +890,7 @@ function QuestionnaireInner() {
     if (currentQuestion === -1) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+                {resumeModal}
                 {/* Decorative blobs */}
                 <div className="fixed top-[-200px] right-[-100px] w-[500px] h-[500px] bg-fuchsia-600/15 rounded-full blur-[120px] pointer-events-none" />
                 <div className="fixed bottom-[-200px] left-[-100px] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -1669,6 +1724,7 @@ function QuestionnaireInner() {
     /* ── Yes / No / Unknown question ── */
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col">
+            {resumeModal}
             {/* Progress bar */}
             <ProgressBarUI current={currentQuestion} total={totalQuestions} />
 
