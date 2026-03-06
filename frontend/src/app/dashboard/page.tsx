@@ -63,10 +63,16 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     },
 ];
 
-// Format display values — clean || separators in addresses
+// Format display values — clean || separators in addresses into postal format
 function formatDisplayValue(key: string, value: string): string {
     if (key === "company_address" || key.includes("address") || key.includes("adresa")) {
-        return value.replace(/\s*\|\|\s*/g, ", ");
+        // "Ulice 123 || PSČ || Město" → "Ulice 123, PSČ Město"
+        const parts = value.split(/\s*\|\|\s*/).map(p => p.trim()).filter(Boolean);
+        if (parts.length >= 3) {
+            // parts: [ulice, PSČ, město, ...ostatní]
+            return `${parts[0]}, ${parts.slice(1).join(" ")}`;
+        }
+        return parts.join(", ");
     }
     return value;
 }
@@ -206,9 +212,12 @@ export default function DashboardPage() {
     const companyName = data?.company?.name || user?.user_metadata?.company_name || "Vaše firma";
 
     // Process status from API
+    const qAnswered = data?.questionnaire_answered_count ?? 0;
+    const qTotal = data?.questionnaire_total_questions ?? 0;
+    const questionnaireIsComplete = qTotal > 0 && qAnswered >= qTotal;
     const ps = data?.process_status || {
         scan_done: (data?.scans?.length || 0) > 0,
-        questionnaire_done: data?.questionnaire_status === "dokončen",
+        questionnaire_done: questionnaireIsComplete,
         payment_done: data?.orders?.some((o) => o.status === "PAID") || false,
         documents_done: (data?.documents?.length || 0) > 0,
         steps_completed: 0,
@@ -288,10 +297,10 @@ export default function DashboardPage() {
                     />
                     <StatCard
                         label="Dotazník"
-                        value={data?.questionnaire_status === "dokončen" ? "Hotovo" : data?.questionnaire_status?.startsWith("rozpracován") ? "Rozpracován" : "Čeká"}
-                        sub={data?.questionnaire_status === "dokončen" ? "Vyplněn" : data?.questionnaire_status?.startsWith("rozpracován") ? "Pokračujte ve vyplňování" : "Vyplňte pro přesnější analýzu"}
-                        color={data?.questionnaire_status === "dokončen" ? "text-green-400" : data?.questionnaire_status?.startsWith("rozpracován") ? "text-cyan-400" : "text-amber-400"}
-                        href={(ps.questionnaire_done && ps.payment_done && ps.documents_done) ? undefined : data?.questionnaire_status === "dokončen" ? undefined : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
+                        value={questionnaireIsComplete ? "Hotovo" : qAnswered > 0 ? `${qAnswered}/${qTotal}` : "Čeká"}
+                        sub={questionnaireIsComplete ? "Kompletní" : qAnswered > 0 ? "Pokračujte ve vyplňování" : "Vyplňte pro přesnější analýzu"}
+                        color={questionnaireIsComplete ? "text-green-400" : qAnswered > 0 ? "text-cyan-400" : "text-amber-400"}
+                        href={questionnaireIsComplete ? undefined : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
                     />
                 </div>
 
@@ -321,7 +330,7 @@ export default function DashboardPage() {
                         {activeTab === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
                         {activeTab === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
                         {activeTab === "skeny" && <TabSkeny scans={data?.scans || []} />}
-                        {activeTab === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} />}
+                        {activeTab === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} companyId={data?.company?.id} answeredCount={qAnswered} totalQuestions={qTotal} isComplete={questionnaireIsComplete} />}
                     </div>
                 </div>
                 {/* Mobile accordion tabs — obsah se rozbalí přímo pod zvoleným tabem */}
@@ -346,7 +355,7 @@ export default function DashboardPage() {
                                     {tab.key === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
                                     {tab.key === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
                                     {tab.key === "skeny" && <TabSkeny scans={data?.scans || []} />}
-                                    {tab.key === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} />}
+                                    {tab.key === "dotaznik" && <TabDotaznik answers={data?.questionnaire_answers || {}} status={data?.questionnaire_status || ""} companyId={data?.company?.id} answeredCount={qAnswered} totalQuestions={qTotal} isComplete={questionnaireIsComplete} />}
                                 </div>
                             )}
                         </div>
@@ -421,8 +430,10 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
     const ps = data?.process_status;
     const hasPaidOrder = ps?.payment_done ?? data?.orders.some((o) => o.status === "PAID") ?? false;
     const hasScans = ps?.scan_done ?? (data?.scans.length || 0) > 0;
-    const hasQuest = ps?.questionnaire_done ?? data?.questionnaire_status === "dokončen";
-    const questStarted = !hasQuest && (data?.questionnaire_status?.startsWith("rozpracován") ?? false);
+    const qAns = data?.questionnaire_answered_count ?? 0;
+    const qTot = data?.questionnaire_total_questions ?? 0;
+    const hasQuest = (qTot > 0 && qAns >= qTot) || (ps?.questionnaire_done ?? false);
+    const questStarted = !hasQuest && (qAns > 0 || (data?.questionnaire_status?.startsWith("rozpracován") ?? false));
     const hasDocs = ps?.documents_done ?? (data?.documents.length || 0) > 0;
     const hasOrder = (data?.orders || []).length > 0;
     const ws = data?.company?.workflow_status || 'new';
@@ -572,7 +583,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
             desc: hasQuest
                 ? (qUnknowns.length > 0 ? `U ${qUnknowns.length} otázek jste zvolili „Nevím" — doplňte je` : "Všechny odpovědi jsou kompletní")
                 : questStarted
-                    ? `Rozpracovaný dotazník — ${data?.questionnaire_status?.match(/\d+\/\d+/)?.[0] || ""} odpovědí`
+                    ? `Rozpracovaný dotazník — ${qAns}/${qTot} odpovědí`
                     : "Upřesní analýzu o interní AI nástroje (ChatGPT, Copilot…)",
             detail: hasQuest || questStarted ? null : "EU AI Act se netýká jen toho, co je vidět na webu. Regulace zahrnuje i interní AI systémy — nástroje pro HR, účetnictví, rozhodování, generování obsahu nebo komunikaci se zaměstnanci. Automatický sken odhalí jen veřejně viditelné nástroje. Dotazník pokrývá celou AI politiku firmy, včetně toho, co zákazník nikdy neuvidí.",
             href: (hasScans || questStarted) && !hasQuest && data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : hasQuest && qUnknowns.length > 0 && data?.company?.id ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0]?.question_key || ""}` : null,
@@ -581,10 +592,10 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
         {
             done: hasOrder,
             label: "Objednávka",
-            desc: hasOrder ? "Objednávka byla přijata" : "Odemkněte compliance dokumenty a školení",
+            desc: hasOrder ? "Objednávka byla přijata" : !hasQuest ? "Nejprve dokončete dotazník" : "Odemkněte compliance dokumenty a školení",
             detail: null,
-            href: hasOrder ? null : "/pricing",
-            cta: hasOrder ? "✓ Objednáno" : "Vybrat balíček",
+            href: hasOrder ? null : !hasQuest ? null : "/pricing",
+            cta: hasOrder ? "✓ Objednáno" : !hasQuest ? "Nejprve dokončete dotazník" : "Vybrat balíček",
         },
         {
             done: hasPaidOrder,
@@ -990,6 +1001,28 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                 </div>
             )}
 
+            {/* Pokud nemá objednávky ani není processing — zobraz pricing nebo info */}
+            {!isProcessing && (!data?.orders || data.orders.length === 0) && (
+                hasScans ? (
+                    <PricingComparisonTable />
+                ) : (
+                    <div className="glass text-center py-12">
+                        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                            <svg className="w-7 h-7 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Začněte skenem webu</h3>
+                        <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                            Spusťte orientační sken a vyplňte dotazník — pak si budete moci vybrat balíček a objednat dokumentaci.
+                        </p>
+                        <a href="#pipeline-scan" className="btn-primary text-sm px-6 py-2.5 mt-4 inline-block">
+                            Přejít na sken
+                        </a>
+                    </div>
+                )
+            )}
+
         </div>
     );
 }
@@ -1172,7 +1205,7 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                             type="button"
                             onClick={handleToggle}
                             disabled={toggling === item.id}
-                            title={item.resolved ? "Zrušit splnění" : "Máme splněno"}
+                            title={item.resolved ? "Zrušit splnění" : "Označit jako vyřešené"}
                             className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-md border ${item.resolved ? "border-green-500/30 bg-green-500/20" : "border-white/10 bg-white/5 hover:border-green-500/30 hover:bg-green-500/10"} flex items-center justify-center transition-colors cursor-pointer ${toggling === item.id ? "animate-pulse" : ""}`}
                         >
                             {item.resolved && (
@@ -1182,7 +1215,7 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                             )}
                         </button>
                         <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-medium ${item.resolved ? "text-slate-500 line-through" : "text-slate-200"}`}>{item.text}</p>
+                            <p className={`text-sm font-medium ${item.resolved ? "text-slate-500 opacity-50" : "text-slate-200"}`}>{item.text}</p>
                             <div className="flex items-center gap-3 mt-1 flex-wrap">
                                 {!item.resolved && (
                                     <button
@@ -1192,7 +1225,7 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                                         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors cursor-pointer"
                                     >
                                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        Máme splněno
+                                        Označit jako vyřešené
                                     </button>
                                 )}
                                 {item.risk !== "info" && (
@@ -1238,7 +1271,7 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
                             <div className="flex items-center gap-4 text-xs text-slate-500 mt-1 flex-wrap">
                                 <span>{new Date(scan.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                                 <span>{scan.total_findings} nálezů</span>
-                                {scan.geo_countries_scanned && scan.geo_countries_scanned.length > 0 && <span>{scan.geo_countries_scanned.length} zemí</span>}
+                                {scan.scan_type !== "quick" && scan.geo_countries_scanned && scan.geo_countries_scanned.length > 0 && <span>{scan.geo_countries_scanned.length} {scan.geo_countries_scanned.length === 1 ? "země" : scan.geo_countries_scanned.length >= 2 && scan.geo_countries_scanned.length <= 4 ? "země" : "zemí"}</span>}
                             </div>
                         </div>
                     </div>
@@ -1248,11 +1281,11 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
     );
 }
 
-function TabDotaznik({ answers, status }: { answers: Record<string, string>; status: string }) {
+function TabDotaznik({ answers, status, companyId, answeredCount, totalQuestions, isComplete }: { answers: Record<string, string>; status: string; companyId?: string; answeredCount: number; totalQuestions: number; isComplete: boolean }) {
     const entries = Object.entries(answers);
 
     if (entries.length === 0) {
-        return <EmptyState title="Dotazník nebyl vyplněn" description="Vyplňte dotazník pro přesnější analýzu vašeho AI compliance stavu." href="/dotaznik" cta="Vyplnit dotazník" />;
+        return <EmptyState title="Dotazník nebyl vyplněn" description="Vyplňte dotazník pro přesnější analýzu vašeho AI compliance stavu." href={companyId ? `/dotaznik?company_id=${companyId}` : "/dotaznik"} cta="Vyplnit dotazník" />;
     }
 
     const formatAnswer = (value: string) => {
@@ -1274,14 +1307,32 @@ function TabDotaznik({ answers, status }: { answers: Record<string, string>; sta
 
     return (
         <div className="space-y-6">
-            <div className="glass flex items-center justify-between">
+            <div className="glass flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h3 className="font-semibold">Vyplněný dotazník</h3>
-                    <p className="text-xs text-slate-500 mt-1">{entries.length} odpovědí — pouze k nahlédnutí</p>
+                    <h3 className="font-semibold">{isComplete ? "Vyplněný dotazník" : "Rozpracovaný dotazník"}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{answeredCount}/{totalQuestions} odpovědí{isComplete ? " — kompletní" : " — zbývá doplnit"}</p>
                 </div>
-                <span className="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-green-500/10 text-green-400">
-                    {status === "dokončen" ? "Dokončeno" : status}
-                </span>
+                <div className="flex items-center gap-2">
+                    {!isComplete && (
+                        <a
+                            href={companyId ? `/dotaznik?company_id=${companyId}` : "/dotaznik"}
+                            className="btn-primary text-xs px-4 py-1.5"
+                        >
+                            Doplnit dotazník
+                        </a>
+                    )}
+                    {isComplete && companyId && (
+                        <a
+                            href={`/dotaznik?company_id=${companyId}&edit=true`}
+                            className="btn-secondary text-xs px-4 py-1.5"
+                        >
+                            Upravit odpovědi
+                        </a>
+                    )}
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${isComplete ? "bg-green-500/10 text-green-400" : "bg-amber-500/10 text-amber-400"}`}>
+                        {isComplete ? "Dokončeno" : `${answeredCount}/${totalQuestions}`}
+                    </span>
+                </div>
             </div>
 
             {sections.map((section) => {
@@ -1292,10 +1343,10 @@ function TabDotaznik({ answers, status }: { answers: Record<string, string>; sta
                         <h4 className="text-sm font-semibold text-slate-300 mb-3">{section.title}</h4>
                         <div className="space-y-2">
                             {sectionEntries.map(([key, value]) => (
-                                <div key={key} className="flex items-start justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
+                                <div key={key} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-4 py-2 border-b border-white/[0.04] last:border-0">
                                     <span className="text-sm text-slate-400 flex-shrink-0">{QUESTION_LABELS[key] || key}</span>
-                                    <span className={`text-sm text-right ${value === "yes" ? "text-amber-400" : value === "no" ? "text-slate-500" : "text-slate-200"}`}>
-                                        {formatAnswer(value)}
+                                    <span className={`text-sm sm:text-right ${value === "yes" ? "text-amber-400" : value === "no" ? "text-slate-500" : "text-slate-200"}`}>
+                                        {key === "company_address" || key.includes("address") ? formatDisplayValue(key, formatAnswer(value)).split(", ").map((line, i) => (<span key={i} className="block">{line}</span>)) : formatAnswer(value)}
                                     </span>
                                 </div>
                             ))}
