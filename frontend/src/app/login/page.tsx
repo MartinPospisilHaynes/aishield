@@ -12,6 +12,7 @@ function LoginForm() {
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState(false);
     const [error, setError] = useState("");
+    const [cookiesBlocked, setCookiesBlocked] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') || '/dashboard';
@@ -19,6 +20,21 @@ function LoginForm() {
     const verified = searchParams.get('verified');
     const supabase = createClient();
     const { track } = useAnalytics();
+
+    // Detekce blokovaných cookies (Brave private mode apod.)
+    useEffect(() => {
+        try {
+            document.cookie = "_aishield_test=1; SameSite=Lax; path=/";
+            const ok = document.cookie.includes("_aishield_test");
+            if (ok) {
+                document.cookie = "_aishield_test=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+            } else {
+                setCookiesBlocked(true);
+            }
+        } catch {
+            setCookiesBlocked(true);
+        }
+    }, []);
 
     // Show auth callback errors or verification success
     useEffect(() => {
@@ -85,6 +101,13 @@ function LoginForm() {
 
                 <div className="glass">
                     <form className="space-y-5" onSubmit={handleLogin}>
+                        {cookiesBlocked && (
+                            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                                Váš prohlížeč blokuje cookies potřebné pro přihlášení.
+                                Zkuste vypnout Brave Shields, použít běžné (ne anonymní) okno,
+                                nebo jiný prohlížeč (Chrome, Firefox, Safari).
+                            </div>
+                        )}
                         {verified && (
                             <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
                                 ✓ Email úspěšně ověřen! Nyní se přihlaste.

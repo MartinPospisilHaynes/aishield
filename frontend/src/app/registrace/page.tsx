@@ -29,6 +29,7 @@ function RegistraceInner() {
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState(false);
     const [error, setError] = useState("");
+    const [cookiesBlocked, setCookiesBlocked] = useState(false);
     const [success, setSuccess] = useState(false);
     const [partner, setPartner] = useState<string | null>(null);
     const [aresLoading, setAresLoading] = useState(false);
@@ -53,6 +54,21 @@ function RegistraceInner() {
     useEffect(() => {
         setCaptchaA(Math.floor(Math.random() * 10) + 1);
         setCaptchaB(Math.floor(Math.random() * 10) + 1);
+    }, []);
+
+    // Detekce blokovaných cookies (Brave private mode apod.)
+    useEffect(() => {
+        try {
+            document.cookie = "_aishield_test=1; SameSite=Lax; path=/";
+            const ok = document.cookie.includes("_aishield_test");
+            if (ok) {
+                document.cookie = "_aishield_test=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+            } else {
+                setCookiesBlocked(true);
+            }
+        } catch {
+            setCookiesBlocked(true);
+        }
     }, []);
 
     const redirectTo = searchParams.get("redirect") || "/dashboard";
@@ -337,6 +353,13 @@ function RegistraceInner() {
 
                 <div className="glass">
                     <form className="space-y-5" onSubmit={handleRegister}>
+                        {cookiesBlocked && (
+                            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                                Váš prohlížeč blokuje cookies potřebné pro registraci.
+                                Zkuste vypnout Brave Shields, použít běžné (ne anonymní) okno,
+                                nebo jiný prohlížeč (Chrome, Firefox, Safari).
+                            </div>
+                        )}
                         {error && (
                             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                                 {error}
