@@ -63,10 +63,10 @@ export const metadata: Metadata = {
         type: "website",
         images: [
             {
-                url: "/og-image.jpg",
+                url: "/og-image.png",
                 width: 1200,
                 height: 630,
-                type: "image/jpeg",
+                type: "image/png",
                 alt: "AIshield.cz — AI Act compliance scanner pro české firmy",
             },
         ],
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
             "Pokuta až 35 mil. €. Deadline: srpen 2026.",
         images: [
             {
-                url: "/og-image.jpg",
+                url: "/og-image.png",
                 width: 1200,
                 height: 630,
                 alt: "AIshield.cz — AI Act compliance scanner pro české firmy",
@@ -114,7 +114,7 @@ export default function RootLayout({
                                     "@id": "https://aishield.cz/#organization",
                                     "name": "AIshield.cz",
                                     "url": "https://aishield.cz",
-                                    "logo": "https://aishield.cz/og-image.jpg",
+                                    "logo": "https://aishield.cz/og-image.png",
                                     "description": "Automatizovaný AI Act compliance scanner pro české firmy a e-shopy. Skenování AI systémů, riziková klasifikace, generování dokumentace.",
                                     "foundingDate": "2025",
                                     "address": {
@@ -287,6 +287,7 @@ export default function RootLayout({
                                         <li><a href="/dotaznik" className="hover:text-neon-fuchsia transition-colors inline-block py-3">AI dotazník</a></li>
                                         <li><a href="/pricing" className="hover:text-neon-fuchsia transition-colors inline-block py-3 min-w-[44px]">Ceník</a></li>
                                         <li><a href="/about" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Jak to funguje</a></li>
+                                        <li><a href="/kariera" className="hover:text-neon-fuchsia transition-colors inline-block py-3">Kariéra</a></li>
                                     </ul>
                                 </div>
 

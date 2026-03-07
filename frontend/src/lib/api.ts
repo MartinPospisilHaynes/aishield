@@ -403,6 +403,28 @@ export async function getCombinedReport(
     return res.json();
 }
 
+/**
+ * Načte předvyplnění fakturačních údajů z dotazníku.
+ */
+export async function getBillingPrefill(): Promise<{
+    company?: string;
+    ico?: string;
+    email?: string;
+    phone?: string;
+    street?: string;
+    city?: string;
+    zip?: string;
+}> {
+    try {
+        const res = await authFetch(`${API_URL}/api/questionnaire/billing-prefill`);
+        if (!res.ok) return {};
+        const data = await res.json();
+        return data.prefill || {};
+    } catch {
+        return {};
+    }
+}
+
 // ── Platby (Stripe + Bankovní převod) ──
 
 export type PaymentGateway = "stripe" | "bank_transfer";

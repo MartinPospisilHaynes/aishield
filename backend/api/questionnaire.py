@@ -22,7 +22,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 from backend.database import get_supabase
-from backend.api.auth import AuthUser, get_optional_user
+from backend.api.auth import AuthUser, get_optional_user, get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -1655,6 +1655,87 @@ async def get_combined_report(company_id: str, scan_id: Optional[str] = None):
         "total_ai_systems": len(scan_findings) + (q_analysis["ai_systems_declared"] if q_analysis else 0),
         "action_items": _generate_action_items(scan_findings, q_analysis),
     }
+
+
+# ── Billing prefill z dotazníku ──
+
+BILLING_QUESTION_KEYS = [
+    "company_legal_name",
+    "company_ico",
+    "company_address",
+    "company_contact_email",
+    "company_phone",
+]
+
+
+@router.get("/questionnaire/billing-prefill")
+async def get_billing_prefill(user: AuthUser = Depends(get_current_user)):
+    """
+    Vrátí fakturační údaje extrahované z dotazníku.
+    Používá se při předvyplnění checkout formuláře.
+    """
+    supabase = get_supabase()
+
+    # Najít firmu podle emailu uživatele
+    company_res = supabase.table("companies").select("id").eq(
+        "email", user.email
+    ).limit(1).execute()
+
+    if not company_res.data:
+        return {"prefill": {}}
+
+    company_id = company_res.data[0]["id"]
+
+    # Najít client_id pro tuto firmu
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        return {"prefill": {}}
+
+    # Načíst relevantní odpovědi z dotazníku
+    result = supabase.table("questionnaire_responses") \
+        .select("question_key, answer") \
+        .eq("client_id", client_id) \
+        .in_("question_key", BILLING_QUESTION_KEYS) \
+        .execute()
+
+    if not result.data:
+        return {"prefill": {}}
+
+    # Sestavit prefill objekt
+    answers_map = {r["question_key"]: r["answer"] for r in result.data if r.get("answer")}
+    prefill: dict = {}
+
+    if "company_legal_name" in answers_map:
+        prefill["company"] = answers_map["company_legal_name"]
+
+    if "company_ico" in answers_map:
+        prefill["ico"] = answers_map["company_ico"].strip()
+
+    if "company_contact_email" in answers_map:
+        prefill["email"] = answers_map["company_contact_email"]
+
+    if "company_phone" in answers_map:
+        prefill["phone"] = answers_map["company_phone"]
+
+    # Adresa — strukturovaný formát: "street || houseNum || city || zip"
+    if "company_address" in answers_map:
+        addr = answers_map["company_address"]
+        parts = addr.split(" || ")
+        if len(parts) == 4:
+            street_part = parts[0].strip()
+            house_part = parts[1].strip()
+            # Spojit ulici a číslo popisné
+            if house_part:
+                prefill["street"] = f"{street_part} {house_part}".strip()
+            else:
+                prefill["street"] = street_part
+            prefill["city"] = parts[2].strip()
+            prefill["zip"] = parts[3].strip()
+        elif addr.strip():
+            # Fallback — nestrukturovaná adresa (starší záznamy)
+            prefill["street"] = addr.strip()
+
+    return {"prefill": prefill}
 
 
 # ── Pomocné funkce ──

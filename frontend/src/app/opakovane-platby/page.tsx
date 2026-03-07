@@ -1,9 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Opakované platby — AIshield.cz",
+    title: "Opakované platby — Monitoring subscriptions",
     description:
-        "Informace o opakovaných platbách (monitoring subscriptions) na AIshield.cz. Podmínky, ceny a zrušení.",
+        "Informace o opakovaných platbách za monitoring na AIshield.cz. Podmínky, ceny a možnosti zrušení.",
+    alternates: { canonical: "/opakovane-platby" },
+    openGraph: {
+        title: "Opakované platby — AIshield.cz",
+        description: "Podmínky, ceny a správa monitoring subscriptions na AIshield.cz.",
+    },
 };
 
 export default function OpakovvanePlatbyPage() {

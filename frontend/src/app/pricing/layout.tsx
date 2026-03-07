@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         description: "Compliance balíčky od 4 999 Kč. Transparenční stránka, registr AI, risk assessment.",
         images: [
             {
-                url: "https://aishield.cz/og-image.jpg",
+                url: "https://aishield.cz/og-image.png",
                 width: 1200,
                 height: 630,
                 alt: "AIshield.cz — AI Act compliance scanner pro české firmy",

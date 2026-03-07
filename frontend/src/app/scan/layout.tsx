@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         description: "Zadejte URL a za 60 sekund zjistíte AI systémy na webu. Zdarma, bez registrace.",
         images: [
             {
-                url: "https://aishield.cz/og-image.jpg",
+                url: "https://aishield.cz/og-image.png",
                 width: 1200,
                 height: 630,
                 alt: "AIshield.cz — AI Act compliance scanner pro české firmy",

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         description: "Compliance balíček na míru pro velké firmy. AI Act audit, právní konzultace, školení.",
         images: [
             {
-                url: "https://aishield.cz/og-image.jpg",
+                url: "https://aishield.cz/og-image.png",
                 width: 1200,
                 height: 630,
                 alt: "AIshield.cz — AI Act compliance scanner pro české firmy",

@@ -80,21 +80,20 @@ MAIN_PY = "/opt/aishield/backend/main.py"
 with open(MAIN_PY) as f:
     content = f.read()
 
-# Import
+# Import — přidat za poslední existující router import
 IMPORT_LINE = "from backend.shoptet.router import router as shoptet_router"
 if IMPORT_LINE not in content:
-    # Přidat za poslední import
-    anchor = "from backend.api.pioneer import router as pioneer_router"
+    anchor = "from backend.api.auth import router as auth_router"
     assert anchor in content, f"Guard failed — {anchor!r} not found"
     content = content.replace(anchor, anchor + "\\n" + IMPORT_LINE)
     print("  Import přidán")
 else:
     print("  Import již existuje")
 
-# Router registrace
+# Router registrace — přidat za poslední include_router
 ROUTER_LINE = 'app.include_router(shoptet_router, prefix="/shoptet", tags=["Shoptet"])'
 if ROUTER_LINE not in content:
-    anchor2 = 'app.include_router(pioneer_router, prefix="/api/pioneer", tags=["Pioneer"])'
+    anchor2 = 'app.include_router(auth_router, prefix="/api", tags=["Auth"])'
     assert anchor2 in content, f"Guard failed — {anchor2!r} not found"
     content = content.replace(anchor2, anchor2 + "\\n" + ROUTER_LINE)
     print("  Router registrace přidána")

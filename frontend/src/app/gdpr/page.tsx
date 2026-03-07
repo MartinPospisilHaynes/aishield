@@ -1,9 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "GDPR — AIshield.cz",
+    title: "GDPR — Zpracování osobních údajů",
     description:
-        "Informace o zpracování osobních údajů dle GDPR. Jak AIshield.cz chrání vaše data.",
+        "Jak AIshield.cz zpracovává a chrání vaše osobní údaje v souladu s nařízením GDPR (EU 2016/679).",
+    alternates: { canonical: "/gdpr" },
+    openGraph: {
+        title: "GDPR — Zpracování osobních údajů — AIshield.cz",
+        description: "Jak AIshield.cz chrání vaše data v souladu s GDPR.",
+    },
 };
 
 export default function GdprPage() {

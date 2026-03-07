@@ -1,9 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "AI Act Souhlas — AIshield.cz",
+    title: "AI Act Souhlas — Transparenční informace",
     description:
-        "Informace o použití umělé inteligence na AIshield.cz dle požadavků EU AI Act (Nařízení 2024/1689).",
+        "Informace o použití umělé inteligence na AIshield.cz dle požadavků EU AI Act (Nařízení 2024/1689). Článek 50 compliance.",
+    alternates: { canonical: "/ai-act-souhlas" },
+    openGraph: {
+        title: "AI Act Souhlas — AIshield.cz",
+        description: "Transparenční informace o AI systémech na AIshield.cz dle EU AI Act.",
+    },
 };
 
 export default function AiActSouhlasPage() {

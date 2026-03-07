@@ -1,9 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Obchodní podmínky — AIshield.cz",
+    title: "Obchodní podmínky",
     description:
         "Všeobecné obchodní podmínky služby AIshield.cz — automatizovaný nástroj pro přípravu AI Act compliance dokumentace.",
+    alternates: { canonical: "/terms" },
+    openGraph: {
+        title: "Obchodní podmínky — AIshield.cz",
+        description: "Všeobecné obchodní podmínky služby AIshield.cz.",
+    },
 };
 
 export default function TermsPage() {

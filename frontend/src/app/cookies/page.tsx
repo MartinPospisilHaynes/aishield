@@ -1,9 +1,14 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Cookies — AIshield.cz",
+    title: "Zásady používání cookies",
     description:
-        "Informace o používání cookies na AIshield.cz. Jaké cookies používáme a proč.",
+        "Informace o používání cookies na AIshield.cz. Jaké cookies používáme, proč a jak je spravovat.",
+    alternates: { canonical: "/cookies" },
+    openGraph: {
+        title: "Zásady používání cookies — AIshield.cz",
+        description: "Jaké cookies používáme na AIshield.cz a proč. Nastavení a správa souhlasu.",
+    },
 };
 
 export default function CookiesPage() {

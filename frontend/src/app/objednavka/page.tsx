@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createCheckout, validateVoucher } from "@/lib/api";
+import { createCheckout, validateVoucher, getBillingPrefill } from "@/lib/api";
 import { createClient } from "@/lib/supabase-browser";
 import { useAnalytics, useApiErrorTracking } from "@/lib/analytics";
 
@@ -146,23 +146,33 @@ function CheckoutInner() {
         }
     }, []);
 
-    // Load user email + IČO from supabase session
+    // Load user + prefill from questionnaire + ARES
     useEffect(() => {
         (async () => {
             try {
                 const supabase = createClient();
                 const { data: { user } } = await supabase.auth.getUser();
-                if (user?.email) setEmail(user.email);
                 if (!user) {
                     router.push(`/registrace?redirect=/objednavka&plan=${planKey}`);
                     return;
                 }
-                // Pre-fill IČO from onboarding metadata
-                const meta = user.user_metadata;
-                if (meta?.ico) {
-                    setIco(meta.ico);
-                    // Trigger ARES lookup to fill company details
-                    lookupAres(meta.ico);
+                if (user.email) setEmail(user.email);
+
+                // Předvyplnit z dotazníku (pokud tam klient vyplnil údaje)
+                const prefill = await getBillingPrefill();
+                if (prefill.company) setCompany(prefill.company);
+                if (prefill.email) setEmail(prefill.email);
+                if (prefill.phone) setPhone(prefill.phone);
+                if (prefill.street) setStreet(prefill.street);
+                if (prefill.city) setCity(prefill.city);
+                if (prefill.zip) setZip(prefill.zip);
+
+                // IČO: přednost má metadata (z registrace), pak dotazník
+                const icoValue = user.user_metadata?.ico || prefill.ico || "";
+                if (icoValue) {
+                    setIco(icoValue);
+                    // ARES lookup přepíše adresu rejstříkovými daty
+                    lookupAres(icoValue);
                 }
             } catch {
                 // ignore
