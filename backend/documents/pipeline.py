@@ -1,159 +1,89 @@
 """
-AIshield.cz — Document Generation Pipeline (v2)
-Per-section architektura: každá sekce = vlastní PDF.
+AIshield.cz — Document Generation Pipeline v3
 
-Tok: DB data → 11 paralelních LLM volání → 10 PDF + 1 HTML + 1 PPTX → Supabase
+4-modulová architektura: M1 Generator → M2 EU Critic → M3 Client Critic → M4 Refiner
+Sekvenční zpracování: každý dokument projde celým pipeline před dalším.
+
+Model přiřazení:
+  M1: Gemini 3.1 Pro (generátor)
+  M2: Claude Sonnet 4 (EU inspektor)
+  M3: Gemini 3.1 Pro (klientský kritik)
+  M4: Claude Sonnet 4 (refiner)
 """
 
+import json
 import logging
+import os
+import time
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
+from typing import Dict, List, Optional
 
 from backend.database import get_supabase
-from backend.documents.templates import TEMPLATE_RENDERERS, TEMPLATE_NAMES
-from backend.documents.pdf_generator import html_to_pdf, generate_document_pdf, save_to_supabase_storage
-from backend.documents.unified_pdf import render_unified_pdf_html, render_section_pdf_html, SECTION_RENDERERS
-from backend.documents.llm_content import generate_document_content
+from backend.documents.pdf_generator import html_to_pdf, save_to_supabase_storage
+from backend.documents.pdf_renderer import render_section_html
+from backend.documents.m1_generator import generate_draft, DOCUMENT_NAMES, PROMPT_BUILDERS
+from backend.documents.m2_eu_critic import review_eu
+from backend.documents.m3_client_critic import review_client
+from backend.documents.m4_refiner import refine
+from backend.documents.m5_prompt_optimizer import analyze_and_optimize
+from backend.documents.generation_report import send_generation_report
 
 logger = logging.getLogger(__name__)
 
 
 # ══════════════════════════════════════════════════════════════════════
-# DOCUMENT ELIGIBILITY — filtr dokumentů podle rizikového profilu
+# DOCUMENT KEYS — 11 dokumentů zpracovávaných pipeline
 # ══════════════════════════════════════════════════════════════════════
 
-def _has_chatbot(data: dict) -> bool:
-    """Detekce chatbotu — ze skenu (findings) nebo dotazníku."""
-    for f in data.get("findings", []):
-        if f.get("category") == "chatbot":
-            return True
-    for sys in data.get("ai_systems_declared", []):
-        if sys.get("key") in ("uses_ai_chatbot", "uses_ai_email_auto"):
-            return True
-    return False
+DOCUMENT_KEYS = [
+    "compliance_report",
+    "action_plan",
+    "ai_register",
+    "training_outline",
+    "chatbot_notices",
+    "ai_policy",
+    "incident_response_plan",
+    "dpia_template",
+    "vendor_checklist",
+    "monitoring_plan",
+    "transparency_human_oversight",
+    "transparency_page",
+    "training_presentation",
+]
 
-
-def _risk_is(data: dict, *levels: str) -> bool:
-    """Ověří, zda celkové riziko odpovídá některé z úrovní."""
-    return data.get("overall_risk", "minimal") in levels
-
-
-def _ai_system_count(data: dict) -> int:
-    """Počet deklarovaných AI systémů (dotazník + sken)."""
-    declared = len(data.get("ai_systems_declared", []))
-    found = len(data.get("findings", []))
-    return max(declared, found)
-
-
-DOCUMENT_ELIGIBILITY: dict[str, dict] = {
-    # ══════════════════════════════════════════════════════════════
-    # Všech 11 dokumentů se generuje VŽDY pro každého klienta.
-    # Důvod: maximální pokrytí + profesionální dojem + jsme krytí.
-    # Dokumenty jako incident plan, DPIA, monitoring plan jsou
-    # obecné best-practices aplikovatelné na každou firmu.
-    # ══════════════════════════════════════════════════════════════
-
-    # ── TIER 1 — Základní compliance dokumenty ──
-    "compliance_report": {
-        "check": lambda d: True,
-        "reason": "Povinný výstup analýzy — vždy generován",
-        "tier": "always",
-    },
-    "ai_register": {
-        "check": lambda d: True,
-        "reason": "Registr AI systémů — povinný dle čl. 49 AI Act",
-        "tier": "always",
-    },
-    "training_outline": {
-        "check": lambda d: True,
-        "reason": "AI gramotnost — povinná dle čl. 4 AI Act pro všechny",
-        "tier": "always",
-    },
-    "transparency_page": {
-        "check": lambda d: True,
-        "reason": "Transparenční stránka — povinná dle čl. 50 AI Act",
-        "tier": "always",
-    },
-    "action_plan": {
-        "check": lambda d: True,
-        "reason": "Akční plán — konkrétní kroky k souladu",
-        "tier": "always",
-    },
-
-    # ── TIER 2 — Komunikace a interní pravidla ──
-    "chatbot_notices": {
-        "check": lambda d: True,
-        "reason": "Texty oznámení pro AI nástroje — čl. 50 AI Act (best practice i bez chatbotu)",
-        "tier": "always",
-    },
-    "ai_policy": {
-        "check": lambda d: True,
-        "reason": "Interní AI politika — doporučena pro všechny firmy využívající AI",
-        "tier": "always",
-    },
-
-    # ── TIER 3 — Ochranné dokumenty (best practice pro všechny) ──
-    "incident_response_plan": {
-        "check": lambda d: True,
-        "reason": "Plán řízení incidentů — obecné best practices dle čl. 73 AI Act",
-        "tier": "always",
-    },
-    "dpia_template": {
-        "check": lambda d: True,
-        "reason": "DPIA šablona — posouzení vlivu na práva (GDPR čl. 35 + AI Act čl. 27)",
-        "tier": "always",
-    },
-    "vendor_checklist": {
-        "check": lambda d: True,
-        "reason": "Dodavatelský checklist — kontrola smluv s poskytovateli AI (čl. 25–26)",
-        "tier": "always",
-    },
-    "monitoring_plan": {
-        "check": lambda d: True,
-        "reason": "Monitoring plán — průběžné sledování AI systémů dle čl. 12 AI Act",
-        "tier": "always",
-    },
-    "transparency_human_oversight": {
-        "check": lambda d: True,
-        "reason": "Transparentnost a lidský dohled — čl. 13, 14, 50 AI Act",
-        "tier": "always",
-    },
+SECTION_SLUG = {
+    "compliance_report": "compliance_report",
+    "action_plan": "akcni_plan",
+    "ai_register": "registr_ai_systemu",
+    "training_outline": "skoleni_ai_literacy",
+    "chatbot_notices": "oznameni_ai",
+    "ai_policy": "interni_ai_politika",
+    "incident_response_plan": "plan_rizeni_incidentu",
+    "dpia_template": "dpia_posouzeni_vlivu",
+    "vendor_checklist": "dodavatelsky_checklist",
+    "monitoring_plan": "monitoring_plan_ai",
+    "transparency_human_oversight": "transparentnost_lidsky_dohled",
+    "transparency_page": "transparencni_stranka",
+    "training_presentation": "skolici_prezentace",
 }
 
 
-def _get_eligible_documents(template_data: dict) -> tuple[dict[str, str], list[dict]]:
-    """
-    Vyhodnotí, které dokumenty mají být generovány na základě rizikového profilu.
-
-    Returns:
-        (eligible, skipped)
-        - eligible: {template_key: reason} — dokumenty k vygenerování
-        - skipped: [{key, name, reason}] — přeskočené dokumenty s vysvětlením
-    """
-    eligible = {}
-    skipped = []
-
-    for template_key, rule in DOCUMENT_ELIGIBILITY.items():
-        if rule["check"](template_data):
-            eligible[template_key] = rule["reason"]
-        else:
-            skipped.append({
-                "key": template_key,
-                "name": TEMPLATE_NAMES.get(template_key, template_key),
-                "reason": rule.get("skip_reason", "Podmínky pro generování nebyly splněny"),
-            })
-
-    return eligible, skipped
-
+# ══════════════════════════════════════════════════════════════════════
+# RESULT DATACLASS
+# ══════════════════════════════════════════════════════════════════════
 
 @dataclass
 class ComplianceKitResult:
     """Výsledek generování celého Compliance Kitu."""
     client_id: str
     company_name: str
-    documents: list[dict] = field(default_factory=list)
-    errors: list[str] = field(default_factory=list)
-    skipped_documents: list[dict] = field(default_factory=list)
+    documents: list = field(default_factory=list)
+    errors: list = field(default_factory=list)
+    skipped_documents: list = field(default_factory=list)
+    pipeline_log: list = field(default_factory=list)
+    total_cost_usd: float = 0.0
+    total_tokens: int = 0
     generated_at: str = ""
 
     @property
@@ -171,67 +101,96 @@ class ComplianceKitResult:
             "documents": self.documents,
             "errors": self.errors,
             "skipped_documents": self.skipped_documents,
+            "pipeline_log": self.pipeline_log,
+            "total_cost_usd": self.total_cost_usd,
+            "total_tokens": self.total_tokens,
             "generated_at": self.generated_at,
             "summary": {
-                "total_outputs": self.success_count,  # 10 PDFs + 1 HTML + 1 PPTX
-                "generated": self.success_count,
-                "skipped_sections": len(self.skipped_documents),
+                "total_documents": self.success_count,
                 "failed": self.error_count,
+                "cost_usd": f"${self.total_cost_usd:.4f}",
+                "total_tokens": self.total_tokens,
             },
         }
 
 
-def _load_scan_data(client_id: str) -> dict:
-    """Načte data ze skenu webu pro daného klienta."""
-    logger.info(f"[Pipeline] Načítám scan data pro klienta {client_id}")
+# ══════════════════════════════════════════════════════════════════════
+# DATA LOADING — z Supabase DB
+# ══════════════════════════════════════════════════════════════════════
+
+def _resolve_ids(input_id: str) -> dict:
+    """Rozřeší vstupní ID na client_id + company_id."""
     supabase = get_supabase()
 
-    # Najít poslední sken klienta
-    scans = (
-        supabase.table("scans")
-        .select("*")
-        .eq("company_id", client_id)
-        .order("created_at", desc=True)
-        .limit(1)
-        .execute()
-    )
+    # 1. Zkusit jako order_id
+    order = supabase.table("orders").select("*").eq("id", input_id).limit(1).execute()
+    if order.data:
+        o = order.data[0]
+        company_id = o.get("company_id", "")
+        client = supabase.table("clients").select("id").eq("company_id", company_id).limit(1).execute()
+        client_id = client.data[0]["id"] if client.data else company_id
+        logger.info(f"[Pipeline] Resolved order_id → company={company_id}, client={client_id}")
+        return {
+            "client_id": client_id, "company_id": company_id,
+            "billing_data": {
+                "billing_name": o.get("billing_name", ""),
+                "billing_ico": o.get("billing_ico", ""),
+                "billing_email": o.get("billing_email", ""),
+            },
+        }
 
+    # 2. Zkusit jako client_id
+    client = supabase.table("clients").select("id, company_id").eq("id", input_id).limit(1).execute()
+    if client.data:
+        company_id = client.data[0].get("company_id", input_id)
+        return {"client_id": input_id, "company_id": company_id, "billing_data": {}}
+
+    # 3. Zkusit jako company_id
+    company = supabase.table("companies").select("id").eq("id", input_id).limit(1).execute()
+    if company.data:
+        client = supabase.table("clients").select("id").eq("company_id", input_id).limit(1).execute()
+        client_id = client.data[0]["id"] if client.data else input_id
+        return {"client_id": client_id, "company_id": input_id, "billing_data": {}}
+
+    # 4. Fallback
+    logger.warning(f"[Pipeline] ID {input_id} nerozřešeno — fallback")
+    return {"client_id": input_id, "company_id": input_id, "billing_data": {}}
+
+
+def _load_scan_data(client_id: str) -> dict:
+    """Načte data ze skenu webu."""
+    logger.info(f"[Pipeline] Načítám scan data pro {client_id}")
+    supabase = get_supabase()
+
+    scans = (
+        supabase.table("scans").select("*")
+        .eq("company_id", client_id)
+        .order("created_at", desc=True).limit(1).execute()
+    )
     if not scans.data:
-        logger.warning(f"[Pipeline] Žádný sken nalezen pro klienta {client_id}")
-        return {"findings": [], "url": "", "scan_id": None}
+        return {"findings": [], "url": "", "scan_id": None, "risk_breakdown": {"high": 0, "limited": 0, "minimal": 0}}
 
     scan = scans.data[0]
     scan_id = scan["id"]
-
-    # Načíst nálezy (findings) pro tento sken
-    findings_res = (
-        supabase.table("findings")
-        .select("*")
-        .eq("scan_id", scan_id)
-        .execute()
-    )
+    findings_res = supabase.table("findings").select("*").eq("scan_id", scan_id).execute()
 
     findings = []
-    seen_names: set[str] = set()  # deduplikace dle názvu (ai_classified + deep_scan)
+    seen_names: set = set()
     risk_breakdown = {"high": 0, "limited": 0, "minimal": 0}
+
     for f in findings_res.data or []:
         name = f.get("name", "AI systém")
         name_lower = name.strip().lower()
-
-        # Deduplikace — pokud máme dva záznamy se stejným jménem,
-        # ponecháme jen ten s vyšší rizikovostí (nebo první)
         if name_lower in seen_names:
-            logger.debug(f"[Pipeline] Duplicitní finding přeskočen: {name}")
             continue
         seen_names.add(name_lower)
-
         rl = f.get("risk_level", "minimal")
         risk_breakdown[rl] = risk_breakdown.get(rl, 0) + 1
-        # Sanitize — odstranit raw LLM error messages z polí viditelných zákazníkem
+
+        # Sanitize error markers
         classification_text = f.get("ai_classification_text", "")
         action_req = f.get("action_required", "")
-        _error_markers = ("LLM failed", "Cannot parse", "Raw text:", "JSONDecodeError", "klasifikace selhala")
-        for marker in _error_markers:
+        for marker in ("LLM failed", "Cannot parse", "Raw text:", "JSONDecodeError", "klasifikace selhala"):
             if marker in classification_text:
                 classification_text = "Klasifikace provedena na základě signatur a heuristické analýzy."
                 break
@@ -240,28 +199,18 @@ def _load_scan_data(client_id: str) -> dict:
                 break
 
         findings.append({
-            "name": name,
-            "category": f.get("category", ""),
-            "risk_level": rl,
-            "ai_act_article": f.get("ai_act_article", ""),
+            "name": name, "category": f.get("category", ""),
+            "risk_level": rl, "ai_act_article": f.get("ai_act_article", ""),
             "action_required": action_req,
             "ai_classification_text": classification_text,
             "confirmed_by_client": f.get("confirmed_by_client", "unknown"),
             "source": f.get("source", ""),
         })
 
-    logger.info(
-        f"[Pipeline] Scan data načtena: {len(findings)} findings (deduplikováno z {len(findings_res.data or [])}), "
-        f"risk_breakdown={risk_breakdown}, deep_scan={scan.get('deep_scan_status', 'N/A')}"
-    )
-
+    logger.info(f"[Pipeline] Scan: {len(findings)} findings, risk={risk_breakdown}")
     return {
-        "findings": findings,
-        "url": scan.get("url", ""),
-        "scan_id": scan_id,
-        "scan_date": scan.get("created_at", ""),
-        "risk_breakdown": risk_breakdown,
-        # Deep scan metadata — pro dokumenty
+        "findings": findings, "url": scan.get("url", ""), "scan_id": scan_id,
+        "scan_date": scan.get("created_at", ""), "risk_breakdown": risk_breakdown,
         "deep_scan_status": scan.get("deep_scan_status"),
         "deep_scan_started_at": scan.get("deep_scan_started_at"),
         "deep_scan_finished_at": scan.get("deep_scan_finished_at"),
@@ -272,89 +221,63 @@ def _load_scan_data(client_id: str) -> dict:
 
 
 def _load_questionnaire_data(client_id: str) -> dict:
-    """
-    Načte data z dotazníku pro daného klienta.
-    Nový formát: questionnaire_responses tabulka — jeden řádek per odpověď
-    (client_id, section, question_key, answer, details, tool_name).
-    """
-    logger.info(f"[Pipeline] Načítám dotazník pro klienta {client_id}")
+    """Načte dotazníková data."""
+    logger.info(f"[Pipeline] Načítám dotazník pro {client_id}")
     supabase = get_supabase()
     responses = None
 
-    # Pokus 1: Přímé vyhledání dle client_id
     try:
-        res = (
-            supabase.table("questionnaire_responses")
-            .select("question_key, section, answer, details, tool_name")
-            .eq("client_id", client_id)
-            .execute()
-        )
+        res = (supabase.table("questionnaire_responses")
+               .select("question_key, section, answer, details, tool_name")
+               .eq("client_id", client_id).execute())
         if res.data:
             responses = res.data
     except Exception:
         pass
 
-    # Pokus 2: Mapování přes clients tabulku (company_id → client_id)
     if not responses:
         try:
-            mapping = (
-                supabase.table("clients")
-                .select("id")
-                .eq("company_id", client_id)
-                .limit(1)
-                .execute()
-            )
+            mapping = supabase.table("clients").select("id").eq("company_id", client_id).limit(1).execute()
             if mapping.data:
-                mapped_id = mapping.data[0]["id"]
-                res = (
-                    supabase.table("questionnaire_responses")
-                    .select("question_key, section, answer, details, tool_name")
-                    .eq("client_id", mapped_id)
-                    .execute()
-                )
+                res = (supabase.table("questionnaire_responses")
+                       .select("question_key, section, answer, details, tool_name")
+                       .eq("client_id", mapping.data[0]["id"]).execute())
                 if res.data:
                     responses = res.data
         except Exception:
             pass
 
     if not responses:
-        logger.warning(f"[Pipeline] Žádné odpovědi z dotazníku pro klienta {client_id}")
         return {
-            "questionnaire_completed": False,
-            "questionnaire_ai_systems": 0,
-            "recommendations": [],
-            "risk_breakdown": {"high": 0, "limited": 0, "minimal": 0},
+            "questionnaire_completed": False, "questionnaire_ai_systems": 0,
+            "recommendations": [], "risk_breakdown": {"high": 0, "limited": 0, "minimal": 0},
         }
 
-    logger.info(f"[Pipeline] Dotazník: {len(responses)} odpovědí nalezeno")
-
-    # ── Parsovat odpovědi do {question_key → data} ──
-    answers_by_key: dict[str, dict] = {}
+    logger.info(f"[Pipeline] Dotazník: {len(responses)} odpovědí")
+    answers_by_key = {}
     for row in responses:
         key = row.get("question_key", "")
-        if not key:
-            continue
-        answers_by_key[key] = {
-            "answer": row.get("answer", ""),
-            "details": row.get("details") or {},
-            "tool_name": row.get("tool_name", ""),
-            "section": row.get("section", ""),
-        }
+        if key:
+            answers_by_key[key] = {
+                "answer": row.get("answer", ""),
+                "details": row.get("details") or {},
+                "tool_name": row.get("tool_name", ""),
+                "section": row.get("section", ""),
+            }
 
-    def _get(qkey: str, default: str = "") -> str:
+    def _get(qkey, default=""):
         return answers_by_key.get(qkey, {}).get("answer", default)
 
-    def _get_detail(qkey: str, detail_key: str, default=""):
+    def _get_detail(qkey, detail_key, default=""):
         return (answers_by_key.get(qkey, {}).get("details") or {}).get(detail_key, default)
 
-    # ── Firemní údaje z dotazníku ──
+    # Company details
     company_legal_name = _get("company_legal_name")
     company_ico = _get("company_ico")
-    # Address: frontend stores as "ulice || č.p. || město || PSČ" — convert to readable format
     raw_address = _get("company_address")
     if " || " in raw_address:
         parts = [p.strip() for p in raw_address.split(" || ")]
-        street, house, city, zipcode = (parts + ["", "", "", ""])[:4]
+        street, house, city, zipcode = (parts + ["","","",""])[:4]
         addr_parts = []
         if street and house:
             addr_parts.append(f"{street} {house}")
@@ -367,12 +290,12 @@ def _load_questionnaire_data(client_id: str) -> dict:
         company_address = ", ".join(addr_parts)
     else:
         company_address = raw_address
+
     company_contact_email = _get("company_contact_email")
     company_industry = _get("company_industry")
     company_size = _get("company_size")
-    company_annual_revenue = _get("company_annual_revenue")
 
-    # ── Odpovědná osoba za AI (čl. 14) ──
+    # Oversight person
     oversight_raw = answers_by_key.get("has_oversight_person", {})
     oversight_details = oversight_raw.get("details") or {}
     oversight_person = {
@@ -384,77 +307,53 @@ def _load_questionnaire_data(client_id: str) -> dict:
         "scope": oversight_details.get("oversight_scope", []),
     }
 
-    # ── AI systémy ve firmě (yes odpovědi) ──
-    ai_system_keys = [
-        "uses_chatgpt", "uses_copilot", "uses_ai_content", "uses_deepfake",
-        "uses_ai_recruitment", "uses_ai_employee_monitoring", "uses_emotion_recognition",
-        "uses_ai_accounting", "uses_ai_creditscoring", "uses_ai_insurance",
-        "uses_ai_chatbot", "uses_ai_email_auto", "uses_ai_decision",
-        "uses_dynamic_pricing", "uses_ai_for_children", "uses_ai_critical_infra",
-        "uses_ai_safety_component", "develops_own_ai", "modifies_ai_purpose",
-        "uses_gpai_api",
-    ]
-    # ── Mapa: question_key → (detail_key pro název nástroje, fallback název) ──
-    TOOL_NAME_DETAIL_MAP = {
-        "uses_chatgpt":              ("chatgpt_tool_name",   "ChatGPT"),
-        "uses_copilot":              ("copilot_tool_name",   "GitHub Copilot"),
-        "uses_ai_content":           ("content_tool_name",   "AI generátor obsahu"),
-        "uses_deepfake":             ("deepfake_tool_name",  "AI video/syntetický obsah"),
-        "uses_ai_chatbot":           ("chatbot_tool_name",   "AI chatbot"),
-        "uses_ai_email_auto":        ("email_tool",          "AI e-mailový asistent"),
-        "uses_ai_recruitment":       ("recruitment_tool",    "AI náborový systém"),
-        "uses_ai_employee_monitoring": ("monitoring_type",   "AI monitoring zaměstnanců"),
-        "uses_emotion_recognition":  ("emotion_tool_name",   "Rozpoznávání emocí"),
-        "uses_ai_creditscoring":     ("credit_tool",         "AI credit scoring"),
-        "uses_ai_accounting":        ("accounting_tool",     "AI účetní systém"),
-        "uses_ai_insurance":         ("insurance_tool",      "AI pojišťovací systém"),
-        "uses_ai_decision":          ("decision_scope",      "AI automatizované rozhodování"),
-        "uses_dynamic_pricing":      ("pricing_tool",        "Dynamická cenotvorba"),
-        "uses_ai_for_children":      ("children_ai_context", "AI pro děti"),
-        "uses_ai_critical_infra":    ("infra_tool_name",     "AI kritická infrastruktura"),
-        "uses_ai_safety_component":  ("safety_product",      "AI bezpečnostní komponenta"),
-        "develops_own_ai":           (None,                   "Vlastní vývoj AI"),
-        "modifies_ai_purpose":       (None,                   "Změna účelu AI systému"),
-        "uses_gpai_api":             ("gpai_provider",       "GPAI API"),
+    # AI systems
+    TOOL_NAME_MAP = {
+        "uses_chatgpt": ("chatgpt_tool_name", "ChatGPT"),
+        "uses_copilot": ("copilot_tool_name", "GitHub Copilot"),
+        "uses_ai_content": ("content_tool_name", "AI generátor obsahu"),
+        "uses_deepfake": ("deepfake_tool_name", "AI video/syntetický obsah"),
+        "uses_ai_chatbot": ("chatbot_tool_name", "AI chatbot"),
+        "uses_ai_email_auto": ("email_tool", "AI e-mailový asistent"),
+        "uses_ai_recruitment": ("recruitment_tool", "AI náborový systém"),
+        "uses_ai_employee_monitoring": ("monitoring_type", "AI monitoring zaměstnanců"),
+        "uses_emotion_recognition": ("emotion_tool_name", "Rozpoznávání emocí"),
+        "uses_ai_creditscoring": ("credit_tool", "AI credit scoring"),
+        "uses_ai_accounting": ("accounting_tool", "AI účetní systém"),
+        "uses_ai_insurance": ("insurance_tool", "AI pojišťovací systém"),
+        "uses_ai_decision": ("decision_scope", "AI automatizované rozhodování"),
+        "uses_dynamic_pricing": ("pricing_tool", "Dynamická cenotvorba"),
+        "uses_ai_for_children": ("children_ai_context", "AI pro děti"),
+        "uses_ai_critical_infra": ("infra_tool_name", "AI kritická infrastruktura"),
+        "uses_ai_safety_component": ("safety_product", "AI bezpečnostní komponenta"),
+        "develops_own_ai": (None, "Vlastní vývoj AI"),
+        "modifies_ai_purpose": (None, "Změna účelu AI systému"),
+        "uses_gpai_api": ("gpai_provider", "GPAI API"),
     }
 
     ai_systems_declared = []
-    for syskey in ai_system_keys:
+    for syskey, (detail_key, fallback) in TOOL_NAME_MAP.items():
         sdata = answers_by_key.get(syskey, {})
         if sdata.get("answer") == "yes":
             details = sdata.get("details") or {}
-            detail_key, fallback_name = TOOL_NAME_DETAIL_MAP.get(syskey, (None, "AI systém"))
-
-            # 1. Zkusit tool_name sloupec (někdy vyplněn ve formuláři)
             raw_tool = sdata.get("tool_name") or ""
             if raw_tool and raw_tool.lower() not in ("none", "null", ""):
-                resolved_name = raw_tool
+                name = raw_tool
             elif detail_key and details.get(detail_key):
-                # 2. Extrahovat z details — může být list nebo string
                 val = details[detail_key]
-                if isinstance(val, list):
-                    resolved_name = ", ".join(str(v) for v in val[:5])
-                else:
-                    resolved_name = str(val)
+                name = ", ".join(str(v) for v in val[:5]) if isinstance(val, list) else str(val)
             else:
-                # 3. Fallback na čitelný název
-                resolved_name = fallback_name
+                name = fallback
+            ai_systems_declared.append({"key": syskey, "tool_name": name, "details": details})
 
-            ai_systems_declared.append({
-                "key": syskey,
-                "tool_name": resolved_name,
-                "details": details,
-                "section": sdata.get("section", ""),
-            })
-
-    # ── Zakázané praktiky ──
+    # Prohibited
     prohibited = {
         "social_scoring": _get("uses_social_scoring") == "yes",
         "subliminal_manipulation": _get("uses_subliminal_manipulation") == "yes",
         "realtime_biometric": _get("uses_realtime_biometric") == "yes",
     }
 
-    # ── Školení / AI gramotnost ──
+    # Training, Incident, Data protection, Human oversight
     training = {
         "has_training": _get("has_ai_training") == "yes",
         "has_guidelines": _get("has_ai_guidelines") == "yes",
@@ -462,8 +361,6 @@ def _load_questionnaire_data(client_id: str) -> dict:
         "audience_size": _get_detail("has_ai_training", "training_audience_size", ""),
         "audience_level": _get_detail("has_ai_training", "training_audience_level", ""),
     }
-
-    # ── Incident management ──
     incident = {
         "has_plan": _get("has_incident_plan") == "yes",
         "plan_scope": _get_detail("has_incident_plan", "incident_plan_scope", []),
@@ -471,139 +368,74 @@ def _load_questionnaire_data(client_id: str) -> dict:
         "tracks_changes": _get("tracks_ai_changes") == "yes",
         "has_bias_check": _get("has_ai_bias_check") == "yes",
     }
-
-    # ── Ochrana dat ──
-    data_protection = {
-        "processes_personal_data": _get("ai_processes_personal_data") == "yes",
-        "data_in_eu": _get("ai_data_stored_eu") == "yes",
-        "has_vendor_contracts": _get("has_ai_vendor_contracts") == "yes",
-    }
-
-    # ── Lidský dohled ──
+    data_protection = {"processes_personal_data": _get("ai_processes_personal_data") == "yes",
+                       "data_in_eu": _get("ai_data_stored_eu") == "yes",
+                       "has_vendor_contracts": _get("has_ai_vendor_contracts") == "yes"}
     human_oversight = {
         "can_override": _get("can_override_ai") == "yes",
         "has_logging": _get("ai_decision_logging") == "yes",
         "has_register": _get("has_ai_register") == "yes",
     }
 
-    # ── Analýza rizik (přes existující funkci z questionnaire.py) ──
+    # Risk analysis
     try:
         from backend.api.questionnaire import QuestionnaireAnswer, _analyze_responses
-        qa_list = [
-            QuestionnaireAnswer(
-                question_key=row["question_key"],
-                section=row["section"],
-                answer=row["answer"],
-                details=row.get("details"),
-                tool_name=row.get("tool_name"),
-            )
-            for row in responses
-        ]
+        qa_list = [QuestionnaireAnswer(
+            question_key=r["question_key"], section=r["section"],
+            answer=r["answer"], details=r.get("details"), tool_name=r.get("tool_name"),
+        ) for r in responses]
         analysis = _analyze_responses(qa_list)
     except Exception as e:
-        logger.warning(f"Analýza dotazníku selhala (fallback): {e}")
-        analysis = {
-            "risk_breakdown": {"high": 0, "limited": 0, "minimal": 0},
-            "recommendations": [],
-            "ai_systems_declared": len(ai_systems_declared),
-        }
+        logger.warning(f"Analýza dotazníku selhala: {e}")
+        analysis = {"risk_breakdown": {"high": 0, "limited": 0, "minimal": 0}, "recommendations": []}
 
-    # Celkové riziko
     rb = analysis.get("risk_breakdown", {})
-    if rb.get("high", 0) > 0:
-        overall_risk = "high"
-    elif rb.get("limited", 0) > 0:
-        overall_risk = "limited"
-    else:
-        overall_risk = "minimal"
+    overall_risk = "high" if rb.get("high", 0) > 0 else ("limited" if rb.get("limited", 0) > 0 else "minimal")
 
     return {
-        "questionnaire_completed": True,
-        "questionnaire_answers": answers_by_key,
-        "questionnaire_ai_systems": len(ai_systems_declared),
+        "questionnaire_completed": True, "questionnaire_answers": answers_by_key,
         "ai_systems_declared": ai_systems_declared,
         "recommendations": analysis.get("recommendations", []),
         "risk_breakdown": analysis.get("risk_breakdown", {}),
         "overall_risk": overall_risk,
-        # Firemní údaje z dotazníku
-        "q_company_legal_name": company_legal_name,
-        "q_company_ico": company_ico,
+        "q_company_legal_name": company_legal_name, "q_company_ico": company_ico,
         "q_company_address": company_address,
         "q_company_contact_email": company_contact_email,
-        "q_company_industry": company_industry,
-        "q_company_size": company_size,
-        "q_company_annual_revenue": company_annual_revenue,
-        # Odpovědná osoba
-        "oversight_person": oversight_person,
-        # Zakázané praktiky
-        "prohibited_systems": prohibited,
-        # Školení
-        "training": training,
-        # Incident management
-        "incident": incident,
-        # Ochrana dat
-        "data_protection": data_protection,
-        # Lidský dohled
-        "human_oversight": human_oversight,
+        "q_company_industry": company_industry, "q_company_size": company_size,
+        "oversight_person": oversight_person, "prohibited_systems": prohibited,
+        "training": training, "incident": incident,
+        "data_protection": data_protection, "human_oversight": human_oversight,
     }
 
 
-def _load_company_data(client_id: str) -> dict:
-    """Načte základní data o firmě."""
-    logger.info(f"[Pipeline] Načítám data firmy pro klienta {client_id}")
+def _load_company_data(company_id: str) -> dict:
+    """Načte data firmy."""
     supabase = get_supabase()
-
-    company = (
-        supabase.table("companies")
-        .select("*")
-        .eq("id", client_id)
-        .limit(1)
-        .execute()
-    )
-
+    company = supabase.table("companies").select("*").eq("id", company_id).limit(1).execute()
     if not company.data:
-        # Zkusit clients tabulku
-        client = (
-            supabase.table("clients")
-            .select("*")
-            .eq("id", client_id)
-            .limit(1)
-            .execute()
-        )
+        client = supabase.table("clients").select("*").eq("id", company_id).limit(1).execute()
         if client.data:
             c = client.data[0]
-            return {
-                "company_name": c.get("company_name", c.get("name", "Neznámá firma")),
-                "contact_email": c.get("email", ""),
-            }
+            return {"company_name": c.get("company_name", c.get("name", "Neznámá firma")),
+                    "contact_email": c.get("email", "")}
         return {"company_name": "Neznámá firma", "contact_email": ""}
-
     c = company.data[0]
-    return {
-        "company_name": c.get("name", "Neznámá firma"),
-        "contact_email": c.get("email", ""),
-    }
+    return {"company_name": c.get("name", "Neznámá firma"), "contact_email": c.get("email", "")}
 
 
 def _save_document_record(client_id: str, doc_info: dict) -> None:
-    """Uloží záznam o generovaném dokumentu do DB tabulky 'documents'. Pioneer → pending_review."""
+    """Uloží záznam dokumentu do DB. Pioneer klienti dostanou pending_review."""
     supabase = get_supabase()
-
     try:
-        # Zjisti zda je klient z Pioneer programu
-        is_pioneer = False
+        # Zjistíme, zda jde o Pioneer klienta (přes client_id v pioneer_codes)
+        approval_status = "auto_approved"
         try:
-            pioneer_check = (
-                supabase.table("pioneer_codes")
-                .select("id")
-                .eq("company_id", client_id)
-                .eq("status", "used")
-                .limit(1)
-                .execute()
-            )
-            is_pioneer = bool(pioneer_check.data)
+            pioneer_check = supabase.table("pioneer_codes")                 .select("id")                 .eq("company_id", client_id)                 .eq("status", "used")                 .limit(1)                 .execute()
+            if pioneer_check.data:
+                approval_status = "pending_review"
+                logger.info(f"[Pipeline] Pioneer klient {client_id} — pending_review")
         except Exception:
-            pass
+            pass  # Pokud tabulka neexistuje nebo jiná chyba, default auto_approved
 
         supabase.table("documents").insert({
             "company_id": client_id,
@@ -612,80 +444,152 @@ def _save_document_record(client_id: str, doc_info: dict) -> None:
             "url": doc_info.get("download_url", ""),
             "format": doc_info.get("format", "pdf"),
             "size_bytes": doc_info.get("size_bytes", 0),
-            "approval_status": "pending_review" if is_pioneer else "auto_approved",
+            "approval_status": approval_status,
         }).execute()
-        logger.info(f"[Pipeline] DB záznam uložen: {doc_info['template_key']} ({doc_info.get('format', 'pdf')}){' [PIONEER]' if is_pioneer else ''}")
+
     except Exception as e:
-        logger.error(f"[Pipeline] Nepodařilo se uložit záznam dokumentu do DB: {e}", exc_info=True)
+        logger.error(f"[Pipeline] DB save failed: {e}")
+        # ── Error logging → admin email (sync-safe přes Thread) ──
+        try:
+            from backend.monitoring.admin_notifier import fire_and_forget_notify_error
+            fire_and_forget_notify_error(
+                module="pipeline_v3_save",
+                error=e,
+                context={"client_id": client_id, "doc": doc_info.get("template_key", "?")},
+            )
+        except Exception:
+            pass
 
 
-def _resolve_ids(input_id: str) -> dict:
-    """
-    Rozřeší vstupní ID (může být order_id, client_id, nebo company_id)
-    na všechna potřebná IDs.
+# ══════════════════════════════════════════════════════════════════════
+# COMPANY CONTEXT BUILDER — sdílený kontext pro všechny moduly
+# ══════════════════════════════════════════════════════════════════════
 
-    Returns: {"client_id": ..., "company_id": ..., "billing_data": {...}}
-    """
-    supabase = get_supabase()
+def build_company_context(data: dict) -> str:
+    """Sestaví sdílený textový kontext firmy pro LLM moduly."""
+    company = data.get("company_name", "Neznámá firma")
+    industry = data.get("q_company_industry", "neznámé")
+    size = data.get("q_company_size", "neznámá")
+    overall_risk = data.get("overall_risk", "minimal")
+    risk_breakdown = data.get("risk_breakdown", {"high": 0, "limited": 0, "minimal": 0})
+    oversight = data.get("oversight_person", {})
+    data_prot = data.get("data_protection", {})
+    training = data.get("training", {})
+    incident = data.get("incident", {})
 
-    # 1. Zkusit jako order_id
-    order = supabase.table("orders").select("*").eq("id", input_id).limit(1).execute()
-    if order.data:
-        o = order.data[0]
-        company_id = o.get("company_id", "")
-        # Najít client_id přes companies → clients
-        client = supabase.table("clients").select("id").eq("company_id", company_id).limit(1).execute()
-        client_id = client.data[0]["id"] if client.data else company_id
-        logger.info(f"[Pipeline] Resolved order_id → company_id={company_id}, client_id={client_id}")
-        return {
-            "client_id": client_id,
-            "company_id": company_id,
-            "billing_data": {
-                "billing_name": o.get("billing_name", ""),
-                "billing_ico": o.get("billing_ico", ""),
-                "billing_email": o.get("billing_email", ""),
-            },
-        }
+    findings_lines = []
+    for f in data.get("findings", []):
+        findings_lines.append(
+            f"  - {f.get('name', '?')}: kategorie={f.get('category', '?')}, "
+            f"riziko={f.get('risk_level', '?')}, článek={f.get('ai_act_article', '?')}, "
+            f"akce={f.get('action_required', '?')}"
+        )
+    findings_summary = "\n".join(findings_lines) if findings_lines else "  Žádné AI systémy nebyly detekovány na webu."
 
-    # 2. Zkusit jako client_id
-    client = supabase.table("clients").select("id, company_id").eq("id", input_id).limit(1).execute()
-    if client.data:
-        c = client.data[0]
-        company_id = c.get("company_id", input_id)
-        logger.info(f"[Pipeline] Resolved client_id → company_id={company_id}")
-        return {"client_id": input_id, "company_id": company_id, "billing_data": {}}
+    declared_lines = []
+    for d in data.get("ai_systems_declared", []):
+        declared_lines.append(f"  - {d.get('tool_name', d.get('key', '?'))}")
+    declared_summary = "\n".join(declared_lines) if declared_lines else "  Žádné AI systémy nebyly deklarovány."
 
-    # 3. Zkusit jako company_id
-    company = supabase.table("companies").select("id").eq("id", input_id).limit(1).execute()
-    if company.data:
-        client = supabase.table("clients").select("id").eq("company_id", input_id).limit(1).execute()
-        client_id = client.data[0]["id"] if client.data else input_id
-        logger.info(f"[Pipeline] Resolved company_id → client_id={client_id}")
-        return {"client_id": client_id, "company_id": input_id, "billing_data": {}}
+    recs_lines = []
+    for r in data.get("recommendations", []):
+        recs_lines.append(f"  - [{r.get('risk_level','')}] {r.get('tool_name','')}: {r.get('recommendation','')}")
+    recs_summary = "\n".join(recs_lines) if recs_lines else "  Žádná specifická doporučení."
 
-    # 4. Fallback — přijmout vstup jako client_id i company_id
-    logger.warning(f"[Pipeline] Nepodařilo se rozřešit ID {input_id} — použiji jako client_id i company_id")
-    return {"client_id": input_id, "company_id": input_id, "billing_data": {}}
+    from datetime import date
+    today = date.today().strftime("%d. %m. %Y")
 
+    ctx = f"""KONTEXT FIRMY:
+Dnešní datum: {today}
+Firma: {company}
+IČO: {data.get('q_company_ico', 'neuvedeno')}
+Odvětví: {industry}
+Velikost: {size}
+Celkové riziko: {overall_risk}
+Rizikový rozpad: {risk_breakdown.get('high',0)} vysoké, {risk_breakdown.get('limited',0)} omezené, {risk_breakdown.get('minimal',0)} minimální
+
+NALEZENÉ AI SYSTÉMY (web sken):
+{findings_summary}
+
+DEKLAROVANÉ AI SYSTÉMY (dotazník):
+{declared_summary}
+
+DOPORUČENÍ Z ANALÝZY:
+{recs_summary}
+
+ODPOVĚDNÁ OSOBA ZA AI: {oversight.get('name', 'nejmenována')} ({oversight.get('role', 'neurčena')})
+ZPRACOVÁVÁ OSOBNÍ ÚDAJE PŘES AI: {'ANO' if data_prot.get('processes_personal_data') else 'NE'}
+MÁ ŠKOLENÍ AI: {'ANO' if training.get('has_training') else 'NE'}
+MÁ INCIDENT PLÁN: {'ANO' if incident.get('has_plan') else 'NE'}
+MÁ SMLOUVY S DODAVATELI AI: {'ANO' if data_prot.get('has_vendor_contracts') else 'NE'}
+MŮŽE OVERRIDOVAT AI: {'ANO' if data.get('human_oversight', {}).get('can_override') else 'NE'}
+MÁ AI LOGGING: {'ANO' if data.get('human_oversight', {}).get('has_logging') else 'NE'}
+MÁ REGISTR AI: {'ANO' if data.get('human_oversight', {}).get('has_register') else 'NE'}
+TELEFON ODPOVĚDNÉ OSOBY: {oversight.get('phone', 'neuveden')}
+ROZSAH DOHLEDU: {', '.join(oversight.get('scope', [])) if oversight.get('scope') else 'nespecifikován'}
+ŠKOLENÍ — ÚČAST: {training.get('attendance', 'neznámá')}, VELIKOST PUBLIKA: {training.get('audience_size', 'neznámá')}, ÚROVEŇ: {training.get('audience_level', 'neznámá')}
+INCIDENT PLÁN — ROZSAH: {', '.join(incident.get('plan_scope', [])) if isinstance(incident.get('plan_scope'), list) else incident.get('plan_scope', 'nespecifikován')}
+SLEDUJE ZMĚNY AI: {'ANO' if incident.get('tracks_changes') else 'NE'}
+KONTROLUJE BIAS: {'ANO' if incident.get('has_bias_check') else 'NE'}"""
+
+    # Přidat vlastní odpovědi klienta (custom_answer) pokud existují
+    custom_answers_lines = []
+    q_answers = data.get("questionnaire_answers", {})
+    for qkey, qdata in q_answers.items():
+        details = qdata.get("details") or {}
+        ca = details.get("custom_answer", "")
+        classified = details.get("custom_answer_classified")
+        if ca:
+            line = f"  - Otázka '{qkey}': \"{ca}\""
+            if classified:
+                risk = classified.get("risk_level", "neznámé")
+                article = classified.get("ai_act_article", "neurčen")
+                summary = classified.get("summary", "")
+                action = classified.get("action_required", "")
+                line += f"\n    → Riziko: {risk}, Článek: {article}"
+                if summary:
+                    line += f"\n    → Shrnutí: {summary}"
+                if action:
+                    line += f"\n    → Požadovaná akce: {action}"
+            custom_answers_lines.append(line)
+
+    if custom_answers_lines:
+        ctx += f"""\n
+VLASTNÍ ODPOVĚDI KLIENTA (volný text):
+{chr(10).join(custom_answers_lines)}
+
+⚠️ INSTRUKCE PRO GENERÁTOR: Vlastní odpovědi klienta mohou popisovat AI systémy
+nebo postupy, které nejsou v předdefinovaných možnostech dotazníku. Porovnej je
+s požadavky AI Actu (Nařízení EU 2024/1689) a zohledni je v dokumentaci.
+Pokud klasifikace uvádí rizikovou úroveň, respektuj ji. Pokud ne, posuď sám."""
+
+    return ctx
+
+
+# ══════════════════════════════════════════════════════════════════════
+# HLAVNÍ PIPELINE — M1 → M2 → M3 → M4 (sekvenčně per dokument)
+# ══════════════════════════════════════════════════════════════════════
 
 async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
     """
-    Hlavní funkce — vygeneruje kompletní AI Act Compliance Kit.
+    Vygeneruje kompletní AI Act Compliance Kit.
 
-    Výstup: přesně 3 soubory:
-      - 1 × PDF  — Unified PDF (titulní strana, obsah, všechny sekce, VOP)
-      - 1 × HTML — transparenční stránka (adaptive — klient si ji vloží na web)
-      - 1 × PPTX — školící prezentace AI Literacy
+    Architektura v3: pro každý z 11 dokumentů:
+      M1 (Gemini) → M2 (Claude) → M3 (Gemini) → M4 (Claude) → PDF
 
-    Returns: ComplianceKitResult s metadaty o všech dokumentech
+    Výstup: 11 × PDF + 1 × HTML (transparenční stránka) + 1 × PPTX (prezentace)
     """
+    pipeline_start = time.time()
+
     # ── 0. Resolve IDs ──
     ids = _resolve_ids(input_id)
     client_id = ids["client_id"]
     company_id = ids["company_id"]
-    billing_data = ids["billing_data"]
 
-    logger.info(f"Generování Compliance Kitu: input={input_id}, client={client_id}, company={company_id}")
+    logger.info(f"{'='*70}")
+    logger.info(f"[Pipeline v3] START generování Compliance Kitu")
+    logger.info(f"[Pipeline v3] Order: {input_id}, Client: {client_id}, Company: {company_id}")
+    logger.info(f"{'='*70}")
 
     result = ComplianceKitResult(
         client_id=client_id,
@@ -693,94 +597,274 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
         generated_at=datetime.now(timezone.utc).isoformat(),
     )
 
-    # ── 1. Načíst data ──
-    logger.info(f"[Pipeline] ═══ KROK 1: Načítání dat z DB ═══")
+    # ── 1. Načíst data z DB ──
+    logger.info(f"[Pipeline v3] ═══ KROK 1: Načítání dat z DB ═══")
+    step_start = time.time()
+
     company_data = _load_company_data(company_id)
     scan_data = _load_scan_data(company_id)
     questionnaire_data = _load_questionnaire_data(client_id)
 
-    # Sloučit do jednoho data dictu
-    template_data = {
-        **company_data,
-        **scan_data,
-        **questionnaire_data,
-    }
-
-    # Upřednostnit název firmy z dotazníku (přesný právní název)
+    template_data = {**company_data, **scan_data, **questionnaire_data}
     if questionnaire_data.get("q_company_legal_name"):
         template_data["company_name"] = questionnaire_data["q_company_legal_name"]
     if questionnaire_data.get("q_company_contact_email"):
         template_data["contact_email"] = questionnaire_data["q_company_contact_email"]
 
     result.company_name = template_data.get("company_name", "Firma")
+    company_name = result.company_name
+    ico = questionnaire_data.get("q_company_ico", "")
+    overall_risk = template_data.get("overall_risk", "minimal")
 
-    # Akční body z findings pro akční plán
-    action_items = []
-    for f in scan_data.get("findings", []):
-        if f.get("action_required"):
-            action_items.append({
-                "action": f"{f.get('name', 'AI systém')}: {f['action_required']}",
-                "risk_level": f.get("risk_level", "minimal"),
-            })
-    template_data["action_items"] = action_items
+    logger.info(f"[Pipeline v3] Firma: {company_name}, Riziko: {overall_risk}")
+    logger.info(f"[Pipeline v3] Findings: {len(scan_data.get('findings', []))}, "
+                f"Declared: {len(questionnaire_data.get('ai_systems_declared', []))}")
+    logger.info(f"[Pipeline v3] DB load: {time.time()-step_start:.1f}s")
 
-    # ── 2. Vyhodnotit eligibilitu dokumentů dle rizikového profilu ──
-    logger.info(f"[Pipeline] ═══ KROK 2: Vyhodnocení eligibility dokumentů ═══")
-    eligible, skipped = _get_eligible_documents(template_data)
-    result.skipped_documents = skipped
+    # ── 2. Build company context ──
+    company_context = build_company_context(template_data)
+    logger.info(f"[Pipeline v3] Company context: {len(company_context)} znaků")
 
-    # Předat do šablon — compliance report vypíše přehled
-    template_data["eligible_documents"] = eligible
-    template_data["skipped_documents"] = skipped
-
-    logger.info(
-        f"  Rizikový profil: {template_data.get('overall_risk', '?')} | "
-        f"Eligible: {len(eligible)} šablon | Skipped: {len(skipped)}"
-    )
-    for sk in skipped:
-        logger.info(f"  ⊘ {sk['name']}: {sk['reason']}")
-
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    eligible_keys = list(eligible.keys())
-
-    # ── 2b. LLM — generování personalizovaného obsahu ──
-    logger.info(f"[Pipeline] ═══ KROK 2b: LLM personalizovaný obsah ═══")
+    # ── M0: Klasifikace vlastních odpovědí (custom_answer) ──
     try:
-        llm_content = await generate_document_content(template_data)
-        template_data["llm_content"] = llm_content
-        section_count = sum(1 for v in llm_content.values() if v)
-        logger.info(f"  ✓ LLM vygeneroval {section_count} personalizovaných sekcí")
+        from backend.documents.m0_classifier import classify_custom_answers
+        m0_results = await classify_custom_answers(client_id, company_context)
+        if m0_results:
+            logger.info(f"[Pipeline v3] M0 klasifikovalo {len(m0_results)} vlastních odpovědí")
+            # Znovu načíst kontext s klasifikacemi (M0 je zapsal do DB)
+            questionnaire_data_refreshed = _load_questionnaire_data(client_id)
+            template_data_refreshed = {**template_data, **questionnaire_data_refreshed}
+            company_context = build_company_context(template_data_refreshed)
+            logger.info(f"[Pipeline v3] Obnoven kontext po M0: {len(company_context)} znaků")
     except Exception as e:
-        logger.warning(f"  ⚠ LLM obsah se nepodařilo vygenerovat: {e} — pokračuji bez něj")
-        template_data["llm_content"] = {}
+        logger.warning(f"[Pipeline v3] M0 klasifikace selhala (pokračuji bez ní): {e}")
 
-    # ── 3. PER-SECTION PDFs — každá sekce = vlastní PDF ──
-    # Filtrovat transparency_page (ta jde jako standalone HTML v kroku 4)
-    pdf_keys = [k for k in eligible_keys if k != "transparency_page" and k in SECTION_RENDERERS]
-    logger.info(f"[Pipeline] ═══ KROK 3: Generování {len(pdf_keys)} individuálních PDF ═══")
+    result.pipeline_log.append({
+        "step": "data_loaded",
+        "company": company_name,
+        "findings": len(scan_data.get("findings", [])),
+        "declared_systems": len(questionnaire_data.get("ai_systems_declared", [])),
+        "overall_risk": overall_risk,
+        "context_chars": len(company_context),
+    })
 
-    # Slug pro filename (čeština → ASCII)
-    _SECTION_SLUG = {
-        "compliance_report": "compliance_report",
-        "action_plan": "akcni_plan",
-        "ai_register": "registr_ai_systemu",
-        "training_outline": "skoleni_ai_literacy",
-        "chatbot_notices": "oznameni_ai",
-        "ai_policy": "interni_ai_politika",
-        "incident_response_plan": "plan_rizeni_incidentu",
-        "dpia_template": "dpia_posouzeni_vlivu",
-        "vendor_checklist": "dodavatelsky_checklist",
-        "monitoring_plan": "monitoring_plan_ai",
-        "transparency_human_oversight": "transparentnost_lidsky_dohled",
-    }
+    # ── 3. Per-document M1→M2→M3→M4 pipeline ──
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    all_final_html = {}   # doc_key → final HTML
+    all_critiques = {}    # doc_key → {"eu": eu_critique, "client": client_critique} pro M5
 
-    for section_key in pdf_keys:
-        section_name = TEMPLATE_NAMES.get(section_key, section_key)
-        slug = _SECTION_SLUG.get(section_key, section_key)
+    logger.info(f"[Pipeline v3] ═══ KROK 2: Generování {len(DOCUMENT_KEYS)} dokumentů (M1→M2→M3→M4) ═══")
+
+    for doc_idx, doc_key in enumerate(DOCUMENT_KEYS, 1):
+        doc_name = DOCUMENT_NAMES.get(doc_key, doc_key)
+        doc_start = time.time()
+        doc_cost = 0.0
+        doc_tokens = 0
+
+        logger.info(f"")
+        logger.info(f"[Pipeline v3] {'─'*60}")
+        logger.info(f"[Pipeline v3] DOKUMENT {doc_idx}/{len(DOCUMENT_KEYS)}: {doc_name}")
+        logger.info(f"[Pipeline v3] {'─'*60}")
+
         try:
-            section_html = render_section_pdf_html(section_key, template_data)
-            pdf_bytes = html_to_pdf(section_html)
+            # ── M1: Generator (Gemini 3.1 Pro) ──
+            m1_start = time.time()
+            logger.info(f"[Pipeline v3]   M1 Generator (Gemini) → {doc_name}...")
+            draft_html, m1_meta = await generate_draft(company_context, doc_key)
+            m1_time = time.time() - m1_start
+            m1_cost = m1_meta.get("cost_usd", 0)
+            m1_tokens = m1_meta.get("input_tokens", 0) + m1_meta.get("output_tokens", 0)
+            logger.info(f"[Pipeline v3]   M1 hotov: {len(draft_html)} znaků, "
+                       f"${m1_cost:.4f}, {m1_tokens} tokens, {m1_time:.1f}s")
 
+            if not draft_html or len(draft_html) < 200:
+                raise ValueError(f"M1 vrátil prázdný/krátký draft ({len(draft_html)} znaků)")
+
+            # ── M2: EU Inspector (Claude Sonnet 4) ──
+            m2_start = time.time()
+            logger.info(f"[Pipeline v3]   M2 EU Critic (Claude) → {doc_name}...")
+            eu_critique, m2_meta = await review_eu(draft_html, company_context, doc_key)
+            m2_time = time.time() - m2_start
+            m2_cost = m2_meta.get("cost_usd", 0)
+            m2_tokens = m2_meta.get("input_tokens", 0) + m2_meta.get("output_tokens", 0)
+            eu_score = eu_critique.get("skore", "?")
+            logger.info(f"[Pipeline v3]   M2 hotov: skóre={eu_score}/10, "
+                       f"${m2_cost:.4f}, {m2_tokens} tokens, {m2_time:.1f}s")
+
+            # ── M3: Client Critic — SKIP if EU skóre >= 8 (cost optimization) ──
+            eu_score_num = 0
+            try:
+                eu_score_num = int(eu_score)
+            except (ValueError, TypeError):
+                eu_score_num = 0
+
+            if eu_score_num >= 8:
+                logger.info(f"[Pipeline v3]   M3 SKIP: EU skóre {eu_score_num} >= 8, klient review přeskočen (úspora tokenů)")
+                client_critique = {
+                    "myslenkovy_proces": f"Přeskočeno — EU skóre {eu_score_num}/10 je dostatečné.",
+                    "celkove_hodnoceni": "dobré",
+                    "skore": eu_score_num,
+                    "nalezy": [],
+                    "silne_stranky": ["EU inspektor dal vysoké skóre — dokument splňuje standardy."],
+                    "chybejici_obsah": [],
+                    "otazky_klienta": [],
+                    "celkove_doporuceni": "Dokument splňuje kvalitativní standardy.",
+                }
+                m3_meta = {"cost_usd": 0, "input_tokens": 0, "output_tokens": 0}
+                m3_cost = 0
+                m3_tokens = 0
+                m3_time = 0.0
+                client_score = eu_score_num
+            else:
+                # ── M3: Client Critic (Gemini 3.1 Pro) ──
+                m3_start = time.time()
+                logger.info(f"[Pipeline v3]   M3 Client Critic (Gemini) → {doc_name}...")
+                client_critique, m3_meta = await review_client(draft_html, company_context, doc_key)
+                m3_time = time.time() - m3_start
+                m3_cost = m3_meta.get("cost_usd", 0)
+                m3_tokens = m3_meta.get("input_tokens", 0) + m3_meta.get("output_tokens", 0)
+                client_score = client_critique.get("skore", "?")
+                logger.info(f"[Pipeline v3]   M3 hotov: skóre={client_score}/10, "
+                           f"${m3_cost:.4f}, {m3_tokens} tokens, {m3_time:.1f}s")
+
+            # Uložit kritiky pro M5 analýzu
+            all_critiques[doc_key] = {
+                "eu": eu_critique,
+                "client": client_critique,
+            }
+
+            # ── M4: Refiner (Gemini) ──
+            m4_start = time.time()
+            logger.info(f"[Pipeline v3]   M4 Refiner (Claude) → {doc_name}...")
+            final_html, m4_meta = await refine(
+                draft_html, eu_critique, client_critique, company_context, doc_key
+            )
+            m4_time = time.time() - m4_start
+            m4_cost = m4_meta.get("cost_usd", 0)
+            m4_tokens = m4_meta.get("input_tokens", 0) + m4_meta.get("output_tokens", 0)
+            logger.info(f"[Pipeline v3]   M4 hotov: {len(final_html)} znaků, "
+                       f"${m4_cost:.4f}, {m4_tokens} tokens, {m4_time:.1f}s")
+
+            # Celkové metriky dokumentu
+            doc_cost = m1_cost + m2_cost + m3_cost + m4_cost
+            doc_tokens = m1_tokens + m2_tokens + m3_tokens + m4_tokens
+            doc_time = time.time() - doc_start
+
+            logger.info(f"[Pipeline v3]   DOKUMENT {doc_idx} HOTOV: "
+                       f"{len(final_html)} znaků, ${doc_cost:.4f}, "
+                       f"{doc_tokens} tokens, {doc_time:.0f}s")
+            logger.info(f"[Pipeline v3]   Skóre: EU={eu_score}/10, Klient={client_score}/10")
+
+            all_final_html[doc_key] = final_html
+            result.total_cost_usd += doc_cost
+            result.total_tokens += doc_tokens
+
+            # Save intermediate HTML to disk for per-doc monitoring
+            try:
+                html_out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "gen_html")
+                os.makedirs(html_out_dir, exist_ok=True)
+                html_path = os.path.join(html_out_dir, f"{doc_key}.html")
+                with open(html_path, "w", encoding="utf-8") as hf:
+                    hf.write(final_html)
+                logger.info(f"[Pipeline v3]   HTML uložen: {html_path}")
+            except Exception as html_err:
+                logger.warning(f"[Pipeline v3]   HTML save failed: {html_err}")
+
+            result.pipeline_log.append({
+                "doc_key": doc_key,
+                "doc_name": doc_name,
+                "doc_index": f"{doc_idx}/{len(DOCUMENT_KEYS)}",
+                "draft_chars": len(draft_html),
+                "final_chars": len(final_html),
+                "eu_score": eu_score,
+                "client_score": client_score,
+                "cost_usd": round(doc_cost, 4),
+                "tokens": doc_tokens,
+                "time_s": round(doc_time, 1),
+                "m1_time": round(m1_time, 1),
+                "m2_time": round(m2_time, 1),
+                "m3_time": round(m3_time, 1),
+                "m4_time": round(m4_time, 1),
+            })
+
+        except Exception as e:
+            doc_time = time.time() - doc_start
+            error_msg = f"{doc_key}: {str(e)}"
+            result.errors.append(error_msg)
+            logger.error(f"[Pipeline v3]   CHYBA v {doc_name}: {e}", exc_info=True)
+            result.pipeline_log.append({
+                "doc_key": doc_key, "doc_name": doc_name,
+                "error": str(e), "time_s": round(doc_time, 1),
+            })
+
+    # ── 3b. M5: Prompt Self-Optimization (Claude Opus 4.6) ──
+    generation_id = f"gen_{timestamp}"
+    m5_result = None
+    try:
+        logger.info(f"")
+        logger.info(f"[Pipeline v3] ═══ M5: Prompt Self-Optimization ═══")
+
+        m5_result = await analyze_and_optimize(
+            pipeline_log=result.pipeline_log,
+            all_critiques=all_critiques,
+            generation_id=generation_id,
+        )
+
+        result.total_cost_usd += m5_result.get("cost_usd", 0)
+        result.pipeline_log.append({
+            "step": "m5_optimization",
+            "status": m5_result.get("status", "unknown"),
+            "version": m5_result.get("version", 0),
+            "rules_added": m5_result.get("rules_added", 0),
+            "avg_score": m5_result.get("avg_score", 0),
+            "converged": m5_result.get("converged", False),
+            "cost_usd": m5_result.get("cost_usd", 0),
+            "time_s": m5_result.get("time_s", 0),
+        })
+
+    except Exception as e:
+        logger.error(f"[Pipeline v3] M5 CHYBA (nekritická): {e}", exc_info=True)
+        m5_result = {"status": "error", "error": str(e)}
+        result.pipeline_log.append({
+            "step": "m5_optimization",
+            "error": str(e),
+        })
+
+    # ── 3c. Email report M2/M3/M5 ──
+    try:
+        total_time = time.time() - pipeline_start
+        logger.info(f"[Pipeline v3] ═══ Odesílám report generace emailem ═══")
+        report_result = await send_generation_report(
+            generation_id=generation_id,
+            all_critiques=all_critiques,
+            m5_result=m5_result,
+            pipeline_log=result.pipeline_log,
+            total_cost=result.total_cost_usd,
+            total_tokens=result.total_tokens,
+            total_time=total_time,
+            doc_names=DOCUMENT_NAMES,
+        )
+        if report_result.get("sent"):
+            logger.info(f"[Pipeline v3] Report odeslán (resend_id={report_result.get('resend_id')})")
+        else:
+            logger.warning(f"[Pipeline v3] Report se nepodařilo odeslat: {report_result.get('error', '?')}")
+    except Exception as e:
+        logger.error(f"[Pipeline v3] Report email CHYBA (nekritická): {e}", exc_info=True)
+
+    # ── 4. Generate PDFs ──
+    logger.info(f"")
+    logger.info(f"[Pipeline v3] ═══ KROK 3: Generování PDF souborů ═══")
+
+    for doc_key, final_html in all_final_html.items():
+        # Skip docs with special output format (not PDF)
+        if doc_key in ("transparency_page", "training_presentation"):
+            continue
+        doc_name = DOCUMENT_NAMES.get(doc_key, doc_key)
+        slug = SECTION_SLUG.get(doc_key, doc_key)
+
+        try:
+            section_html = render_section_html(doc_key, final_html, company_name)
+            pdf_bytes = html_to_pdf(section_html)
             pdf_filename = f"{slug}_{timestamp}.pdf"
             pdf_url = save_to_supabase_storage(
                 pdf_bytes, pdf_filename, company_id,
@@ -788,96 +872,158 @@ async def generate_compliance_kit(input_id: str) -> ComplianceKitResult:
             )
 
             pdf_info = {
-                "template_key": section_key,
-                "template_name": section_name,
-                "filename": pdf_filename,
-                "download_url": pdf_url,
-                "size_bytes": len(pdf_bytes),
-                "format": "pdf",
+                "template_key": doc_key, "template_name": doc_name,
+                "filename": pdf_filename, "download_url": pdf_url,
+                "size_bytes": len(pdf_bytes), "format": "pdf",
                 "generated_at": datetime.now(timezone.utc).isoformat(),
             }
             result.documents.append(pdf_info)
             _save_document_record(company_id, pdf_info)
-            logger.info(f"  ✓ {section_name} ({len(pdf_bytes):,} bytes)")
+            logger.info(f"[Pipeline v3]   PDF: {doc_name} ({len(pdf_bytes):,} bytes)")
 
         except Exception as e:
-            error_msg = f"{section_key}: {str(e)}"
-            result.errors.append(error_msg)
-            logger.error(f"  ✗ {section_name}: {error_msg}", exc_info=True)
+            result.errors.append(f"PDF {doc_key}: {str(e)}")
+            logger.error(f"[Pipeline v3]   PDF CHYBA {doc_name}: {e}", exc_info=True)
 
-    # ── 4. HTML — transparenční stránka (standalone, adaptive CSS) ──
-    logger.info(f"[Pipeline] === KROK 4: Transparencni stranka HTML ===")
-    if "transparency_page" in eligible:
-        try:
-            renderer = TEMPLATE_RENDERERS["transparency_page"]
-            html_content = renderer(template_data)
-            html_bytes = html_content.encode("utf-8")
-
+    # ── 5. Transparenční stránka (HTML) — LLM-generated via M1→M4 ──
+    logger.info(f"[Pipeline v3] ═══ KROK 4: Transparenční stránka HTML ═══")
+    try:
+        tp_html = all_final_html.get("transparency_page")
+        if tp_html:
+            # LLM generates complete standalone HTML — save as-is
+            html_bytes = tp_html.encode("utf-8")
             html_filename = f"transparencni_stranka_{timestamp}.html"
             html_url = save_to_supabase_storage(
                 html_bytes, html_filename, company_id,
                 content_type="text/html",
             )
-
             html_info = {
                 "template_key": "transparency_page",
-                "template_name": TEMPLATE_NAMES["transparency_page"],
-                "filename": html_filename,
-                "download_url": html_url,
-                "size_bytes": len(html_bytes),
-                "format": "html",
+                "template_name": "Transparenční stránka (HTML)",
+                "filename": html_filename, "download_url": html_url,
+                "size_bytes": len(html_bytes), "format": "html",
                 "generated_at": datetime.now(timezone.utc).isoformat(),
             }
             result.documents.append(html_info)
             _save_document_record(company_id, html_info)
-            logger.info(f"  ✓ Transparenční stránka HTML ({len(html_bytes):,} bytes)")
-
-        except Exception as e:
-            error_msg = f"transparency_page: {str(e)}"
-            result.errors.append(error_msg)
-            logger.error(f"  ✗ HTML: {error_msg}", exc_info=True)
-
-    # ── 5. PPTX — školící prezentace (vždy — čl. 4 AI Act) ──
-    logger.info("[Pipeline] === KROK 5: PPTX prezentace ===")
-    try:
-        from backend.documents.pptx_generator import generate_training_pptx
-        pptx_bytes = generate_training_pptx(template_data)
-
-        pptx_filename = f"skoleni_ai_literacy_{timestamp}.pptx"
-        pptx_url = save_to_supabase_storage(
-            pptx_bytes, pptx_filename, company_id,
-            content_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        )
-
-        pptx_info = {
-            "template_key": "training_presentation",
-            "template_name": "Školení AI Literacy — Prezentace (PPTX)",
-            "filename": pptx_filename,
-            "download_url": pptx_url,
-            "size_bytes": len(pptx_bytes),
-            "format": "pptx",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-        }
-        result.documents.append(pptx_info)
-        _save_document_record(company_id, pptx_info)
-        logger.info(f"  ✓ PPTX prezentace ({len(pptx_bytes):,} bytes)")
-
+            logger.info(f"[Pipeline v3]   HTML: {len(html_bytes):,} bytes")
+        else:
+            logger.warning("[Pipeline v3]   transparency_page not in all_final_html — skipping")
     except Exception as e:
-        error_msg = f"training_presentation: {str(e)}"
-        result.errors.append(error_msg)
-        logger.error(f"  ✗ PPTX: {error_msg}", exc_info=True)
+        result.errors.append(f"transparency_page: {str(e)}")
+        logger.error(f"[Pipeline v3]   HTML CHYBA: {e}", exc_info=True)
 
-    logger.info(
-        f"Compliance Kit hotov: {result.success_count} OK, {result.error_count} chyb"
-    )
+    # ── 6. PPTX prezentace — LLM-generated via M1→M4, then converted ──
+    logger.info(f"[Pipeline v3] ═══ KROK 5: PPTX prezentace ═══")
+    try:
+        pres_html = all_final_html.get("training_presentation")
+        if pres_html:
+            from backend.documents.pptx_generator import html_slides_to_pptx
+            pptx_bytes = html_slides_to_pptx(pres_html, template_data)
+            pptx_filename = f"skoleni_ai_literacy_{timestamp}.pptx"
+            pptx_url = save_to_supabase_storage(
+                pptx_bytes, pptx_filename, company_id,
+                content_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            )
+            pptx_info = {
+                "template_key": "training_presentation",
+                "template_name": "Školení AI Literacy — Prezentace (PPTX)",
+                "filename": pptx_filename, "download_url": pptx_url,
+                "size_bytes": len(pptx_bytes), "format": "pptx",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            result.documents.append(pptx_info)
+            _save_document_record(company_id, pptx_info)
+            logger.info(f"[Pipeline v3]   PPTX: {len(pptx_bytes):,} bytes")
+        else:
+            logger.warning("[Pipeline v3]   training_presentation not in all_final_html — skipping")
+    except Exception as e:
+        result.errors.append(f"pptx: {str(e)}")
+        logger.error(f"[Pipeline v3]   PPTX CHYBA: {e}", exc_info=True)
+
+    # ── 7. Statické VOP (PDF) — přesná kopie z webu, bez LLM ──
+    logger.info(f"[Pipeline v3] ═══ KROK 6: Statické VOP (PDF) ═══")
+    try:
+        vop_html_path = os.path.join(os.path.dirname(__file__), "vop_template.html")
+        if os.path.exists(vop_html_path):
+            with open(vop_html_path, "r", encoding="utf-8") as f:
+                vop_html = f.read()
+            vop_pdf_bytes = html_to_pdf(vop_html)
+            vop_filename = f"vop_aishield_{timestamp}.pdf"
+            vop_url = save_to_supabase_storage(
+                vop_pdf_bytes, vop_filename, company_id,
+                content_type="application/pdf",
+            )
+            vop_info = {
+                "template_key": "vop",
+                "template_name": "Všeobecné obchodní podmínky (VOP)",
+                "filename": vop_filename, "download_url": vop_url,
+                "size_bytes": len(vop_pdf_bytes), "format": "pdf",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "static": True,
+            }
+            result.documents.append(vop_info)
+            _save_document_record(company_id, vop_info)
+            logger.info(f"[Pipeline v3]   VOP PDF: {len(vop_pdf_bytes):,} bytes (statický dokument)")
+        else:
+            logger.warning(f"[Pipeline v3]   VOP šablona nenalezena: {vop_html_path}")
+    except Exception as e:
+        result.errors.append(f"vop: {str(e)}")
+        logger.error(f"[Pipeline v3]   VOP CHYBA: {e}", exc_info=True)
+
+    # ── HOTOVO ──
+    total_time = time.time() - pipeline_start
+    logger.info(f"")
+    logger.info(f"{'='*70}")
+    logger.info(f"[Pipeline v3] COMPLIANCE KIT HOTOV!")
+    logger.info(f"[Pipeline v3] Firma: {company_name}")
+    logger.info(f"[Pipeline v3] Dokumenty: {result.success_count} OK, {result.error_count} chyb")
+    logger.info(f"[Pipeline v3] Celkový cost: ${result.total_cost_usd:.4f}")
+    logger.info(f"[Pipeline v3] Celkové tokeny: {result.total_tokens:,}")
+    logger.info(f"[Pipeline v3] Celkový čas: {total_time:.0f}s ({total_time/60:.1f} min)")
+    logger.info(f"{'='*70}")
+
+    result.pipeline_log.append({
+        "step": "completed",
+        "total_documents": result.success_count,
+        "total_errors": result.error_count,
+        "total_cost_usd": round(result.total_cost_usd, 4),
+        "total_tokens": result.total_tokens,
+        "total_time_s": round(total_time, 1),
+    })
+
+    # ── BUG10 fix: 1× notifikace ke schválení (místo per-doc spamu) ──
+    try:
+        _sb = get_supabase()
+        _pending_docs = _sb.table("documents") \
+            .select("name") \
+            .eq("company_id", company_id) \
+            .eq("approval_status", "pending_review") \
+            .execute()
+        if _pending_docs.data:
+            _doc_names = [d["name"] for d in _pending_docs.data]
+            _comp_name = company_id[:8]
+            try:
+                _c = _sb.table("companies").select("name").eq("id", company_id).limit(1).execute()
+                if _c.data:
+                    _comp_name = _c.data[0].get("name", _comp_name)
+            except Exception:
+                pass
+            from backend.monitoring.admin_notifier import notify_documents_pending_review
+            await notify_documents_pending_review(
+                company_id=company_id,
+                company_name=_comp_name,
+                doc_count=len(_doc_names),
+                doc_names=_doc_names,
+            )
+    except Exception as _pn_err:
+        logger.warning(f"[Pipeline v3] Pending review notif selhala: {_pn_err}")
+
     return result
 
 
-async def generate_single_document(
-    input_id: str,
-    template_key: str,
-) -> dict:
-    """Generuje jeden konkrétní dokument pro klienta (standalone HTML → PDF)."""
+async def generate_single_document(input_id: str, template_key: str) -> dict:
+    """Generuje jeden dokument (M1→M2→M3→M4 → PDF)."""
     ids = _resolve_ids(input_id)
     client_id = ids["client_id"]
     company_id = ids["company_id"]
@@ -886,31 +1032,31 @@ async def generate_single_document(
     scan_data = _load_scan_data(company_id)
     questionnaire_data = _load_questionnaire_data(client_id)
 
-    template_data = {
-        **company_data,
-        **scan_data,
-        **questionnaire_data,
-    }
-
+    template_data = {**company_data, **scan_data, **questionnaire_data}
     if questionnaire_data.get("q_company_legal_name"):
         template_data["company_name"] = questionnaire_data["q_company_legal_name"]
-    if questionnaire_data.get("q_company_contact_email"):
-        template_data["contact_email"] = questionnaire_data["q_company_contact_email"]
 
-    action_items = []
-    for f in scan_data.get("findings", []):
-        if f.get("action_required"):
-            action_items.append({
-                "action": f"{f.get('name', 'AI systém')}: {f['action_required']}",
-                "risk_level": f.get("risk_level", "minimal"),
-            })
-    template_data["action_items"] = action_items
+    company_context = build_company_context(template_data)
+    company_name = template_data.get("company_name", "Firma")
 
-    doc_info = generate_document_pdf(
-        template_key=template_key,
-        data=template_data,
-        client_id=client_id,
-    )
+    draft_html, _ = await generate_draft(company_context, template_key)
+    eu_critique, _ = await review_eu(draft_html, company_context, template_key)
+    client_critique, _ = await review_client(draft_html, company_context, template_key)
+    final_html, _ = await refine(draft_html, eu_critique, client_critique, company_context, template_key)
 
-    _save_document_record(client_id, doc_info)
+    section_html = render_section_html(template_key, final_html, company_name)
+    pdf_bytes = html_to_pdf(section_html)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = SECTION_SLUG.get(template_key, template_key)
+    pdf_filename = f"{slug}_{timestamp}.pdf"
+    pdf_url = save_to_supabase_storage(pdf_bytes, pdf_filename, company_id, content_type="application/pdf")
+
+    doc_info = {
+        "template_key": template_key,
+        "template_name": DOCUMENT_NAMES.get(template_key, template_key),
+        "filename": pdf_filename, "download_url": pdf_url,
+        "size_bytes": len(pdf_bytes), "format": "pdf",
+    }
+    _save_document_record(company_id, doc_info)
     return doc_info

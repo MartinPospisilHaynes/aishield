@@ -164,6 +164,26 @@ NIKDY nepiš „vytvořte si dokument XYZ" pokud je součástí Compliance Kitu.
 - FRIA: čl. 27 (povinnost nasazovatelů u vybraných high-risk scénářů).
 - AI gramotnost: čl. 4 — POVINNÁ od 2. 2. 2025 pro VŠECHNY.
 - Neposkytuj právní poradenství — jde o odbornou technickou pomůcku.
+
+═══ VLASTNÍ ODPOVĚDI KLIENTA (custom_answer) ═══
+
+V kontextu firmy se mohou objevit VLASTNÍ ODPOVĚDI KLIENTA označené jako
+"VLASTNÍ ODPOVĚDI KLIENTA (volný text)". To jsou volné textové odpovědi,
+které klient napsal vlastními slovy místo výběru z předdefinovaných možností.
+
+Pro každou takovou odpověď:
+1. POROVNEJ ji s příslušnými články EU AI Act — urči, které povinnosti
+   se na popsanou situaci vztahují.
+2. KLASIFIKUJ rizikovou úroveň odpovědi (pokud je klasifikace uvedena
+   v kontextu, respektuj ji; pokud ne, posuď sám).
+3. ZAHRŇ relevantní zjištění do příslušné sekce dokumentu — nepijaj
+   je na konec, ale integruj přirozeně do textu.
+4. Pokud odpověď popisuje AI systém, PŘIDEJ ho do inventáře/registru
+   AI systémů s odpovídající rizikovou úrovní.
+5. Pokud odpověď popisuje potenciálně ZAKÁZANOU praktiku (čl. 5),
+   VÝRAZNĚ na to upozorni a doporuč konzultaci s advokátem.
+6. Pokud odpověď je nejasná nebo vágní, popiš možné interpretace
+   a doporuč klientovi upřesnit.
 """
 
 
