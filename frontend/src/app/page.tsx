@@ -886,10 +886,10 @@ export default function HomePage() {
                         <div className="text-center mb-10 sm:mb-16">
                             <div className="neon-divider mb-6" />
                             <h2 className="text-3xl font-extrabold sm:text-4xl">
-                                Až 12 dokumentů <span className="neon-text">na míru</span>
+                                14 dokumentů <span className="neon-text">na míru</span>
                             </h2>
                             <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-                                Generujeme jen dokumenty, které vaše firma skutečně potřebuje — podle rizikového profilu.
+                                Kompletní sada 14 compliance dokumentů přizpůsobených přesně vaší firmě.
                                 Vše obdržíte v PDF i v tištěné podobě v profesionální vazbě do 14 dnů. Klikněte na položku pro podrobný popis.
                             </p>
                         </div>

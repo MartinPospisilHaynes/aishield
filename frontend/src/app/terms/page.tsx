@@ -528,7 +528,7 @@ export default function TermsPage() {
                                 13.1.{" "}
                                 <strong className="text-white">BASIC (4 999 Kč)</strong> — automatizované
                                 skenování webu a vygenerování AI Act Compliance Kitu obsahujícího
-                                až 12 dokumentů podle rizikového profilu klienta:
+                                14 dokumentů:
                                 Compliance Report, Akční plán, Registr AI systémů,
                                 Transparenční stránka (HTML šablona), texty oznámení pro AI nástroje
                                 (chatbot a další), Interní AI politika firmy, Školení —
@@ -538,7 +538,7 @@ export default function TermsPage() {
                                 seznam pro smlouvy s dodavateli AI), Monitoring plán AI
                                 (plán monitoringu výstupů včetně testování férovosti)
                                 a Transparentnost a lidský dohled (záznamy dle čl. 13, 14 a 50 AI Actu).
-                                Rozsah se automaticky přizpůsobí na základě výsledků analýzy rizik.
+                                Každý dokument je přizpůsoben na míru konkrétní firmě.
                                 Bez implementační podpory.
                             </p>
                             <p>

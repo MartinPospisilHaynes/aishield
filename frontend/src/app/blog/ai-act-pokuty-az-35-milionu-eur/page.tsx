@@ -246,7 +246,7 @@ export default function Page() {
                     <ol className="list-decimal pl-6 space-y-2 text-slate-300">
                         <li><Link href="/scan" className="text-fuchsia-400 hover:text-fuchsia-300">Skenujte svůj web</Link> — zjistěte, jaké AI systémy používáte a jaká je jejich riziková kategorie</li>
                         <li>Implementujte <Link href="/blog/co-je-transparencni-stranka" className="text-fuchsia-400 hover:text-fuchsia-300">transparenční stránku</Link> — povinnost dle čl. 50 pro všechny AI systémy</li>
-                        <li>Vypracujte interní AI politiku a dokumentaci — <Link href="/pricing" className="text-fuchsia-400 hover:text-fuchsia-300">náš Compliance Kit</Link> za vás vygeneruje až 12 dokumentů</li>
+                        <li>Vypracujte interní AI politiku a dokumentaci — <Link href="/pricing" className="text-fuchsia-400 hover:text-fuchsia-300">náš Compliance Kit</Link> za vás vygeneruje 14 dokumentů</li>
                         <li>Nastavte pravidelný monitoring — legislativa se stále vyvíjí</li>
                         <li>Proškolte zaměstnance — AI gramotnost (čl. 4) je povinná od února 2025</li>
                     </ol>

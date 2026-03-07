@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { getDashboardData, toggleActionPlanItem, triggerDeepScan, startScan, getScanStatus, getScanFindings, type DashboardData } from "@/lib/api";
 
-type Tab = "prehled" | "findings" | "dokumenty" | "plan" | "skeny" | "dotaznik";
+type Tab = "prehled" | "firma" | "findings" | "dokumenty" | "plan" | "skeny" | "dotaznik";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     {
@@ -13,6 +13,15 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
         icon: (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+        ),
+    },
+    {
+        key: "firma",
+        label: "Firma",
+        icon: (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
         ),
     },
@@ -214,7 +223,10 @@ export default function DashboardPage() {
     // Process status from API
     const qAnswered = data?.questionnaire_answered_count ?? 0;
     const qTotal = data?.questionnaire_total_questions ?? 0;
-    const questionnaireIsComplete = qTotal > 0 && qAnswered >= qTotal;
+    const qUnknowns = data?.questionnaire_unknowns || [];
+    const qUnknownCount = data?.questionnaire_unknown_count ?? 0;
+    const questionnaireIsComplete = qTotal > 0 && qAnswered >= qTotal && qUnknownCount === 0;
+    const questionnaireAllAnswered = qTotal > 0 && qAnswered >= qTotal;
     const ps = data?.process_status || {
         scan_done: (data?.scans?.length || 0) > 0,
         questionnaire_done: questionnaireIsComplete,
@@ -297,10 +309,10 @@ export default function DashboardPage() {
                     />
                     <StatCard
                         label="Dotazník"
-                        value={questionnaireIsComplete ? "Hotovo" : qAnswered > 0 ? `${qAnswered}/${qTotal}` : "Čeká"}
-                        sub={questionnaireIsComplete ? "Kompletní" : qAnswered > 0 ? "Pokračujte ve vyplňování" : "Vyplňte pro přesnější analýzu"}
-                        color={questionnaireIsComplete ? "text-green-400" : qAnswered > 0 ? "text-cyan-400" : "text-amber-400"}
-                        href={questionnaireIsComplete ? undefined : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
+                        value={questionnaireIsComplete ? "Hotovo" : questionnaireAllAnswered ? `${qUnknownCount}× nevím` : qAnswered > 0 ? `${qAnswered}/${qTotal}` : "Čeká"}
+                        sub={questionnaireIsComplete ? "Kompletní" : questionnaireAllAnswered ? "Doplňte odpovědi" : qAnswered > 0 ? "Pokračujte ve vyplňování" : "Vyplňte pro přesnější analýzu"}
+                        color={questionnaireIsComplete ? "text-green-400" : questionnaireAllAnswered ? "text-amber-400" : qAnswered > 0 ? "text-cyan-400" : "text-amber-400"}
+                        href={questionnaireIsComplete ? undefined : (questionnaireAllAnswered && qUnknowns[0]?.question_key && data?.company?.id) ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0].question_key}` : (data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik")}
                     />
                 </div>
 
@@ -326,6 +338,7 @@ export default function DashboardPage() {
                     {/* Hlavní obsah */}
                     <div className="flex-1 min-w-0 min-h-[400px]">
                         {activeTab === "prehled" && <TabPrehled data={data} onRefresh={fetchData} />}
+                        {activeTab === "firma" && <TabFirma company={data?.company || null} answers={data?.questionnaire_answers || {}} scans={data?.scans || []} />}
                         {activeTab === "findings" && <TabFindings findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} />}
                         {activeTab === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
                         {activeTab === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
@@ -351,6 +364,7 @@ export default function DashboardPage() {
                             {activeTab === tab.key && (
                                 <div className="mt-1 mb-2 rounded-xl border border-white/[0.06] bg-white/[0.01] p-4">
                                     {tab.key === "prehled" && <TabPrehled data={data} onRefresh={fetchData} />}
+                                    {tab.key === "firma" && <TabFirma company={data?.company || null} answers={data?.questionnaire_answers || {}} scans={data?.scans || []} />}
                                     {tab.key === "findings" && <TabFindings findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} />}
                                     {tab.key === "dokumenty" && <TabDokumenty documents={uniqueDocs} />}
                                     {tab.key === "plan" && <TabPlan findings={data?.findings || []} questFindings={data?.questionnaire_findings || []} resolvedIds={data?.action_plan_resolved || []} onResolvedChange={fetchData} />}
@@ -372,15 +386,15 @@ export default function DashboardPage() {
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center mx-auto mb-3">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
                                 </div>
-                                <h4 className="text-sm font-semibold text-slate-200 mb-1">Nejprve dokončete dotazník</h4>
+                                <h4 className="text-sm font-semibold text-slate-200 mb-1">{questionnaireAllAnswered ? "Doplňte odpovědi v dotazníku" : "Nejprve dokončete dotazník"}</h4>
                                 <p className="text-xs text-slate-400 mb-4">
-                                    {qAnswered > 0 ? `Zodpovězeno ${qAnswered} z ${qTotal} otázek` : "Vyplňte dotazník pro přesnější analýzu"} — po dokončení si budete moci vybrat balíček.
+                                    {questionnaireAllAnswered ? `U ${qUnknownCount} otázek jste zvolili „Nevím" — doplňte je pro přesnější dokumenty` : qAnswered > 0 ? `Zodpovězeno ${qAnswered} z ${qTotal} otázek` : "Vyplňte dotazník pro přesnější analýzu"} — po dokončení si budete moci vybrat balíček.
                                 </p>
                                 <a
-                                    href={data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik"}
+                                    href={(questionnaireAllAnswered && qUnknowns[0]?.question_key && data?.company?.id) ? `/dotaznik?company_id=${data.company.id}&edit=true&q=${qUnknowns[0].question_key}` : data?.company?.id ? `/dotaznik?company_id=${data.company.id}` : "/dotaznik"}
                                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold transition-all hover:shadow-lg hover:shadow-amber-500/25 active:scale-[0.98]"
                                 >
-                                    {qAnswered > 0 ? "Pokračovat v dotazníku" : "Vyplnit dotazník"}
+                                    {questionnaireAllAnswered ? "Doplnit dotazník" : qAnswered > 0 ? "Pokračovat v dotazníku" : "Vyplnit dotazník"}
                                 </a>
                             </div>
                         )}
@@ -458,7 +472,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
     const qAns = data?.questionnaire_answered_count ?? 0;
     const qTot = data?.questionnaire_total_questions ?? 0;
     const qUnknownCount = data?.questionnaire_unknown_count ?? 0;
-    const hasQuest = (qTot > 0 && qAns >= qTot) || (ps?.questionnaire_done ?? false);
+    const hasQuest = (qTot > 0 && qAns >= qTot && qUnknownCount === 0) || (ps?.questionnaire_done ?? false);
     const questStarted = !hasQuest && (qAns > 0 || qUnknownCount > 0 || (data?.questionnaire_status?.startsWith("rozpracován") ?? false));
     const allAnsweredWithUnknowns = !hasQuest && qUnknownCount > 0 && (qAns + qUnknownCount) >= qTot;
     const hasDocs = ps?.documents_done ?? (data?.documents.length || 0) > 0;
@@ -592,11 +606,11 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
         {
             done: deepDone || deepRunning || (hasQuest && hasPaidOrder),
             optional: true,
-            label: deepRunning && !deepDone ? "24h test ⏳" : "24h test",
+            label: deepRunning && !deepDone ? "24h test ⏳" : deepDone ? "24h test ✅" : "24h test",
             desc: deepDone
-                ? "Hloubkový scan ze 8 zemí a 6 kontinentů byl úspěšně dokončen"
+                ? `Dokončen — nalezeno ${(data?.findings?.length || 0)} AI ${(data?.findings?.length || 0) === 1 ? "systém" : (data?.findings?.length || 0) < 5 ? "systémy" : "systémů"} ze ${latestScan?.geo_countries_scanned?.length || 8} zemí`
                 : deepRunning
-                    ? "Hloubkový scan probíhá na pozadí ze 7 zemí — mezitím pokračujte dotazníkem"
+                    ? "Hloubkový scan probíhá na pozadí ze 8 zemí — mezitím pokračujte dotazníkem"
                     : hasScans
                         ? "Spusťte 24hodinový hloubkový test ze 8 zemí a 6 kontinentů"
                         : "Nejprve dokončete rychlý sken webu",
@@ -635,17 +649,41 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
             cta: hasPaidOrder ? "✓ Zaplaceno" : hasOrder ? "Čeká na platbu" : "",
         },
         {
-            done: isProcessingDocs,
+            done: isProcessingDocs || ws === 'generating' || ws === 'awaiting_approval',
             label: "Tvorba dokumentace",
-            desc: isProcessingDocs ? "Pracujeme na vaší dokumentaci — elektronické PDF do 7 pracovních dnů" : hasPaidOrder ? "Připravujeme vaše dokumenty" : "Po zaplacení začneme s tvorbou",
+            desc: ws === 'awaiting_approval'
+                ? "Dokumenty byly vygenerovány — probíhá kontrola kvality"
+                : ws === 'generating'
+                    ? "Pracujeme na vaší dokumentaci — elektronické PDF do 7 pracovních dnů"
+                    : isProcessingDocs
+                        ? "Pracujeme na vaší dokumentaci — elektronické PDF do 7 pracovních dnů"
+                        : !deepDone && deepRunning
+                            ? "Čekáme na výsledky 24hodinového hloubkového testu"
+                            : deepDone && hasPaidOrder
+                                ? "24h test dokončen — výrobu dokumentů spustí náš tým po kontrole výsledků"
+                                : deepDone
+                                    ? "24h test dokončen — po zaplacení spustíme výrobu dokumentů"
+                                    : hasPaidOrder
+                                        ? "Jakmile doběhne 24h test, budeme moci spustit výrobu dokumentů"
+                                        : "Po zaplacení a dokončení 24h testu začneme s tvorbou",
             detail: null,
             href: null,
-            cta: isProcessingDocs ? "Zpracováváme" : "",
+            cta: ws === 'awaiting_approval'
+                ? "Kontrola kvality"
+                : ws === 'generating'
+                    ? "Zpracováváme"
+                    : isProcessingDocs
+                        ? "Zpracováváme"
+                        : !deepDone && deepRunning
+                            ? "⏳ 24h test probíhá"
+                            : deepDone && hasPaidOrder
+                                ? "Čeká na spuštění výroby"
+                                : "",
         },
         {
             done: hasDocs,
             label: "Dodání",
-            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení — tištěnou verzi doručíme do 14 dnů" : "Až 12 dokumentů v PDF + tištěná verze v profesionální vazbě",
+            desc: hasDocs ? "Dokumenty jsou připraveny ke stažení — tištěnou verzi doručíme do 14 dnů" : "14 compliance dokumentů v PDF, HTML a PPTX + tištěná verze v profesionální vazbě",
             detail: null,
             href: null,
             cta: hasDocs ? "Viz tab Dokumenty" : "",
@@ -932,7 +970,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                                             <p className="text-xs text-red-400">{deepScanError}</p>
                                         )}
                                         <p className="text-xs text-slate-400">
-                                            🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪 — 7 zemí, 6 kontinentů, desktop i mobil
+                                            🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪 — 8 zemí, 6 kontinentů, desktop i mobil
                                         </p>
                                     </div>
                                 )}
@@ -978,24 +1016,54 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                     </div>
                 )}
 
-                {/* Stav procesu — kompaktní přehled */}
+                {/* Stav procesu — přehledný seznam */}
                 {steps.some(s => s.done) && (
-                    <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Stav procesu</p>
-                        <div className="space-y-1">
-                            {steps.map((step, i) => (
-                                <div key={i} className="flex items-center gap-2 text-xs">
-                                    {step.done ? (
-                                        <span className="text-green-400">✓</span>
-                                    ) : (step as { optional?: boolean }).optional && !step.done ? (
-                                        <span className="text-slate-600">—</span>
-                                    ) : (
-                                        <span className="text-slate-600">○</span>
-                                    )}
-                                    <span className={step.done ? "text-green-400/80" : "text-slate-600"}>{step.label}</span>
-                                    {step.done && <span className="text-slate-600 ml-auto">{step.desc?.split("—")[0]?.trim()}</span>}
-                                </div>
-                            ))}
+                    <div className="mt-6 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6">
+                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Stav procesu</p>
+                        <div className="space-y-3">
+                            {steps.map((step, i) => {
+                                const isOptionalSkipped = (step as { optional?: boolean }).optional && !step.done;
+                                const isRunning = i === 1 && !step.done && step.label.includes("⏳");
+                                return (
+                                    <div key={i} className={`flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+                                        step.done
+                                            ? "bg-green-500/[0.06] border border-green-500/15"
+                                            : isRunning
+                                                ? "bg-cyan-500/[0.06] border border-cyan-500/15"
+                                                : "bg-white/[0.01] border border-white/[0.04]"
+                                    }`}>
+                                        <div className="flex-shrink-0 mt-0.5">
+                                            {step.done ? (
+                                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            ) : isRunning ? (
+                                                <div className="w-5 h-5 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+                                            ) : isOptionalSkipped ? (
+                                                <div className="w-5 h-5 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center">
+                                                    <span className="text-[10px] text-slate-600">—</span>
+                                                </div>
+                                            ) : (
+                                                <div className="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center">
+                                                    <span className="text-[10px] text-slate-600">{i + 1}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <span className={`text-sm font-medium ${
+                                                step.done
+                                                    ? "text-green-400"
+                                                    : isRunning
+                                                        ? "text-cyan-300"
+                                                        : "text-slate-500"
+                                            }`}>{step.label}</span>
+                                            <p className={`text-xs mt-0.5 leading-relaxed ${
+                                                step.done ? "text-slate-400" : "text-slate-600"
+                                            }`}>{step.desc?.split("—")[0]?.trim()}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -1003,24 +1071,358 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
 
             {/* 24h deep scan running banner */}
             {deepRunning && !deepDone && currentStepIndex !== 1 && (
-                <div className="glass border-cyan-500/20">
-                    <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
-                            <span className="text-lg animate-pulse">⏳</span>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold text-cyan-300 text-sm">24h hloubkový test probíhá</h4>
-                            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Testujeme váš web ze <strong className="text-slate-300">8 zemí a 6 kontinentů</strong> (desktop i mobil).
-                                Výsledky budou přibližně za <strong className="text-slate-300">24 hodin</strong> — pošleme vám e-mail.
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="text-[10px] text-slate-500">🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪</span>
+                <DeepScanBanner startedAt={latestScan?.deep_scan_started_at} />
+            )}
+
+            {/* Výsledky deep scanu po dokončení */}
+            {deepDone && (data?.findings || []).length > 0 && (
+                <DeepScanResultsCard
+                    findings={data?.findings || []}
+                    totalScans={latestScan?.deep_scan_total_findings ?? null}
+                    countries={latestScan?.geo_countries_scanned ?? null}
+                    finishedAt={latestScan?.deep_scan_finished_at ?? null}
+                />
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════
+   Výsledky deep scanu — karta s nalezmi
+   ═══════════════════════════════════════════ */
+
+const AI_ACT_ARTICLE_URLS: Record<string, string> = {
+    "čl. 4": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_4",
+    "čl. 5": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_5",
+    "čl. 6": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_6",
+    "čl. 26": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_26",
+    "čl. 27": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_27",
+    "čl. 50": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_50",
+    "čl. 52": "https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32024R1689#art_52",
+};
+
+const COUNTRY_FLAGS: Record<string, string> = {
+    cz: "🇨🇿", gb: "🇬🇧", us: "🇺🇸", br: "🇧🇷", jp: "🇯🇵", za: "🇿🇦", au: "🇦🇺", de: "🇩🇪",
+};
+
+function DeepScanResultsCard({
+    findings,
+    totalScans,
+    countries,
+    finishedAt,
+}: {
+    findings: DashboardData["findings"];
+    totalScans: number | null;
+    countries: string[] | null;
+    finishedAt: string | null;
+}) {
+    const [expanded, setExpanded] = useState(false);
+
+    const highCount = findings.filter(f => f.risk_level === "high").length;
+    const limitedCount = findings.filter(f => f.risk_level === "limited").length;
+    const minimalCount = findings.filter(f => f.risk_level === "minimal").length;
+
+    const riskColor = (level: string) => {
+        switch (level) {
+            case "high": return "bg-red-500/12 text-red-400 border-red-500/30";
+            case "limited": return "bg-amber-500/12 text-amber-400 border-amber-500/30";
+            case "minimal": return "bg-slate-500/12 text-slate-300 border-slate-400/25";
+            default: return "bg-white/10 text-slate-400 border-white/[0.08]";
+        }
+    };
+    const riskText = (level: string) => {
+        switch (level) {
+            case "high": return "Vysoké riziko";
+            case "limited": return "Omezené riziko";
+            case "minimal": return "Minimální riziko";
+            default: return level;
+        }
+    };
+    const categoryText = (cat: string) => {
+        switch (cat) {
+            case "chatbot": return "Chatbot";
+            case "analytics": return "Analytika";
+            case "recommender": return "Doporučování";
+            case "content_gen": return "Generování obsahu";
+            default: return cat;
+        }
+    };
+
+    // Odkaz na článek AI Act
+    const articleLink = (article: string) => {
+        const key = article.split(",")[0]?.trim();
+        const url = AI_ACT_ARTICLE_URLS[key];
+        if (url) {
+            return (
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
+                    {article}
+                </a>
+            );
+        }
+        return <span>{article}</span>;
+    };
+
+    const finishedDate = finishedAt ? new Date(finishedAt).toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
+
+    return (
+        <div className="glass border-green-500/20">
+            {/* Hlavička */}
+            <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center">
+                    <span className="text-lg">✅</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-green-300 text-sm">24h hloubkový test dokončen</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                        Nalezeno <strong className="text-white">{findings.length} AI {findings.length === 1 ? "systém" : findings.length < 5 ? "systémy" : "systémů"}</strong>
+                        {countries && countries.length > 0 && (
+                            <> — skenováno z {countries.length} {countries.length === 1 ? "země" : countries.length < 5 ? "zemí" : "zemí"}</>
+                        )}
+                    </p>
+                    {finishedDate && <p className="text-[10px] text-slate-500 mt-0.5">Dokončeno: {finishedDate}</p>}
+                </div>
+            </div>
+
+            {/* Souhrn rizik */}
+            <div className="flex flex-wrap gap-2 mt-4">
+                {highCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium bg-red-500/10 text-red-400 border-red-500/25">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        {highCount}× vysoké riziko
+                    </span>
+                )}
+                {limitedCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium bg-amber-500/10 text-amber-400 border-amber-500/25">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        {limitedCount}× omezené riziko
+                    </span>
+                )}
+                {minimalCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium bg-slate-500/10 text-slate-300 border-slate-500/25">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        {minimalCount}× minimální
+                    </span>
+                )}
+                {countries && countries.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs text-slate-400 border-white/[0.08] bg-white/[0.03]">
+                        {countries.map(c => COUNTRY_FLAGS[c] || c).join(" ")}
+                    </span>
+                )}
+            </div>
+
+            {/* Rozbalit/Sbalit */}
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-4 text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+            >
+                <svg className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                {expanded ? "Skrýt detaily" : "Zobrazit nalezené AI systémy"}
+            </button>
+
+            {/* Detailní seznam */}
+            {expanded && (
+                <div className="mt-4 space-y-2.5">
+                    {findings.map((f) => (
+                        <div key={f.id} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3.5">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 flex-1">
+                                    <h5 className="font-semibold text-sm text-slate-200">{f.name}</h5>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">{categoryText(f.category)}</p>
+                                </div>
+                                <span className={"inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium flex-shrink-0 " + riskColor(f.risk_level)}>
+                                    {riskText(f.risk_level)}
+                                </span>
                             </div>
+
+                            {(f.ai_act_article || f.action_required) && (
+                                <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] space-y-1.5">
+                                    {f.ai_act_article && (
+                                        <p className="text-xs text-slate-500">
+                                            <span className="text-slate-400 font-medium">Článek AI Act:</span>{" "}
+                                            {articleLink(f.ai_act_article)}
+                                        </p>
+                                    )}
+                                    {f.action_required && (
+                                        <p className="text-xs">
+                                            <span className="text-fuchsia-400 font-medium">Co musíte udělat:</span>{" "}
+                                            <span className="text-slate-300">{f.action_required}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
+                    ))}
+
+                    {/* Varování o pokutě */}
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/[0.04] p-3.5 mt-3">
+                        <p className="text-xs text-red-300/80 leading-relaxed">
+                            ⚠️ <strong>Povinnost dle AI Act:</strong> Článek 50 ukládá provozovatelům AI systémů povinnost transparentně informovat uživatele.
+                            Nesplnění hrozí pokutou až <strong className="text-red-300">35 mil. € / 7 % obratu</strong>.
+                            Termín: <strong className="text-red-300">2. srpna 2026</strong>.
+                        </p>
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════
+   Deep Scan Banner s odpočtem
+   ═══════════════════════════════════════════ */
+function DeepScanBanner({ startedAt }: { startedAt?: string | null }) {
+    const [remaining, setRemaining] = useState("");
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        const start = startedAt ? new Date(startedAt).getTime() : Date.now();
+        const deadline = start + 24 * 60 * 60 * 1000;
+
+        const tick = () => {
+            const now = Date.now();
+            const diff = deadline - now;
+            if (diff <= 0) {
+                setRemaining("dokončení co nevidět…");
+                setProgress(100);
+                return;
+            }
+            const h = Math.floor(diff / 3_600_000);
+            const m = Math.floor((diff % 3_600_000) / 60_000);
+            const s = Math.floor((diff % 60_000) / 1_000);
+            setRemaining(`${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`);
+            const elapsed = now - start;
+            const total = 24 * 60 * 60 * 1000;
+            setProgress(Math.min(100, Math.round((elapsed / total) * 100)));
+        };
+
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [startedAt]);
+
+    return (
+        <div className="glass border-cyan-500/20">
+            <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+                    <span className="text-lg animate-pulse">⏳</span>
+                </div>
+                <div className="flex-1">
+                    <h4 className="font-semibold text-cyan-300 text-sm">24h hloubkový test probíhá</h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Testujeme váš web ze <strong className="text-slate-300">8 zemí a 6 kontinentů</strong> (desktop i mobil).
+                        Výsledky pošleme e-mailem.
+                    </p>
+                    {/* Countdown */}
+                    <div className="mt-3 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-400">Zbývající čas</span>
+                            <span className="font-mono text-cyan-300 font-semibold">{remaining}</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-fuchsia-500 transition-all duration-1000"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <div className="text-[10px] text-slate-500 text-right">{progress}% dokončeno</div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] text-slate-500">🇨🇿 🇬🇧 🇺🇸 🇧🇷 🇯🇵 🇿🇦 🇦🇺 🇩🇪</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════
+   TAB FIRMA — přehled informací o firmě
+   ═══════════════════════════════════════════ */
+function TabFirma({ company, answers, scans }: { company: DashboardData["company"]; answers: Record<string, string>; scans: DashboardData["scans"] }) {
+    const name = answers.company_legal_name || company?.name || "—";
+    const ico = answers.company_ico || "—";
+    const web = company?.url || "—";
+    const email = answers.company_contact_email || "—";
+    const address = answers.company_address ? formatDisplayValue("company_address", answers.company_address) : "—";
+    const industry = answers.company_industry || "—";
+    const size = answers.company_size || "—";
+    const revenue = answers.company_annual_revenue || "—";
+    const platform = answers.eshop_platform || "—";
+    const phone = company?.phone || "—";
+    const registeredAt = company?.created_at ? new Date(company.created_at).toLocaleDateString("cs-CZ") : "—";
+    const lastScanUrl = scans.length > 0 ? scans[0].url : null;
+
+    const InfoRow = ({ label, value, href }: { label: string; value: string; href?: string }) => (
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-4 py-2.5 border-b border-white/[0.04] last:border-0">
+            <span className="text-sm text-slate-400 flex-shrink-0">{label}</span>
+            {href && value !== "—" ? (
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors sm:text-right break-all">
+                    {value}
+                </a>
+            ) : (
+                <span className={`text-sm sm:text-right ${value === "—" ? "text-slate-600" : "text-slate-200"}`}>{value}</span>
+            )}
+        </div>
+    );
+
+    return (
+        <div className="space-y-6">
+            {/* Hlavička s názvem firmy */}
+            <div className="glass">
+                <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="font-semibold text-lg text-slate-100 truncate">{name}</h3>
+                        {ico !== "—" && <p className="text-xs text-slate-500 mt-0.5">IČO: {ico}</p>}
+                        {web !== "—" && (
+                            <a href={web.startsWith("http") ? web : `https://${web}`} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 mt-1 block truncate">
+                                {web}
+                            </a>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Základní údaje */}
+            <div className="glass">
+                <h4 className="text-sm font-semibold text-slate-300 mb-3">Základní údaje</h4>
+                <div>
+                    <InfoRow label="Název firmy" value={name} />
+                    <InfoRow label="IČO" value={ico} />
+                    <InfoRow label="Web" value={web} href={web !== "—" ? (web.startsWith("http") ? web : `https://${web}`) : undefined} />
+                    {lastScanUrl && lastScanUrl !== web && (
+                        <InfoRow label="Skenovaný web" value={lastScanUrl} href={lastScanUrl.startsWith("http") ? lastScanUrl : `https://${lastScanUrl}`} />
+                    )}
+                    <InfoRow label="E-shop platforma" value={platform} />
+                </div>
+            </div>
+
+            {/* Kontaktní údaje */}
+            <div className="glass">
+                <h4 className="text-sm font-semibold text-slate-300 mb-3">Kontaktní údaje</h4>
+                <div>
+                    <InfoRow label="E-mail" value={email} href={email !== "—" ? `mailto:${email}` : undefined} />
+                    <InfoRow label="Telefon" value={phone} href={phone !== "—" ? `tel:${phone}` : undefined} />
+                    <InfoRow label="Adresa" value={address} />
+                </div>
+            </div>
+
+            {/* Profil firmy */}
+            <div className="glass">
+                <h4 className="text-sm font-semibold text-slate-300 mb-3">Profil firmy</h4>
+                <div>
+                    <InfoRow label="Obor podnikání" value={industry} />
+                    <InfoRow label="Velikost firmy" value={size} />
+                    <InfoRow label="Roční obrat" value={revenue} />
+                    <InfoRow label="Registrace" value={registeredAt} />
+                </div>
+            </div>
         </div>
     );
 }
@@ -1104,6 +1506,24 @@ function TabPrehled({ data, onRefresh }: { data: DashboardData | null; onRefresh
                 </div>
             )}
 
+            {/* Má sken ale žádnou objednávku — ukaž přehledovou kartu */}
+            {!isProcessing && (!data?.orders || data.orders.length === 0) && hasScans && (
+                <div className="glass text-center py-12">
+                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                        <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Sken dokončen</h3>
+                    <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                        Rychlý sken webu proběhl. Nyní vyplňte dotazník a vyberte si balíček dokumentace.
+                    </p>
+                    <a href="#pipeline-scan" className="btn-primary text-sm px-6 py-2.5 mt-4 inline-block">
+                        Pokračovat
+                    </a>
+                </div>
+            )}
+
         </div>
     );
 }
@@ -1124,19 +1544,11 @@ function TabFindings({ findings, questFindings }: { findings: DashboardData["fin
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2">
                                         <h4 className="font-semibold text-slate-200">{f.name}</h4>
-                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium border ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                            {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
-                                        </span>
                                     </div>
                                     <p className="text-sm text-slate-400 mb-2">{f.action_required}</p>
                                     <div className="flex items-center gap-4 text-xs text-slate-500">
                                         <span>Kategorie: {f.category}</span>
                                         <span>AI Act: {f.ai_act_article}</span>
-                                        {f.confirmed_by_client && (
-                                            <span className={f.confirmed_by_client === "false_positive" ? "text-slate-500" : "text-amber-400"}>
-                                                {f.confirmed_by_client === "false_positive" ? "Falešný poplach" : "Potvrzeno"}
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1154,9 +1566,6 @@ function TabFindings({ findings, questFindings }: { findings: DashboardData["fin
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2">
                                         <h4 className="font-semibold text-slate-200">{f.name}</h4>
-                                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium border ${RISK_COLORS[f.risk_level] || RISK_COLORS.low}`}>
-                                            {f.risk_level === "high" ? "Vysoké" : f.risk_level === "medium" ? "Střední" : "Nízké"} riziko
-                                        </span>
                                         <span className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Dotazník</span>
                                     </div>
                                     <p className="text-sm text-slate-400 mb-2">{f.action_required}</p>
@@ -1297,25 +1706,11 @@ function TabPlan({ findings, questFindings, resolvedIds, onResolvedChange }: { f
                         </button>
                         <div className="flex-1 min-w-0">
                             <p className={`text-sm font-medium ${item.resolved ? "text-slate-500 opacity-50" : "text-slate-200"}`}>{item.text}</p>
+                            {item.article && (
                             <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                {!item.resolved && (
-                                    <button
-                                        type="button"
-                                        onClick={handleToggle}
-                                        disabled={toggling === item.id}
-                                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors cursor-pointer"
-                                    >
-                                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        Označit jako vyřešené
-                                    </button>
-                                )}
-                                {item.risk !== "info" && (
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border ${RISK_COLORS[item.risk] || RISK_COLORS.low}`}>
-                                        {item.risk === "high" ? "Vysoká" : item.risk === "medium" ? "Střední" : "Nízká"} priorita
-                                    </span>
-                                )}
-                                {item.article && <span className="text-[10px] text-slate-500">{item.article}</span>}
+                                <span className="text-[10px] text-slate-500">{item.article}</span>
                             </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -1467,7 +1862,7 @@ const DASHBOARD_PLANS = [
         description: "Compliance Kit — dokumenty ke stažení",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (až 12 dokumentů dle rizika)",
+            "AI Act Compliance Kit (14 dokumentů)",
             "Transparenční stránka (HTML)",
             "Registr AI systémů",
             "Interní AI politika firmy",
@@ -1525,7 +1920,7 @@ const DASHBOARD_PLANS = [
         description: "Komplexní řešení pro větší firmy + 2 roky průběžné péče",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (až 12 dokumentů dle rizika)",
+            "AI Act Compliance Kit (14 dokumentů)",
             "Transparenční stránka (HTML)",
             "Registr AI systémů",
             "Interní AI politika firmy",
@@ -1560,7 +1955,7 @@ const DASHBOARD_PLANS = [
 
 const COMPARISON_FEATURES = [
     { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
-    { label: "Compliance Kit (až 12 dokumentů dle rizika)", basic: true, pro: true, enterprise: true },
+    { label: "Compliance Kit (14 dokumentů)", basic: true, pro: true, enterprise: true },
     { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
     { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
     { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAnalytics, useScrollTracking } from "@/lib/analytics";
 import ScrollReveal from "@/components/scroll-reveal";
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+
 const plans = [
     {
         key: "basic",
@@ -15,7 +17,7 @@ const plans = [
         description: "Compliance Kit — dokumenty ke stažení",
         features: [
             "Sken webu + AI Act report",
-            "AI Act Compliance Kit (až 12 dokumentů dle rizika)",
+            "AI Act Compliance Kit (14 dokumentů)",
             "Tištěná dokumentace v profesionální vazbě — připravená na kontrolu",
             "Elektronická záloha veškeré dokumentace",
             "Transparenční stránka (HTML)",
@@ -96,7 +98,7 @@ export default function PricingPage() {
     const [loading, setLoading] = useState<string | null>(null);
     const [error, setError] = useState("");
 
-    const { user } = useAuth();
+    const { user, session } = useAuth();
     const router = useRouter();
     const { track } = useAnalytics();
     useScrollTracking();
@@ -113,6 +115,35 @@ export default function PricingPage() {
             router.push(`/registrace?redirect=/objednavka&plan=${planKey}`);
             return;
         }
+
+        // Ověřit, že dotazník je 100% vyplněn bez "nevím"
+        setError("");
+        setLoading(planKey);
+        try {
+            const token = session?.access_token;
+            if (token) {
+                const res = await fetch(`${API_URL}/api/questionnaire/my-status`, {
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (!data.is_complete) {
+                        if (data.unknown_count > 0) {
+                            setError(`Dotazník obsahuje ${data.unknown_count} odpovědí „Nevím". Doplňte prosím všechny odpovědi.`);
+                        } else if (data.total_answers === 0) {
+                            setError("Nejprve vyplňte dotazník v dashboardu.");
+                        } else {
+                            setError("Dotazník není kompletní. Dokončete prosím všechny otázky.");
+                        }
+                        setLoading(null);
+                        return;
+                    }
+                }
+            }
+        } catch {
+            // Při chybě kontroly pustíme dál — backend to stejně odmítne
+        }
+        setLoading(null);
 
         // Přesměrovat na objednávkovou stránku s fakturačními údaji
         router.push(`/objednavka?plan=${planKey}`);
@@ -396,7 +427,7 @@ export default function PricingPage() {
                         {(() => {
                             const FEATURES = [
                                 { label: "Sken webu + AI Act report", basic: true, pro: true, enterprise: true },
-                                { label: "Compliance Kit (až 12 dokumentů dle rizika)", basic: true, pro: true, enterprise: true },
+                                { label: "Compliance Kit (14 dokumentů)", basic: true, pro: true, enterprise: true },
                                 { label: "Registr AI systémů", basic: true, pro: true, enterprise: true },
                                 { label: "Transparenční stránka (HTML)", basic: true, pro: true, enterprise: true },
                                 { label: "Texty oznámení pro AI nástroje", basic: true, pro: true, enterprise: true },
