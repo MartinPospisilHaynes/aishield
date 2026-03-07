@@ -22,6 +22,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://aishield.cz"),
+    alternates: { canonical: "/" },
     title: {
         default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
         template: "%s | AIshield.cz",

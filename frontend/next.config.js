@@ -34,6 +34,13 @@ const nextConfig = {
     // Redirects — server-side (edge), instant, cache-proof
     async redirects() {
         return [
+            // www → non-www (301) — pokryje i statické assety
+            {
+                source: "/:path*",
+                has: [{ type: "host", value: "www.aishield.cz" }],
+                destination: "https://aishield.cz/:path*",
+                permanent: true,
+            },
             {
                 source: "/dotaznik/ursula",
                 destination: "/dotaznik",
