@@ -78,5 +78,15 @@
     "date_human": "5. února 2026",
     "tag": "Časová osa",
     "image": "/blog/deadline-ai-act-srpen-2026.png"
+  },
+  {
+    "slug": "zakazy-ai-systemu-clanek-5",
+    "href": "/blog/zakazy-ai-systemu-clanek-5",
+    "title": "Zákazy AI systémů: Článek 5 AI Actu vysvětlen",
+    "desc": "Článek 5 EU AI Actu zakazuje nejnebezpečnější AI aplikace. Přehled všech zakázaných AI praktik — manipulace, social scoring, prediktivní policie a další.",
+    "date": "2026-02-01",
+    "date_human": "1. února 2026",
+    "tag": "Průvodce",
+    "image": "/blog/zakazy-ai-systemu-clanek-5.png"
   }
 ]

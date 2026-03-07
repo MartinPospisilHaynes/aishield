@@ -444,7 +444,10 @@ function QuestionnaireInner() {
         // Don't override if ?q= param was provided (jump-to-question mode)
         if (searchParams.get("q")) { setServerAnswersLoaded(false); return; }
         const answeredCount = allQuestions.filter(q => answers[q.key]?.answer).length;
-        const firstUnanswered = allQuestions.findIndex(q => !answers[q.key]?.answer);
+        const firstMissing = allQuestions.findIndex(q => !answers[q.key]?.answer);
+        const firstUnknown = allQuestions.findIndex(q => answers[q.key]?.answer === "unknown");
+        // Priorita: nejdřív chybějící odpovědi, pak "nevím" odpovědi
+        const firstUnanswered = firstMissing >= 0 ? firstMissing : firstUnknown;
         let target = 0;
         if (firstUnanswered >= 0) {
             target = firstUnanswered;

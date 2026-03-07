@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_ROUTES = ["/dashboard", "/dotaznik", "/platba"];
-const NOINDEX_ROUTES = ["/login", "/registrace", "/nove-heslo", "/zapomenute-heslo", "/admin", "/onboarding", "/platba"];
+const NOINDEX_ROUTES = ["/login", "/registrace", "/nove-heslo", "/zapomenute-heslo", "/admin", "/onboarding", "/platba", "/dotaznik", "/objednavka", "/dashboard"];
 
 export async function middleware(request: NextRequest) {
     // ── 1. www → non-www 301 redirect ──
