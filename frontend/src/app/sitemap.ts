@@ -19,7 +19,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
         { url: `${baseUrl}/faq`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
         { url: `${baseUrl}/kariera`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },
-        { url: `${baseUrl}/shoptet`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
         // AI Act sekce
         { url: `${baseUrl}/ai-act`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
         { url: `${baseUrl}/ai-act/clanek-50`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
