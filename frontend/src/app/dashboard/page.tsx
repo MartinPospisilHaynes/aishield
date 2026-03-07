@@ -657,18 +657,73 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
     const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
     const progressTarget = currentStepIndex >= 0 ? currentStepIndex : steps.length - 1;
     const lineWidthPercent = progressTarget <= 0 ? 0 : (progressTarget / (steps.length - 1)) * ((steps.length - 1) / steps.length * 100);
+    const verticalProgressPercent = progressTarget <= 0 ? 0 : (progressTarget / (steps.length - 1)) * 100;
 
     return (
         <div className="mb-8 space-y-4">
             {/* Pipeline vizualizace — zelená čára s body */}
             <div className="glass">
                 <h3 className="font-semibold mb-8">Váš postup k AI Act compliance</h3>
-                <div className="overflow-x-auto -mx-5 px-5 pb-2">
-                <div className="grid grid-cols-7 relative mb-8 min-w-[420px]">
-                    <div className="absolute top-[18px] sm:top-[22px] left-[7%] right-[7%] h-1 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04]" />
+                {/* Mobile: vertikální timeline */}
+                <div className="md:hidden relative mb-8">
+                    <div className="absolute left-[17px] top-[26px] bottom-[26px] w-1 rounded-full bg-gradient-to-b from-white/[0.04] via-white/[0.08] to-white/[0.04]" />
+                    {verticalProgressPercent > 0 && (
+                        <div
+                            className="absolute left-[17px] top-[26px] w-1 rounded-full transition-all duration-700"
+                            style={{
+                                height: `calc((100% - 52px) * ${verticalProgressPercent / 100})`,
+                                background: 'linear-gradient(180deg, #22c55e, #10b981, #06b6d4, #a855f7)',
+                                boxShadow: '0 0 12px rgba(34,197,94,0.4), 0 0 24px rgba(6,182,212,0.2)',
+                            }}
+                        />
+                    )}
+                    {steps.map((step, i) => {
+                        const isCurrent = i === currentStepIndex;
+                        const isSkipped = !step.done && (step as { optional?: boolean }).optional && i < (currentStepIndex >= 0 ? currentStepIndex : steps.length);
+                        const isRunning = i === 1 && deepRunning && !deepDone;
+                        return (
+                            <div key={i} className="flex items-center gap-3 relative z-10 py-2">
+                                <div className={`flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-full text-xs font-bold transition-all duration-500 ${step.done && !isRunning
+                                    ? "bg-gradient-to-br from-green-500/30 to-emerald-500/20 text-green-300 border-2 border-green-400/50 shadow-[0_0_16px_rgba(34,197,94,0.3),0_0_4px_rgba(34,197,94,0.5)]"
+                                    : isRunning
+                                        ? "bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-300 border-2 border-cyan-400/50 shadow-[0_0_16px_rgba(6,182,212,0.3)] animate-pulse"
+                                        : isSkipped
+                                            ? "bg-slate-700/80 text-slate-400 border-2 border-dashed border-slate-500/40"
+                                            : isCurrent
+                                                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-500/20 text-fuchsia-300 border-2 border-fuchsia-400/60 shadow-[0_0_20px_rgba(217,70,239,0.35),0_0_6px_rgba(217,70,239,0.5)] animate-pulse"
+                                                : "bg-slate-800/80 text-slate-500 border-2 border-white/[0.1] shadow-[0_0_6px_rgba(0,0,0,0.3)]"
+                                    }`}>
+                                    {step.done && !isRunning ? (
+                                        <svg className="w-5 h-5 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : isRunning ? (
+                                        <span className="text-sm">⏳</span>
+                                    ) : isSkipped ? (
+                                        <span className="text-[10px] text-slate-500">—</span>
+                                    ) : (
+                                        <span className={isCurrent ? "drop-shadow-[0_0_4px_rgba(217,70,239,0.6)]" : ""}>{i + 1}</span>
+                                    )}
+                                </div>
+                                <span className={`text-xs font-semibold ${step.done
+                                    ? "text-green-400/90 drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]"
+                                    : isCurrent
+                                        ? "text-fuchsia-400 drop-shadow-[0_0_4px_rgba(217,70,239,0.3)]"
+                                        : "text-slate-500"
+                                    }`}>
+                                    {step.label}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Desktop: horizontální grid */}
+                <div className="hidden md:grid grid-cols-7 relative mb-8">
+                    <div className="absolute top-[22px] left-[7%] right-[7%] h-1 rounded-full bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04]" />
                     {lineWidthPercent > 0 && (
                         <div
-                            className="absolute top-[18px] sm:top-[22px] left-[7%] h-1 rounded-full transition-all duration-700"
+                            className="absolute top-[22px] left-[7%] h-1 rounded-full transition-all duration-700"
                             style={{
                                 width: `${lineWidthPercent}%`,
                                 background: 'linear-gradient(90deg, #22c55e, #10b981, #06b6d4, #a855f7)',
@@ -682,7 +737,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                         const isRunning = i === 1 && deepRunning && !deepDone;
                         return (
                             <div key={i} className="flex flex-col items-center relative z-10">
-                                <div className={`flex items-center justify-center h-9 w-9 sm:h-11 sm:w-11 rounded-full text-xs sm:text-sm font-bold transition-all duration-500 ${step.done && !isRunning
+                                <div className={`flex items-center justify-center h-11 w-11 rounded-full text-sm font-bold transition-all duration-500 ${step.done && !isRunning
                                     ? "bg-gradient-to-br from-green-500/30 to-emerald-500/20 text-green-300 border-2 border-green-400/50 shadow-[0_0_16px_rgba(34,197,94,0.3),0_0_4px_rgba(34,197,94,0.5)]"
                                     : isRunning
                                         ? "bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-300 border-2 border-cyan-400/50 shadow-[0_0_16px_rgba(6,182,212,0.3)] animate-pulse"
@@ -693,7 +748,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                                                 : "bg-slate-800/80 text-slate-500 border-2 border-white/[0.1] shadow-[0_0_6px_rgba(0,0,0,0.3)]"
                                     }`}>
                                     {step.done && !isRunning ? (
-                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-6 h-6 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                         </svg>
                                     ) : isRunning ? (
@@ -704,7 +759,7 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                                         <span className={isCurrent ? "drop-shadow-[0_0_4px_rgba(217,70,239,0.6)]" : ""}>{i + 1}</span>
                                     )}
                                 </div>
-                                <span className={`text-[10px] sm:text-[11px] mt-1.5 sm:mt-2.5 font-semibold text-center leading-tight max-w-[60px] sm:max-w-none ${step.done
+                                <span className={`text-[11px] mt-2.5 font-semibold text-center leading-tight ${step.done
                                     ? "text-green-400/90 drop-shadow-[0_0_4px_rgba(34,197,94,0.3)]"
                                     : isCurrent
                                         ? "text-fuchsia-400 drop-shadow-[0_0_4px_rgba(217,70,239,0.3)]"
@@ -715,7 +770,6 @@ function PipelineProgress({ data, onRefresh }: { data: DashboardData | null; onR
                             </div>
                         );
                     })}
-                </div>
                 </div>
 
                 {/* Aktuální krok — JEDINÉ CTA */}
