@@ -495,9 +495,23 @@ function QuestionnaireInner() {
         // Okamžitý autosave aktuální odpovědi na server
         if (currentQ && companyId) {
             const currentAns = answersRef.current[currentQ.key];
-            if (currentAns && currentAns.answer) {
+            const customText = customAnswers[currentQ.key];
+
+            // Pokud uživatel zadal jen vlastní odpověď bez výběru, nastavíme answer na "custom"
+            if ((!currentAns?.answer) && customText?.trim()) {
+                const section = currentQ._section || "";
+                const newAns = {
+                    question_key: currentQ.key,
+                    section,
+                    answer: "custom",
+                    details: { custom_answer: customText.trim() },
+                    tool_name: "",
+                };
+                setAnswers((prev) => ({ ...prev, [currentQ.key]: newAns }));
+                answersRef.current[currentQ.key] = newAns;
+                saveToServer(currentQ.key, section, "custom", { custom_answer: customText.trim() }, "", currentQuestion + 1, customText);
+            } else if (currentAns && currentAns.answer) {
                 // Přidat custom_answer do details pokud existuje
-                const customText = customAnswers[currentQ.key];
                 let mergedDetails = { ...(currentAns.details || {}) };
                 if (customText && customText.trim()) {
                     mergedDetails.custom_answer = customText.trim();
@@ -1329,7 +1343,7 @@ function QuestionnaireInner() {
                                 ← Zpět
                             </button>
                             {isLast ? (
-                                (isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
+                                (isMulti ? selectedItems.length > 0 : !!(ans?.answer || customAnswers[q.key]?.trim())) && (
                                     <button
                                         onClick={handleSubmit}
                                         disabled={submitting}
@@ -1338,7 +1352,7 @@ function QuestionnaireInner() {
                                         {submitting ? "Odesílám…" : "Odeslat dotazník"}
                                     </button>
                                 )
-                            ) : (isMulti ? selectedItems.length > 0 : !!ans?.answer) && (
+                            ) : (isMulti ? selectedItems.length > 0 : !!(ans?.answer || customAnswers[q.key]?.trim())) && (
                                 <button
                                     onClick={goNext}
                                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"
@@ -2245,7 +2259,7 @@ function QuestionnaireInner() {
                             ← Zpět
                         </button>
 
-                        {fromDashboard && ans?.answer ? (
+                        {fromDashboard && (ans?.answer || customAnswers[q.key]?.trim()) ? (
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
@@ -2256,12 +2270,12 @@ function QuestionnaireInner() {
                         ) : isLast ? (
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting || !ans?.answer}
+                                disabled={submitting || !(ans?.answer || customAnswers[q.key]?.trim())}
                                 className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-lg transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                             >
                                 {submitting ? "Odesílám…" : "Ukončit a odeslat dotazník"}
                             </button>
-                        ) : ans?.answer ? (
+                        ) : (ans?.answer || customAnswers[q.key]?.trim()) ? (
                             <button
                                 onClick={goNext}
                                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold transition-all hover:shadow-lg hover:shadow-fuchsia-500/25 active:scale-[0.98]"

@@ -50,6 +50,7 @@ from backend.api.analytics import router as analytics_router
 from backend.api.chat_feedback import router as chat_feedback_router
 from backend.api.transcribe import router as transcribe_router
 from backend.api.pioneer import router as pioneer_router
+from backend.shoptet.router import router as shoptet_router
 
 # ── Vytvoření aplikace ──
 from backend.config import get_settings as _get_settings
@@ -72,6 +73,7 @@ app.add_middleware(
         "http://localhost:3000",        # Next.js dev server
         "https://aishield.cz",          # Produkce
         "https://www.aishield.cz",      # Produkce s www
+        "https://admin.myshoptet.com",   # Shoptet admin iframe
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
@@ -101,6 +103,7 @@ app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(chat_feedback_router, prefix="/api/admin", tags=["Chat Feedback"])
 app.include_router(transcribe_router, prefix="/api", tags=["Transcribe"])
 app.include_router(pioneer_router, prefix="/api/pioneer", tags=["Pioneer"])
+app.include_router(shoptet_router, prefix="/shoptet", tags=["Shoptet"])
 
 
 # ── Request logging middleware ──
