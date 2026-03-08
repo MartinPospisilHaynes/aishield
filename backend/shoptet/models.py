@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Wizard modely
+# Wizard modely (v1 — zachováno pro kompatibilitu)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class AISystemEntry(BaseModel):
@@ -22,7 +22,7 @@ class AISystemEntry(BaseModel):
 
 
 class WizardRequest(BaseModel):
-    """Request z frontend wizardu — odpovědi e-shopaře."""
+    """Request z frontend wizardu — odpovědi e-shopaře (v1 legacy)."""
     chatbots: list[AISystemEntry] = []
     content_ai: list[AISystemEntry] = []
     other_ai: list[AISystemEntry] = []
@@ -36,6 +36,78 @@ class WizardResponse(BaseModel):
     art50_relevant: int
     art4_relevant: int
     compliance_page_url: str | None = None
+    message: str
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Dotazník v2 — 20 otázek pro e-shopy
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class QuestionnaireAnswer(BaseModel):
+    """Jedna odpověď v dotazníku."""
+    question_key: str = Field(..., min_length=1, max_length=100)
+    answer: str | list[str] | bool
+    details: dict = {}
+
+
+class QuestionnaireRequest(BaseModel):
+    """20-otázkový dotazník pro Shoptet e-shopy."""
+    # Sekce 1: AI komunikace
+    uses_ai_chatbot: str = "ne"
+    chatbot_providers: list[str] = []
+    uses_ai_email_auto: str = "ne"
+    email_providers: list[str] = []
+
+    # Sekce 2: AI obsah
+    uses_chatgpt: str = "ne"
+    chatgpt_providers: list[str] = []
+    chatgpt_purposes: list[str] = []
+    uses_ai_content: str = "ne"
+    content_types: list[str] = []
+    uses_ai_images: str = "ne"
+    image_providers: list[str] = []
+
+    # Sekce 3: AI v provozu
+    uses_dynamic_pricing: str = "ne"
+    uses_ai_recommendation: str = "ne"
+    recommendation_providers: list[str] = []
+    uses_ai_search: str = "ne"
+    search_providers: list[str] = []
+    uses_ai_decision: str = "ne"
+    decision_types: list[str] = []
+    uses_ai_for_children: str = "ne"
+
+    # Sekce 4: Zaměstnanci
+    has_ai_training: str = "ne"
+    informs_employees: str = "ne"
+
+    # Sekce 5: Data a bezpečnost
+    ai_processes_personal_data: str = "ne"
+    personal_data_types: list[str] = []
+    ai_data_stored_eu: str = "nevim"
+
+    # Sekce 6: Governance
+    has_ai_guidelines: str = "ne"
+    has_ai_register: str = "ne"
+    has_oversight_person: str = "ne"
+    can_override_ai: str = "nevim"
+
+    # Sekce 7: Transparentnost
+    has_transparency_page: str = "ne"
+    wants_compliance_page: str = "ano"
+
+
+class QuestionnaireResponse(BaseModel):
+    """Response po zpracování dotazníku."""
+    installation_id: str
+    ai_systems_count: int
+    compliance_score: int
+    score_breakdown: dict
+    art50_relevant: int
+    art4_relevant: int
+    risk_areas: list[dict] = []
+    recommendations: list[str] = []
+    plan: str = "free"
     message: str
 
 
@@ -84,7 +156,9 @@ class DashboardData(BaseModel):
     installation: InstallationInfo
     ai_systems: list[AISystemRecord] = []
     compliance_score: int = 0
+    score_breakdown: dict = {}
     compliance_page_published: bool = False
+    scan_completed: bool = False
     documents: list[dict] = []
     art50_deadline: str = "2026-08-02"
     art4_active_since: str = "2025-02-02"

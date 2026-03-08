@@ -73,7 +73,7 @@ Odpověz JSON: {{"status": "...", "summary": "..."}}"""
         result = await call_llm(
             prompt=prompt,
             system=CLASSIFY_SYSTEM,
-            model="gemini-2.0-flash",  # Levný a rychlý model
+            model="gemini-2.5-flash",  # Levný a rychlý model (2.0 deprecated)
             temperature=0.1,
             max_tokens=200,
         )

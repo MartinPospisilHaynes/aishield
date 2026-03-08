@@ -192,6 +192,9 @@ export const WORKFLOW_STATUSES: Record<string, { label: string; color: string; i
     contacted: { label: "Kontaktován", color: "blue", icon: "📧" },
     waiting_questionnaire: { label: "Čeká na dotazník", color: "yellow", icon: "📝" },
     questionnaire_received: { label: "Dotazník přijat", color: "cyan", icon: "✅" },
+    deep_scan_done: { label: "24h test hotov", color: "cyan", icon: "🔍" },
+    generating: { label: "Generování docs", color: "purple", icon: "⚙️" },
+    awaiting_approval: { label: "Čeká na schválení", color: "orange", icon: "👀" },
     processing: { label: "Zpracovávám", color: "purple", icon: "⚙️" },
     documents_sent: { label: "Dokumenty odeslány", color: "indigo", icon: "📄" },
     active_client: { label: "Aktivní klient", color: "green", icon: "🤝" },
@@ -1258,5 +1261,44 @@ export async function sendPioneerInvite(codeId: string): Promise<{ message: stri
         method: "POST",
     });
     if (!res.ok) throw new Error("Chyba při odesílání pozvánky");
+    return res.json();
+}
+
+// ── Amendments (Dodatky) ──
+
+export interface PendingAmendment {
+    id: string;
+    company_id: string;
+    company_name: string;
+    name: string;
+    template_key: string;
+    amendment_number: number;
+    file_url: string | null;
+    created_at: string;
+    approval_status: string;
+    change_trigger: Record<string, unknown> | null;
+}
+
+export async function getPendingAmendments(): Promise<PendingAmendment[]> {
+    const res = await adminFetch(`${API_URL}/api/admin/amendments/pending`);
+    if (!res.ok) throw new Error("Chyba při načítání dodatků");
+    return res.json();
+}
+
+export async function approveAmendment(documentId: string, note?: string): Promise<{ status: string }> {
+    const res = await adminFetch(`${API_URL}/api/admin/amendments/${documentId}/approve`, {
+        method: "POST",
+        body: JSON.stringify({ note: note || "" }),
+    });
+    if (!res.ok) throw new Error("Chyba při schvalování dodatku");
+    return res.json();
+}
+
+export async function rejectAmendment(documentId: string, reason: string): Promise<{ status: string }> {
+    const res = await adminFetch(`${API_URL}/api/admin/amendments/${documentId}/reject`, {
+        method: "POST",
+        body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Chyba při zamítání dodatku");
     return res.json();
 }

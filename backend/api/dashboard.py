@@ -246,6 +246,9 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
     questionnaire_unknowns = []
     questionnaire_summary = {}
     questionnaire_answers: dict[str, str] = {}
+    questionnaire_answered_count = 0
+    questionnaire_total_questions = 0
+    questionnaire_unknown_count = 0
     try:
         # Najdi klienta pro tuto firmu
         client_res = supabase.table("clients").select("id").eq(
@@ -275,9 +278,12 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
                 required_count = len(all_question_keys)
                 answered_count = len(quest_res.data)
                 answered_yesno = len([r for r in quest_res.data if r["question_key"] in required_yesno])
-                # Mark as completed when user answered all non-conditional questions
-                # or at least 80% of yes/no questions
-                if answered_count >= required_count or (len(required_yesno) > 0 and answered_yesno >= len(required_yesno) * 0.8):
+                unknown_answers = sum(1 for r in quest_res.data if r.get("answer") in ("nevim", "unknown"))
+                questionnaire_answered_count = answered_count
+                questionnaire_total_questions = required_count
+                questionnaire_unknown_count = unknown_answers
+                # Dotazník je kompletní POUZE při 100% odpovědí a 0 "nevím"
+                if answered_count >= required_count and unknown_answers == 0:
                     questionnaire_status = "dokončen"
                 else:
                     questionnaire_status = f"rozpracován ({answered_count}/{required_count})"
@@ -473,6 +479,9 @@ async def _load_dashboard(user_email: str, web_url: str = "", ico: str = "", com
         "questionnaire_unknowns": questionnaire_unknowns,
         "questionnaire_summary": questionnaire_summary,
         "questionnaire_answers": questionnaire_answers,
+        "questionnaire_answered_count": questionnaire_answered_count,
+        "questionnaire_total_questions": questionnaire_total_questions,
+        "questionnaire_unknown_count": questionnaire_unknown_count,
         "compliance_score": compliance_score,
         "action_plan_resolved": company.get("action_plan_resolved") or [],
     }

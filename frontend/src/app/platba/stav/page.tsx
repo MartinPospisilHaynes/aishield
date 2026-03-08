@@ -106,15 +106,15 @@ function PaymentStatusContent() {
         checkStatus();
     }, [paymentId, gateway, isBankTransfer]);
 
-    // Auto-redirect to dashboard after successful Stripe payment (5 second delay)
+    // Auto-redirect to dashboard after successful Stripe payment (5s) — only if questionnaire is complete
     useEffect(() => {
-        if (status?.is_paid && !isBankTransfer) {
+        if (status?.is_paid && !isBankTransfer && questionnaireComplete === true) {
             const timer = setTimeout(() => {
                 router.push("/dashboard");
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [status?.is_paid, isBankTransfer, router]);
+    }, [status?.is_paid, isBankTransfer, questionnaireComplete, router]);
 
     // Bank transfer — show confirmation immediately
     if (isBankTransfer) {

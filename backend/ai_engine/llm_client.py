@@ -36,7 +36,7 @@ from backend.config import get_settings
 logger = logging.getLogger(__name__)
 
 # ── Modely ──
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 GEMINI_MODEL = "gemini-3.1-pro-preview"
 GEMINI_API_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"

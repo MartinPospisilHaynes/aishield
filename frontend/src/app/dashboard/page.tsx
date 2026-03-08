@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { getDashboardData, toggleActionPlanItem, triggerDeepScan, startScan, getScanStatus, getScanFindings, type DashboardData } from "@/lib/api";
+import QuestionnaireNavigator from "@/components/questionnaire-navigator";
 
 type Tab = "prehled" | "firma" | "findings" | "dokumenty" | "plan" | "skeny" | "dotaznik";
 
@@ -1588,30 +1589,73 @@ function TabDokumenty({ documents }: { documents: DashboardData["documents"] }) 
         return <EmptyState title="Žádné dokumenty" description="Dokumenty se vygenerují po skenování, vyplnění dotazníku a objednání balíčku." href="/pricing" cta="Objednat balíček" />;
     }
 
+    // Oddělení dodatků od běžných dokumentů
+    const regularDocs = documents.filter((d) => !d.template_key?.startsWith("amendment"));
+    const amendments = documents.filter((d) => d.template_key?.startsWith("amendment"));
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {documents.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-center gap-4">
-                    <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {regularDocs.map((doc) => (
+                    <div key={doc.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-center gap-4">
+                        <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-fuchsia-500/10 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
+                            <p className="text-xs text-slate-500 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
+                        </div>
+                        {doc.file_url && (() => {
+                            const url = doc.file_url.toLowerCase();
+                            const isPptx = url.includes('.pptx');
+                            const isHtml = url.includes('.html');
+                            const label = isPptx ? 'Stáhnout PPTX' : isHtml ? 'Stáhnout HTML' : 'Stáhnout PDF';
+                            return (
+                                <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">{label}</a>
+                            );
+                        })()}
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-slate-200 text-sm">{TEMPLATE_NAMES[doc.template_key] || doc.name || doc.template_key}</h4>
-                        <p className="text-xs text-slate-500 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
+                ))}
+            </div>
+
+            {/* Dodatky (amendments) */}
+            {amendments.length > 0 && (
+                <div>
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Dodatky ke compliance dokumentaci</h3>
+                    <div className="space-y-3">
+                        {amendments.map((doc) => {
+                            const isApproved = doc.approval_status === "approved";
+                            const isPending = doc.approval_status === "pending_review";
+                            return (
+                                <div key={doc.id} className={`rounded-xl border p-5 flex items-center gap-4 ${isPending ? "border-amber-500/20 bg-amber-500/[0.03]" : "border-cyan-500/20 bg-cyan-500/[0.03]"}`}>
+                                    <div className={`flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center ${isPending ? "bg-amber-500/10" : "bg-cyan-500/10"}`}>
+                                        <svg className={`w-6 h-6 ${isPending ? "text-amber-400" : "text-cyan-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="font-medium text-slate-200 text-sm">{doc.name || "Dodatek"}</h4>
+                                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${isPending ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : isApproved ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-slate-500/10 text-slate-400 border border-slate-500/20"}`}>
+                                                {isPending ? "Čeká na schválení" : isApproved ? "Schváleno" : "Zpracovává se"}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-0.5">{new Date(doc.created_at).toLocaleDateString("cs-CZ")}</p>
+                                    </div>
+                                    {isApproved && doc.file_url && (
+                                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">Stáhnout PDF</a>
+                                    )}
+                                    {isPending && (
+                                        <span className="text-xs text-amber-400/70 flex-shrink-0">Probíhá kontrola kvality</span>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
-                    {doc.file_url && (() => {
-                        const url = doc.file_url.toLowerCase();
-                        const isPptx = url.includes('.pptx');
-                        const isHtml = url.includes('.html');
-                        const label = isPptx ? 'Stáhnout PPTX' : isHtml ? 'Stáhnout HTML' : 'Stáhnout PDF';
-                        return (
-                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0">{label}</a>
-                        );
-                    })()}
                 </div>
-            ))}
+            )}
         </div>
     );
 }
@@ -1759,6 +1803,7 @@ function TabSkeny({ scans }: { scans: DashboardData["scans"] }) {
 
 function TabDotaznik({ answers, status, companyId, answeredCount, totalQuestions, isComplete }: { answers: Record<string, string>; status: string; companyId?: string; answeredCount: number; totalQuestions: number; isComplete: boolean }) {
     const entries = Object.entries(answers);
+    const [showNavigator, setShowNavigator] = useState(false);
 
     if (entries.length === 0) {
         return <EmptyState title="Dotazník nebyl vyplněn" description="Vyplňte dotazník pro přesnější analýzu vašeho AI compliance stavu." href={companyId ? `/dotaznik?company_id=${companyId}` : "/dotaznik"} cta="Vyplnit dotazník" />;
@@ -1798,12 +1843,12 @@ function TabDotaznik({ answers, status, companyId, answeredCount, totalQuestions
                         </a>
                     )}
                     {isComplete && companyId && (
-                        <a
-                            href={`/dotaznik?company_id=${companyId}&edit=true`}
+                        <button
+                            onClick={() => setShowNavigator(true)}
                             className="btn-secondary text-xs px-4 py-1.5"
                         >
                             Upravit odpovědi
-                        </a>
+                        </button>
                     )}
                     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${isComplete ? "bg-green-500/10 text-green-400" : "bg-amber-500/10 text-amber-400"}`}>
                         {isComplete ? "Dokončeno" : `${answeredCount}/${totalQuestions}`}
@@ -1830,6 +1875,16 @@ function TabDotaznik({ answers, status, companyId, answeredCount, totalQuestions
                     </div>
                 );
             })}
+
+            {/* Navigátor pro úpravu odpovědí */}
+            {companyId && (
+                <QuestionnaireNavigator
+                    open={showNavigator}
+                    onClose={() => setShowNavigator(false)}
+                    companyId={companyId}
+                    answers={answers}
+                />
+            )}
         </div>
     );
 }

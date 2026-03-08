@@ -100,13 +100,7 @@ export default function Header() {
                         <div className="h-9 w-24 rounded-xl bg-white/5 animate-pulse" />
                     ) : user ? (
                         <div className="flex items-center gap-4">
-                            <a
-                                href="/dashboard"
-                                className="text-base text-slate-300 hover:text-neon-cyan transition-colors font-medium"
-                            >
-                                Dashboard
-                            </a>
-                            <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-1.5">
+                            <a href="/dashboard" className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 hover:border-cyan-500/30 hover:bg-white/[0.06] transition-all cursor-pointer" title="Přejít na Dashboard">
                                 <div className="h-7 w-7 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white">
                                     {(user.user_metadata?.company_name || user.email || "?")
                                         .charAt(0)
@@ -116,7 +110,7 @@ export default function Header() {
                                     {user.user_metadata?.company_name || user.email}
                                 </span>
                                 <button
-                                    onClick={handleSignOut}
+                                    onClick={(e) => { e.preventDefault(); handleSignOut(); }}
                                     className="text-xs text-slate-500 hover:text-red-400 transition-colors ml-1"
                                     title="Odhlásit se"
                                 >
@@ -125,7 +119,7 @@ export default function Header() {
                                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
                                 </button>
-                            </div>
+                            </a>
                         </div>
                     ) : (
                         <>
@@ -252,31 +246,27 @@ export default function Header() {
                             <div className="h-12 rounded-2xl bg-white/5 animate-pulse" />
                         ) : user ? (
                             <div className="space-y-2">
-                                {/* User card */}
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                                {/* User card — klik → dashboard */}
+                                <a
+                                    href="/dashboard"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-cyan-500/30 hover:bg-white/[0.06] transition-all active:scale-[0.98]"
+                                >
                                     <div className="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
                                         {(user.user_metadata?.company_name || user.email || "?").charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="text-sm text-white font-medium truncate">{user.user_metadata?.company_name || user.email}</div>
-                                        <div className="text-xs text-slate-500 truncate">{user.email}</div>
+                                        <div className="text-xs text-slate-500 truncate">Přejít na Dashboard</div>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <a
-                                        href="/dashboard"
-                                        onClick={() => setMobileOpen(false)}
-                                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold text-sm hover:bg-cyan-500/20 transition-all active:scale-[0.98]"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg> Dashboard
-                                    </a>
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm hover:bg-red-500/20 transition-all active:scale-[0.98]"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg> Odhlásit
-                                    </button>
-                                </div>
+                                    <svg className="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                                </a>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm hover:bg-red-500/20 transition-all active:scale-[0.98]"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg> Odhlásit se
+                                </button>
                             </div>
                         ) : (
                             <div className="space-y-2">

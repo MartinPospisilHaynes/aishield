@@ -1109,8 +1109,8 @@ function QuestionnaireInner() {
             solution: "Vytvoříme vám interní směrnici připravenou k podpisu."
         },
         has_incident_plan: {
-            problem: "Plán reakce na incidenty je vyžadován pro hlášení problémů.",
-            solution: "Připravíme vám šablonu incident plánu včetně kontaktních postupů."
+            problem: "Článek 73 AI Act vyžaduje plán pro řešení závažných incidentů a jejich hlášení dozorčímu orgánu.",
+            solution: "Dodáme vám kompletní Plán řízení AI incidentů s eskalačním postupem."
         },
         has_oversight_person: {
             problem: "Lidský dohled nad AI je klíčový požadavek AI Act.",
@@ -1467,11 +1467,23 @@ function QuestionnaireInner() {
 
                             {fromDashboard && allRequiredFilled ? (
                                 <button
-                                    onClick={handleSubmit}
+                                    onClick={() => {
+                                        const nextUnknown = allQuestions.findIndex(
+                                            (aq, i) => i !== currentQuestion && answersRef.current[aq.key]?.answer === "unknown"
+                                        );
+                                        if (nextUnknown >= 0) {
+                                            // Uložit a přejít na další "nevím"
+                                            autosaveOnSelect(q.key, ans?.answer || "filled");
+                                            setCurrentQuestion(nextUnknown);
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        } else {
+                                            handleSubmit();
+                                        }
+                                    }}
                                     disabled={submitting}
                                     className="px-5 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm sm:text-base transition-all hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] disabled:opacity-50"
                                 >
-                                    {submitting ? "Ukládám…" : "✓ Uložit a zpět"}
+                                    {submitting ? "Ukládám…" : "✓ Uložit a další"}
                                 </button>
                             ) : isLast ? (
                                 <button
@@ -1794,18 +1806,28 @@ function QuestionnaireInner() {
                                         setAnswer(q.key, opt.value);
                                         autosaveOnSelect(q.key, opt.value);
                                         if (fromDashboard) {
-                                            // Came from dashboard for specific question — submit this answer and go back
+                                            // Přišel z dashboardu — odpovědět a přejít na další "nevím", nebo zpět
                                             if (q.followup && q.followup.condition === opt.value) {
-                                                // Followup triggered — let user fill it, they'll use the "Zpět" button
+                                                // Followup triggered — uživatel ho vyplní, pak "Zpět"
                                             } else if (q.followup && q.followup.condition === "any") {
-                                                // Followup always shows — let user fill it, they'll use the "Zpět" button
+                                                // Followup always shows
                                             } else if (q.followup_no && opt.value === "no") {
-                                                // followup_no triggered — show warning, they'll use the "Zpět" button
+                                                // followup_no triggered
                                             } else if (q.followup_yes && opt.value === "yes") {
-                                                // followup_yes triggered — show fields, they'll use the "Zpět" button
+                                                // followup_yes triggered
                                             } else {
-                                                // No followup — auto-submit and return to dashboard
-                                                setTimeout(() => { handleSubmit(); }, 400);
+                                                // Bez followup — najdi další "nevím" nebo submit
+                                                setTimeout(() => {
+                                                    const nextUnknown = allQuestions.findIndex(
+                                                        (aq, i) => i !== currentQuestion && answersRef.current[aq.key]?.answer === "unknown"
+                                                    );
+                                                    if (nextUnknown >= 0) {
+                                                        setCurrentQuestion(nextUnknown);
+                                                        window.scrollTo({ top: 0, behavior: "smooth" });
+                                                    } else {
+                                                        handleSubmit();
+                                                    }
+                                                }, 400);
                                             }
                                         }
                                         // Normal flow: NEVER auto-advance.
@@ -1821,9 +1843,15 @@ function QuestionnaireInner() {
                                                 followupRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                                             }, 400);
                                         } else {
-                                            // Scroll k tlačítku "Další" aby klient věděl jak pokračovat
+                                            // Scroll k tlačítku "Další" — cca 100px nad spodní hranu displeje
                                             setTimeout(() => {
-                                                navRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                                                if (navRef.current) {
+                                                    const rect = navRef.current.getBoundingClientRect();
+                                                    const targetY = window.scrollY + rect.top - window.innerHeight + 100;
+                                                    if (targetY > window.scrollY) {
+                                                        window.scrollTo({ top: targetY, behavior: "smooth" });
+                                                    }
+                                                }
                                             }, 300);
                                         }
                                     }}

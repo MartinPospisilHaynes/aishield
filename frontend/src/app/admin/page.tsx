@@ -52,6 +52,9 @@ import {
     updateOrderStatus,
     deleteOrder,
     resendInvoice,
+    getPendingAmendments,
+    approveAmendment,
+    rejectAmendment,
 } from "@/lib/admin-api";
 import type {
     CrmDashboardStats,
@@ -82,6 +85,7 @@ import type {
     LLMUsageSummary,
     LLMApiHealth,
     PioneerCode,
+    PendingAmendment,
 } from "@/lib/admin-api";
 
 // ── Local types ──
@@ -161,7 +165,8 @@ type Tab =
     | "predplatne"
     | "testy24h"
     | "llm"
-    | "pioneer";
+    | "pioneer"
+    | "dodatky";
 
 const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "prehled", icon: "📊", label: "Přehled" },
@@ -178,6 +183,7 @@ const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: "predplatne", icon: "💳", label: "Předplatné" },
     { id: "llm", icon: "🧠", label: "LLM API" },
     { id: "pioneer", icon: "🚀", label: "Pioneer" },
+    { id: "dodatky", icon: "📝", label: "Dodatky" },
 ];
 
 const TASKS = [
@@ -444,6 +450,12 @@ export default function AdminPage() {
     const [pioneerLoading, setPioneerLoading] = useState(false);
     const [pioneerAction, setPioneerAction] = useState<string | null>(null);
 
+    // Dodatky (Amendments)
+    const [amendments, setAmendments] = useState<PendingAmendment[]>([]);
+    const [amendmentsLoading, setAmendmentsLoading] = useState(false);
+    const [amendmentAction, setAmendmentAction] = useState<string | null>(null);
+    const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
+
     // Loading
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -672,6 +684,51 @@ export default function AdminPage() {
         }
     }, [loadPioneer]);
 
+    // ── Amendments (Dodatky) loaders ──
+    const loadAmendments = useCallback(async () => {
+        setAmendmentsLoading(true);
+        try {
+            const data = await getPendingAmendments();
+            setAmendments(data);
+        } catch (e) {
+            console.error("Amendments load error:", e);
+        } finally {
+            setAmendmentsLoading(false);
+        }
+    }, []);
+
+    const handleApproveAmendment = useCallback(async (id: string, note?: string) => {
+        setAmendmentAction(id);
+        try {
+            await approveAmendment(id, note);
+            await loadAmendments();
+        } catch (e) {
+            console.error("Amendment approve error:", e);
+            alert("Chyba při schvalování dodatku");
+        } finally {
+            setAmendmentAction(null);
+        }
+    }, [loadAmendments]);
+
+    const handleRejectAmendment = useCallback(async (id: string) => {
+        const reason = rejectReason[id];
+        if (!reason?.trim()) {
+            alert("Zadejte důvod zamítnutí");
+            return;
+        }
+        setAmendmentAction(id);
+        try {
+            await rejectAmendment(id, reason);
+            setRejectReason(prev => { const n = { ...prev }; delete n[id]; return n; });
+            await loadAmendments();
+        } catch (e) {
+            console.error("Amendment reject error:", e);
+            alert("Chyba při zamítání dodatku");
+        } finally {
+            setAmendmentAction(null);
+        }
+    }, [loadAmendments, rejectReason]);
+
     const handleCheckKeys = useCallback(async () => {
         setLlmCheckingKeys(true);
         try {
@@ -715,7 +772,8 @@ export default function AdminPage() {
         if (tab === "testy24h") loadScanMonitor();
         if (tab === "llm") loadLLMUsage();
         if (tab === "pioneer") loadPioneer();
-    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadLLMUsage, loadPioneer]);
+        if (tab === "dodatky") loadAmendments();
+    }, [tab, authed, loadCompanies, loadPipeline, loadEmails, loadMonitoring, loadAgency, loadClientManagement, loadOrders, loadAnalytics, loadSubscriptions, loadInvoices, loadScanMonitor, loadLLMUsage, loadPioneer, loadAmendments]);
 
     // ── Task runner ──
     const handleRunTask = useCallback(
@@ -983,6 +1041,7 @@ export default function AdminPage() {
                                 if (tab === "nastroje") loadDashboard();
                                 if (tab === "testy24h") loadScanMonitor();
                                 if (tab === "pioneer") loadPioneer();
+                                if (tab === "dodatky") loadAmendments();
                             }}
                             className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
@@ -4734,6 +4793,95 @@ export default function AdminPage() {
                                     <div className="text-4xl mb-4">🚀</div>
                                     <div className="text-lg font-medium">Zatím žádné Pioneer kódy</div>
                                     <div className="text-sm mt-2">Řekni mi firmu + email a vytvořím kód + pošlu pozvánku.</div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* ═══ TAB: DODATKY (Amendments) ═══ */}
+                    {tab === "dodatky" && (
+                        <>
+                            {amendmentsLoading && amendments.length === 0 && (
+                                <div className="text-center py-16 text-gray-400 animate-pulse">Načítám dodatky...</div>
+                            )}
+
+                            {amendments.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-sm font-semibold text-white">📝 Dodatky ke schválení ({amendments.filter(a => a.approval_status === "pending_review").length})</h3>
+                                        <button onClick={loadAmendments} className="text-xs text-gray-400 hover:text-white px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                            Obnovit
+                                        </button>
+                                    </div>
+
+                                    {amendments.map((amend) => {
+                                        const isPending = amend.approval_status === "pending_review";
+                                        const isProcessing = amendmentAction === amend.id;
+                                        return (
+                                            <div key={amend.id} className={`rounded-xl border p-5 ${isPending ? "border-amber-500/20 bg-amber-500/[0.03]" : "border-green-500/20 bg-green-500/[0.03]"}`}>
+                                                <div className="flex items-start justify-between gap-4 mb-3">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h4 className="font-semibold text-white text-sm">{amend.name || `Dodatek #${amend.amendment_number}`}</h4>
+                                                            <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium ${isPending ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-green-500/10 text-green-400 border border-green-500/20"}`}>
+                                                                {isPending ? "Čeká na schválení" : amend.approval_status}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-400">
+                                                            {amend.company_name || amend.company_id} · {new Date(amend.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                                        </p>
+                                                        {amend.change_trigger && (
+                                                            <div className="mt-2 text-xs text-gray-500">
+                                                                Změněné otázky: {Object.keys(amend.change_trigger).slice(0, 5).join(", ")}
+                                                                {Object.keys(amend.change_trigger).length > 5 && ` (+${Object.keys(amend.change_trigger).length - 5})`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {amend.file_url && (
+                                                        <a href={amend.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors flex-shrink-0">
+                                                            Zobrazit PDF
+                                                        </a>
+                                                    )}
+                                                </div>
+
+                                                {isPending && (
+                                                    <div className="border-t border-white/5 pt-3 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleApproveAmendment(amend.id)}
+                                                                disabled={isProcessing}
+                                                                className="px-4 py-2 text-xs rounded-lg bg-green-600 hover:bg-green-500 text-white font-medium transition-colors disabled:opacity-50"
+                                                            >
+                                                                {isProcessing ? "Zpracovávám..." : "Schválit a zveřejnit"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRejectAmendment(amend.id)}
+                                                                disabled={isProcessing || !rejectReason[amend.id]?.trim()}
+                                                                className="px-4 py-2 text-xs rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 font-medium transition-colors disabled:opacity-50 border border-red-500/20"
+                                                            >
+                                                                Zamítnout
+                                                            </button>
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Důvod zamítnutí (volitelné pro schválení, povinné pro zamítnutí)"
+                                                            value={rejectReason[amend.id] || ""}
+                                                            onChange={(e) => setRejectReason(prev => ({ ...prev, [amend.id]: e.target.value }))}
+                                                            className="w-full px-3 py-2 text-xs rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-fuchsia-500/30 focus:outline-none"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {amendments.length === 0 && !amendmentsLoading && (
+                                <div className="text-center py-16 text-gray-500">
+                                    <div className="text-4xl mb-4">📝</div>
+                                    <div className="text-lg font-medium">Žádné dodatky ke schválení</div>
+                                    <div className="text-sm mt-2">Když klient změní odpověď v dotazníku, systém vygeneruje dodatek a zobrazí ho tady.</div>
                                 </div>
                             )}
                         </>

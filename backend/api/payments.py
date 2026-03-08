@@ -408,6 +408,71 @@ async def validate_voucher(req: VoucherValidateRequest):
     )
 
 
+async def _check_questionnaire_complete(email: str) -> tuple[bool, str]:
+    """Ověří, že dotazník je 100% vyplněn bez 'nevím' odpovědí."""
+    supabase = get_supabase()
+
+    # Najdi firmu přes companies.email (primární cesta)
+    company_id = None
+    try:
+        companies = supabase.table("companies") \
+            .select("id") \
+            .eq("email", email) \
+            .limit(1) \
+            .execute()
+        if companies.data:
+            company_id = companies.data[0]["id"]
+    except Exception:
+        pass
+
+    # Fallback: zkusit clients tabulku
+    if not company_id:
+        try:
+            clients = supabase.table("clients") \
+                .select("company_id") \
+                .eq("email", email) \
+                .limit(1) \
+                .execute()
+            if clients.data:
+                company_id = clients.data[0]["company_id"]
+        except Exception:
+            pass
+
+    if not company_id:
+        return False, "Nejprve dokončete sken webu a vyplňte dotazník."
+
+    from backend.api.questionnaire import _get_client_id_for_company, QUESTIONNAIRE_SECTIONS
+    client_id = await _get_client_id_for_company(supabase, company_id)
+    if not client_id:
+        return False, "Dotazník nebyl vyplněn. Vyplňte prosím všechny otázky."
+
+    result = supabase.table("questionnaire_responses") \
+        .select("question_key, answer") \
+        .eq("client_id", client_id) \
+        .neq("question_key", "__position__") \
+        .execute()
+
+    if not result.data:
+        return False, "Dotazník nebyl vyplněn. Vyplňte prosím všechny otázky."
+
+    total = len(result.data)
+    unknowns = sum(1 for r in result.data if r.get("answer") in ("nevim", "unknown"))
+
+    all_question_keys = {
+        q["key"] for s in QUESTIONNAIRE_SECTIONS for q in s["questions"]
+        if not q.get("show_when")
+    }
+    required_count = len(all_question_keys)
+
+    if total < required_count:
+        return False, f"Dotazník není kompletní ({total}/{required_count} otázek). Dokončete prosím všechny otázky."
+
+    if unknowns > 0:
+        return False, f"Dotazník obsahuje {unknowns} odpovědí \u201ENevím\u201C. Doplňte prosím všechny odpovědi před objednávkou."
+
+    return True, "OK"
+
+
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_current_user)):
     """
@@ -417,6 +482,11 @@ async def create_checkout(req: CheckoutRequest, user: AuthUser = Depends(get_cur
     """
     if req.plan not in PLANS:
         raise HTTPException(status_code=400, detail=f"Neznámý balíček: {req.plan}")
+
+    # Validace dotazníku — 100% vyplnění bez "nevím" odpovědí
+    quest_ok, quest_reason = await _check_questionnaire_complete(req.email)
+    if not quest_ok:
+        raise HTTPException(status_code=400, detail=quest_reason)
 
     settings = get_settings()
     plan = PLANS[req.plan]

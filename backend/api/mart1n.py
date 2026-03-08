@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ── Claude config ──
-CLAUDE_MODEL = "claude-sonnet-4-20250514"  # Sonnet for state-machine flow ($3/$15, ~$0.21/dotazník)
+CLAUDE_MODEL = "claude-sonnet-4-6"  # Sonnet 4.6 latest ($3/$15, ~$0.21/dotazník)
 MAX_CONVERSATION_TURNS = 60  # Max turns in one session
 MAX_MESSAGE_LENGTH = 3000
 CLAUDE_TIMEOUT = 90  # seconds — timeout for Claude API call

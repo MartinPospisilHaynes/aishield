@@ -689,6 +689,7 @@ export interface DashboardDocument {
     name: string;
     file_url: string;
     created_at: string;
+    approval_status?: string;
 }
 
 export interface DashboardOrder {

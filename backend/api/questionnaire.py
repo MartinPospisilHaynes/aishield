@@ -1053,7 +1053,7 @@ QUESTIONNAIRE_SECTIONS = [
                 "type": "conditional_fields",
                 "show_when": "transparency_page_implementation == 'Chci implementaci od AIshield'",
                 "fields": [
-                    {"key": "aishield_impl_note", "label": "✅ Výborně! Náš technik se vám ozve a domluví si s vámi detaily implementace.\n\n**Mezitím prosím připravte:**\n• Administrátorský účet (nebo návštěvnický s právem editovat) k vašemu webu / CMS\n• Zálohu webu (pro jistotu)\n\nPřístupové údaje vám bezpečně vyžádáme po objednávce. Implementace je zahrnuta v balíčcích **Pro** a **Enterprise**.", "type": "info"},
+                    {"key": "aishield_impl_note", "label": "✅ Výborně! Náš technik se vám ozve a domluví si s vámi detaily implementace.\n\n**Mezitím prosím připravte:**\n• Administrátorský účet (nebo návštěvnický s právem editovat) k vašemu webu / CMS\n• Zálohu webu (pro jistotu)\n\nPřístupové údaje si od vás bezpečně vyžádáme po objednávce. Implementace je součástí balíčků **Pro** a **Enterprise**.", "type": "info"},
                 ],
                 "help_text": "Nainstalujeme transparenční stránku přímo na váš web.",
                 "risk_hint": None,
@@ -1301,29 +1301,29 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
 
     supabase = get_supabase()
 
-    # Najít company_id přes scan_results (nejčastější cesta)
+    # Najít company_id přes companies.email (primární cesta)
     company_id = None
     try:
-        scans = supabase.table("scan_results") \
-            .select("company_id") \
-            .eq("user_email", user.email) \
+        companies = supabase.table("companies") \
+            .select("id") \
+            .eq("email", user.email) \
             .limit(1) \
             .execute()
-        if scans.data:
-            company_id = scans.data[0]["company_id"]
+        if companies.data:
+            company_id = companies.data[0]["id"]
     except Exception:
         pass
 
     if not company_id:
-        # Zkusit najít přes clients tabulku
+        # Fallback: zkusit najít přes clients tabulku (company_id)
         try:
             clients = supabase.table("clients") \
-                .select("id") \
+                .select("company_id") \
                 .eq("email", user.email) \
                 .limit(1) \
                 .execute()
             if clients.data:
-                company_id = clients.data[0]["id"]
+                company_id = clients.data[0]["company_id"]
         except Exception:
             pass
 
@@ -1352,8 +1352,8 @@ async def get_my_questionnaire_status(user: AuthUser = Depends(get_optional_user
         if not q.get("show_when")
     }
     required_count = len(all_question_keys)
-    # is_complete = all answered (regardless of unknowns — user still completed the flow)
-    is_complete = total >= required_count
+    # is_complete = všechny otázky zodpovězeny A žádná odpověď není "nevím"
+    is_complete = total >= required_count and unknowns == 0
 
     return {
         "is_complete": is_complete,
