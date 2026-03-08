@@ -256,9 +256,9 @@ class LLMUsageTracker:
                 result["claude"] = {"status": "missing", "message": "API klíč není nastaven"}
             else:
                 client = anthropic.Anthropic(api_key=key)
-                # Minimal API call to verify key works
+                # Minimal API call to verify key works (Haiku = nejlevnější)
                 resp = client.messages.create(
-                    model="claude-opus-4-6",
+                    model="claude-haiku-4-5",
                     max_tokens=1,
                     messages=[{"role": "user", "content": "hi"}],
                 )

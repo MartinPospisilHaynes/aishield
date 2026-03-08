@@ -16,7 +16,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from backend.documents.llm_engine import call_llm
+from backend.documents.llm_engine import call_claude
 from backend.documents.m1_generator import DOCUMENT_NAMES
 
 logger = logging.getLogger(__name__)
@@ -118,12 +118,12 @@ DŮLEŽITÉ:
 - Použij profesionální design — tmavá hlavička, přehledné tabulky
 """
 
-    html, meta = await call_llm(
+    html, meta = await call_claude(
+        system=AMENDMENT_SYSTEM_PROMPT,
         prompt=prompt,
-        model="claude",
+        label="M8_amendment",
         temperature=0.3,
         max_tokens=8000,
-        module_name="M8_amendment",
     )
 
     # Validace výstupu

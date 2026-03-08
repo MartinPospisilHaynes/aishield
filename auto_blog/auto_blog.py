@@ -39,7 +39,7 @@ USED_PATH = SCRIPT_DIR / "used_topics.json"
 LOG_PATH = SCRIPT_DIR / "auto_blog.log"
 
 GEMINI_MODEL = "gemini-2.5-flash"
-GEMINI_IMAGE_MODEL = "gemini-2.0-flash-exp"  # for image generation via Imagen
+GEMINI_IMAGE_MODEL = "gemini-2.5-flash"  # fallback, primary uses Imagen 4.0
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 SITE_URL = "https://aishield.cz"

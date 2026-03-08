@@ -50,6 +50,17 @@ export const metadata: Metadata = {
         "AI Act povinnosti",
     ],
     authors: [{ name: "AIshield.cz" }],
+    icons: {
+        icon: [
+            { url: "/favicon.ico", sizes: "any" },
+            { url: "/favicon.svg", type: "image/svg+xml" },
+            { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+            { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+        ],
+        apple: [
+            { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+        ],
+    },
     openGraph: {
         title: {
             default: "AI Act compliance pro české weby — skenujte zdarma za 60 sekund | AIshield.cz",
